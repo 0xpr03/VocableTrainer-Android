@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">GUI Example Application</string>
+    <string name="Trainer_hint_solution">Solution</string>
+</resources>

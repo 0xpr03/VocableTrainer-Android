@@ -1,0 +1,30 @@
+<TableLayout
+    android:id="@+id/relativeLayout1"
+    android:layout_height="fill_parent"
+    android:layout_width="fill_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <TextView
+        android:id="@+id/FirstText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="First"
+        android:layout_weight="1">
+    </TextView>
+
+    <TextView
+        android:id="@+id/SecondText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Second"
+        android:layout_weight="1">
+    </TextView>
+
+    <TextView
+        android:id="@+id/ThirdText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Third"
+        android:layout_weight="1">
+    </TextView>
+</TableLayout>

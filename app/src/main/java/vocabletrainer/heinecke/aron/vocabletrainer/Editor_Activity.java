@@ -7,11 +7,15 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TableLayout;
+import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Editor_Activity extends AppCompatActivity {
     public static final String PARAM_NEW_TABLE = "NEW_TABLE";
@@ -24,11 +28,28 @@ public class Editor_Activity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         entries = new ArrayList<>();
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_editor__actiivity);
+        setContentView(R.layout.activity_editor__activity);
         Intent intent = getIntent();
         boolean newTable = intent.getBooleanExtra(PARAM_NEW_TABLE, false);
 
-        //set
+        ListView listView = (ListView)findViewById(R.id.listview);
+
+        List<Entry> list = new ArrayList<>();
+        list.add(new Entry("A","B","C",1,-1L));
+        EntryListAdapter adapter = new EntryListAdapter(this,list);
+
+        listView.setAdapter(adapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> parent, final View view, int position, long id)
+            {
+                int pos=position+1;
+                Toast.makeText(Editor_Activity.this, Integer.toString(pos)+" Clicked", Toast.LENGTH_SHORT).show();
+            }
+
+        });
 
         if (newTable) {
             table = new Table("Column A", "Column B", "List Name");

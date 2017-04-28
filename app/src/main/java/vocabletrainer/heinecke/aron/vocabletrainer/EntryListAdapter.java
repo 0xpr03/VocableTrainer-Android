@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import java.util.List;
@@ -13,33 +14,56 @@ import java.util.List;
 /**
  * Created by aron on 26.04.17.
  */
-/*
 
-public class EntryListAdapter extends ArrayAdapter<Entry> {
+
+public class EntryListAdapter extends BaseAdapter {
 
     List<Entry> dataItems = null;
-    Context context;
+    Activity activity;
+    TextView colA;
+    TextView colB;
+    TextView colTipp;
 
 
-    public EntryListAdapter(Context context, List<Entry> objects) {
+    public EntryListAdapter(Activity activity, List<Entry> objects) {
 //        super(context, R.layout.list_items, objects);
-        this.context = context;
+        super();
+        this.activity = activity;
         this.dataItems = objects;
 
     }
 
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        LayoutInflater inflater = ((Activity) context).getLayoutInflater();
-        convertView = inflater.inflate(R.layout.list_items, parent, false);
+    public int getCount() {
+        return dataItems.size();
+    }
 
-        TextView colA = (TextView) convertView.findViewById(R.id.name);
-        TextView colB = (TextView) convertView.findViewById(R.id.price);
-        TextView colTipp = (TextView) convertView.findViewById(R.id.id);
+    @Override
+    public Object getItem(int position) {
+        return dataItems.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return 0;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        LayoutInflater inflater = activity.getLayoutInflater();
+
+        if (convertView == null) {
+            convertView = inflater.inflate(R.layout.table_list_view, null);
+
+            colA = (TextView) convertView.findViewById(R.id.FirstText);
+            colB = (TextView) convertView.findViewById(R.id.SecondText);
+            colTipp = (TextView) convertView.findViewById(R.id.ThirdText);
+        }
+
         colA.setText(dataItems.get(position).getAWord());
         colB.setText(String.valueOf(dataItems.get(position).getBWord()));
         colTipp.setText(String.valueOf(dataItems.get(position).getTip()));
         return convertView;
     }
-}*/
+}

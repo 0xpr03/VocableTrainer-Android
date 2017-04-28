@@ -113,6 +113,11 @@ public class Entry {
         this.changed = true;
     }
 
+    @Override
+    public String toString(){
+        return AWord +" " + BWord;
+    }
+
     /**
      * Returns whether the Data of this Entry was changed
      * @return

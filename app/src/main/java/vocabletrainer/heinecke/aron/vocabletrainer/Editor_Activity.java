@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Editor_Activity extends AppCompatActivity {
     public static final String PARAM_NEW_TABLE = "NEW_TABLE";
@@ -23,6 +24,8 @@ public class Editor_Activity extends AppCompatActivity {
     private static final String TAG = "Editor_Acivity";
     private Table table;
     private ArrayList<Entry> entries;
+    private EntryListAdapter adapter;
+    private ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,27 +33,13 @@ public class Editor_Activity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor__activity);
         Intent intent = getIntent();
+
+        // setup listview
+        initListView();
+
+
+        // handle passed params
         boolean newTable = intent.getBooleanExtra(PARAM_NEW_TABLE, false);
-
-        ListView listView = (ListView)findViewById(R.id.listview);
-
-        List<Entry> list = new ArrayList<>();
-        list.add(new Entry("A","B","C",1,-1L));
-        EntryListAdapter adapter = new EntryListAdapter(this,list);
-
-        listView.setAdapter(adapter);
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
-        {
-            @Override
-            public void onItemClick(AdapterView<?> parent, final View view, int position, long id)
-            {
-                int pos=position+1;
-                Toast.makeText(Editor_Activity.this, Integer.toString(pos)+" Clicked", Toast.LENGTH_SHORT).show();
-            }
-
-        });
-
         if (newTable) {
             table = new Table("Column A", "Column B", "List Name");
             Log.d(TAG, "new table mode");
@@ -66,7 +55,46 @@ public class Editor_Activity extends AppCompatActivity {
         }
     }
 
-    private void updateRow(Entry entry){
+    /**
+     * Setup listview
+     */
+    private void initListView() {
+        listView = (ListView) findViewById(R.id.listview);
+
+        listView.setLongClickable(true);
+
+        List<Entry> list = new ArrayList<>();
+
+        //TODO: remove after debugging
+        Random rnd = new Random();
+        for (int i = 0; i < 100; i++) {
+            list.add(new Entry("" + rnd.nextInt(), "" + rnd.nextInt(), "" + rnd.nextInt(), 1, -1L));
+        }
+        adapter = new EntryListAdapter(this, list);
+
+        listView.setAdapter(adapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
+                int pos = position + 1;
+                Toast.makeText(Editor_Activity.this, Integer.toString(pos) + " Clicked", Toast.LENGTH_SHORT).show();
+                showEntryEditDialog((Entry) adapter.getItem(pos),false);
+            }
+
+        });
+
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
+                                        int pos, long id) {
+                showEntryDeleteDialog((Entry) adapter.getItem(pos));
+                return true;
+            }
+        });
+    }
+
+    private void updateRow(Entry entry) {
 
     }
 
@@ -75,12 +103,40 @@ public class Editor_Activity extends AppCompatActivity {
      */
     public void addEntry(View view) {
 
-        Entry entry = new Entry("A","B","Tip",table.getId(),-1);
-
-        showEntryEditDialog(entry);
+        Entry entry = new Entry("A", "B", "Tip", table.getId(), -1);
+        adapter.addEntryUnrendered(entry);
+        showEntryEditDialog(entry,true);
     }
 
-    private void showEntryEditDialog(final Entry entry) {
+    private void showEntryDeleteDialog(final Entry entry) {
+        AlertDialog.Builder delDiag = new AlertDialog.Builder(this);
+
+        delDiag.setTitle("Delete Dntry");
+        delDiag.setMessage("Do you want to delete this entry ?");
+
+        delDiag.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                adapter.setDeleted(entry);
+                Toast.makeText(Editor_Activity.this, entry.toString() + " deleted", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "deleted");
+            }
+        });
+
+        delDiag.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                Log.d(TAG, "canceled");
+            }
+        });
+
+        delDiag.show();
+    }
+
+    /**
+     * Show entry edit dialog
+     * @param entry Entry to edit
+     * @param deleteOnCancel True if entry should be deleted on cancel
+     */
+    private void showEntryEditDialog(final Entry entry,final boolean deleteOnCancel) {
         AlertDialog.Builder editDiag = new AlertDialog.Builder(this);
 
         editDiag.setMessage("Edit entry");
@@ -101,16 +157,20 @@ public class Editor_Activity extends AppCompatActivity {
 
         editDiag.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-
+                entry.setAWord(editA.getText().toString());
+                entry.setBWord(editB.getText().toString());
+                entry.setTip(editTipp.getText().toString());
+                adapter.notifyDataSetChanged();
                 Log.d(TAG, "edited");
             }
         });
 
-        editDiag.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+        editDiag.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                entry.setAWord(editA.getText().toString());
-                entry.setBWord(editB.getText().toString());
-                entry.setTip(editTipp.getText().toString());
+                if(deleteOnCancel){
+                    adapter.setDeleted(entry);
+                    adapter.notifyDataSetChanged();
+                }
                 Log.d(TAG, "canceled");
             }
         });
@@ -155,15 +215,10 @@ public class Editor_Activity extends AppCompatActivity {
                 updateName(iName.getText().toString());
                 table.setNameA(iColA.getText().toString());
                 table.setNameB(iColB.getText().toString());
+                adapter.setTableData(table);
                 Log.d(TAG, "set table info");
             }
         });
-//
-//        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-//            public void onClick(DialogInterface dialog, int whichButton) {
-//                // Canceled.
-//            }
-//        });
 
         alert.show();
     }

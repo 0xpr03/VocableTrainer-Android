@@ -1,4 +1,4 @@
-package vocabletrainer.heinecke.aron.vocabletrainer;
+package vocabletrainer.heinecke.aron.vocabletrainer.lib;
 
 /**
  * Created by aron on 04.04.17.
@@ -15,7 +15,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.NoSuchElementException;
+
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
 
 /**
  * Database manager<br>

@@ -1,4 +1,4 @@
-package vocabletrainer.heinecke.aron.vocabletrainer;
+package vocabletrainer.heinecke.aron.vocabletrainer.lib;
 
 /**
  * Created by aron on 07.04.17.
@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
 
 /**
  * Trainer class

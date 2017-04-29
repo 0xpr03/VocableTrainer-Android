@@ -15,6 +15,10 @@ import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
+
 import static org.junit.Assert.*;
 
 /**

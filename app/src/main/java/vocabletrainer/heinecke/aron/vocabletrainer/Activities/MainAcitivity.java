@@ -1,9 +1,11 @@
-package vocabletrainer.heinecke.aron.vocabletrainer;
+package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+
+import vocabletrainer.heinecke.aron.vocabletrainer.R;
 
 public class MainAcitivity extends AppCompatActivity {
 
@@ -18,8 +20,8 @@ public class MainAcitivity extends AppCompatActivity {
      * @param view
      */
     public void showNewTable(View view){
-        Intent myIntent = new Intent(this, Editor_Activity.class);
-        myIntent.putExtra(Editor_Activity.PARAM_NEW_TABLE, true);
+        Intent myIntent = new Intent(this, EditorActivity.class);
+        myIntent.putExtra(EditorActivity.PARAM_NEW_TABLE, true);
         this.startActivity(myIntent);
     }
 }

@@ -1,4 +1,4 @@
-package vocabletrainer.heinecke.aron.vocabletrainer;
+package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,9 +17,15 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Random;
 
-import static vocabletrainer.heinecke.aron.vocabletrainer.Database.ID_RESERVED_SKIP;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.EntryListAdapter;
+import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 
-public class Editor_Activity extends AppCompatActivity {
+import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
+
+public class EditorActivity extends AppCompatActivity {
     public static final String PARAM_NEW_TABLE = "NEW_TABLE";
     public static final String PARAM_EDIT_TABLE = "EDIT_TABLE";
     private static final String TAG = "Editor_Acivity";
@@ -101,7 +107,7 @@ public class Editor_Activity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
                 int pos = position + 1;
-                Toast.makeText(Editor_Activity.this, Integer.toString(pos) + " Clicked", Toast.LENGTH_SHORT).show();
+                Toast.makeText(EditorActivity.this, Integer.toString(pos) + " Clicked", Toast.LENGTH_SHORT).show();
                 showEntryEditDialog((Entry) adapter.getItem(pos),false);
             }
 
@@ -138,7 +144,7 @@ public class Editor_Activity extends AppCompatActivity {
         delDiag.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 adapter.setDeleted(entry);
-                Toast.makeText(Editor_Activity.this, entry.toString() + " deleted", Toast.LENGTH_SHORT).show();
+                Toast.makeText(EditorActivity.this, entry.toString() + " deleted", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "deleted");
             }
         });

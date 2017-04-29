@@ -1,7 +1,9 @@
-package vocabletrainer.heinecke.aron.vocabletrainer;
+package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+
+import vocabletrainer.heinecke.aron.vocabletrainer.R;
 
 public class TrainerActivity extends AppCompatActivity {
 

@@ -1,4 +1,4 @@
-package vocabletrainer.heinecke.aron.vocabletrainer;
+package vocabletrainer.heinecke.aron.vocabletrainer.lib;
 
 import android.app.Activity;
 import android.util.Log;
@@ -11,7 +11,11 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-import static vocabletrainer.heinecke.aron.vocabletrainer.Database.ID_RESERVED_SKIP;
+import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
+
+import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
 
 /**
  * Created by aron on 26.04.17.

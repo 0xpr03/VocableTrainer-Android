@@ -1,10 +1,10 @@
-package vocabletrainer.heinecke.aron.vocabletrainer;
+package vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage;
 
 /**
  * Created by aron on 14.04.17.
  */
 
-import static vocabletrainer.heinecke.aron.vocabletrainer.Database.MIN_ID_TRESHOLD;
+import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TRESHOLD;
 
 /**
  * Table entry

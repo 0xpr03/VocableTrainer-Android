@@ -1,8 +1,10 @@
-package vocabletrainer.heinecke.aron.vocabletrainer;
+package vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage;
 
 /**
  * Created by aron on 07.04.17.
  */
+
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer;
 
 /**
  * Trainer settings obj

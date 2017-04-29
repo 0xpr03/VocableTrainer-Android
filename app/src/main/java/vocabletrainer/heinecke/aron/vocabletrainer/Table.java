@@ -4,6 +4,8 @@ package vocabletrainer.heinecke.aron.vocabletrainer;
  * Created by aron on 14.04.17.
  */
 
+import static vocabletrainer.heinecke.aron.vocabletrainer.Database.MIN_ID_TRESHOLD;
+
 /**
  * Table entry
  */
@@ -26,8 +28,8 @@ public class Table {
         this.nameA = nameA;
         this.nameB = nameB;
         this.name = name;
-        this.totalVocs = -1;
-        this.unfinishedVocs = -1;
+        this.totalVocs = MIN_ID_TRESHOLD-1;
+        this.unfinishedVocs = MIN_ID_TRESHOLD-1;
     }
 
     /**
@@ -36,7 +38,31 @@ public class Table {
      * @param nameB Name for B Column
      */
     public Table(final String nameA, final String nameB, final String name){
-        this(-1,nameA, nameB, name);
+        this(MIN_ID_TRESHOLD-1,nameA, nameB, name);
+    }
+
+    /**
+     * Creates a new table data object<br>
+     *     All fields except ID will be empty thens
+     * @param id
+     */
+    public Table(final int id){
+        this(id,null,null,null);
+    }
+
+    @Override
+    public String toString(){
+        return getId()+" "+getName()+" "+getNameA()+" "+getNameB();
+    }
+
+
+    /**
+     * Tests for equality based on table ID
+     * @param table
+     * @return true when table IDs are equal
+     */
+    public boolean equals(Table table){
+        return this.id == table.getId();
     }
 
     public void setNameA(String nameA) {
@@ -79,7 +105,7 @@ public class Table {
      * @throws IllegalAccessException if a valid ID is already set
      */
     public void setId(int id) {
-        if(this.id < 1)
+        if(this.id < MIN_ID_TRESHOLD)
             this.id = id;
         else
             throw new IllegalAccessError("Can't override existing Table ID");

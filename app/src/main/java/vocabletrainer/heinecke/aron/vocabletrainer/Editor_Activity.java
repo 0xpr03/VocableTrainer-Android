@@ -15,8 +15,9 @@ import android.widget.TableLayout;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
+
+import static vocabletrainer.heinecke.aron.vocabletrainer.Database.ID_RESERVED_SKIP;
 
 public class Editor_Activity extends AppCompatActivity {
     public static final String PARAM_NEW_TABLE = "NEW_TABLE";
@@ -53,6 +54,34 @@ public class Editor_Activity extends AppCompatActivity {
                 Log.e(TAG, "Edit Table Flag set without passing a table");
             }
         }
+
+        //TODO: remove after debugging
+        Random rnd = new Random();
+        for (int i = 0; i < 100; i++) {
+            entries.add(new Entry("" + rnd.nextInt(), "" + rnd.nextInt(), "" + rnd.nextInt(), table, -1L));
+        }
+        adapter.notifyDataSetChanged();
+    }
+
+    /**
+     * Called upon click on save changes
+     */
+    public void onSaveChangesClicked(View view){
+        saveTable();
+    }
+
+    /**
+     *  Save the table to disk
+     */
+    private void saveTable(){
+        Database db = new Database(this.getBaseContext());
+        Log.d(TAG,"table: "+table);
+        if(db.upsertTable(table)) {
+            Log.d(TAG,"table: "+table);
+            db.upsertEntries(entries);
+        }else{
+            Log.w(TAG,"was unable to upsert table! aborting");
+        }
     }
 
     /**
@@ -63,14 +92,8 @@ public class Editor_Activity extends AppCompatActivity {
 
         listView.setLongClickable(true);
 
-        List<Entry> list = new ArrayList<>();
-
-        //TODO: remove after debugging
-        Random rnd = new Random();
-        for (int i = 0; i < 100; i++) {
-            list.add(new Entry("" + rnd.nextInt(), "" + rnd.nextInt(), "" + rnd.nextInt(), 1, -1L));
-        }
-        adapter = new EntryListAdapter(this, list);
+        entries = new ArrayList<>();
+        adapter = new EntryListAdapter(this, entries);
 
         listView.setAdapter(adapter);
 
@@ -94,25 +117,23 @@ public class Editor_Activity extends AppCompatActivity {
         });
     }
 
-    private void updateRow(Entry entry) {
-
-    }
-
     /**
      * Add an entry
      */
     public void addEntry(View view) {
 
-        Entry entry = new Entry("A", "B", "Tip", table.getId(), -1);
+        Entry entry = new Entry("A", "B", "Tip", table, -1);
         adapter.addEntryUnrendered(entry);
         showEntryEditDialog(entry,true);
     }
 
     private void showEntryDeleteDialog(final Entry entry) {
+        if(entry.getId() == ID_RESERVED_SKIP)
+            return;
         AlertDialog.Builder delDiag = new AlertDialog.Builder(this);
 
         delDiag.setTitle("Delete Dntry");
-        delDiag.setMessage("Do you want to delete this entry ?");
+        delDiag.setMessage("Do you want to delete this entry ?\n"+entry.toString());
 
         delDiag.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
@@ -137,6 +158,8 @@ public class Editor_Activity extends AppCompatActivity {
      * @param deleteOnCancel True if entry should be deleted on cancel
      */
     private void showEntryEditDialog(final Entry entry,final boolean deleteOnCancel) {
+        if(entry.getId() == ID_RESERVED_SKIP)
+            return;
         AlertDialog.Builder editDiag = new AlertDialog.Builder(this);
 
         editDiag.setMessage("Edit entry");

@@ -4,6 +4,8 @@ package vocabletrainer.heinecke.aron.vocabletrainer;
  * Created by aron on 07.04.17.
  */
 
+import static vocabletrainer.heinecke.aron.vocabletrainer.Database.MIN_ID_TRESHOLD;
+
 /**
  * DB Entry
  */
@@ -11,7 +13,7 @@ public class Entry {
     private String AWord;
     private String BWord;
     private String tip;
-    private final int table;
+    private final Table table;
 
     private int id;
     private int points;
@@ -21,15 +23,16 @@ public class Entry {
 
     /**
      * Creates a new Entry
+     *
      * @param AWord
      * @param BWord
      * @param tip
-     * @param id ID, list unique
-     * @param table List ID
+     * @param id     ID, list unique
+     * @param table  List ID
      * @param points (training session break)
-     * @param date (last used)
+     * @param date   (last used)
      */
-    public Entry(String AWord, String BWord, String tip, int id, int table, int points, long date) {
+    public Entry(String AWord, String BWord, String tip, int id, Table table, int points, long date) {
         this.AWord = AWord;
         this.BWord = BWord;
         this.tip = tip;
@@ -41,29 +44,32 @@ public class Entry {
 
     /**
      * Creates a new Entry with 0 points
+     *
      * @param AWord
      * @param BWord
      * @param tip
      * @param id
      * @param table
      */
-    public Entry(String AWord, String BWord, String tip, int id, int table, long date) {
-        this(AWord,BWord,tip,id,table,0,date);
+    public Entry(String AWord, String BWord, String tip, int id, Table table, long date) {
+        this(AWord, BWord, tip, id, table, 0, date);
     }
 
     /**
      * Creates a new Entry with 0 points, -1 ID
+     *
      * @param AWord
      * @param BWord
      * @param tip
      * @param table
      */
-    public Entry(String AWord, String BWord, String tip, int table, long date) {
-        this(AWord,BWord,tip,-1,table,0,date);
+    public Entry(String AWord, String BWord, String tip, Table table, long date) {
+        this(AWord, BWord, tip, MIN_ID_TRESHOLD - 1, table, 0, date);
     }
 
     /**
      * Returns the A-Word
+     *
      * @return
      */
     public String getAWord() {
@@ -72,6 +78,7 @@ public class Entry {
 
     /**
      * Set A-Word
+     *
      * @param AWord
      */
     public void setAWord(String AWord) {
@@ -81,6 +88,7 @@ public class Entry {
 
     /**
      * Returns the B word
+     *
      * @return
      */
     public String getBWord() {
@@ -89,6 +97,7 @@ public class Entry {
 
     /**
      * Set B-Word
+     *
      * @param BWord
      */
     public void setBWord(String BWord) {
@@ -98,6 +107,7 @@ public class Entry {
 
     /**
      * Get Tip
+     *
      * @return
      */
     public String getTip() {
@@ -106,6 +116,7 @@ public class Entry {
 
     /**
      * Set Tip
+     *
      * @param tip
      */
     public void setTip(String tip) {
@@ -114,19 +125,30 @@ public class Entry {
     }
 
     @Override
-    public String toString(){
-        return AWord +" " + BWord;
+    public String toString() {
+        return AWord + " " + BWord;
+    }
+
+    /**
+     * Test for equality based on entry & table ID
+     *
+     * @param entry
+     * @return
+     */
+    public boolean equals(Entry entry) {
+        return this.getId() == entry.getId() && this.getTable() == entry.getTable();
     }
 
     /**
      * Returns whether the Data of this Entry was changed
+     *
      * @return
      */
     public boolean isChanged() {
         return changed;
     }
 
-    public int getTable() {
+    public Table getTable() {
         return table;
     }
 

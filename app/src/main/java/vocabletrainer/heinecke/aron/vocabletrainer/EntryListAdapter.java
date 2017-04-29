@@ -11,6 +11,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import static vocabletrainer.heinecke.aron.vocabletrainer.Database.ID_RESERVED_SKIP;
+
 /**
  * Created by aron on 26.04.17.
  */
@@ -31,20 +33,12 @@ public class EntryListAdapter extends BaseAdapter {
 
 
     public EntryListAdapter(Activity activity, List<Entry> objects) {
-//        super(context, R.layout.list_items, objects);
         super();
         this.activity = activity;
         this.dataItems = objects;
-        header = new Entry("A","B","Tipp",-2,-2L);
+        header = new Entry("A","B","Tipp",ID_RESERVED_SKIP,new Table(ID_RESERVED_SKIP),-2L);
         dataItems.add(0,header);
         deleted = new ArrayList<>();
-    }
-
-    @Override
-    public void notifyDataSetChanged(){
-        setIsChanging = true;
-        super.notifyDataSetChanged();
-        setIsChanging = false;
     }
 
     /**
@@ -66,7 +60,8 @@ public class EntryListAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int position) {
-        return dataItems.get(position);
+        return dataItems.get(position-1);
+        // -1 required as onItemClicked counts from 1 but the list starts a 0
     }
 
     @Override

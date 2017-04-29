@@ -12,6 +12,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -21,9 +22,9 @@ import java.util.NoSuchElementException;
  * Doing all releveant DB stuff
  */
 public class Database {
-    final String path;
     private static final String TAG = "Database";
-    private static SQLiteOpenHelper openHelper = null;
+    private static SQLiteDatabase db = null;
+    private SQLiteOpenHelper helper = null;
     private final static String TBL_VOCABLE = "vocables";
     private final static String TBL_TABLES = "voc_tables";
     private final static String TBL_SESSION = "session";
@@ -38,31 +39,52 @@ public class Database {
     private final static String KEY_NAME_A = "name_a";
     private final static String KEY_NAME_B = "name_b";
     private final static String KEY_POINTS = "points";
+    public final static String DB_NAME_DEV = "test1.db";
+    public final static String DB_NAME_PRODUCTION = "voc.db";
+
+    public static final int MIN_ID_TRESHOLD = 0;
+    public static final int ID_RESERVED_SKIP = -2;
 
 
-        class internalDB extends SQLiteOpenHelper {
+    class internalDB extends SQLiteOpenHelper {
 
-            public internalDB(Context context) {
-                super(context, "test.db", null, 1);
-            }
+        public internalDB(Context context) {
+            this(context, false);
+        }
 
-            @Override
-            public void onCreate(SQLiteDatabase db) {
-                db.execSQL("CREATE TABLE `" + TBL_VOCABLE + "` (`" + KEY_TABLE + "` INTEGER PRIMARY KEY, "
-                        + "`" + KEY_VOC + "` INTEGER NOT NULL"
+        public internalDB(Context context, final boolean dev) {
+            super(context, dev ? DB_NAME_DEV : DB_NAME_PRODUCTION, null, 1);
+        }
+
+        @Override
+        public void onCreate(SQLiteDatabase db) {
+            try {
+                final String sql_a = "CREATE TABLE `" + TBL_VOCABLE + "` (`" + KEY_TABLE + "` INTEGER NOT NULL, "
+                        + "`" + KEY_VOC + "` INTEGER NOT NULL,"
                         + "`" + KEY_WORD_A + "` TEXT NOT NULL, `" + KEY_WORD_B + "` TEXT NOT NULL, `" + KEY_TIP + "` TEXT, "
-                        + "`" + KEY_LAST_USED + " INTEGER, PRIMARY KEY (`" + KEY_TABLE + "`,`" + KEY_VOC + "`) )");
-                db.execSQL("CREATE TABLE `" + TBL_TABLES + "` ("
-                        + "`" + KEY_NAME_TBL + "` TEXT NOT NULL, `" + KEY_TABLE + "` INTEGER NOT NULL,"
-                        + "`" + KEY_NAME_A + "` TEXT NOT NULL, `" + KEY_NAME_B + "` TEXT NOT NULL," +
-                        "PRIAMRY KEY (`" + KEY_TABLE + "`))");
-                db.execSQL("CREATE TABLE `" + TBL_SESSION + "` ("
-                        + "`" + KEY_TABLE + "` INTEGER NOT NULL"
-                        + "`" + KEY_VOC + "` INTEGER NOT NULL"
-                        + "`" + KEY_POINTS + "` INTEGER NOT NULL"
-                        + "PRIMARY KEY (`" + KEY_TABLE + "`,`" + KEY_VOC + "`)");
-                db.execSQL("CREATE TABLE `" + TBL_SESSION_META + "` (`" + KEY_TABLE + "`)");
+                        + "`" + KEY_LAST_USED + "` INTEGER, PRIMARY KEY (`" + KEY_TABLE + "`,`" + KEY_VOC + "`) )";
+                final String sql_b = "CREATE TABLE `" + TBL_TABLES + "` ("
+                        + "`" + KEY_NAME_TBL + "` TEXT NOT NULL, `" + KEY_TABLE + "` INTEGER PRIMARY KEY,"
+                        + "`" + KEY_NAME_A + "` TEXT NOT NULL, `" + KEY_NAME_B + "` TEXT NOT NULL )";
+                final String sql_c = "CREATE TABLE `" + TBL_SESSION + "` ("
+                        + "`" + KEY_TABLE + "` INTEGER NOT NULL,"
+                        + "`" + KEY_VOC + "` INTEGER NOT NULL,"
+                        + "`" + KEY_POINTS + "` INTEGER NOT NULL,"
+                        + "PRIMARY KEY (`" + KEY_TABLE + "`,`" + KEY_VOC + "`))";
+                final String sql_d = "CREATE TABLE `" + TBL_SESSION_META + "` (`" + KEY_TABLE + "` TEXT NOT NULL)";
+                Log.d(TAG, sql_a);
+                Log.d(TAG, sql_b);
+                Log.d(TAG, sql_c);
+                Log.d(TAG, sql_d);
+                db.execSQL(sql_a);
+                db.execSQL(sql_b);
+                db.execSQL(sql_c);
+                db.execSQL(sql_d);
+            } catch (Exception e) {
+                Log.e(TAG, "", e);
+                throw e;
             }
+        }
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -75,31 +97,64 @@ public class Database {
     /**
      * Database object
      *
-     * @param path Path to DB file
+     * @param context
+     * @param dev     set to true for unit tests<br>
+     *                no data will be saved
      */
-    public Database(String path, Context context) {
-        this.path = path;
-        if(openHelper == null)
-            openHelper = new internalDB(context);
+    public Database(Context context, final boolean dev) {
+        if (db == null) {
+            helper = new internalDB(context, dev);
+            db = helper.getWritableDatabase();
+        }
     }
 
     /**
-     * Retrns a List of Entries for the specified table
+     * Database object
+     *
+     * @param context
+     */
+    public Database(Context context) {
+        this(context, false);
+    }
+
+
+    /**
+     * Retruns a List of Entries for the specified table
      *
      * @param table Table for which all entries should be retrieved
      * @return List<Entry>
      */
-    public List<Entry> getVocableTable(int table) {
+    public List<Entry> getVocablesOfTable(Table table) {
         try (
-                SQLiteDatabase db = openHelper.getReadableDatabase();
                 Cursor cursor = db.rawQuery("SELECT `" + KEY_WORD_A + "`,`" + KEY_WORD_B + "`,`" + KEY_TIP + "`,`" + KEY_VOC + "`,`" + KEY_TABLE + "`,`" + KEY_LAST_USED + "` "
-                + "FROM `" + TBL_VOCABLE + "` "
-                + "WHERE `" + KEY_TABLE + "` = ?", new String[]{String.valueOf(table)})) {
+                        + "FROM `" + TBL_VOCABLE + "` "
+                        + "WHERE `" + KEY_TABLE + "` = ?", new String[]{String.valueOf(table.getId())})) {
             List<Entry> lst = new ArrayList<>();
             while (cursor.moveToNext()) {
-                lst.add(new Entry(cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getInt(4), cursor.getInt(5), cursor.getLong(6)));
+                lst.add(new Entry(cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getInt(3), table, cursor.getLong(5)));
             }
             return lst;
+        }
+    }
+
+    /**
+     * Get a list of all tables
+     *
+     * @return ArrayList<\Table>
+     */
+    public List<Table> getTables() {
+        try (
+                Cursor cursor = db.rawQuery("SELECT `" + KEY_TABLE + "`,`" + KEY_NAME_A + "`,`" + KEY_NAME_B + "`,`" + KEY_NAME_TBL + "` "
+                        + "FROM `" + TBL_TABLES + "` WHERE 1", null);
+        ) {
+            List<Table> list = new ArrayList<>();
+            while (cursor.moveToNext()) {
+                list.add(new Table(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3)));
+            }
+            return list;
+        } catch (Exception e) {
+            Log.e(TAG, "", e);
+            return null;
         }
     }
 
@@ -110,34 +165,37 @@ public class Database {
      * @return true on succuess
      */
     public boolean upsertTable(Table tbl) {
-        if (tbl.getId() > 0) {
-            try (SQLiteDatabase db = openHelper.getWritableDatabase();
-                 SQLiteStatement upd = db.compileStatement("UPDATE `" + TBL_TABLES + "` SET `" + KEY_NAME_A + "` = ?, `" + KEY_NAME_B + "` = ?, `" + KEY_NAME_TBL + "` = ? `"
-                    + "WHERE `" + KEY_TABLE + "`= ? ")) {
+        if (tbl.getId() >= MIN_ID_TRESHOLD) {
+            try (
+                    SQLiteStatement upd = db.compileStatement("UPDATE `" + TBL_TABLES + "` SET `" + KEY_NAME_A + "` = ?, `" + KEY_NAME_B + "` = ?, `" + KEY_NAME_TBL + "` = ? "
+                            + "WHERE `" + KEY_TABLE + "` = ? ")) {
                 upd.clearBindings();
                 upd.bindString(1, tbl.getNameA());
                 upd.bindString(2, tbl.getNameB());
                 upd.bindString(3, tbl.getName());
-                ;
                 upd.bindLong(4, tbl.getId());
                 upd.execute();
                 return true;
             } catch (Exception e) {
+                Log.e(TAG, "", e);
                 return false;
             }
         } else {
-            try (SQLiteDatabase db = openHelper.getWritableDatabase();
-                 SQLiteStatement ins = db.compileStatement("INSERT INTO `" + TBL_TABLES + "`(`" + KEY_NAME_TBL + "`,`" + KEY_NAME_A + "`,`" + KEY_NAME_B + "`,`"
-                    + KEY_TABLE + "`) (?,?,?,?,?)")) {
+            try (
+                    SQLiteStatement ins = db.compileStatement("INSERT INTO `" + TBL_TABLES + "` (`" + KEY_NAME_TBL + "`,`" + KEY_NAME_A + "`,`" + KEY_NAME_B + "`,`"
+                            + KEY_TABLE + "`) VALUES (?,?,?,?)")) {
                 int tbl_id = getHighestTableID(db) + 1;
+                Log.d(TAG, "highest TBL ID: " + tbl_id);
                 ins.bindString(1, tbl.getName());
                 ins.bindString(2, tbl.getNameA());
                 ins.bindString(3, tbl.getNameB());
                 ins.bindLong(4, tbl_id);
+                Log.d(TAG, ins.toString());
                 ins.execute();
                 tbl.setId(tbl_id);
                 return true;
             } catch (Exception e) {
+                Log.e(TAG, "", e);
                 return false;
             }
         }
@@ -153,13 +211,13 @@ public class Database {
     private boolean testTableExists(SQLiteDatabase db, Table tbl) {
         if (db == null)
             throw new IllegalArgumentException("illegal sql db");
-        if (tbl.getId() < 1)
+        if (tbl.getId() < MIN_ID_TRESHOLD)
             return true;
 
         try (
                 Cursor cursor = db.rawQuery("SELECT 1 "
-                + "FROM `" + TBL_TABLES + "`"
-                + "WHERE `" + KEY_TABLE + "` = ?", new String[]{String.valueOf(tbl.getId())})) {
+                        + "FROM `" + TBL_TABLES + "`"
+                        + "WHERE `" + KEY_TABLE + "` = ?", new String[]{String.valueOf(tbl.getId())})) {
             List<Entry> lst = new ArrayList<>();
             if (cursor.moveToNext()) {
                 return true;
@@ -167,6 +225,7 @@ public class Database {
                 return false;
             }
         } catch (Exception e) {
+            Log.e(TAG, "", e);
             return false;
         }
     }
@@ -179,14 +238,13 @@ public class Database {
      * @return
      */
     public boolean upsertEntries(final List<Entry> lst) {
-        SQLiteDatabase db = openHelper.getWritableDatabase();
         try (
-                SQLiteStatement delStm = db.compileStatement("DELETE * FROM `" + TBL_VOCABLE + "` WHERE `" + KEY_VOC + "` = ? AND `" + KEY_TABLE + "` = ?");
-                SQLiteStatement updStm = db.compileStatement("UPDATE `" + TBL_VOCABLE + "` SET `" + KEY_WORD_A + "` = ?, `" + KEY_WORD_B + "` = ?, `" + KEY_TIP + "` = ? `"
+                SQLiteStatement delStm = db.compileStatement("DELETE FROM `" + TBL_VOCABLE + "` WHERE `" + KEY_VOC + "` = ? AND `" + KEY_TABLE + "` = ?");
+                SQLiteStatement updStm = db.compileStatement("UPDATE `" + TBL_VOCABLE + "` SET `" + KEY_WORD_A + "` = ?, `" + KEY_WORD_B + "` = ?, `" + KEY_TIP + "` = ?, `"
                         + KEY_LAST_USED + "` = ? "
                         + "WHERE `" + KEY_TABLE + "`= ? AND `" + KEY_VOC + "` = ?");
-                SQLiteStatement insStm = db.compileStatement("INSERT INTO `" + TBL_VOCABLE + "`(`" + KEY_WORD_A + "`,`" + KEY_WORD_B + "`,`" + KEY_TIP + "`,`"
-                        + KEY_LAST_USED + "`,`" + KEY_TABLE + "`,`" + "`,`" + KEY_VOC + "`) (?,?,?,?,?,?)");
+                SQLiteStatement insStm = db.compileStatement("INSERT INTO `" + TBL_VOCABLE + "` (`" + KEY_WORD_A + "`,`" + KEY_WORD_B + "`,`" + KEY_TIP + "`,`"
+                        + KEY_LAST_USED + "`,`" + KEY_TABLE + "`,`" + KEY_VOC + "`) VALUES (?,?,?,?,?,?)");
 
         ) {
 
@@ -195,11 +253,14 @@ public class Database {
             int lastID = -1;
 
             for (Entry entry : lst) {
-                if (entry.getTable() > 0) {
+                Log.d(TAG, "processing " + entry +" of "+entry.getTable());
+                if(entry.getId() == ID_RESERVED_SKIP) // skip spacer
+                    continue;
+                if (entry.getId() >= MIN_ID_TRESHOLD) {
                     if (entry.isDelete()) {
                         delStm.clearBindings();
                         delStm.bindLong(1, entry.getId());
-                        delStm.bindLong(2, entry.getTable());
+                        delStm.bindLong(2, entry.getTable().getId());
                         delStm.execute();
                     } else if (entry.isChanged()) {
                         updStm.clearBindings();
@@ -207,13 +268,14 @@ public class Database {
                         updStm.bindString(2, entry.getBWord());
                         updStm.bindString(3, entry.getTip());
                         updStm.bindLong(4, entry.getDate());
-                        updStm.bindLong(5, entry.getTable());
+                        updStm.bindLong(5, entry.getTable().getId());
                         updStm.bindLong(6, entry.getId());
                         updStm.execute();
                     }
                 } else {
-                    if (entry.getTable() != lastTableID || lastID < 1) {
-                        lastTableID = entry.getTable();
+                    if (entry.getTable().getId() != lastTableID || lastID < MIN_ID_TRESHOLD) {
+                        lastTableID = entry.getTable().getId();
+                        Log.d(TAG, "lastTableID: " + lastTableID + " lastID: " + lastID);
                         lastID = getHighestVocID(db, lastTableID);
                     }
                     lastID++;
@@ -222,7 +284,7 @@ public class Database {
                     insStm.bindString(2, entry.getBWord());
                     insStm.bindString(3, entry.getTip());
                     insStm.bindLong(4, entry.getDate());
-                    insStm.bindLong(5, entry.getTable());
+                    insStm.bindLong(5, entry.getTable().getId());
                     insStm.bindLong(6, lastID);
                     insStm.execute();
                     entry.setId(lastID);
@@ -231,9 +293,13 @@ public class Database {
             db.setTransactionSuccessful();
             return true;
         } catch (Exception e) {
+            Log.e(TAG, "", e);
             return false;
         } finally {
-            db.endTransaction();
+            if (db.inTransaction()) {
+                Log.d(TAG, "in transaction");
+                db.endTransaction();
+            }
         }
     }
 
@@ -241,22 +307,23 @@ public class Database {
      * Returns the highest vocable ID for the specified table
      *
      * @param db
-     * @param table
-     * @return highest ID
+     * @param table table ID<br>
+     *              This is on purpose no Table object
+     * @return highest ID <b>or -1 if none is found</b>
      */
     private int getHighestVocID(final SQLiteDatabase db, final int table) throws Exception {
-        if (db == null || table < 1)
-            throw new IllegalArgumentException("invalid DB / table");
+        if (table < MIN_ID_TRESHOLD)
+            throw new IllegalArgumentException("table ID is negative!");
 
         try (Cursor cursor = db.rawQuery("SELECT `" + KEY_VOC + "` "
                 + "FROM `" + TBL_VOCABLE + "` "
-                + "WHERE " + KEY_TABLE + " = ? "
-                + "ORDER BY `" + KEY_VOC + "` ASC"
+                + "WHERE `" + KEY_TABLE + "` = ? "
+                + "ORDER BY `" + KEY_VOC + "` ASC "
                 + "LIMIT 1", new String[]{String.valueOf(table)})) {
             if (cursor.moveToNext()) {
-                return cursor.getInt(1);
+                return cursor.getInt(0);
             } else {
-                throw new NoSuchElementException("No vocable ID found!");
+                return MIN_ID_TRESHOLD - 1;
             }
         } catch (Exception e) {
             throw e;
@@ -267,7 +334,7 @@ public class Database {
      * Returns the highest table ID
      *
      * @param db
-     * @return highest ID
+     * @return highest ID,  <b>-1 is none if found</b>
      */
     private int getHighestTableID(final SQLiteDatabase db) throws Exception {
         if (db == null)
@@ -275,12 +342,13 @@ public class Database {
 
         try (Cursor cursor = db.rawQuery("SELECT `" + KEY_TABLE + "` "
                 + "FROM `" + TBL_TABLES + "` "
-                + "ORDER BY `" + KEY_TABLE + "` ASC"
+                + "ORDER BY `" + KEY_TABLE + "` ASC "
                 + "LIMIT 1", new String[]{})) {
             if (cursor.moveToNext()) {
-                return cursor.getInt(1);
+                Log.d(TAG, Arrays.toString(cursor.getColumnNames()));
+                return cursor.getInt(0);
             } else {
-                throw new NoSuchElementException("No table ID found!");
+                return MIN_ID_TRESHOLD-1;
             }
         } catch (Exception e) {
             throw e;
@@ -294,22 +362,23 @@ public class Database {
      * @return true on success
      */
     public boolean deleteTable(final Table tbl) {
-        try(
-                SQLiteDatabase db = openHelper.getWritableDatabase();
-        ) {
+        try {
             db.beginTransaction();
 
             String[] arg = new String[]{String.valueOf(tbl.getId())};
-            int i = db.delete(TBL_VOCABLE, KEY_TABLE + " = ?", arg);
+            int i = db.delete("`"+TBL_VOCABLE+"`", "`"+KEY_TABLE+"` = ?", arg);
 
-            db.delete(TBL_TABLES, KEY_TABLE + " = ?", arg);
-            db.delete(TBL_SESSION, KEY_TABLE + " = ?", arg);
+            db.delete("`"+TBL_TABLES+"`", "`"+KEY_TABLE + "` = ?", arg);
+            db.delete("`"+TBL_SESSION+"`", "`"+KEY_TABLE + "` = ?", arg);
             db.setTransactionSuccessful();
-            db.endTransaction();
             return true;
-        }catch (Exception e){
-            Log.e(TAG,"error: "+e.getStackTrace().toString());
+        } catch (Exception e) {
+            Log.e(TAG, "",e);
             return false;
+        } finally {
+            if(db.inTransaction()){
+                db.endTransaction();
+            }
         }
     }
 
@@ -319,22 +388,17 @@ public class Database {
      * @return
      */
     public boolean deleteSession() {
-        SQLiteDatabase db = openHelper.getWritableDatabase();
-
-        if (db == null) {
-            return false;
-        }
-
         db.beginTransaction();
         try {
             db.delete(TBL_SESSION, "1", null);
             db.delete(TBL_SESSION_META, "1", null);
             db.setTransactionSuccessful();
         } catch (Exception e) {
-            Log.e(TAG,e.getStackTrace().toString());
+            Log.e(TAG, "", e);
             return false;
         } finally {
-            db.endTransaction();
+            if (db.inTransaction())
+                db.endTransaction();
         }
         return true;
     }
@@ -346,27 +410,21 @@ public class Database {
      * @return true on success
      */
     public boolean updateTransaction(Entry entry) {
-        SQLiteDatabase db = openHelper.getWritableDatabase();
-
-        if (db == null)
-            return false;
-
-
         try (
                 SQLiteStatement updStm = db.compileStatement("INSERT OR REPLACE INTO `" + TBL_SESSION + "` ( `" + KEY_TABLE + "`,`" + KEY_VOC + "`,`" + KEY_POINTS + "` )"
                         + "(?,?,?)")
         ) {
-            updStm.bindLong(1, entry.getTable());
+            updStm.bindLong(1, entry.getTable().getId());
             updStm.bindLong(2, entry.getId());
             updStm.bindLong(3, entry.getPoints());
             if (updStm.executeInsert() > 0) { // possible problem ( insert / update..)
                 return true;
             } else {
-                Log.e(TAG,"Inserted < 1 columns!");
+                Log.e(TAG, "Inserted < 1 columns!");
                 return false;
             }
         } catch (Exception e) {
-            Log.e(TAG,e.getStackTrace().toString());
+            Log.e(TAG, "", e);
             return false;
         }
     }
@@ -379,11 +437,6 @@ public class Database {
      * @return true on success
      */
     public boolean createSession(Collection<Table> tables) {
-        SQLiteDatabase db = openHelper.getWritableDatabase();
-
-        if (db == null)
-            return false;
-
         if (deleteSession()) {
             return false;
         }
@@ -399,34 +452,31 @@ public class Database {
             db.setTransactionSuccessful();
             return true;
         } catch (Exception e) {
-            Log.e(TAG,e.getStackTrace().toString());
+            Log.e(TAG, "", e);
             return false;
         } finally {
-            db.endTransaction();
+            if (db.inTransaction())
+                db.endTransaction();
         }
     }
 
     /**
      * Set total and unfinished vocables for each table
+     *
      * @param tables
      * @param settings TrainerSettings, used for points treshold etc
      * @return true on success
      */
-    public boolean setSessionTableData(List<Table> tables, TrainerSettings settings){
-        SQLiteDatabase db = openHelper.getReadableDatabase();
-
-        if(db == null)
-            return false;
-
-        for(Table table : tables){
-            try(
-                    Cursor curLeng = db.rawQuery("SELECT COUNT(*) FROM `"+TBL_VOCABLE+"` WHERE `"+KEY_TABLE+"`  = ?",new String[]{String.valueOf(table.getId())});
-                    Cursor curUnfinished = db.rawQuery("SELECT COUNT(*) FROM `"+TBL_SESSION+"` WHERE `"+KEY_TABLE+"`  = ? AND `"+KEY_POINTS+"` < ?",new String[]{String.valueOf(table.getId()), String.valueOf(settings.timesToSolve)});
-                    ){
-                table.setTotalVocs(curLeng.getInt(1));
-                table.setUnfinishedVocs(curUnfinished.getInt(1));
-            } catch (Exception e){
-                Log.e(TAG,e.getStackTrace().toString());
+    public boolean setSessionTableData(List<Table> tables, TrainerSettings settings) {
+        for (Table table : tables) {
+            try (
+                    Cursor curLeng = db.rawQuery("SELECT COUNT(*) FROM `" + TBL_VOCABLE + "` WHERE `" + KEY_TABLE + "`  = ?", new String[]{String.valueOf(table.getId())});
+                    Cursor curUnfinished = db.rawQuery("SELECT COUNT(*) FROM `" + TBL_SESSION + "` WHERE `" + KEY_TABLE + "`  = ? AND `" + KEY_POINTS + "` < ?", new String[]{String.valueOf(table.getId()), String.valueOf(settings.timesToSolve)});
+            ) {
+                table.setTotalVocs(curLeng.getInt(0));
+                table.setUnfinishedVocs(curUnfinished.getInt(0));
+            } catch (Exception e) {
+                Log.e(TAG, "", e);
                 return false;
             }
         }
@@ -435,42 +485,37 @@ public class Database {
 
     /**
      * Returns a random entry from the specified table, which matche the trainer settings criteria<br>
-     *     The Entry is guaranteed to be not the "lastEntry" provided here
-     *     //TODO: case of last-entry-standing
+     * The Entry is guaranteed to be not the "lastEntry" provided here
+     * //TODO: case of last-entry-standing
+     *
      * @param tbl
      * @param ts
      * @return null on error
      */
-    public Entry getRandomTrainerEntry(Table tbl, Entry lastEntry, TrainerSettings ts){
-        SQLiteDatabase db = openHelper.getReadableDatabase();
-
-        if(db == null){
-            return null;
-        }
-
+    public Entry getRandomTrainerEntry(Table tbl, Entry lastEntry, TrainerSettings ts) {
         int lastID = -1;
-        if(lastEntry.getTable() == tbl.getId())
+        if (lastEntry.getTable().getId() == tbl.getId())
             lastID = lastEntry.getId();
 
-        try(
-                Cursor cursor= db.rawQuery("SELECT tbl.`"+KEY_VOC+"`, tbl.`"+KEY_TABLE+"`,`"+KEY_WORD_A+"`, `"+KEY_WORD_B+"`, `"+KEY_TIP+"`. `"+KEY_POINTS+"` "
-                        +"FROM `"+TBL_VOCABLE+"` tbl LEFT JOIN  `"+TBL_SESSION+"` ses"
-                        +" ON tbl."+KEY_VOC+" = ses."+KEY_VOC+" AND tbl."+KEY_TABLE+" = ses."+KEY_TABLE
-                        +" WHERE `"+KEY_TABLE+"` = ?"
-                        +" ORDER BY RANDOM() LIMIT 1",new String[]{String.valueOf(tbl.getId())});
-        ){
-            if(cursor.moveToNext()){
-                if (cursor.isNull(6)){
-                    return new Entry(cursor.getString(3),cursor.getString(4),cursor.getString(5),cursor.getInt(1),cursor.getInt(2), 0,cursor.getLong(7));
+        try (
+                Cursor cursor = db.rawQuery("SELECT tbl.`" + KEY_VOC + "`, tbl.`" + KEY_TABLE + "`,`" + KEY_WORD_A + "`, `" + KEY_WORD_B + "`, `" + KEY_TIP + "`. `" + KEY_POINTS + "` "
+                        + "FROM `" + TBL_VOCABLE + "` tbl LEFT JOIN  `" + TBL_SESSION + "` ses"
+                        + " ON tbl." + KEY_VOC + " = ses." + KEY_VOC + " AND tbl." + KEY_TABLE + " = ses." + KEY_TABLE
+                        + " WHERE `" + KEY_TABLE + "` = ?"
+                        + " ORDER BY RANDOM() LIMIT 1", new String[]{String.valueOf(tbl.getId())});
+        ) {
+            if (cursor.moveToNext()) {
+                if (cursor.isNull(5)) {
+                    return new Entry(cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getInt(0), new Table(cursor.getInt(2)), 0, cursor.getLong(6));
                 }
-                return new Entry(cursor.getString(3),cursor.getString(4),cursor.getString(5),cursor.getInt(1),cursor.getInt(2), cursor.getInt(6),cursor.getLong(7));
-            }else{
-                //TODO: logs
+                return new Entry(cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getInt(0), new Table(cursor.getInt(1)), cursor.getInt(5), cursor.getLong(6));
+            } else {
+                Log.d(TAG, "Not more entries found!");
                 return null;
             }
 
-        } catch (Exception e){
-            Log.e(TAG,e.getStackTrace().toString());
+        } catch (Exception e) {
+            Log.e(TAG, "", e);
             return null;
         }
     }

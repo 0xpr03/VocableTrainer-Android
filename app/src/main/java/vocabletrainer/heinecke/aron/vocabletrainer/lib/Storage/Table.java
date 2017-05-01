@@ -4,12 +4,14 @@ package vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage;
  * Created by aron on 14.04.17.
  */
 
+import java.io.Serializable;
+
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TRESHOLD;
 
 /**
  * Table entry
  */
-public class Table {
+public class Table implements Serializable {
     private String nameA;
     private String nameB;
     private String name;

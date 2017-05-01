@@ -7,7 +7,7 @@
     tools:context="com.example.aron.exampleapplication.Editor_Activity">
 
     <ListView
-        android:id="@+id/listview"
+        android:id="@+id/listviewEditor"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginBottom="8dp"
@@ -55,6 +55,44 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Discard Changes" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/undobar"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_margin="20dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:alpha="100"
+        android:background="#808080"
+        android:dividerPadding="11dp"
+        android:padding="4dp" >
+
+        <TextView
+            android:id="@+id/undobar_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Deleted"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#fff" />
+
+        <Button
+            android:id="@+id/undobar_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:background="#808080"
+            android:drawableLeft="@drawable/ic_undo_black_24dp"
+            android:text="Undo"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#fff"
+            android:clickable="false"
+            android:focusable="false"
+            />
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

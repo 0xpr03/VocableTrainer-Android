@@ -17,7 +17,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Random;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.EntryListAdapter;
+import vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib.EntryListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
@@ -25,6 +25,9 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
 
+/**
+ * List editor activity
+ */
 public class EditorActivity extends AppCompatActivity {
     public static final String PARAM_NEW_TABLE = "NEW_TABLE";
     public static final String PARAM_EDIT_TABLE = "EDIT_TABLE";
@@ -33,6 +36,9 @@ public class EditorActivity extends AppCompatActivity {
     private ArrayList<Entry> entries;
     private EntryListAdapter adapter;
     private ListView listView;
+    private View undoContainer;
+    private Entry lastDeleted;
+    private int deletedPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +46,7 @@ public class EditorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor__activity);
         Intent intent = getIntent();
+        undoContainer = findViewById(R.id.undobar);
 
         // setup listview
         initListView();
@@ -69,6 +76,31 @@ public class EditorActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
     }
 
+    @Override
+    public  void onBackPressed(){
+        AlertDialog.Builder delDiag = new AlertDialog.Builder(this);
+
+        delDiag.setTitle("Save");
+        delDiag.setMessage("Do you want to save your changes ?");
+
+        delDiag.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                Log.d(TAG, "saved");
+                saveTable();
+                EditorActivity.super.onBackPressed();
+            }
+        });
+
+        delDiag.setNegativeButton("Discard", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                Log.d(TAG, "discarded");
+                EditorActivity.super.onBackPressed();
+            }
+        });
+
+        delDiag.show();
+    }
+
     /**
      * Called upon click on save changes
      */
@@ -84,9 +116,13 @@ public class EditorActivity extends AppCompatActivity {
         Log.d(TAG,"table: "+table);
         if(db.upsertTable(table)) {
             Log.d(TAG,"table: "+table);
-            db.upsertEntries(entries);
+            if(db.upsertEntries(entries)){
+                adapter.clearDeleted();
+            }else{
+                Log.e(TAG,"unable to upsert entries! aborting");
+            }
         }else{
-            Log.w(TAG,"was unable to upsert table! aborting");
+            Log.e(TAG,"unable to upsert table! aborting");
         }
     }
 
@@ -94,7 +130,7 @@ public class EditorActivity extends AppCompatActivity {
      * Setup listview
      */
     private void initListView() {
-        listView = (ListView) findViewById(R.id.listview);
+        listView = (ListView) findViewById(R.id.listviewEditor);
 
         listView.setLongClickable(true);
 
@@ -117,7 +153,7 @@ public class EditorActivity extends AppCompatActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
                                         int pos, long id) {
-                showEntryDeleteDialog((Entry) adapter.getItem(pos));
+                showEntryDeleteDialog((Entry) adapter.getItem(pos),pos-1);
                 return true;
             }
         });
@@ -133,7 +169,7 @@ public class EditorActivity extends AppCompatActivity {
         showEntryEditDialog(entry,true);
     }
 
-    private void showEntryDeleteDialog(final Entry entry) {
+    private void showEntryDeleteDialog(final Entry entry, final int position) {
         if(entry.getId() == ID_RESERVED_SKIP)
             return;
         AlertDialog.Builder delDiag = new AlertDialog.Builder(this);
@@ -143,8 +179,11 @@ public class EditorActivity extends AppCompatActivity {
 
         delDiag.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
+                lastDeleted = entry;
+                deletedPosition = position;
                 adapter.setDeleted(entry);
                 Toast.makeText(EditorActivity.this, entry.toString() + " deleted", Toast.LENGTH_SHORT).show();
+                showUndo();
                 Log.d(TAG, "deleted");
             }
         });
@@ -164,8 +203,10 @@ public class EditorActivity extends AppCompatActivity {
      * @param deleteOnCancel True if entry should be deleted on cancel
      */
     private void showEntryEditDialog(final Entry entry,final boolean deleteOnCancel) {
-        if(entry.getId() == ID_RESERVED_SKIP)
+        if(entry.getId() == ID_RESERVED_SKIP){
+            showTableInfoDialog(false);
             return;
+        }
         AlertDialog.Builder editDiag = new AlertDialog.Builder(this);
 
         editDiag.setMessage("Edit entry");
@@ -263,4 +304,28 @@ public class EditorActivity extends AppCompatActivity {
         table.setName(name);
     }
 
+    /**
+     * Show undo view
+     */
+    private void showUndo() {
+        undoContainer.setVisibility(View.VISIBLE);
+        undoContainer.setAlpha(1);
+        undoContainer.animate().alpha(0.4f).setDuration(5000)
+                .withEndAction(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        undoContainer.setVisibility(View.GONE);
+                    }
+                });
+        undoContainer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG,"undoing");
+                lastDeleted.setDelete(false);
+                adapter.addEntryRendered(lastDeleted,deletedPosition);
+                undoContainer.setVisibility(View.GONE);
+            }
+        });
+    }
 }

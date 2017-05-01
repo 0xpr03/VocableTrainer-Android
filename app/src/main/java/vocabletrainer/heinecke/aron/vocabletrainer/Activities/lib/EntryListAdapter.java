@@ -1,4 +1,4 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.lib;
+package vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib;
 
 import android.app.Activity;
 import android.util.Log;
@@ -21,7 +21,9 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERV
  * Created by aron on 26.04.17.
  */
 
-
+/**
+ * BaseAdapter for entry list views
+ */
 public class EntryListAdapter extends BaseAdapter {
 
     List<Entry> dataItems = null;
@@ -31,29 +33,27 @@ public class EntryListAdapter extends BaseAdapter {
     TextView colB;
     TextView colTipp;
 
-    boolean setIsChanging = false;
-
     private Entry header;
-
 
     public EntryListAdapter(Activity activity, List<Entry> objects) {
         super();
         this.activity = activity;
         this.dataItems = objects;
-        header = new Entry("A","B","Tipp",ID_RESERVED_SKIP,new Table(ID_RESERVED_SKIP),-2L);
-        dataItems.add(0,header);
+        header = new Entry("A", "B", "Tipp", ID_RESERVED_SKIP, new Table(ID_RESERVED_SKIP), -2L);
+        dataItems.add(0, header);
         deleted = new ArrayList<>();
     }
 
     /**
      * Set table data (Column Names)
+     *
      * @param tbl
      */
-    public void setTableData(Table tbl){
+    public void setTableData(Table tbl) {
         header.setAWord(tbl.getNameA());
         header.setBWord(tbl.getNameB());
         this.notifyDataSetChanged();
-        Log.d("EntryListAdapter","setTableData");
+        Log.d("EntryListAdapter", "setTableData");
     }
 
 
@@ -64,7 +64,7 @@ public class EntryListAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int position) {
-        return dataItems.get(position-1);
+        return dataItems.get(position - 1);
         // -1 required as onItemClicked counts from 1 but the list starts a 0
     }
 
@@ -77,13 +77,11 @@ public class EntryListAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         //TODO: different layout for head column
         LayoutInflater inflater = activity.getLayoutInflater();
-//        if (convertView == null || setIsChanging) {
-            convertView = inflater.inflate(R.layout.table_list_view, null);
+        convertView = inflater.inflate(R.layout.table_list_view, null);
 
-            colA = (TextView) convertView.findViewById(R.id.FirstText);
-            colB = (TextView) convertView.findViewById(R.id.SecondText);
-            colTipp = (TextView) convertView.findViewById(R.id.ThirdText);
-//        }
+        colA = (TextView) convertView.findViewById(R.id.FirstText);
+        colB = (TextView) convertView.findViewById(R.id.SecondText);
+        colTipp = (TextView) convertView.findViewById(R.id.ThirdText);
         Entry item = dataItems.get(position);
 
         colA.setText(item.getAWord());
@@ -95,14 +93,16 @@ public class EntryListAdapter extends BaseAdapter {
 
     /**
      * Returns a list of deleted entries
+     *
      * @return
      */
-    public List<Entry> getDeleted(){
+    public List<Entry> getDeleted() {
         return deleted;
     }
 
     /**
      * Set entry as deleted
+     *
      * @param entry
      */
     public void setDeleted(Entry entry) {
@@ -113,11 +113,35 @@ public class EntryListAdapter extends BaseAdapter {
     }
 
     /**
+     * Clear the deleted list<br>
+     *     To be called after all changes are written to the DB
+     */
+    public void clearDeleted(){
+        this.deleted.clear();
+    }
+
+    /**
      * Add a new Entry to the view<br>
-     *     Does not update the view
+     * Does not update the view
+     *
      * @param entry
      */
-    public void addEntryUnrendered(Entry entry){
+    public void addEntryUnrendered(Entry entry) {
         dataItems.add(entry);
+    }
+
+    /**
+     * Add an Entry to the view at selected position.<br>
+     * Does update the view rendering
+     *
+     * @param entry    new Entry
+     * @param position Position at which it should be inserted
+     */
+    public void addEntryRendered(Entry entry, int position) {
+        dataItems.add(position, entry);
+        if (deleted.contains(entry)) {
+            deleted.remove(entry);
+        }
+        this.notifyDataSetChanged();
     }
 }

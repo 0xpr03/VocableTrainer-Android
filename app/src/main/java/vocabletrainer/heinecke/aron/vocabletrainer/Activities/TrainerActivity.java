@@ -5,6 +5,9 @@ import android.support.v7.app.AppCompatActivity;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 
+/**
+ * Trainer activity
+ */
 public class TrainerActivity extends AppCompatActivity {
 
     @Override

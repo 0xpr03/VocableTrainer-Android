@@ -42,6 +42,8 @@ public class Database {
     private final static String KEY_NAME_A = "name_a";
     private final static String KEY_NAME_B = "name_b";
     private final static String KEY_POINTS = "points";
+    private final static String KEY_MKEY = "key";
+    private final static String KEY_MVALUE = "value";
     public final static String DB_NAME_DEV = "test1.db";
     public final static String DB_NAME_PRODUCTION = "voc.db";
 
@@ -74,7 +76,9 @@ public class Database {
                         + "`" + KEY_VOC + "` INTEGER NOT NULL,"
                         + "`" + KEY_POINTS + "` INTEGER NOT NULL,"
                         + "PRIMARY KEY (`" + KEY_TABLE + "`,`" + KEY_VOC + "`))";
-                final String sql_d = "CREATE TABLE `" + TBL_SESSION_META + "` (`" + KEY_TABLE + "` TEXT NOT NULL)";
+                final String sql_d = "CREATE TABLE `" + TBL_SESSION_META + "` (`" + KEY_MKEY + "` TEXT NOT NULL,"
+                        + "`"+KEY_MVALUE+"` TEXT NOT NULL,"
+                        + "PRIMARY KEY (`"+KEY_MKEY+"`,`"+KEY_MVALUE+"`))";
                 Log.d(TAG, sql_a);
                 Log.d(TAG, sql_b);
                 Log.d(TAG, sql_c);
@@ -120,6 +124,19 @@ public class Database {
         this(context, false);
     }
 
+    /**
+     * Wipe all session points
+     * @return
+     */
+    public boolean wipeSessionPoints(){
+        try{
+            db.delete("`"+TBL_SESSION+"`",null,null);
+            return true;
+        } catch (Exception e){
+            Log.e(TAG,"",e);
+            return false;
+        }
+    }
 
     /**
      * Retruns a List of Entries for the specified table
@@ -137,6 +154,26 @@ public class Database {
                 lst.add(new Entry(cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getInt(3), table, cursor.getLong(5)));
             }
             return lst;
+        }
+    }
+
+
+    /**
+     * Debug function to retreive points of entry
+     * @return
+     */
+    @Deprecated
+    public int getEntryPoints(final Entry ent){
+        try (
+                Cursor cursor = db.rawQuery("SELECT `" + KEY_POINTS + "` "
+                        + "FROM `" + TBL_SESSION + "` WHERE `"+KEY_TABLE+"` = ? AND `"+KEY_VOC+"` = ?", new String[]{String.valueOf(ent.getTable().getId()), String.valueOf(ent.getId())});
+        ) {
+            if(cursor.moveToNext())
+                return cursor.getInt(0);
+            else
+                return -1;
+        } catch (Exception e) {
+            throw e;
         }
     }
 
@@ -221,7 +258,6 @@ public class Database {
                 Cursor cursor = db.rawQuery("SELECT 1 "
                         + "FROM `" + TBL_TABLES + "`"
                         + "WHERE `" + KEY_TABLE + "` = ?", new String[]{String.valueOf(tbl.getId())})) {
-            List<Entry> lst = new ArrayList<>();
             if (cursor.moveToNext()) {
                 return true;
             } else {
@@ -412,15 +448,18 @@ public class Database {
      * @param entry Entry to update
      * @return true on success
      */
-    public boolean updateTransaction(Entry entry) {
+    public boolean updateEntryProgress(Entry entry) {
         try (
                 SQLiteStatement updStm = db.compileStatement("INSERT OR REPLACE INTO `" + TBL_SESSION + "` ( `" + KEY_TABLE + "`,`" + KEY_VOC + "`,`" + KEY_POINTS + "` )"
-                        + "(?,?,?)")
+                        + "VALUES (?,?,?)")
         ) {
+            Log.d(TAG,entry.toString());
+            //TODO: update date
             updStm.bindLong(1, entry.getTable().getId());
             updStm.bindLong(2, entry.getId());
             updStm.bindLong(3, entry.getPoints());
             if (updStm.executeInsert() > 0) { // possible problem ( insert / update..)
+                Log.d(TAG,"updated voc points");
                 return true;
             } else {
                 Log.e(TAG, "Inserted < 1 columns!");
@@ -464,20 +503,36 @@ public class Database {
     }
 
     /**
-     * Set total and unfinished vocables for each table
+     * Set total and unfinished vocables for each table, generate list of finished
      *
-     * @param tables
+     * @param tables list of tables to process
+     * @param unfinishedTables List to which to unfinished tables are added onto
      * @param settings TrainerSettings, used for points treshold etc
      * @return true on success
      */
-    public boolean setSessionTableData(List<Table> tables, TrainerSettings settings) {
+    public boolean getSessionTableData(final List<Table> tables, final List<Table> unfinishedTables, TrainerSettings settings) {
+        if(tables == null || unfinishedTables == null || tables.size() == 0){
+            throw new IllegalArgumentException();
+        }
+        unfinishedTables.clear();
         for (Table table : tables) {
             try (
                     Cursor curLeng = db.rawQuery("SELECT COUNT(*) FROM `" + TBL_VOCABLE + "` WHERE `" + KEY_TABLE + "`  = ?", new String[]{String.valueOf(table.getId())});
-                    Cursor curUnfinished = db.rawQuery("SELECT COUNT(*) FROM `" + TBL_SESSION + "` WHERE `" + KEY_TABLE + "`  = ? AND `" + KEY_POINTS + "` < ?", new String[]{String.valueOf(table.getId()), String.valueOf(settings.timesToSolve)});
+                    Cursor curFinished = db.rawQuery("SELECT COUNT(*) FROM `" + TBL_SESSION + "` WHERE `" + KEY_TABLE + "`  = ? AND `" + KEY_POINTS + "` >= ?", new String[]{String.valueOf(table.getId()), String.valueOf(settings.timesToSolve)});
             ) {
+                if(!curLeng.moveToNext())
+                    return false;
                 table.setTotalVocs(curLeng.getInt(0));
-                table.setUnfinishedVocs(curUnfinished.getInt(0));
+                if(!curFinished.moveToNext())
+                    return false;
+                int unfinished = table.getTotalVocs() - curFinished.getInt(0);
+                table.setUnfinishedVocs(unfinished);
+                if(unfinished > 0){
+                    unfinishedTables.add(table);
+                }
+                Log.d(TAG,table.toString());
+                curLeng.close();
+                curFinished.close();
             } catch (Exception e) {
                 Log.e(TAG, "", e);
                 return false;
@@ -495,23 +550,32 @@ public class Database {
      * @param ts
      * @return null on error
      */
-    public Entry getRandomTrainerEntry(Table tbl, Entry lastEntry, TrainerSettings ts) {
+    public Entry getRandomTrainerEntry(final Table tbl,final Entry lastEntry,final TrainerSettings ts) {
+        Log.d(TAG,"getRandomTrainerEntry");
         int lastID = -1;
-        if (lastEntry.getTable().getId() == tbl.getId())
+        if (lastEntry != null && lastEntry.getTable().getId() == tbl.getId())
             lastID = lastEntry.getId();
 
+        String[] arg = new String[] {String.valueOf(tbl.getId()), String.valueOf(lastID),String.valueOf(ts.timesToSolve)};
+
+
         try (
-                Cursor cursor = db.rawQuery("SELECT tbl.`" + KEY_VOC + "`, tbl.`" + KEY_TABLE + "`,`" + KEY_WORD_A + "`, `" + KEY_WORD_B + "`, `" + KEY_TIP + "`. `" + KEY_POINTS + "` "
+                Cursor cursor = db.rawQuery("SELECT tbl.`" + KEY_VOC + "`, tbl.`" + KEY_TABLE + "`,`" + KEY_WORD_A + "`, `" + KEY_WORD_B + "`, `" + KEY_TIP + "`, `" + KEY_POINTS + "`, `"+KEY_LAST_USED+"` "
                         + "FROM `" + TBL_VOCABLE + "` tbl LEFT JOIN  `" + TBL_SESSION + "` ses"
-                        + " ON tbl." + KEY_VOC + " = ses." + KEY_VOC + " AND tbl." + KEY_TABLE + " = ses." + KEY_TABLE
-                        + " WHERE `" + KEY_TABLE + "` = ?"
-                        + " ORDER BY RANDOM() LIMIT 1", new String[]{String.valueOf(tbl.getId())});
+                        + " ON tbl.`" + KEY_VOC + "` = ses.`" + KEY_VOC + "` AND tbl.`" + KEY_TABLE + "` = ses.`" + KEY_TABLE+"` "
+                        + " WHERE tbl.`" + KEY_TABLE + "` = ?"
+                        + " AND tbl.`"+KEY_VOC+"` != ?"
+                        + " AND ( `"+KEY_POINTS+"` IS NULL OR `"+KEY_POINTS+"` < ? ) "
+                        + " ORDER BY RANDOM() LIMIT 1", arg);
         ) {
             if (cursor.moveToNext()) {
                 if (cursor.isNull(5)) {
-                    return new Entry(cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getInt(0), new Table(cursor.getInt(2)), 0, cursor.getLong(6));
+                    Log.d(TAG,"no points for entry");
+                    Entry newEntry = new Entry(cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getInt(0), tbl, 0, cursor.getLong(6));
+//                    Log.d(TAG,"points found: "+getEntryPoints(newEntry));
+                    return newEntry;
                 }
-                return new Entry(cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getInt(0), new Table(cursor.getInt(1)), cursor.getInt(5), cursor.getLong(6));
+                return new Entry(cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getInt(0), tbl, cursor.getInt(5), cursor.getLong(6));
             } else {
                 Log.d(TAG, "Not more entries found!");
                 return null;
@@ -520,6 +584,58 @@ public class Database {
         } catch (Exception e) {
             Log.e(TAG, "", e);
             return null;
+        }
+    }
+
+    /**
+     * Get session meta value for specified key
+     * @param key
+     * @return null if no entry is found
+     */
+    public String getSessionMetaValue(final String key) {
+        if(key == null){
+            throw new IllegalArgumentException();
+        }
+
+        try (
+                Cursor cursor = db.rawQuery("SELECT `" + KEY_MVALUE + "` FROM `" + TBL_SESSION_META+ "` WHERE `" + KEY_MKEY+ "` = ?"
+                        , new String[]{String.valueOf(key)});
+        ) {
+            if (cursor.moveToNext()) {
+                return cursor.getString(1);
+            } else {
+                Log.d(TAG, "No value for key "+key);
+                return null;
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "", e);
+            return null;
+        }
+    }
+
+    /**
+     * Set session key-value pair
+     * @param key
+     * @param value
+     * @return true on success
+     */
+    public boolean setSessionMetaValue(final String key, final String value){
+        try (
+                SQLiteStatement updStm = db.compileStatement("INSERT OR REPLACE INTO `" + TBL_SESSION_META + "` ( `" + KEY_MKEY + "`,`" + KEY_MVALUE + "` )"
+                        + "(?,?)")
+        ) {
+            updStm.bindString(1, key);
+            updStm.bindString(2, value);
+            if (updStm.executeInsert() > 0) { // possible problem ( insert / update..)
+                return true;
+            } else {
+                Log.e(TAG, "Inserted < 1 columns!");
+                return false;
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "", e);
+            return false;
         }
     }
 }

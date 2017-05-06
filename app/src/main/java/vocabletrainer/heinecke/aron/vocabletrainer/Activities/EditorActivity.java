@@ -3,6 +3,7 @@ package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -23,6 +24,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 
+import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.ListSelector.PARAM_PASSED_SELECTION;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
 
 /**
@@ -30,12 +32,12 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERV
  */
 public class EditorActivity extends AppCompatActivity {
     public static final String PARAM_NEW_TABLE = "NEW_TABLE";
-    public static final String PARAM_EDIT_TABLE = "EDIT_TABLE";
     private static final String TAG = "Editor_Acivity";
     private Table table;
     private ArrayList<Entry> entries;
     private EntryListAdapter adapter;
     private ListView listView;
+    private Database db;
     private View undoContainer;
     private Entry lastDeleted;
     private int deletedPosition;
@@ -45,6 +47,8 @@ public class EditorActivity extends AppCompatActivity {
         entries = new ArrayList<>();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor__activity);
+        db = new Database(getBaseContext());
+
         Intent intent = getIntent();
         undoContainer = findViewById(R.id.undobar);
 
@@ -59,21 +63,16 @@ public class EditorActivity extends AppCompatActivity {
             Log.d(TAG, "new table mode");
             showTableInfoDialog(true);
         } else {
-            Table tbl = intent.getParcelableExtra(PARAM_EDIT_TABLE);
+            Table tbl = (Table) intent.getSerializableExtra(PARAM_PASSED_SELECTION);
             if (tbl != null) {
                 this.table = tbl;
+                entries.addAll(db.getVocablesOfTable(table));
+                adapter.setTableData(tbl);
                 Log.d(TAG, "edit table mode");
             } else {
                 Log.e(TAG, "Edit Table Flag set without passing a table");
             }
         }
-
-        //TODO: remove after debugging
-        Random rnd = new Random();
-        for (int i = 0; i < 100; i++) {
-            entries.add(new Entry("" + rnd.nextInt(), "" + rnd.nextInt(), "" + rnd.nextInt(), table, -1L));
-        }
-        adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -112,7 +111,6 @@ public class EditorActivity extends AppCompatActivity {
      *  Save the table to disk
      */
     private void saveTable(){
-        Database db = new Database(this.getBaseContext());
         Log.d(TAG,"table: "+table);
         if(db.upsertTable(table)) {
             Log.d(TAG,"table: "+table);
@@ -169,6 +167,11 @@ public class EditorActivity extends AppCompatActivity {
         showEntryEditDialog(entry,true);
     }
 
+    /**
+     * Show entry delete dialog
+     * @param entry
+     * @param position
+     */
     private void showEntryDeleteDialog(final Entry entry, final int position) {
         if(entry.getId() == ID_RESERVED_SKIP)
             return;

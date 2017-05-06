@@ -54,7 +54,7 @@ public class Table implements Serializable {
 
     @Override
     public String toString(){
-        return getId()+" "+getName()+" "+getNameA()+" "+getNameB();
+        return getId()+" "+getName()+" "+getNameA()+" "+getNameB()+" "+getTotalVocs()+" "+getUnfinishedVocs();
     }
 
 

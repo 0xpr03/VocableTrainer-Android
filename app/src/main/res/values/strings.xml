@@ -1,4 +1,5 @@
 <resources>
-    <string name="app_name">GUI Example Application</string>
-    <string name="Trainer_hint_solution">Solution</string>
+    <string name="app_name">VocableTrainer</string>
+    <string name="Trainer_hint_solution">Answer</string>
+    <string name="title_activity_test_acivity">testAcivity</string>
 </resources>

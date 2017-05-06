@@ -26,6 +26,7 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERV
  */
 public class EntryListAdapter extends BaseAdapter {
 
+    private static final String TAG = "EntryListAdapter";
     List<Entry> dataItems = null;
     List<Entry> deleted;
     Activity activity;
@@ -77,16 +78,16 @@ public class EntryListAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         //TODO: different layout for head column
         LayoutInflater inflater = activity.getLayoutInflater();
-        convertView = inflater.inflate(R.layout.table_list_view, null);
+        convertView = inflater.inflate(R.layout.entry_list_view, null);
 
-        colA = (TextView) convertView.findViewById(R.id.FirstText);
-        colB = (TextView) convertView.findViewById(R.id.SecondText);
-        colTipp = (TextView) convertView.findViewById(R.id.ThirdText);
+        colA = (TextView) convertView.findViewById(R.id.entryFirstText);
+        colB = (TextView) convertView.findViewById(R.id.entrySecondText);
+        colTipp = (TextView) convertView.findViewById(R.id.entryThirdText);
         Entry item = dataItems.get(position);
 
         colA.setText(item.getAWord());
-        colB.setText(String.valueOf(item.getBWord()));
-        colTipp.setText(String.valueOf(item.getTip()));
+        colB.setText(item.getBWord());
+        colTipp.setText(item.getTip());
 
         return convertView;
     }

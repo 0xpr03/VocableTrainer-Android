@@ -1,6 +1,8 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib;
 
 import android.app.Activity;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,22 +30,33 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERV
 public class EntryListAdapter extends BaseAdapter {
 
     private static final String TAG = "EntryListAdapter";
-    List<Entry> dataItems = null;
-    List<Entry> deleted;
-    Activity activity;
-    TextView colA;
-    TextView colB;
-    TextView colTipp;
+    private List<Entry> dataItems = null;
+    private List<Entry> deleted;
+    private Activity activity;
+    private LayoutInflater inflater;
+
+    private class ViewHolder {
+        protected TextView colA;
+        protected TextView colB;
+        protected TextView colTipp;
+    }
 
     private Entry header;
 
-    public EntryListAdapter(Activity activity, List<Entry> objects) {
+    /**
+     * Creates a new entry list adapter
+     *
+     * @param activity
+     * @param items
+     */
+    public EntryListAdapter(Activity activity, List<Entry> items) {
         super();
         this.activity = activity;
-        this.dataItems = objects;
+        this.dataItems = items;
         header = new Entry("A", "B", "Tipp", ID_RESERVED_SKIP, new Table(ID_RESERVED_SKIP), -2L);
         dataItems.add(0, header);
         deleted = new ArrayList<>();
+        inflater = activity.getLayoutInflater();
     }
 
     /**
@@ -65,7 +79,7 @@ public class EntryListAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int position) {
-        return dataItems.get(position - 1);
+        return dataItems.get(position);
         // -1 required as onItemClicked counts from 1 but the list starts a 0
     }
 
@@ -75,19 +89,40 @@ public class EntryListAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        //TODO: different layout for head column
-        LayoutInflater inflater = activity.getLayoutInflater();
-        convertView = inflater.inflate(R.layout.entry_list_view, null);
+    public View getView(final int position,View convertView,final ViewGroup parent) {
+        final ViewHolder holder;
+        final Entry item = dataItems.get(position);
 
-        colA = (TextView) convertView.findViewById(R.id.entryFirstText);
-        colB = (TextView) convertView.findViewById(R.id.entrySecondText);
-        colTipp = (TextView) convertView.findViewById(R.id.entryThirdText);
-        Entry item = dataItems.get(position);
+        if (convertView == null) {
+            holder = new ViewHolder();
 
-        colA.setText(item.getAWord());
-        colB.setText(item.getBWord());
-        colTipp.setText(item.getTip());
+
+            convertView = inflater.inflate(R.layout.entry_list_view, null);
+
+            holder.colA = (TextView) convertView.findViewById(R.id.entryFirstText);
+            holder.colB = (TextView) convertView.findViewById(R.id.entrySecondText);
+            holder.colTipp = (TextView) convertView.findViewById(R.id.entryThirdText);
+
+            convertView.setTag(holder);
+            convertView.setTag(R.id.entryFirstText, holder.colA);
+            convertView.setTag(R.id.entrySecondText, holder.colB);
+            convertView.setTag(R.id.entryThirdText, holder.colTipp);
+
+            if(item.getId() == ID_RESERVED_SKIP){
+                holder.colA.setTypeface(null,Typeface.BOLD);
+//                holder.colA.setPaintFlags(holder.colA.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+
+                holder.colB.setTypeface(null,Typeface.BOLD);
+
+                holder.colTipp.setTypeface(null,Typeface.BOLD);
+            }
+        } else {
+            holder = (ViewHolder) convertView.getTag();
+        }
+
+        holder.colA.setText(item.getAWord());
+        holder.colB.setText(item.getBWord());
+        holder.colTipp.setText(item.getTip());
 
         return convertView;
     }
@@ -115,9 +150,9 @@ public class EntryListAdapter extends BaseAdapter {
 
     /**
      * Clear the deleted list<br>
-     *     To be called after all changes are written to the DB
+     * To be called after all changes are written to the DB
      */
-    public void clearDeleted(){
+    public void clearDeleted() {
         this.deleted.clear();
     }
 
@@ -144,5 +179,16 @@ public class EntryListAdapter extends BaseAdapter {
             deleted.remove(entry);
         }
         this.notifyDataSetChanged();
+    }
+
+    /**
+     * Returns all entries, existing and deleted
+     *
+     * @return
+     */
+    public List<Entry> getAllEntries() {
+        ArrayList<Entry> entries = new ArrayList<>(this.dataItems);
+        entries.addAll(deleted);
+        return entries;
     }
 }

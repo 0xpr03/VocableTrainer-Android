@@ -32,7 +32,7 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERV
  */
 public class EditorActivity extends AppCompatActivity {
     public static final String PARAM_NEW_TABLE = "NEW_TABLE";
-    private static final String TAG = "Editor_Acivity";
+    private static final String TAG = "EditorActivity";
     private Table table;
     private ArrayList<Entry> entries;
     private EntryListAdapter adapter;
@@ -41,6 +41,7 @@ public class EditorActivity extends AppCompatActivity {
     private View undoContainer;
     private Entry lastDeleted;
     private int deletedPosition;
+    private boolean edited;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +56,7 @@ public class EditorActivity extends AppCompatActivity {
         // setup listview
         initListView();
 
+        edited = false;
 
         // handle passed params
         boolean newTable = intent.getBooleanExtra(PARAM_NEW_TABLE, false);
@@ -77,27 +79,31 @@ public class EditorActivity extends AppCompatActivity {
 
     @Override
     public  void onBackPressed(){
-        AlertDialog.Builder delDiag = new AlertDialog.Builder(this);
+        if(edited) {
+            AlertDialog.Builder delDiag = new AlertDialog.Builder(this);
 
-        delDiag.setTitle("Save");
-        delDiag.setMessage("Do you want to save your changes ?");
+            delDiag.setTitle("Save");
+            delDiag.setMessage("Do you want to save your changes ?");
 
-        delDiag.setPositiveButton("Save", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                Log.d(TAG, "saved");
-                saveTable();
-                EditorActivity.super.onBackPressed();
-            }
-        });
+            delDiag.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    Log.d(TAG, "saved");
+                    saveTable();
+                    EditorActivity.super.onBackPressed();
+                }
+            });
 
-        delDiag.setNegativeButton("Discard", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                Log.d(TAG, "discarded");
-                EditorActivity.super.onBackPressed();
-            }
-        });
+            delDiag.setNegativeButton("Discard", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    Log.d(TAG, "discarded");
+                    EditorActivity.super.onBackPressed();
+                }
+            });
 
-        delDiag.show();
+            delDiag.show();
+        }else{
+            super.onBackPressed();
+        }
     }
 
     /**
@@ -114,8 +120,9 @@ public class EditorActivity extends AppCompatActivity {
         Log.d(TAG,"table: "+table);
         if(db.upsertTable(table)) {
             Log.d(TAG,"table: "+table);
-            if(db.upsertEntries(entries)){
+            if(db.upsertEntries(adapter.getAllEntries())){
                 adapter.clearDeleted();
+                edited = false;
             }else{
                 Log.e(TAG,"unable to upsert entries! aborting");
             }
@@ -139,8 +146,7 @@ public class EditorActivity extends AppCompatActivity {
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-                int pos = position + 1;
+            public void onItemClick(AdapterView<?> parent, final View view, int pos, long id) {
                 Toast.makeText(EditorActivity.this, Integer.toString(pos) + " Clicked", Toast.LENGTH_SHORT).show();
                 showEntryEditDialog((Entry) adapter.getItem(pos),false);
             }
@@ -151,7 +157,7 @@ public class EditorActivity extends AppCompatActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
                                         int pos, long id) {
-                showEntryDeleteDialog((Entry) adapter.getItem(pos),pos-1);
+                showEntryDeleteDialog((Entry) adapter.getItem(pos),pos);
                 return true;
             }
         });
@@ -161,7 +167,6 @@ public class EditorActivity extends AppCompatActivity {
      * Add an entry
      */
     public void addEntry(View view) {
-
         Entry entry = new Entry("A", "B", "Tip", table, -1);
         adapter.addEntryUnrendered(entry);
         showEntryEditDialog(entry,true);
@@ -186,6 +191,7 @@ public class EditorActivity extends AppCompatActivity {
                 deletedPosition = position;
                 adapter.setDeleted(entry);
                 Toast.makeText(EditorActivity.this, entry.toString() + " deleted", Toast.LENGTH_SHORT).show();
+                edited = true;
                 showUndo();
                 Log.d(TAG, "deleted");
             }
@@ -234,6 +240,7 @@ public class EditorActivity extends AppCompatActivity {
                 entry.setBWord(editB.getText().toString());
                 entry.setTip(editTipp.getText().toString());
                 adapter.notifyDataSetChanged();
+                edited = true;
                 Log.d(TAG, "edited");
             }
         });
@@ -289,6 +296,7 @@ public class EditorActivity extends AppCompatActivity {
                 table.setNameA(iColA.getText().toString());
                 table.setNameB(iColB.getText().toString());
                 adapter.setTableData(table);
+                edited = true;
                 Log.d(TAG, "set table info");
             }
         });

@@ -49,7 +49,6 @@ public class TrainerActivity extends AppCompatActivity {
         bHint = (Button) findViewById(R.id.bTrainerHint);
         bSolve = (Button) findViewById(R.id.bTrainerSolve);
 
-
         initTrainer();
     }
 

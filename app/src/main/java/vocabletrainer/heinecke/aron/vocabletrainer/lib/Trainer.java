@@ -21,7 +21,19 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
 public class Trainer {
     private final static String TAG = "Trainer";
 
-    public enum TEST_MODE {A, B, RANDOM}
+    public enum TEST_MODE {A(0), B(1), RANDOM(2);
+        private final int id;
+        TEST_MODE(int id) { this.id = id; }
+        public int getValue() { return id; }
+        public static TEST_MODE fromInt(int code) {
+            for (TEST_MODE typе : TEST_MODE.values()) {
+                if (typе.getValue() == code) {
+                    return typе;
+                }
+            }
+            return null;
+        }
+    }
 
     ;
     private Random rng;
@@ -148,6 +160,7 @@ public class Trainer {
                     unsolvedTables.remove(tbl);
 
                     if (unsolvedTables.size() == 0) {
+                        db.deleteSession();
                         Log.d(TAG, "finished");
                     }
                 }

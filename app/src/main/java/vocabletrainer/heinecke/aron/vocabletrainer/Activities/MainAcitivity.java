@@ -7,8 +7,11 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.ListSelector.PARAM_NEW_ACTIVITY;
 
@@ -17,6 +20,7 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.ListSelecto
  */
 public class MainAcitivity extends AppCompatActivity {
     private static boolean showedDialog = false;
+    Button btnConitnue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,7 +33,7 @@ public class MainAcitivity extends AppCompatActivity {
             finishedDiag.setTitle("Warning");
             finishedDiag.setMessage("This software is an alpha state. This includes, but not limited to, data loss, destroying your phone, eating your children and burning your dog! You have been warned.");
 
-            finishedDiag.setPositiveButton("Show me", new DialogInterface.OnClickListener() {
+            finishedDiag.setPositiveButton("TLDR", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
                     showedDialog = true;
                 }
@@ -43,6 +47,23 @@ public class MainAcitivity extends AppCompatActivity {
 
             finishedDiag.show();
         }
+        btnConitnue = (Button) findViewById(R.id.buttonLastSession);
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        btnConitnue.setEnabled(new Database(getBaseContext()).isSessionStored());
+    }
+
+    /**
+     * Open trainer to continue the last session
+     * @param view
+     */
+    public void continueSession(View view){
+        Intent myIntent = new Intent(this, TrainerActivity.class);
+        myIntent.putExtra(TrainerActivity.PARAM_RESUME_SESSION_FLAG, true);
+        this.startActivity(myIntent);
     }
 
     /**

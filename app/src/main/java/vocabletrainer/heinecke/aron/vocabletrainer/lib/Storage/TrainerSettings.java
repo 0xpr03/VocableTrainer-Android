@@ -6,22 +6,16 @@ package vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage;
 
 import java.io.Serializable;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer;
 
 /**
  * Trainer settings obj
  */
 public class TrainerSettings implements Serializable {
-    private final static String KEY_SOLVE_TIMES = "t_solve";
-    private final static String KEY_MODE = "mode";
-    private final static String KEY_TIPS = "tips";
-    private final static String KEY_GIVEN_TIPS = "t_tips_given";
-    private final static String KEY_FAILED = "t_failed";
 
     public final int timesToSolve;
     public final Trainer.TEST_MODE mode;
-    public final boolean allowTps;
+    public final boolean allowTips;
     public final int tipsGiven;
     public final int timesFailed;
 
@@ -45,12 +39,9 @@ public class TrainerSettings implements Serializable {
     public TrainerSettings(int timesToSolve, Trainer.TEST_MODE mode, boolean allowTips, int tipsGiven, int failedTimes) {
         this.timesToSolve = timesToSolve;
         this.mode = mode;
-        this.allowTps = allowTips;
+        this.allowTips = allowTips;
         this.tipsGiven = tipsGiven;
         this.timesFailed = failedTimes;
     }
 
-    public static boolean saveTrainerSettings(TrainerSettings settings, Database db){
-        return false;
-    }
 }

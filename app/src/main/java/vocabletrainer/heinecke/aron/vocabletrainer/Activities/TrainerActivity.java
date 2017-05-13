@@ -11,15 +11,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.SessionStorageManager;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer;
-
-import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.ListSelector.PARAM_NEW_ACTIVITY;
 
 /**
  * Trainer activity
@@ -48,7 +47,6 @@ public class TrainerActivity extends AppCompatActivity {
         tInput = (EditText) findViewById(R.id.tTrainerInput);
         bHint = (Button) findViewById(R.id.bTrainerHint);
         bSolve = (Button) findViewById(R.id.bTrainerSolve);
-
         initTrainer();
     }
 
@@ -56,20 +54,35 @@ public class TrainerActivity extends AppCompatActivity {
      * Initialize trainer
      */
     private void initTrainer() {
+        final Database db = new Database(getBaseContext());
+        SessionStorageManager ssm = new SessionStorageManager(db);
         Intent intent = getIntent();
         boolean resume = intent.getBooleanExtra(PARAM_RESUME_SESSION_FLAG, false);
         ArrayList<Table> tables;
         if (resume) {
-            //TODO: load recent session
-            tables = null;
+            Log.d(TAG,"resuming");
+            settings = ssm.loadSession();
+            tables = ssm.loadSessionTbls();
         } else {
+            Log.d(TAG,"not resuming");
             tables = (ArrayList<Table>) intent.getSerializableExtra(PARAM_TABLES);
             if (tables == null) {
-                Log.e(TAG, "Flag for tables passed but no tables received!");
+                Log.wtf(TAG, "Flag for tables passed but no tables received!");
             } else {
                 settings = (TrainerSettings) intent.getSerializableExtra(PARAM_TRAINER_SETTINGS);
                 if(settings == null){
-                    Log.e(TAG,"No trainer settings passed!");
+                    Log.wtf(TAG,"No trainer settings passed!");
+                }else{
+                    Log.d(TAG,"saving new session..");
+                    if (!db.deleteSession()){
+                        Log.wtf(TAG,"unable to delete past session");
+                    } else if(!ssm.saveSession(settings)){
+                        Log.wtf(TAG,"unable to save session meta");
+                    } else if(!ssm.saveSessionTbls(tables)){
+                        Log.wtf(TAG,"unable to save session tables");
+                    } else{
+                        Log.d(TAG,"saved session");
+                    }
                 }
 
             }
@@ -87,7 +100,7 @@ public class TrainerActivity extends AppCompatActivity {
         tInput.setText("");
         tInput.requestFocus();
         bSolve.setEnabled(true);
-        bHint.setEnabled(settings.allowTps);
+        bHint.setEnabled(settings.allowTips);
 
         if(trainer.isFinished()){
             AlertDialog.Builder finishedDiag = new AlertDialog.Builder(this);
@@ -132,7 +145,7 @@ public class TrainerActivity extends AppCompatActivity {
      * Action on hint request
      */
     public void showHint(View view){
-        if(settings.allowTps){
+        if(settings.allowTips){
             tHint.setText(trainer.getTip());
         }
     }

@@ -14,6 +14,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
@@ -32,6 +33,7 @@ public class Database {
     private final static String TBL_TABLES = "voc_tables";
     private final static String TBL_SESSION = "session";
     private final static String TBL_SESSION_META = "session_meta";
+    private final static String TBL_SESSION_TABLES = "session_tables";
     private final static String KEY_VOC = "voc";
     private final static String KEY_WORD_A = "word_a";
     private final static String KEY_WORD_B = "word_b";
@@ -77,16 +79,19 @@ public class Database {
                         + "`" + KEY_POINTS + "` INTEGER NOT NULL,"
                         + "PRIMARY KEY (`" + KEY_TABLE + "`,`" + KEY_VOC + "`))";
                 final String sql_d = "CREATE TABLE `" + TBL_SESSION_META + "` (`" + KEY_MKEY + "` TEXT NOT NULL,"
-                        + "`"+KEY_MVALUE+"` TEXT NOT NULL,"
-                        + "PRIMARY KEY (`"+KEY_MKEY+"`,`"+KEY_MVALUE+"`))";
+                        + "`" + KEY_MVALUE + "` TEXT NOT NULL,"
+                        + "PRIMARY KEY (`" + KEY_MKEY + "`,`" + KEY_MVALUE + "`))";
+                final String sql_e = "CREATE TABLE `" + TBL_SESSION_TABLES + "` (`" + KEY_TABLE + "` INTEGER PRIMARY KEY)";
                 Log.d(TAG, sql_a);
                 Log.d(TAG, sql_b);
                 Log.d(TAG, sql_c);
                 Log.d(TAG, sql_d);
+                Log.d(TAG, sql_e);
                 db.execSQL(sql_a);
                 db.execSQL(sql_b);
                 db.execSQL(sql_c);
                 db.execSQL(sql_d);
+                db.execSQL(sql_e);
             } catch (Exception e) {
                 Log.e(TAG, "", e);
                 throw e;
@@ -126,14 +131,15 @@ public class Database {
 
     /**
      * Wipe all session points
+     *
      * @return
      */
-    public boolean wipeSessionPoints(){
-        try{
-            db.delete("`"+TBL_SESSION+"`",null,null);
+    public boolean wipeSessionPoints() {
+        try {
+            db.delete("`" + TBL_SESSION + "`", null, null);
             return true;
-        } catch (Exception e){
-            Log.e(TAG,"",e);
+        } catch (Exception e) {
+            Log.e(TAG, "", e);
             return false;
         }
     }
@@ -160,15 +166,16 @@ public class Database {
 
     /**
      * Debug function to retreive points of entry
+     *
      * @return
      */
     @Deprecated
-    public int getEntryPoints(final Entry ent){
+    public int getEntryPoints(final Entry ent) {
         try (
                 Cursor cursor = db.rawQuery("SELECT `" + KEY_POINTS + "` "
-                        + "FROM `" + TBL_SESSION + "` WHERE `"+KEY_TABLE+"` = ? AND `"+KEY_VOC+"` = ?", new String[]{String.valueOf(ent.getTable().getId()), String.valueOf(ent.getId())});
+                        + "FROM `" + TBL_SESSION + "` WHERE `" + KEY_TABLE + "` = ? AND `" + KEY_VOC + "` = ?", new String[]{String.valueOf(ent.getTable().getId()), String.valueOf(ent.getId())});
         ) {
-            if(cursor.moveToNext())
+            if (cursor.moveToNext())
                 return cursor.getInt(0);
             else
                 return -1;
@@ -292,8 +299,8 @@ public class Database {
             int lastID = -1;
 
             for (Entry entry : lst) {
-                Log.d(TAG, "processing " + entry +" of "+entry.getTable());
-                if(entry.getId() == ID_RESERVED_SKIP) // skip spacer
+                Log.d(TAG, "processing " + entry + " of " + entry.getTable());
+                if (entry.getId() == ID_RESERVED_SKIP) // skip spacer
                     continue;
                 if (entry.getId() >= MIN_ID_TRESHOLD) {
                     if (entry.isDelete()) {
@@ -387,7 +394,7 @@ public class Database {
                 Log.d(TAG, Arrays.toString(cursor.getColumnNames()));
                 return cursor.getInt(0);
             } else {
-                return MIN_ID_TRESHOLD-1;
+                return MIN_ID_TRESHOLD - 1;
             }
         } catch (Exception e) {
             throw e;
@@ -405,17 +412,18 @@ public class Database {
             db.beginTransaction();
 
             String[] arg = new String[]{String.valueOf(tbl.getId())};
-            int i = db.delete("`"+TBL_VOCABLE+"`", "`"+KEY_TABLE+"` = ?", arg);
+            int i = db.delete("`" + TBL_VOCABLE + "`", "`" + KEY_TABLE + "` = ?", arg);
 
-            db.delete("`"+TBL_TABLES+"`", "`"+KEY_TABLE + "` = ?", arg);
-            db.delete("`"+TBL_SESSION+"`", "`"+KEY_TABLE + "` = ?", arg);
+            db.delete("`" + TBL_TABLES + "`", "`" + KEY_TABLE + "` = ?", arg);
+            db.delete("`" + TBL_SESSION + "`", "`" + KEY_TABLE + "` = ?", arg);
+            db.delete("`" + TBL_SESSION_TABLES + "`", "`" + KEY_TABLE + "` = ?", arg);
             db.setTransactionSuccessful();
             return true;
         } catch (Exception e) {
-            Log.e(TAG, "",e);
+            Log.e(TAG, "", e);
             return false;
         } finally {
-            if(db.inTransaction()){
+            if (db.inTransaction()) {
                 db.endTransaction();
             }
         }
@@ -427,10 +435,12 @@ public class Database {
      * @return
      */
     public boolean deleteSession() {
+        Log.d(TAG,"entry deleteSession");
         db.beginTransaction();
         try {
             db.delete(TBL_SESSION, "1", null);
             db.delete(TBL_SESSION_META, "1", null);
+            db.delete(TBL_SESSION_TABLES, "1", null);
             db.setTransactionSuccessful();
         } catch (Exception e) {
             Log.e(TAG, "", e);
@@ -439,6 +449,7 @@ public class Database {
             if (db.inTransaction())
                 db.endTransaction();
         }
+        Log.d(TAG,"exit deleteSession");
         return true;
     }
 
@@ -453,13 +464,13 @@ public class Database {
                 SQLiteStatement updStm = db.compileStatement("INSERT OR REPLACE INTO `" + TBL_SESSION + "` ( `" + KEY_TABLE + "`,`" + KEY_VOC + "`,`" + KEY_POINTS + "` )"
                         + "VALUES (?,?,?)")
         ) {
-            Log.d(TAG,entry.toString());
+            Log.d(TAG, entry.toString());
             //TODO: update date
             updStm.bindLong(1, entry.getTable().getId());
             updStm.bindLong(2, entry.getId());
             updStm.bindLong(3, entry.getPoints());
             if (updStm.executeInsert() > 0) { // possible problem ( insert / update..)
-                Log.d(TAG,"updated voc points");
+                Log.d(TAG, "updated voc points");
                 return true;
             } else {
                 Log.e(TAG, "Inserted < 1 columns!");
@@ -479,22 +490,24 @@ public class Database {
      * @return true on success
      */
     public boolean createSession(Collection<Table> tables) {
-        if (deleteSession()) {
-            return false;
-        }
+        Log.d(TAG,"entry createSession");
 
         db.beginTransaction();
 
-        try (SQLiteStatement insStm = db.compileStatement("INSERT INTO `" + TBL_SESSION_META + "`(`" + KEY_TABLE + "`) (?)")) {
+        try (SQLiteStatement insStm = db.compileStatement("INSERT INTO `" + TBL_SESSION_TABLES + "` (`" + KEY_TABLE + "`) VALUES (?)")) {
             //TODO: update last_used
             for (Table tbl : tables) {
                 insStm.clearBindings();
                 insStm.bindLong(1, tbl.getId());
+                if(insStm.executeInsert() < 0){
+                    Log.wtf(TAG,"no new table inserted");
+                }
             }
             db.setTransactionSuccessful();
+            Log.d(TAG,"exit createSession");
             return true;
         } catch (Exception e) {
-            Log.e(TAG, "", e);
+            Log.wtf(TAG, "", e);
             return false;
         } finally {
             if (db.inTransaction())
@@ -503,15 +516,46 @@ public class Database {
     }
 
     /**
+     * Returns the table selection from the stored session
+     *
+     * @return never null
+     */
+    public ArrayList<Table> getSessionTables() {
+        ArrayList<Table> lst = new ArrayList<>(10);
+        try (Cursor cursor = db.rawQuery("SELECT `" + KEY_TABLE + "` FROM `" + TBL_SESSION_TABLES + "`",null)) {
+            while (cursor.moveToNext()) {
+                lst.add(new Table(cursor.getInt(0)));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "", e);
+        }
+        return lst;
+    }
+
+    public boolean isSessionStored(){
+        Log.d(TAG,"entry isSessionStored");
+        try(Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM `"+TBL_SESSION_TABLES+"` WHERE 1",null) ){
+            cursor.moveToNext();
+            if(cursor.getInt(0) > 0){
+                Log.d(TAG,"found session");
+                return true;
+            }
+        } catch (Exception e){
+            Log.wtf(TAG,"unable to get session tables row count",e);
+        }
+        return false;
+    }
+
+    /**
      * Set total and unfinished vocables for each table, generate list of finished
      *
-     * @param tables list of tables to process
+     * @param tables           list of tables to process
      * @param unfinishedTables List to which to unfinished tables are added onto
-     * @param settings TrainerSettings, used for points treshold etc
+     * @param settings         TrainerSettings, used for points treshold etc
      * @return true on success
      */
     public boolean getSessionTableData(final List<Table> tables, final List<Table> unfinishedTables, TrainerSettings settings) {
-        if(tables == null || unfinishedTables == null || tables.size() == 0){
+        if (tables == null || unfinishedTables == null || tables.size() == 0) {
             throw new IllegalArgumentException();
         }
         unfinishedTables.clear();
@@ -520,17 +564,17 @@ public class Database {
                     Cursor curLeng = db.rawQuery("SELECT COUNT(*) FROM `" + TBL_VOCABLE + "` WHERE `" + KEY_TABLE + "`  = ?", new String[]{String.valueOf(table.getId())});
                     Cursor curFinished = db.rawQuery("SELECT COUNT(*) FROM `" + TBL_SESSION + "` WHERE `" + KEY_TABLE + "`  = ? AND `" + KEY_POINTS + "` >= ?", new String[]{String.valueOf(table.getId()), String.valueOf(settings.timesToSolve)});
             ) {
-                if(!curLeng.moveToNext())
+                if (!curLeng.moveToNext())
                     return false;
                 table.setTotalVocs(curLeng.getInt(0));
-                if(!curFinished.moveToNext())
+                if (!curFinished.moveToNext())
                     return false;
                 int unfinished = table.getTotalVocs() - curFinished.getInt(0);
                 table.setUnfinishedVocs(unfinished);
-                if(unfinished > 0){
+                if (unfinished > 0) {
                     unfinishedTables.add(table);
                 }
-                Log.d(TAG,table.toString());
+                Log.d(TAG, table.toString());
                 curLeng.close();
                 curFinished.close();
             } catch (Exception e) {
@@ -550,27 +594,27 @@ public class Database {
      * @param ts
      * @return null on error
      */
-    public Entry getRandomTrainerEntry(final Table tbl,final Entry lastEntry,final TrainerSettings ts) {
-        Log.d(TAG,"getRandomTrainerEntry");
+    public Entry getRandomTrainerEntry(final Table tbl, final Entry lastEntry, final TrainerSettings ts) {
+        Log.d(TAG, "getRandomTrainerEntry");
         int lastID = -1;
         if (lastEntry != null && lastEntry.getTable().getId() == tbl.getId())
             lastID = lastEntry.getId();
 
-        String[] arg = new String[] {String.valueOf(tbl.getId()), String.valueOf(lastID),String.valueOf(ts.timesToSolve)};
+        String[] arg = new String[]{String.valueOf(tbl.getId()), String.valueOf(lastID), String.valueOf(ts.timesToSolve)};
 
 
         try (
-                Cursor cursor = db.rawQuery("SELECT tbl.`" + KEY_VOC + "`, tbl.`" + KEY_TABLE + "`,`" + KEY_WORD_A + "`, `" + KEY_WORD_B + "`, `" + KEY_TIP + "`, `" + KEY_POINTS + "`, `"+KEY_LAST_USED+"` "
+                Cursor cursor = db.rawQuery("SELECT tbl.`" + KEY_VOC + "`, tbl.`" + KEY_TABLE + "`,`" + KEY_WORD_A + "`, `" + KEY_WORD_B + "`, `" + KEY_TIP + "`, `" + KEY_POINTS + "`, `" + KEY_LAST_USED + "` "
                         + "FROM `" + TBL_VOCABLE + "` tbl LEFT JOIN  `" + TBL_SESSION + "` ses"
-                        + " ON tbl.`" + KEY_VOC + "` = ses.`" + KEY_VOC + "` AND tbl.`" + KEY_TABLE + "` = ses.`" + KEY_TABLE+"` "
+                        + " ON tbl.`" + KEY_VOC + "` = ses.`" + KEY_VOC + "` AND tbl.`" + KEY_TABLE + "` = ses.`" + KEY_TABLE + "` "
                         + " WHERE tbl.`" + KEY_TABLE + "` = ?"
-                        + " AND tbl.`"+KEY_VOC+"` != ?"
-                        + " AND ( `"+KEY_POINTS+"` IS NULL OR `"+KEY_POINTS+"` < ? ) "
+                        + " AND tbl.`" + KEY_VOC + "` != ?"
+                        + " AND ( `" + KEY_POINTS + "` IS NULL OR `" + KEY_POINTS + "` < ? ) "
                         + " ORDER BY RANDOM() LIMIT 1", arg);
         ) {
             if (cursor.moveToNext()) {
                 if (cursor.isNull(5)) {
-                    Log.d(TAG,"no points for entry");
+                    Log.d(TAG, "no points for entry");
                     Entry newEntry = new Entry(cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getInt(0), tbl, 0, cursor.getLong(6));
 //                    Log.d(TAG,"points found: "+getEntryPoints(newEntry));
                     return newEntry;
@@ -589,22 +633,23 @@ public class Database {
 
     /**
      * Get session meta value for specified key
+     *
      * @param key
      * @return null if no entry is found
      */
     public String getSessionMetaValue(final String key) {
-        if(key == null){
+        if (key == null) {
             throw new IllegalArgumentException();
         }
 
         try (
-                Cursor cursor = db.rawQuery("SELECT `" + KEY_MVALUE + "` FROM `" + TBL_SESSION_META+ "` WHERE `" + KEY_MKEY+ "` = ?"
+                Cursor cursor = db.rawQuery("SELECT `" + KEY_MVALUE + "` FROM `" + TBL_SESSION_META + "` WHERE `" + KEY_MKEY + "` = ?"
                         , new String[]{String.valueOf(key)});
         ) {
             if (cursor.moveToNext()) {
                 return cursor.getString(1);
             } else {
-                Log.d(TAG, "No value for key "+key);
+                Log.d(TAG, "No value for key " + key);
                 return null;
             }
 
@@ -616,11 +661,12 @@ public class Database {
 
     /**
      * Set session key-value pair
+     *
      * @param key
      * @param value
      * @return true on success
      */
-    public boolean setSessionMetaValue(final String key, final String value){
+    public boolean setSessionMetaValue(final String key, final String value) {
         try (
                 SQLiteStatement updStm = db.compileStatement("INSERT OR REPLACE INTO `" + TBL_SESSION_META + "` ( `" + KEY_MKEY + "`,`" + KEY_MVALUE + "` )"
                         + "(?,?)")
@@ -637,5 +683,50 @@ public class Database {
             Log.e(TAG, "", e);
             return false;
         }
+    }
+
+
+    /**
+     * Returns a statement to insert / replace session meta storage values
+     *
+     * @return
+     */
+    public SQLiteStatement getSessionInsertStm() {
+        db.beginTransaction();
+        return db.compileStatement("INSERT OR REPLACE INTO " + TBL_SESSION_META + " (`" + KEY_MKEY + "`,`" + KEY_MVALUE + "`) VALUES (?,?)");
+    }
+
+    /**
+     * Ends a transaction created by the getSessionInsert Statement
+     */
+    public void endSessionTransaction(boolean success) {
+        if (!db.inTransaction()) {
+            throw new IllegalStateException("No transaction ongoing!");
+        }
+        Log.d(TAG,"transaction success: "+success);
+        if (success)
+            db.setTransactionSuccessful();
+        db.endTransaction();
+    }
+
+    /**
+     * Returns a cursor on the session data
+     *
+     * @return map of all key-value pairs or <b>null</b> on errors
+     */
+    public HashMap<String, String> getSessionData() {
+        Log.d(TAG,"entry getSessionData");
+        HashMap<String, String> map = new HashMap<>(10);
+        try (Cursor cursor = db.rawQuery("SELECT `" + KEY_MKEY + "`, `" + KEY_MVALUE + "` FROM `" + TBL_SESSION_META + "` WHERE 1", null)) {
+            while (cursor.moveToNext()) {
+                Log.d(TAG,cursor.getString(0)+":"+cursor.getString(1));
+                map.put(cursor.getString(0), cursor.getString(1));
+            }
+            return map;
+        } catch (Exception e) {
+            Log.wtf(TAG, "", e);
+            return null;
+        }
+
     }
 }

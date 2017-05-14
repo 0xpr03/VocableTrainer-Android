@@ -5,13 +5,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.ListSelector.PARAM_NEW_ACTIVITY;
 
@@ -20,7 +18,7 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.ListSelecto
  */
 public class MainAcitivity extends AppCompatActivity {
     private static boolean showedDialog = false;
-    Button btnConitnue;
+    Button btnContinue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,13 +45,13 @@ public class MainAcitivity extends AppCompatActivity {
 
             finishedDiag.show();
         }
-        btnConitnue = (Button) findViewById(R.id.buttonLastSession);
+        btnContinue = (Button) findViewById(R.id.buttonLastSession);
     }
 
     @Override
     protected void onResume(){
         super.onResume();
-        btnConitnue.setEnabled(new Database(getBaseContext()).isSessionStored());
+        btnContinue.setEnabled(new Database(getBaseContext()).isSessionStored());
     }
 
     /**
@@ -97,6 +95,16 @@ public class MainAcitivity extends AppCompatActivity {
         Intent myIntent = new Intent(this, ListSelector.class);
         myIntent.putExtra(PARAM_NEW_ACTIVITY,TrainerSettingsActivity.class);
         myIntent.putExtra(ListSelector.PARAM_MULTI_SELECT, true);
+        this.startActivity(myIntent);
+    }
+
+    /**
+     * Open list delete
+     * @param view
+     */
+    public void showDeleteTable(View view){
+        Intent myIntent = new Intent(this, ListSelector.class);
+        myIntent.putExtra(ListSelector.PARAM_DELETE_FLAG, true);
         this.startActivity(myIntent);
     }
 

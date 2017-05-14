@@ -5,6 +5,7 @@ package vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib;
  */
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +20,8 @@ import java.util.List;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 
+import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
+
 /**
  * ArrayAdapter for table listviews
  */
@@ -30,11 +33,15 @@ public class TableListAdapter extends ArrayAdapter<Table> {
     TextView colName;
     TextView colA;
     TextView colB;
+    Table header;
+
     private final boolean displayCheckbox;
 
     public TableListAdapter(Context context, int textViewResourceId, ArrayList<Table> table, final boolean displayCheckbox) {
         super(context, textViewResourceId, table);
         this.dataItem = table;
+        header = new Table(ID_RESERVED_SKIP,"Column A", "Column B", "Name");
+        dataItem.add(0,header);
         resLayout = textViewResourceId;
         this.context = context;
         this.displayCheckbox = displayCheckbox;
@@ -60,10 +67,21 @@ public class TableListAdapter extends ArrayAdapter<Table> {
         colName = (TextView) convertView.findViewById(R.id.tableFirstText);
         colA = (TextView) convertView.findViewById(R.id.tableSecondText);
         colB = (TextView) convertView.findViewById(R.id.tableThirdText);
-        if(!displayCheckbox)
+
+        if(!displayCheckbox) {
             ((CheckBox) convertView.findViewById(R.id.tblCheckBox)).setVisibility(View.GONE);
+        }
+
 
         Table item = dataItem.get(position);
+        if(item.getId() == ID_RESERVED_SKIP){
+            if(displayCheckbox)
+                ((CheckBox) convertView.findViewById(R.id.tblCheckBox)).setVisibility(View.INVISIBLE);
+
+            colName.setTypeface(null, Typeface.BOLD);
+            colA.setTypeface(null,Typeface.BOLD);
+            colB.setTypeface(null,Typeface.BOLD);
+        }
 
         Log.d("TableListAdapter","setting text: "+item.getName()+" on "+colName.toString());
         colName.setText(item.getName());

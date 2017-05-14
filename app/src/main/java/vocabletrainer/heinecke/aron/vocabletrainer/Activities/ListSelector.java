@@ -1,6 +1,8 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,6 +20,8 @@ import vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib.TableListAdapt
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
+
+import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
 
 /**
  * List selector activity
@@ -44,20 +48,31 @@ public class ListSelector extends AppCompatActivity {
      */
     public static final String PARAM_PASSED_SELECTION = "selected";
 
+    /**
+     * Pass this flag as true to call this as an deletion activity
+     */
+    public static final String PARAM_DELETE_FLAG = "delete";
+
     private Class nextActivity;
     private boolean multiselect;
     private ListView listView;
     private TableListAdapter adapter;
+    private boolean delete;
+    Database db;
+    List<Table> tables;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        db = new Database(this.getBaseContext());
         setContentView(R.layout.activity_list_selector);
         Intent intent = getIntent();
         setTitle("List selector");
         // handle passed params
         multiselect = intent.getBooleanExtra(PARAM_MULTI_SELECT, false);
         nextActivity = (Class) intent.getSerializableExtra(PARAM_NEW_ACTIVITY);
+        delete = intent.getBooleanExtra(PARAM_DELETE_FLAG, false);
 
         // setup listview
         initListView();
@@ -69,8 +84,7 @@ public class ListSelector extends AppCompatActivity {
      * Load tables from db
      */
     private void loadTables() {
-        Database db = new Database(this.getBaseContext());
-        List<Table> tables = db.getTables();
+        tables = db.getTables();
         adapter.addAllUpdated(tables);
     }
 
@@ -82,11 +96,12 @@ public class ListSelector extends AppCompatActivity {
 //        listView.setLongClickable(true);
 
         ArrayList<Table> tables = new ArrayList<>();
-        adapter = new TableListAdapter(this, R.layout.table_list_view,tables, multiselect);
+        adapter = new TableListAdapter(this, R.layout.table_list_view, tables, multiselect);
 
         listView.setAdapter(adapter);
 
         if (multiselect) {
+            setTitle("Select lists for training");
             listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
             listView.setItemsCanFocus(false);
 
@@ -99,14 +114,14 @@ public class ListSelector extends AppCompatActivity {
                     final SparseBooleanArray checkedItems = listView.getCheckedItemPositions();
                     int chkItemsCount = checkedItems.size();
 
-                    for(int i = 0; i < chkItemsCount; ++i){
+                    for (int i = 0; i < chkItemsCount; ++i) {
                         int position = checkedItems.keyAt(i);
-                        if(checkedItems.valueAt(i)){
+                        if (checkedItems.valueAt(i)) {
                             selectedTables.add(adapter.getItem(position));
                         }
                     }
 
-                    Log.d(TAG,"Going to: "+nextActivity.toString()+" with "+selectedTables.size()+" selected items");
+                    Log.d(TAG, "Going to: " + nextActivity.toString() + " with " + selectedTables.size() + " selected items");
 
                     Intent intent = new Intent(ListSelector.this, nextActivity);
                     intent.putExtra(PARAM_PASSED_SELECTION, selectedTables);
@@ -114,20 +129,64 @@ public class ListSelector extends AppCompatActivity {
                 }
             });
         } else {
-            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-                    Toast.makeText(ListSelector.this, Integer.toString(position) + " Clicked", Toast.LENGTH_SHORT).show();
+            if (delete) {
+                setTitle("Delete selected Table");
+                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
+                        Table table = (Table) adapter.getItem(position);
+                        if (table.getId() != ID_RESERVED_SKIP) {
+                            showDeleteDialog(table);
+                        }
+                    }
 
-                    Log.d(TAG, nextActivity.toString());
-                    Intent intent = new Intent(ListSelector.this, nextActivity);
-                    intent.putExtra(PARAM_PASSED_SELECTION, (Table) adapter.getItem(position));
-                    ListSelector.this.startActivity(intent);
+                });
+            } else {
+                setTitle("Select list to edit");
+                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
+                        Table table = (Table) adapter.getItem(position);
+                        if (table.getId() != ID_RESERVED_SKIP) {
+                            Log.d(TAG, nextActivity.toString());
+                            Intent intent = new Intent(ListSelector.this, nextActivity);
+                            intent.putExtra(PARAM_PASSED_SELECTION, table);
+                            ListSelector.this.startActivity(intent);
+                        }
+                    }
 
-                }
-
-            });
+                });
+            }
         }
 
+    }
+
+    /**
+     * Show delete dialog for table
+     *
+     * @param tableToDelete
+     */
+    private void showDeleteDialog(final Table tableToDelete) {
+        final AlertDialog.Builder finishedDiag = new AlertDialog.Builder(this);
+
+        finishedDiag.setTitle("Delete Table");
+        finishedDiag.setMessage(String.format("Do you really want to delete the following table: %s: %s, %s",
+                tableToDelete.getName(),tableToDelete.getNameA(),tableToDelete.getNameB()));
+
+        finishedDiag.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                db.deleteTable(tableToDelete);
+                tables.remove(tableToDelete);
+                adapter.notifyDataSetChanged();
+            }
+        });
+
+        finishedDiag.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // do nothing
+            }
+        });
+
+        finishedDiag.show();
     }
 }

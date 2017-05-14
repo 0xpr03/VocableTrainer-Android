@@ -242,7 +242,7 @@ public class Database {
                 tbl.setId(tbl_id);
                 return true;
             } catch (Exception e) {
-                Log.e(TAG, "", e);
+                Log.wtf(TAG, "", e);
                 return false;
             }
         }
@@ -388,7 +388,7 @@ public class Database {
 
         try (Cursor cursor = db.rawQuery("SELECT `" + KEY_TABLE + "` "
                 + "FROM `" + TBL_TABLES + "` "
-                + "ORDER BY `" + KEY_TABLE + "` ASC "
+                + "ORDER BY `" + KEY_TABLE + "` DESC "
                 + "LIMIT 1", new String[]{})) {
             if (cursor.moveToNext()) {
                 Log.d(TAG, Arrays.toString(cursor.getColumnNames()));
@@ -616,7 +616,6 @@ public class Database {
                 if (cursor.isNull(5)) {
                     Log.d(TAG, "no points for entry");
                     Entry newEntry = new Entry(cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getInt(0), tbl, 0, cursor.getLong(6));
-//                    Log.d(TAG,"points found: "+getEntryPoints(newEntry));
                     return newEntry;
                 }
                 return new Entry(cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getInt(0), tbl, cursor.getInt(5), cursor.getLong(6));
@@ -719,7 +718,6 @@ public class Database {
         HashMap<String, String> map = new HashMap<>(10);
         try (Cursor cursor = db.rawQuery("SELECT `" + KEY_MKEY + "`, `" + KEY_MVALUE + "` FROM `" + TBL_SESSION_META + "` WHERE 1", null)) {
             while (cursor.moveToNext()) {
-                Log.d(TAG,cursor.getString(0)+":"+cursor.getString(1));
                 map.put(cursor.getString(0), cursor.getString(1));
             }
             return map;

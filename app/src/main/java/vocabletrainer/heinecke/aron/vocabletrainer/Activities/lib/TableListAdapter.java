@@ -48,13 +48,25 @@ public class TableListAdapter extends ArrayAdapter<Table> {
     }
 
     /**
-     * Add multiple tables to the list<br>
+     * Set list as new list<br>
      * updates the view
      *
      * @param entries
      */
-    public void addAllUpdated(List<Table> entries) {
+    public void setAllUpdated(List<Table> entries) {
+        dataItem.clear();
+        dataItem.add(header);
         dataItem.addAll(entries);
+        this.notifyDataSetChanged();
+    }
+
+    /**
+     * Remove elemnt from list<br>
+     *     updates the view
+     * @param tbl
+     */
+    public void removeEntryUpdated(Table tbl){
+        dataItem.remove(tbl);
         this.notifyDataSetChanged();
     }
 

@@ -11,7 +11,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +67,6 @@ public class ListSelector extends AppCompatActivity {
         db = new Database(this.getBaseContext());
         setContentView(R.layout.activity_list_selector);
         Intent intent = getIntent();
-        setTitle("List selector");
         // handle passed params
         multiselect = intent.getBooleanExtra(PARAM_MULTI_SELECT, false);
         nextActivity = (Class) intent.getSerializableExtra(PARAM_NEW_ACTIVITY);
@@ -80,12 +78,18 @@ public class ListSelector extends AppCompatActivity {
         loadTables();
     }
 
+    @Override
+    public void onResume(){
+        super.onResume();
+        loadTables();
+    }
+
     /**
      * Load tables from db
      */
     private void loadTables() {
         tables = db.getTables();
-        adapter.addAllUpdated(tables);
+        adapter.setAllUpdated(tables);
     }
 
     /**
@@ -176,8 +180,7 @@ public class ListSelector extends AppCompatActivity {
         finishedDiag.setPositiveButton(R.string.ListSelector_Diag_delete_btn_Delete, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 db.deleteTable(tableToDelete);
-                tables.remove(tableToDelete);
-                adapter.notifyDataSetChanged();
+                adapter.removeEntryUpdated(tableToDelete);
             }
         });
 

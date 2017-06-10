@@ -1,9 +1,16 @@
 # VocableTrainer-Android
-
 VoctableTrainer-Android is the VocableTrainer ported over to the android platform.
 It provides an vocable training software with sessions, multiple lists and different training modes.
 
-It is currently in alpha state.
+Available for free on [f-droid store](https://f-droid.org/repository/browse/?fdfilter=VocableTrainer&fdid=vocabletrainer.heinecke.aron.vocabletrainer)
+## Features
+- [X] A<->B Random training over multiple lists
+- [X] Stop/Continue training at any time
+- [X] Set repeat-amount of vocables
+- [ ] Export/Import of lists
+
+## Bugs, Contribution etc
+Feel free to open an Issue for ideas, bugs or feature requests. Or even better a PR
 
 ## License
 

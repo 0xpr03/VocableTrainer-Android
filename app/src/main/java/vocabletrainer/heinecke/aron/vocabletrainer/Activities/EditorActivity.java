@@ -3,7 +3,6 @@ package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -16,7 +15,6 @@ import android.widget.TableLayout;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib.EntryListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
@@ -61,7 +59,7 @@ public class EditorActivity extends AppCompatActivity {
         // handle passed params
         boolean newTable = intent.getBooleanExtra(PARAM_NEW_TABLE, false);
         if (newTable) {
-            table = new Table("Column A", "Column B", "List Name");
+            table = new Table(getString(R.string.Editor_Default_Column_A),getString(R.string.Editor_Default_Column_B),getString(R.string.Editor_Default_List_Name));
             Log.d(TAG, "new table mode");
             showTableInfoDialog(true);
         } else {
@@ -78,34 +76,11 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     @Override
-    public  void onBackPressed(){
-        if(edited) {
-            AlertDialog.Builder delDiag = new AlertDialog.Builder(this);
-
-            delDiag.setTitle("Save");
-            delDiag.setMessage("Do you want to save your changes ?");
-
-            delDiag.setPositiveButton("Save", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    Log.d(TAG, "saved");
-                    saveTable();
-                    EditorActivity.super.onBackPressed();
-                }
-            });
-
-            delDiag.setNegativeButton("Discard", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    Log.d(TAG, "discarded");
-                    EditorActivity.super.onBackPressed();
-                }
-            });
-
-            delDiag.show();
-        }else{
-            super.onBackPressed();
-        }
+    public void onPause(){
+        saveTable();
+        super.onPause();
     }
-
+    
     /**
      * Called upon click on save changes
      */
@@ -140,7 +115,7 @@ public class EditorActivity extends AppCompatActivity {
         listView.setLongClickable(true);
 
         entries = new ArrayList<>();
-        adapter = new EntryListAdapter(this, entries);
+        adapter = new EntryListAdapter(this, entries,this);
 
         listView.setAdapter(adapter);
 
@@ -167,7 +142,7 @@ public class EditorActivity extends AppCompatActivity {
      * Add an entry
      */
     public void addEntry(View view) {
-        Entry entry = new Entry("A", "B", "Tip", table, -1);
+        Entry entry = new Entry(getString(R.string.Editor_Default_A),getString(R.string.Editor_Default_B),getString(R.string.Editor_Default_Tip), table, -1);
         adapter.addEntryUnrendered(entry);
         showEntryEditDialog(entry,true);
     }
@@ -182,10 +157,10 @@ public class EditorActivity extends AppCompatActivity {
             return;
         AlertDialog.Builder delDiag = new AlertDialog.Builder(this);
 
-        delDiag.setTitle("Delete Dntry");
-        delDiag.setMessage("Do you want to delete this entry ?\n"+entry.toString());
+        delDiag.setTitle(R.string.Editor_Diag_delete_Title);
+        delDiag.setMessage(String.format(getString(R.string.Editor_Diag_delete_MSG_part)+"\n %s %s %s",entry.getAWord(),entry.getBWord(),entry.getTip()));
 
-        delDiag.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+        delDiag.setPositiveButton(R.string.Editor_Diag_delete_btn_OK, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 lastDeleted = entry;
                 deletedPosition = position;
@@ -197,7 +172,7 @@ public class EditorActivity extends AppCompatActivity {
             }
         });
 
-        delDiag.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        delDiag.setNegativeButton(R.string.Editor_Diag_delete_btn_CANCEL, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 Log.d(TAG, "canceled");
             }
@@ -218,7 +193,7 @@ public class EditorActivity extends AppCompatActivity {
         }
         AlertDialog.Builder editDiag = new AlertDialog.Builder(this);
 
-        editDiag.setMessage("Edit entry");
+        editDiag.setTitle(R.string.Editor_Diag_edit_Title);
 
         final EditText editA = new EditText(this);
         final EditText editB = new EditText(this);
@@ -226,6 +201,9 @@ public class EditorActivity extends AppCompatActivity {
         editA.setText(entry.getAWord());
         editB.setText(entry.getBWord());
         editTipp.setText(entry.getTip());
+        editA.setHint(R.string.Editor_Default_A);
+        editB.setHint(R.string.Editor_Default_B);
+        editTipp.setHint(R.string.Editor_Default_Tip);
 
         LinearLayout rl = new TableLayout(this);
         rl.addView(editA);
@@ -234,7 +212,7 @@ public class EditorActivity extends AppCompatActivity {
 
         editDiag.setView(rl);
 
-        editDiag.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+        editDiag.setPositiveButton(R.string.Editor_Diag_edit_btn_OK, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 entry.setAWord(editA.getText().toString());
                 entry.setBWord(editB.getText().toString());
@@ -245,7 +223,7 @@ public class EditorActivity extends AppCompatActivity {
             }
         });
 
-        editDiag.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        editDiag.setNegativeButton(R.string.Editor_Diag_edit_btn_CANCEL, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 if(deleteOnCancel){
                     adapter.setDeleted(entry);
@@ -260,11 +238,16 @@ public class EditorActivity extends AppCompatActivity {
 
     /**
      * Show table title editor dialog
+     * @param newTbl set to true if this is a new table
      */
-    private void showTableInfoDialog(boolean selectAll) {
+    private void showTableInfoDialog(boolean newTbl) {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
-        alert.setTitle("New Table");
+        if(newTbl) {
+            alert.setTitle(R.string.Editor_Diag_table_Title_New);
+        }else{
+            alert.setTitle(R.string.Editor_Diag_table_Title_Edit);
+        }
         alert.setMessage("Please set the table information");
 
         // Set an EditText view to get user iName
@@ -273,12 +256,14 @@ public class EditorActivity extends AppCompatActivity {
         final EditText iColB = new EditText(this);
         iName.setText(table.getName());
         iName.setSingleLine();
-//        iName.setHint(); // TODO: add resource of XML
+        iName.setHint(R.string.Editor_Default_List_Name);
+        iColA.setHint(R.string.Editor_Default_Column_A);
+        iColB.setHint(R.string.Editor_Default_Column_B);
         iColA.setText(table.getNameA());
         iColA.setSingleLine();
         iColB.setSingleLine();
         iColB.setText(table.getNameB());
-        if (selectAll) {
+        if (newTbl) {
             iName.setSelectAllOnFocus(true);
             iColA.setSelectAllOnFocus(true);
             iColB.setSelectAllOnFocus(true);
@@ -290,8 +275,11 @@ public class EditorActivity extends AppCompatActivity {
         rl.addView(iColB);
         alert.setView(rl);
 
-        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+        alert.setPositiveButton(R.string.Editor_Diag_table_btn_Ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
+                if(iColA.getText().length() == 0 || iColB.length() == 0 || iName.getText().length() == 0){
+                   Log.d(TAG,"empty insert");
+                }
                 updateName(iName.getText().toString());
                 table.setNameA(iColA.getText().toString());
                 table.setNameB(iColB.getText().toString());

@@ -11,7 +11,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +67,6 @@ public class ListSelector extends AppCompatActivity {
         db = new Database(this.getBaseContext());
         setContentView(R.layout.activity_list_selector);
         Intent intent = getIntent();
-        setTitle("List selector");
         // handle passed params
         multiselect = intent.getBooleanExtra(PARAM_MULTI_SELECT, false);
         nextActivity = (Class) intent.getSerializableExtra(PARAM_NEW_ACTIVITY);
@@ -80,12 +78,18 @@ public class ListSelector extends AppCompatActivity {
         loadTables();
     }
 
+    @Override
+    public void onResume(){
+        super.onResume();
+        loadTables();
+    }
+
     /**
      * Load tables from db
      */
     private void loadTables() {
         tables = db.getTables();
-        adapter.addAllUpdated(tables);
+        adapter.setAllUpdated(tables);
     }
 
     /**
@@ -101,7 +105,7 @@ public class ListSelector extends AppCompatActivity {
         listView.setAdapter(adapter);
 
         if (multiselect) {
-            setTitle("Select lists for training");
+            setTitle(R.string.ListSelector_Title_Training);
             listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
             listView.setItemsCanFocus(false);
 
@@ -130,7 +134,7 @@ public class ListSelector extends AppCompatActivity {
             });
         } else {
             if (delete) {
-                setTitle("Delete selected Table");
+                setTitle(R.string.ListSelector_Title_Delete);
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
@@ -142,7 +146,7 @@ public class ListSelector extends AppCompatActivity {
 
                 });
             } else {
-                setTitle("Select list to edit");
+                setTitle(R.string.ListSelector_Title_Edit);
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
@@ -169,19 +173,18 @@ public class ListSelector extends AppCompatActivity {
     private void showDeleteDialog(final Table tableToDelete) {
         final AlertDialog.Builder finishedDiag = new AlertDialog.Builder(this);
 
-        finishedDiag.setTitle("Delete Table");
-        finishedDiag.setMessage(String.format("Do you really want to delete the following table: %s: %s, %s",
+        finishedDiag.setTitle(R.string.ListSelector_Diag_delete_Title);
+        finishedDiag.setMessage(String.format(getText(R.string.ListSelector_Diag_delete_Msg).toString(),
                 tableToDelete.getName(),tableToDelete.getNameA(),tableToDelete.getNameB()));
 
-        finishedDiag.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+        finishedDiag.setPositiveButton(R.string.ListSelector_Diag_delete_btn_Delete, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 db.deleteTable(tableToDelete);
-                tables.remove(tableToDelete);
-                adapter.notifyDataSetChanged();
+                adapter.removeEntryUpdated(tableToDelete);
             }
         });
 
-        finishedDiag.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        finishedDiag.setNegativeButton(R.string.ListSelector_Diag_delete_btn_Cancel, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 // do nothing
             }

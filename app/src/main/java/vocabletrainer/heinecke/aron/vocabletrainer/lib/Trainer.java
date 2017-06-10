@@ -199,7 +199,7 @@ public class Trainer {
         showedSolution = false;
 
         if (unsolvedTables.size() == 0){
-            Log.w(TAG,"no unsolved tables remaining!");
+            Log.d(TAG,"no unsolved tables remaining!");
         } else {
             Table tbl = unsolvedTables.get(rng.nextInt(unsolvedTables.size()));
 
@@ -224,7 +224,8 @@ public class Trainer {
     }
 
     /**
-     * Returns the non-solution column of the vocable
+     * Returns the non-solution column of the vocable<br>
+     *     returns an empty string when there is no current vocable
      *
      * @return
      */
@@ -236,7 +237,8 @@ public class Trainer {
     }
 
     /**
-     * Returns the tip, increasing the counter
+     * Returns the tip, increasing the counter<br>
+     *     returns an empty string when there is no current vocable
      *
      * @return
      */
@@ -246,6 +248,30 @@ public class Trainer {
 
         this.tips++;
         return cVocable.getTip();
+    }
+
+    /**
+     * Returns the column name of the question<br>
+     *     returns an empty string when there is no current vocable
+     * @return
+     */
+    public String getColumnNameExercise() {
+        if(this.cVocable == null)
+            return "";
+
+        return order == AB_MODE.A ? cVocable.getTable().getNameB() : cVocable.getTable().getNameA();
+    }
+
+    /**
+     * Returns the column name of the solution<br>
+     *     returns an empty string when there is no current vocable
+     * @return
+     */
+    public String getColumnNameSolution() {
+        if(this.cVocable == null)
+            return "";
+
+        return order == AB_MODE.B ? cVocable.getTable().getNameB() : cVocable.getTable().getNameA();
     }
 
     /**

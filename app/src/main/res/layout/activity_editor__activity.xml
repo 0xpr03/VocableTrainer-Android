@@ -39,7 +39,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:onClick="addEntry"
-            android:text="Add Column" />
+            android:text="@string/Editor_btn_Add_Row" />
 
         <Button
             android:id="@+id/buttonSave"
@@ -47,14 +47,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:onClick="onSaveChangesClicked"
-            android:text="Save List" />
+            android:text="@string/Editor_btn_Save" />
 
-        <Button
-            android:id="@+id/buttonDiscard"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Discard Changes" />
     </LinearLayout>
 
     <LinearLayout

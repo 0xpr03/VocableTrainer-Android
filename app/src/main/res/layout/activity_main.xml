@@ -4,17 +4,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="vocabletrainer.heinecke.aron.vocabletrainer.Activities.MainAcitivity">
+    tools:context="vocabletrainer.heinecke.aron.vocabletrainer.Activities.MainActivity">
 
     <Button
-        android:id="@+id/buttonLastSession"
+        android:id="@+id/bLastSession"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="8dp"
         android:onClick="continueSession"
-        android:text="Continue last session"
+        android:text="@string/Main_btn_Resume_Session"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -28,49 +28,62 @@
         android:layout_marginRight="8dp"
         android:layout_marginTop="8dp"
         android:onClick="showTrainer"
-        android:text="New Session"
+        android:text="@string/Main_btn_New_Session"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonLastSession"
-        app:layout_constraintHorizontal_bias="0.0" />
+        app:layout_constraintTop_toBottomOf="@+id/bLastSession" />
 
     <Button
-        android:id="@+id/buttonEditTable"
+        android:id="@+id/bEditTable"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="8dp"
         android:onClick="showEditTable"
-        android:text="Edit Table"
+        android:text="@string/Main_btn_Edit_List"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonNewTable" />
+        app:layout_constraintTop_toBottomOf="@+id/bNewTable" />
 
     <Button
-        android:id="@+id/buttonNewTable"
+        android:id="@+id/bNewTable"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="8dp"
         android:onClick="showNewTable"
-        android:text="New Table"
+        android:text="@string/Main_btn_New_List"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/bTrainerEnter" />
 
     <Button
-        android:id="@+id/buttonDeleteTable"
+        android:id="@+id/bDeleteTable"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="8dp"
         android:onClick="showDeleteTable"
-        android:text="Delete Table"
+        android:text="@string/Main_btn_Delete_List"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonEditTable" />
+        app:layout_constraintTop_toBottomOf="@+id/bEditTable" />
+
+    <Button
+        android:id="@+id/bTrainerAbout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:onClick="showAbout"
+        android:text="@string/Main_btn_About"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
 </android.support.constraint.ConstraintLayout>

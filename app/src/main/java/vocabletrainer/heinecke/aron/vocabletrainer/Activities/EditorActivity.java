@@ -3,7 +3,6 @@ package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -16,7 +15,6 @@ import android.widget.TableLayout;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib.EntryListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
@@ -78,34 +76,11 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     @Override
-    public  void onBackPressed(){
-        if(edited) {
-            AlertDialog.Builder delDiag = new AlertDialog.Builder(this);
-
-            delDiag.setTitle("Save");
-            delDiag.setMessage("Do you want to save your changes ?");
-
-            delDiag.setPositiveButton("Save", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    Log.d(TAG, "saved");
-                    saveTable();
-                    EditorActivity.super.onBackPressed();
-                }
-            });
-
-            delDiag.setNegativeButton("Discard", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    Log.d(TAG, "discarded");
-                    EditorActivity.super.onBackPressed();
-                }
-            });
-
-            delDiag.show();
-        }else{
-            super.onBackPressed();
-        }
+    public void onPause(){
+        saveTable();
+        super.onPause();
     }
-
+    
     /**
      * Called upon click on save changes
      */

@@ -522,9 +522,10 @@ public class Database {
      */
     public ArrayList<Table> getSessionTables() {
         ArrayList<Table> lst = new ArrayList<>(10);
-        try (Cursor cursor = db.rawQuery("SELECT `" + KEY_TABLE + "` FROM `" + TBL_SESSION_TABLES + "`",null)) {
+        try (Cursor cursor = db.rawQuery("SELECT ses.`" + KEY_TABLE + "` tbl,`"+KEY_NAME_A+"`,`"+KEY_NAME_B+"`,`"+KEY_NAME_TBL+"` FROM `" + TBL_SESSION_TABLES + "` ses "
+                +"JOIN `"+TBL_TABLES+"` tbls ON tbls.`"+KEY_TABLE+"` == ses.`"+KEY_TABLE+"`", null)) {
             while (cursor.moveToNext()) {
-                lst.add(new Table(cursor.getInt(0)));
+                lst.add(new Table(cursor.getInt(0),cursor.getString(1), cursor.getString(2), cursor.getString(3)));
             }
         } catch (Exception e) {
             Log.e(TAG, "", e);

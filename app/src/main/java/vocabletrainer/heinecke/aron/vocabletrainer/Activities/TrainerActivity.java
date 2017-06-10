@@ -36,6 +36,8 @@ public class TrainerActivity extends AppCompatActivity {
     private Button bSolve;
     private TrainerSettings settings;
     private Trainer trainer;
+    private TextView tColumnQuestion;
+    private TextView tColumnAnswer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +46,8 @@ public class TrainerActivity extends AppCompatActivity {
         setTitle("Vocabletrainer - Training");
         tExercise = (TextView) findViewById(R.id.tTrainerExercise);
         tHint = (TextView) findViewById(R.id.tTrainerHint);
+        tColumnQuestion = (TextView) findViewById(R.id.tTrainerExColumn);
+        tColumnAnswer = (TextView) findViewById(R.id.tTrainerInputColumn);
         tInput = (EditText) findViewById(R.id.tTrainerInput);
         bHint = (Button) findViewById(R.id.bTrainerHint);
         bSolve = (Button) findViewById(R.id.bTrainerSolve);
@@ -118,6 +122,8 @@ public class TrainerActivity extends AppCompatActivity {
             });
 
             finishedDiag.show();
+            tColumnQuestion.setText(trainer.getColumnNameExercise());
+            tColumnAnswer.setText(trainer.getColumnNameSolution());
         }
     }
 

@@ -28,6 +28,7 @@
     <string name="Editor_Default_A">A</string>
     <string name="Editor_Default_B">B</string>
     <string name="Editor_Default_Tip">Hint</string>
+    <string name="Editor_Undo">Undo</string>
     <!-- Dialogs -->
     <string name="Trainer_Diag_finished_Title">Finished</string>
     <string name="Trainer_Diag_finished_MSG">You\'ve finished this training session.</string>

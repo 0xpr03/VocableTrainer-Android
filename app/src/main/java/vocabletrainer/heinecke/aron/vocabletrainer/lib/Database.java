@@ -9,8 +9,10 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
+import android.provider.ContactsContract;
 import android.util.Log;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,7 +29,8 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
  */
 public class Database {
     private static final String TAG = "Database";
-    private static SQLiteDatabase db = null;
+    private static SQLiteDatabase dbIntern = null; // DB to internal file, 99% of the time used
+    private SQLiteDatabase db = null; // pointer to DB used in this class
     private SQLiteOpenHelper helper = null;
     private final static String TBL_VOCABLE = "vocables";
     private final static String TBL_TABLES = "voc_tables";
@@ -52,15 +55,20 @@ public class Database {
     public static final int MIN_ID_TRESHOLD = 0;
     public static final int ID_RESERVED_SKIP = -2;
 
-
     class internalDB extends SQLiteOpenHelper {
+        private final static int DATABASE_VERSION = 1;
+
+        internalDB(final Context context, File databaseFile) {
+            super(new DatabaseContext(context, databaseFile), "", null, DATABASE_VERSION);
+        }
 
         public internalDB(Context context) {
             this(context, false);
         }
 
         public internalDB(Context context, final boolean dev) {
-            super(context, dev ? DB_NAME_DEV : DB_NAME_PRODUCTION, null, 1);
+            super(context, dev ? DB_NAME_DEV : DB_NAME_PRODUCTION, null, DATABASE_VERSION);
+
         }
 
         @Override
@@ -107,17 +115,29 @@ public class Database {
     }
 
     /**
-     * Database object
+     * Database for export / import
+     *
+     * @param context
+     * @param file // file to use for this DB
+     */
+    public Database(Context context, final File file) {
+        helper = new internalDB(context, file);
+        this.db = helper.getWritableDatabase();
+    }
+
+    /**
+     * Database object, using internal storage for this App (default DB file)
      *
      * @param context
      * @param dev     set to true for unit tests<br>
      *                no data will be saved
      */
-    public Database(Context context, final boolean dev) {
-        if (db == null) {
+    public Database(Context context, boolean dev) {
+        if (dbIntern == null) {
             helper = new internalDB(context, dev);
-            db = helper.getWritableDatabase();
+            dbIntern = helper.getWritableDatabase();
         }
+        this.db = dbIntern;
     }
 
     /**
@@ -435,7 +455,7 @@ public class Database {
      * @return
      */
     public boolean deleteSession() {
-        Log.d(TAG,"entry deleteSession");
+        Log.d(TAG, "entry deleteSession");
         db.beginTransaction();
         try {
             db.delete(TBL_SESSION, "1", null);
@@ -449,7 +469,7 @@ public class Database {
             if (db.inTransaction())
                 db.endTransaction();
         }
-        Log.d(TAG,"exit deleteSession");
+        Log.d(TAG, "exit deleteSession");
         return true;
     }
 
@@ -490,7 +510,7 @@ public class Database {
      * @return true on success
      */
     public boolean createSession(Collection<Table> tables) {
-        Log.d(TAG,"entry createSession");
+        Log.d(TAG, "entry createSession");
 
         db.beginTransaction();
 
@@ -499,12 +519,12 @@ public class Database {
             for (Table tbl : tables) {
                 insStm.clearBindings();
                 insStm.bindLong(1, tbl.getId());
-                if(insStm.executeInsert() < 0){
-                    Log.wtf(TAG,"no new table inserted");
+                if (insStm.executeInsert() < 0) {
+                    Log.wtf(TAG, "no new table inserted");
                 }
             }
             db.setTransactionSuccessful();
-            Log.d(TAG,"exit createSession");
+            Log.d(TAG, "exit createSession");
             return true;
         } catch (Exception e) {
             Log.wtf(TAG, "", e);
@@ -533,16 +553,16 @@ public class Database {
         return lst;
     }
 
-    public boolean isSessionStored(){
-        Log.d(TAG,"entry isSessionStored");
-        try(Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM `"+TBL_SESSION_TABLES+"` WHERE 1",null) ){
+    public boolean isSessionStored() {
+        Log.d(TAG, "entry isSessionStored");
+        try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM `" + TBL_SESSION_TABLES + "` WHERE 1", null)) {
             cursor.moveToNext();
-            if(cursor.getInt(0) > 0){
-                Log.d(TAG,"found session");
+            if (cursor.getInt(0) > 0) {
+                Log.d(TAG, "found session");
                 return true;
             }
-        } catch (Exception e){
-            Log.wtf(TAG,"unable to get session tables row count",e);
+        } catch (Exception e) {
+            Log.wtf(TAG, "unable to get session tables row count", e);
         }
         return false;
     }
@@ -589,7 +609,6 @@ public class Database {
     /**
      * Returns a random entry from the specified table, which matche the trainer settings criteria<br>
      * The Entry is guaranteed to be not the "lastEntry" provided here
-     * //TODO: case of last-entry-standing
      *
      * @param tbl
      * @param ts
@@ -703,7 +722,7 @@ public class Database {
         if (!db.inTransaction()) {
             throw new IllegalStateException("No transaction ongoing!");
         }
-        Log.d(TAG,"transaction success: "+success);
+        Log.d(TAG, "transaction success: " + success);
         if (success)
             db.setTransactionSuccessful();
         db.endTransaction();
@@ -715,7 +734,7 @@ public class Database {
      * @return map of all key-value pairs or <b>null</b> on errors
      */
     public HashMap<String, String> getSessionData() {
-        Log.d(TAG,"entry getSessionData");
+        Log.d(TAG, "entry getSessionData");
         HashMap<String, String> map = new HashMap<>(10);
         try (Cursor cursor = db.rawQuery("SELECT `" + KEY_MKEY + "`, `" + KEY_MVALUE + "` FROM `" + TBL_SESSION_META + "` WHERE 1", null)) {
             while (cursor.moveToNext()) {

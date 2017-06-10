@@ -1,5 +1,52 @@
 <resources>
-    <string name="app_name">VocableTrainer</string>
+    <string name="app_name" translatable="false">VocableTrainer Alpha</string>
     <string name="Trainer_hint_solution">Answer</string>
-    <string name="title_activity_test_acivity">testAcivity</string>
+    <string name="Trainer_btn_ok">Ok</string>
+    <string name="Main_btn_About">About</string>
+    <string name="Main_btn_Delete_List">Delete List</string>
+    <string name="Main_btn_Edit_List">Edit List</string>
+    <string name="Main_btn_New_List">Create List</string>
+    <string name="Main_btn_New_Session">Start new Session</string>
+    <string name="Main_btn_Resume_Session">Resume Session</string>
+    <string name="Trainer_Title">Vocabletrainer - Training</string>
+    <string name="Trainer_btn_Hint">Show Hint</string>
+    <string name="Trainer_btn_Solution">Show Solution</string>
+    <string name="TSettings_Title">"Training settings"</string>
+    <string name="TSettings_Time_Solve">Times to solve</string>
+    <string name="TSettings_chkbx_Tips">Allow Hints</string>
+    <string name="TSettings_Info">Training Settings</string>
+    <string name="TSettings_lbl_Column_Asked">Column Asked</string>
+    <string name="TSettings_btn_Start">Start Session</string>
+    <string name="Editor_btn_Add_Row">Add Row</string>
+    <string name="Editor_btn_Save">Save List</string>
+    <string name="ListSelector_Title_Edit">Select list to edit</string>
+    <string name="ListSelector_Title_Delete">Delete selected Table</string>
+    <string name="ListSelector_Title_Training">Select lists for training</string>
+    <string name="Editor_Default_Column_A">Column A</string>
+    <string name="Editor_Default_Column_B">Column B</string>
+    <string name="Editor_Default_List_Name">List Name</string>
+    <string name="Editor_Default_A">A</string>
+    <string name="Editor_Default_B">B</string>
+    <string name="Editor_Default_Tip">Hint</string>
+    <!-- Dialogs -->
+    <string name="Trainer_Diag_finished_Title">Finished</string>
+    <string name="Trainer_Diag_finished_MSG">You\'ve finished this training session.</string>
+    <string name="Trainer_Diag_finished_btn_OK">Ok</string>
+    <string name="Editor_Diag_delete_Title">Delete Entry</string>
+    <string formatted="false" name="Editor_Diag_delete_MSG_part">Do you want to delete this entry ?</string>
+    <string name="Editor_Diag_delete_btn_OK">Delete</string>
+    <string name="Editor_Diag_delete_btn_CANCEL">Cancel</string>
+    <string name="Editor_Diag_edit_Title">Edit Entry</string>
+    <string name="Editor_Diag_edit_btn_OK">Ok</string>
+    <string name="Editor_Diag_edit_btn_CANCEL">Cancel</string>
+    <string name="Editor_Diag_table_Title_New">New Table</string>
+    <string name="Editor_Diag_table_Title_Edit">Edit Table</string>
+    <string name="Editor_Diag_table_MSG">Please set the list information</string>
+    <string name="Editor_Diag_table_btn_Ok">Ok</string>
+    <string formatted="false" name="About_Msg">About: VocableTrainer %v\nCopyright 2017 Aron Heinecke\nLicensed under Apache License 2.0\n\nBug Reports: github.com/0xpr03/VocableTrainer-Android</string>
+    <string name="About_btn_Close">Close</string>
+    <string name="ListSelector_Diag_delete_Title">Delete List</string>
+    <string formatted="false" name="ListSelector_Diag_delete_Msg">Do you really want to delete the following table: %s: %s, %s</string>
+    <string name="ListSelector_Diag_delete_btn_Delete">Delete</string>
+    <string name="ListSelector_Diag_delete_btn_Cancel">Cancel</string>
 </resources>

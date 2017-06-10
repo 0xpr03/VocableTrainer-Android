@@ -40,7 +40,7 @@ public class TableListAdapter extends ArrayAdapter<Table> {
     public TableListAdapter(Context context, int textViewResourceId, ArrayList<Table> table, final boolean displayCheckbox) {
         super(context, textViewResourceId, table);
         this.dataItem = table;
-        header = new Table(ID_RESERVED_SKIP,"Column A", "Column B", "Name");
+        header = new Table(ID_RESERVED_SKIP,context.getString(R.string.Editor_Default_Column_A), context.getString(R.string.Editor_Default_Column_B), context.getString(R.string.Editor_Default_List_Name));
         dataItem.add(0,header);
         resLayout = textViewResourceId;
         this.context = context;

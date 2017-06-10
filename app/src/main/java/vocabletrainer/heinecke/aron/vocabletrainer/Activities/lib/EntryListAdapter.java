@@ -1,6 +1,7 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.util.Log;
@@ -49,11 +50,14 @@ public class EntryListAdapter extends BaseAdapter {
      * @param activity
      * @param items
      */
-    public EntryListAdapter(Activity activity, List<Entry> items) {
+    public EntryListAdapter(Activity activity, List<Entry> items, Context context) {
         super();
         this.activity = activity;
         this.dataItems = items;
-        header = new Entry("A", "B", "Tipp", ID_RESERVED_SKIP, new Table(ID_RESERVED_SKIP), -2L);
+        header = new Entry(context.getString(R.string.Editor_Default_A),
+                context.getString(R.string.Editor_Default_B),
+                context.getString(R.string.Editor_Default_Tip),
+                ID_RESERVED_SKIP, new Table(ID_RESERVED_SKIP), -2L);
         dataItems.add(0, header);
         deleted = new ArrayList<>();
         inflater = activity.getLayoutInflater();

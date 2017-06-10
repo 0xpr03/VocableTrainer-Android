@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VocableTrainer</string>
+    <string name="Trainer_hint_solution">Antwort</string>
+    <string name="Trainer_btn_ok">Ok</string>
+    <string name="Editor_btn_Add_Row">Zeile Hinzufügen</string>
+    <string name="Editor_btn_Save">Speichern</string>
+    <string name="ListSelector_Title_Delete">Ausgewähltes Löschen</string>
+    <string name="Main_btn_Delete_List">Liste Löschen</string>
+    <string name="Main_btn_Edit_List">Liste Editieren</string>
+    <string name="Main_btn_New_List">Liste Erzeugen</string>
+    <string name="Main_btn_New_Session">Neue Sitzung</string>
+    <string name="Main_btn_Resume_Session">Sitzung forsetzen</string>
+    <string name="TSettings_Info">Trainings Einstellungen</string>
+    <string name="TSettings_Time_Solve">Anzahl zu lösen</string>
+    <string name="TSettings_btn_Start">Training Starten</string>
+    <string name="TSettings_chkbx_Tips">Hinweise Erlauben</string>
+    <string name="TSettings_lbl_Column_Asked">Gefragte Spalte</string>
+    <string name="Trainer_btn_Hint">Zeige Hinweis</string>
+    <string name="Trainer_btn_Solution">Lösung anzeigen</string>
+    <string name="Main_btn_About">Über</string>
+</resources>

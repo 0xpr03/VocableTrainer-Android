@@ -35,7 +35,7 @@ public class TrainerSettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trainer_settings);
-        setTitle("Training settings");
+        setTitle(R.string.TSettings_Title);
         Intent intent = getIntent();
         tables = (ArrayList<Table>) intent.getSerializableExtra(PARAM_PASSED_SELECTION);
         if(tables == null){

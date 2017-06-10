@@ -43,7 +43,7 @@ public class TrainerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trainer);
-        setTitle("Vocabletrainer - Training");
+        setTitle(R.string.Trainer_Title);
         tExercise = (TextView) findViewById(R.id.tTrainerExercise);
         tHint = (TextView) findViewById(R.id.tTrainerHint);
         tColumnQuestion = (TextView) findViewById(R.id.tTrainerExColumn);
@@ -99,29 +99,30 @@ public class TrainerActivity extends AppCompatActivity {
      * Show next vocable of trainer
      */
     private void showNextVocable(){
-        tExercise.setText(trainer.getQuestion());
-        tHint.setText("");
-        tInput.setText("");
-        tInput.requestFocus();
-        bSolve.setEnabled(true);
-        bHint.setEnabled(settings.allowTips);
-
         if(trainer.isFinished()){
             AlertDialog.Builder finishedDiag = new AlertDialog.Builder(this);
 
-            finishedDiag.setTitle("Finished");
-            finishedDiag.setMessage("You've finished this training session.");
+            finishedDiag.setTitle(R.string.Trainer_Diag_finished_Title);
+            finishedDiag.setMessage(R.string.Trainer_Diag_finished_MSG);
 
-            finishedDiag.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            finishedDiag.setPositiveButton(R.string.Trainer_Diag_finished_btn_OK, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
                     Log.d(TAG, "ok");
 
-                    Intent myIntent = new Intent(TrainerActivity.this, MainAcitivity.class);
+                    Intent myIntent = new Intent(TrainerActivity.this, MainActivity.class);
+                    myIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(myIntent);
                 }
             });
 
             finishedDiag.show();
+        }else{
+            tExercise.setText(trainer.getQuestion());
+            tHint.setText("");
+            tInput.setText("");
+            tInput.requestFocus();
+            bSolve.setEnabled(true);
+            bHint.setEnabled(settings.allowTips);
             tColumnQuestion.setText(trainer.getColumnNameExercise());
             tColumnAnswer.setText(trainer.getColumnNameSolution());
         }

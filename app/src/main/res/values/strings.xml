@@ -25,8 +25,6 @@
     <string name="Editor_Default_Column_A">Column A</string>
     <string name="Editor_Default_Column_B">Column B</string>
     <string name="Editor_Default_List_Name">List Name</string>
-    <string name="Editor_Default_A">A</string>
-    <string name="Editor_Default_B">B</string>
     <string name="Editor_Default_Tip">Hint</string>
     <string name="Editor_Undo">Undo</string>
     <!-- Dialogs -->

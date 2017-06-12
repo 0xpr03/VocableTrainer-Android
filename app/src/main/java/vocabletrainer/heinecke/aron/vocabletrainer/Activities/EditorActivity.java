@@ -142,7 +142,7 @@ public class EditorActivity extends AppCompatActivity {
      * Add an entry
      */
     public void addEntry(View view) {
-        Entry entry = new Entry(getString(R.string.Editor_Default_A),getString(R.string.Editor_Default_B),getString(R.string.Editor_Default_Tip), table, -1);
+        Entry entry = new Entry("","","", table, -1);
         adapter.addEntryUnrendered(entry);
         showEntryEditDialog(entry,true);
     }
@@ -201,8 +201,8 @@ public class EditorActivity extends AppCompatActivity {
         editA.setText(entry.getAWord());
         editB.setText(entry.getBWord());
         editTipp.setText(entry.getTip());
-        editA.setHint(R.string.Editor_Default_A);
-        editB.setHint(R.string.Editor_Default_B);
+        editA.setHint(R.string.Editor_Default_Column_A);
+        editB.setHint(R.string.Editor_Default_Column_B);
         editTipp.setHint(R.string.Editor_Default_Tip);
 
         LinearLayout rl = new TableLayout(this);

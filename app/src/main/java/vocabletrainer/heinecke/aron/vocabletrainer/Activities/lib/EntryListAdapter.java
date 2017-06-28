@@ -54,8 +54,8 @@ public class EntryListAdapter extends BaseAdapter {
         super();
         this.activity = activity;
         this.dataItems = items;
-        header = new Entry(context.getString(R.string.Editor_Default_A),
-                context.getString(R.string.Editor_Default_B),
+        header = new Entry(context.getString(R.string.Editor_Default_Column_A),
+                context.getString(R.string.Editor_Default_Column_B),
                 context.getString(R.string.Editor_Default_Tip),
                 ID_RESERVED_SKIP, new Table(ID_RESERVED_SKIP), -2L);
         dataItems.add(0, header);

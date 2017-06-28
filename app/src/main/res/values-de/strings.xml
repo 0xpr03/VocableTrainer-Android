@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">VocableTrainer</string>
     <string name="Trainer_hint_solution">Antwort</string>
     <string name="Trainer_btn_ok">Ok</string>
     <string name="Editor_btn_Add_Row">Zeile Hinzufügen</string>
@@ -19,4 +18,31 @@
     <string name="Trainer_btn_Hint">Zeige Hinweis</string>
     <string name="Trainer_btn_Solution">Lösung anzeigen</string>
     <string name="Main_btn_About">Über</string>
+    <string name="About_btn_Close">Schließen</string>
+    <string name="Editor_Default_Column_A">Spalte A</string>
+    <string name="Editor_Default_Column_B">Spalte B</string>
+    <string name="Editor_Default_List_Name">Listenname</string>
+    <string name="Editor_Default_Tip">Hinweis</string>
+    <string name="Editor_Diag_delete_MSG_part">Wollen Sie diesen Eintrag löschen ?</string>
+    <string name="Editor_Diag_delete_Title">Eintrag Löschen</string>
+    <string name="Editor_Diag_delete_btn_CANCEL">Abbrechen</string>
+    <string name="Editor_Diag_delete_btn_OK">Löschen</string>
+    <string name="Editor_Diag_edit_Title">Eintrag Editieren</string>
+    <string name="Editor_Diag_edit_btn_CANCEL">Abbrechen</string>
+    <string name="Editor_Diag_edit_btn_OK">Ok</string>
+    <string name="Editor_Diag_table_MSG">Bitte listen Infos ausfüllen</string>
+    <string name="Editor_Diag_table_Title_Edit">Liste editieren</string>
+    <string name="Editor_Diag_table_Title_New">Neue Liste</string>
+    <string name="Editor_Diag_table_btn_Ok">Ok</string>
+    <string name="Editor_Undo">Rückgängig</string>
+    <string name="ListSelector_Diag_delete_Msg">Möchten Sie diese Liste löschen: %s: %s, %s</string>
+    <string name="ListSelector_Diag_delete_Title">Liste Löschen</string>
+    <string name="ListSelector_Diag_delete_btn_Cancel">Abbrechen</string>
+    <string name="ListSelector_Diag_delete_btn_Delete">Löschen</string>
+    <string name="ListSelector_Title_Edit">Liste auswählen zum Editieren</string>
+    <string name="ListSelector_Title_Training">Liste zum Trainieren auswählen</string>
+    <string name="Trainer_Diag_finished_MSG">Training beendet</string>
+    <string name="Trainer_Diag_finished_Title">Fertig</string>
+    <string name="Trainer_Diag_finished_btn_OK">Ok</string>
+    <string name="TSettings_Title">Training Einstellungen</string>
 </resources>

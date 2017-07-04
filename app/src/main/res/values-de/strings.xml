@@ -35,7 +35,7 @@
     <string name="Editor_Diag_table_Title_New">Neue Liste</string>
     <string name="Editor_Diag_table_btn_Ok">Ok</string>
     <string name="Editor_Undo">Rückgängig</string>
-    <string name="ListSelector_Diag_delete_Msg">Möchten Sie diese Liste löschen: %s: %s, %s</string>
+    <string name="ListSelector_Diag_delete_Msg" formatted="false">Möchten Sie diese Liste löschen: %s: %s, %s</string>
     <string name="ListSelector_Diag_delete_Title">Liste Löschen</string>
     <string name="ListSelector_Diag_delete_btn_Cancel">Abbrechen</string>
     <string name="ListSelector_Diag_delete_btn_Delete">Löschen</string>

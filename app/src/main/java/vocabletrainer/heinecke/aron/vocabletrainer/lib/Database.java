@@ -381,11 +381,9 @@ public class Database {
         if (table < MIN_ID_TRESHOLD)
             throw new IllegalArgumentException("table ID is negative!");
 
-        try (Cursor cursor = db.rawQuery("SELECT `" + KEY_VOC + "` "
+        try (Cursor cursor = db.rawQuery("SELECT MAX(`" + KEY_VOC + "`) "
                 + "FROM `" + TBL_VOCABLE + "` "
-                + "WHERE `" + KEY_TABLE + "` = ? "
-                + "ORDER BY `" + KEY_VOC + "` ASC "
-                + "LIMIT 1", new String[]{String.valueOf(table)})) {
+                + "WHERE `" + KEY_TABLE + "` = ? ", new String[]{String.valueOf(table)})) {
             if (cursor.moveToNext()) {
                 return cursor.getInt(0);
             } else {
@@ -406,10 +404,8 @@ public class Database {
         if (db == null)
             throw new IllegalArgumentException("invalid DB");
 
-        try (Cursor cursor = db.rawQuery("SELECT `" + KEY_TABLE + "` "
-                + "FROM `" + TBL_TABLES + "` "
-                + "ORDER BY `" + KEY_TABLE + "` DESC "
-                + "LIMIT 1", new String[]{})) {
+        try (Cursor cursor = db.rawQuery("SELECT MAX(`" + KEY_TABLE + "`) "
+                + "FROM `" + TBL_TABLES + "` ", new String[]{})) {
             if (cursor.moveToNext()) {
                 Log.d(TAG, Arrays.toString(cursor.getColumnNames()));
                 return cursor.getInt(0);

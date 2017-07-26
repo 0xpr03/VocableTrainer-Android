@@ -50,6 +50,7 @@ public class EditorActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         undoContainer = findViewById(R.id.undobar);
+        undoContainer.setVisibility(View.GONE);
 
         // setup listview
         initListView();
@@ -309,7 +310,7 @@ public class EditorActivity extends AppCompatActivity {
     private void showUndo() {
         undoContainer.setVisibility(View.VISIBLE);
         undoContainer.setAlpha(1);
-        undoContainer.animate().alpha(0.4f).setDuration(5000)
+        undoContainer.animate().alpha(0.0f).setDuration(4000)
                 .withEndAction(new Runnable() {
 
                     @Override

@@ -42,7 +42,7 @@
     <string name="Editor_Diag_table_Title_Edit">Edit List</string>
     <string name="Editor_Diag_table_MSG">Please set the list information</string>
     <string name="Editor_Diag_table_btn_Ok">Ok</string>
-    <string formatted="false" name="About_Msg" translatable="false">About: VocableTrainer %v\nCopyright 2017 Aron Heinecke\nLicensed under Apache License 2.0\n\nBug Reports: github.com/0xpr03/VocableTrainer-Android</string>
+    <string formatted="false" name="About_Msg" translatable="false">About: VocableTrainer %v\nCopyright 2017 Aron Heinecke\n Apache License 2.0\n\nFeatures &amp; Bug Reports: %l</string>
     <string name="About_btn_Close">Close</string>
     <string name="ListSelector_Diag_delete_Title">Delete List</string>
     <string formatted="false" name="ListSelector_Diag_delete_Msg">Do you really want to delete the following list: %s: %s, %s</string>

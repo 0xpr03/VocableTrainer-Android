@@ -17,6 +17,7 @@
         android:allowUndo="false"
         android:ems="10"
         android:inputType="textMultiLine"
+        android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/bAbout_Ok"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"

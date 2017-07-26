@@ -4,20 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.aron.exampleapplication.Editor_Activity">
-
-    <ListView
-        android:id="@+id/listviewEditor"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    tools:context="vocabletrainer.heinecke.aron.vocabletrainer.Activities.EditorActivity">
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -53,32 +40,48 @@
 
     <LinearLayout
         android:id="@+id/undobar"
-        android:visibility="gone"
+        android:visibility="visible"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_margin="20dp"
+        android:layout_gravity="center_horizontal|bottom"
+        android:gravity="center"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         android:alpha="100"
-        android:background="#808080"
+        android:background="#73f2f2f2"
         android:dividerPadding="11dp"
-        android:padding="4dp" >
+        android:padding="4dp"
+        android:layout_marginBottom="8dp">
 
         <Button
             android:id="@+id/undobar_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="30dp"
-            android:background="#808080"
-            android:drawableLeft="@drawable/ic_undo_black_24dp"
+            android:drawableStart="@drawable/ic_undo_black_24dp"
             android:text="@string/Editor_Undo"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="#fff"
+            android:textColor="#000000"
+            android:background="#00f2f2f2"
             android:clickable="false"
             android:focusable="false"
             />
     </LinearLayout>
+
+    <ListView
+        android:id="@+id/listviewEditor"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
 </android.support.constraint.ConstraintLayout>

@@ -212,7 +212,7 @@ public class Database {
     public List<Table> getTables() {
         try (
                 Cursor cursor = db.rawQuery("SELECT `" + KEY_TABLE + "`,`" + KEY_NAME_A + "`,`" + KEY_NAME_B + "`,`" + KEY_NAME_TBL + "` "
-                        + "FROM `" + TBL_TABLES + "` WHERE 1", null);
+                        + "FROM `" + TBL_TABLES + "` WHERE 1", null)
         ) {
             List<Table> list = new ArrayList<>();
             while (cursor.moveToNext()) {
@@ -285,11 +285,7 @@ public class Database {
                 Cursor cursor = db.rawQuery("SELECT 1 "
                         + "FROM `" + TBL_TABLES + "`"
                         + "WHERE `" + KEY_TABLE + "` = ?", new String[]{String.valueOf(tbl.getId())})) {
-            if (cursor.moveToNext()) {
-                return true;
-            } else {
-                return false;
-            }
+            return cursor.moveToNext();
         } catch (Exception e) {
             Log.e(TAG, "", e);
             return false;
@@ -310,7 +306,7 @@ public class Database {
                         + KEY_LAST_USED + "` = ? "
                         + "WHERE `" + KEY_TABLE + "`= ? AND `" + KEY_VOC + "` = ?");
                 SQLiteStatement insStm = db.compileStatement("INSERT INTO `" + TBL_VOCABLE + "` (`" + KEY_WORD_A + "`,`" + KEY_WORD_B + "`,`" + KEY_TIP + "`,`"
-                        + KEY_LAST_USED + "`,`" + KEY_TABLE + "`,`" + KEY_VOC + "`) VALUES (?,?,?,?,?,?)");
+                        + KEY_LAST_USED + "`,`" + KEY_TABLE + "`,`" + KEY_VOC + "`) VALUES (?,?,?,?,?,?)")
 
         ) {
 
@@ -608,17 +604,17 @@ public class Database {
      *
      * @param tbl
      * @param ts
+     * @param allowRepetition set to true to allow selecting the same vocable as lastEntry again
      * @return null on error
      */
-    public Entry getRandomTrainerEntry(final Table tbl, final Entry lastEntry, final TrainerSettings ts) {
+    public Entry getRandomTrainerEntry(final Table tbl, final Entry lastEntry, final TrainerSettings ts, final boolean allowRepetition) {
         Log.d(TAG, "getRandomTrainerEntry");
-        int lastID = -1;
-        if (lastEntry != null && lastEntry.getTable().getId() == tbl.getId())
+        int lastID = MIN_ID_TRESHOLD-1;
+        if (lastEntry != null && lastEntry.getTable().getId() == tbl.getId() && !allowRepetition)
             lastID = lastEntry.getId();
 
         String[] arg = new String[]{String.valueOf(tbl.getId()), String.valueOf(lastID), String.valueOf(ts.timesToSolve)};
-
-
+        Log.d(TAG,Arrays.toString(arg));
         try (
                 Cursor cursor = db.rawQuery("SELECT tbl.`" + KEY_VOC + "`, tbl.`" + KEY_TABLE + "`,`" + KEY_WORD_A + "`, `" + KEY_WORD_B + "`, `" + KEY_TIP + "`, `" + KEY_POINTS + "`, `" + KEY_LAST_USED + "` "
                         + "FROM `" + TBL_VOCABLE + "` tbl LEFT JOIN  `" + TBL_SESSION + "` ses"
@@ -629,14 +625,14 @@ public class Database {
                         + " ORDER BY RANDOM() LIMIT 1", arg);
         ) {
             if (cursor.moveToNext()) {
-                if (cursor.isNull(5)) {
+                if (cursor.isNull(5)) { // KEY_POINTS optional
                     Log.d(TAG, "no points for entry");
                     Entry newEntry = new Entry(cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getInt(0), tbl, 0, cursor.getLong(6));
                     return newEntry;
                 }
                 return new Entry(cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getInt(0), tbl, cursor.getInt(5), cursor.getLong(6));
             } else {
-                Log.d(TAG, "Not more entries found!");
+                Log.w(TAG, "no entries found!");
                 return null;
             }
 
@@ -659,7 +655,7 @@ public class Database {
 
         try (
                 Cursor cursor = db.rawQuery("SELECT `" + KEY_MVALUE + "` FROM `" + TBL_SESSION_META + "` WHERE `" + KEY_MKEY + "` = ?"
-                        , new String[]{String.valueOf(key)});
+                        , new String[]{String.valueOf(key)})
         ) {
             if (cursor.moveToNext()) {
                 return cursor.getString(1);

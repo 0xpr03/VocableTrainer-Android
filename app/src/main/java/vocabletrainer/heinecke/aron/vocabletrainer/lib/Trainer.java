@@ -21,10 +21,18 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
 public class Trainer {
     private final static String TAG = "Trainer";
 
-    public enum TEST_MODE {A(0), B(1), RANDOM(2);
+    public enum TEST_MODE {
+        A(0), B(1), RANDOM(2);
         private final int id;
-        TEST_MODE(int id) { this.id = id; }
-        public int getValue() { return id; }
+
+        TEST_MODE(int id) {
+            this.id = id;
+        }
+
+        public int getValue() {
+            return id;
+        }
+
         public static TEST_MODE fromInt(int code) {
             for (TEST_MODE typе : TEST_MODE.values()) {
                 if (typе.getValue() == code) {
@@ -59,8 +67,8 @@ public class Trainer {
     /**
      * Creates a new Trainer
      *
-     * @param tables   Vocable tables to use
-     * @param settings Trainer settings storage
+     * @param tables     Vocable tables to use
+     * @param settings   Trainer settings storage
      * @param newSession whether this is a new or a continued session
      */
     public Trainer(final ArrayList<Table> tables, final TrainerSettings settings, final Context context, final boolean newSession) {
@@ -75,7 +83,7 @@ public class Trainer {
         db = new Database(context);
         rng = new Random();
 
-        if(newSession){
+        if (newSession) {
             wipeSession();
         }
 
@@ -86,9 +94,10 @@ public class Trainer {
 
     /**
      * Wipe DB from (previous) session
+     *
      * @return true on success
      */
-    private boolean wipeSession(){
+    private boolean wipeSession() {
         return db.wipeSessionPoints();
     }
 
@@ -122,6 +131,7 @@ public class Trainer {
             return "";
         }
         this.failed++;
+        showedSolution = true;
         return getSolutionUnchecked();
     }
 
@@ -151,7 +161,7 @@ public class Trainer {
         }
         boolean bSolved;
         if (bSolved = getSolutionUnchecked().equals(tSolution)) {
-            if(!showedSolution)
+            if (!showedSolution)
                 this.cVocable.setPoints(this.cVocable.getPoints() + 1);
             if (cVocable.getPoints() >= timesToSolve) {
                 Table tbl = cVocable.getTable();
@@ -174,14 +184,16 @@ public class Trainer {
 
     /**
      * Returns true when all vocables are solved as many times as expected
+     *
      * @return
      */
-    public boolean isFinished(){
+    public boolean isFinished() {
         return unsolvedTables.size() == 0;
     }
 
     /**
      * Update cVocable points
+     *
      * @return true on success
      */
     private boolean updateVocable() {
@@ -193,21 +205,36 @@ public class Trainer {
      */
     private void getNext() {
         if (cVocable != null) {
-            if(!updateVocable())
+            if (!updateVocable()) {
+                Log.e(TAG, "unable to update vocable!");
                 return;
+            }
         }
         showedSolution = false;
 
-        if (unsolvedTables.size() == 0){
-            Log.d(TAG,"no unsolved tables remaining!");
+        if (unsolvedTables.size() == 0) {
+            Log.d(TAG, "no unsolved tables remaining!");
         } else {
-            Table tbl = unsolvedTables.get(rng.nextInt(unsolvedTables.size()));
+            int selected = rng.nextInt(unsolvedTables.size());
+            Table tbl = unsolvedTables.get(selected);
 
-            if(unsolvedTables.size() == 1 && unsolvedTables.get(0).getUnfinishedVocs() == 1) {
-                Log.d(TAG,"one left");
+            boolean allowRepetition = false;
+            if(cVocable != null) {
+                if (allowRepetition = unsolvedTables.size() == 1 && unsolvedTables.get(0).getUnfinishedVocs() == 1) {
+                    Log.d(TAG, "one left");
+                } else if (tbl.getUnfinishedVocs() == 1 && tbl.getId() == cVocable.getTable().getId()) {
+                    // handle table has only one entry left
+                    // prevent repeating last vocable of table
+                    if (selected + 1 >= unsolvedTables.size())
+                        selected--;
+                    else
+                        selected++;
+                    Log.d(TAG, "selectionID:" + selected + " max(-1):" + unsolvedTables.size());
+                    tbl = unsolvedTables.get(selected);
+                }
             }
 
-            cVocable = db.getRandomTrainerEntry(tbl, cVocable, settings);
+            cVocable = db.getRandomTrainerEntry(tbl, cVocable, settings, allowRepetition);
             if (cVocable == null) {
                 Log.e(TAG, "New vocable is null!");
             }
@@ -225,7 +252,7 @@ public class Trainer {
 
     /**
      * Returns the non-solution column of the vocable<br>
-     *     returns an empty string when there is no current vocable
+     * returns an empty string when there is no current vocable
      *
      * @return
      */
@@ -238,7 +265,7 @@ public class Trainer {
 
     /**
      * Returns the tip, increasing the counter<br>
-     *     returns an empty string when there is no current vocable
+     * returns an empty string when there is no current vocable
      *
      * @return
      */
@@ -252,11 +279,12 @@ public class Trainer {
 
     /**
      * Returns the column name of the question<br>
-     *     returns an empty string when there is no current vocable
+     * returns an empty string when there is no current vocable
+     *
      * @return
      */
     public String getColumnNameExercise() {
-        if(this.cVocable == null)
+        if (this.cVocable == null)
             return "";
 
         return order == AB_MODE.A ? cVocable.getTable().getNameB() : cVocable.getTable().getNameA();
@@ -264,11 +292,12 @@ public class Trainer {
 
     /**
      * Returns the column name of the solution<br>
-     *     returns an empty string when there is no current vocable
+     * returns an empty string when there is no current vocable
+     *
      * @return
      */
     public String getColumnNameSolution() {
-        if(this.cVocable == null)
+        if (this.cVocable == null)
             return "";
 
         return order == AB_MODE.B ? cVocable.getTable().getNameB() : cVocable.getTable().getNameA();

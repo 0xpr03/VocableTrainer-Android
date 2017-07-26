@@ -334,7 +334,7 @@ public class Database {
                         updStm.bindLong(6, entry.getId());
                         updStm.execute();
                     }
-                } else {
+                } else if(!entry.isDelete()){
                     if (entry.getTable().getId() != lastTableID || lastID < MIN_ID_TRESHOLD) {
                         lastTableID = entry.getTable().getId();
                         Log.d(TAG, "lastTableID: " + lastTableID + " lastID: " + lastID);

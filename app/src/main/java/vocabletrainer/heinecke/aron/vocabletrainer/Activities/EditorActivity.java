@@ -1,5 +1,6 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import android.widget.TableLayout;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib.EntryListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
@@ -22,14 +24,21 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 
-import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.ListSelector.PARAM_PASSED_SELECTION;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
 
 /**
  * List editor activity
  */
 public class EditorActivity extends AppCompatActivity {
+    private final static int LIST_SELECT_REQUEST_CODE = 10;
+    /**
+     * Param key for new table, default is false
+     */
     public static final String PARAM_NEW_TABLE = "NEW_TABLE";
+    /**
+     * Param key for list to load upon new_table false
+     */
+    public static final String PARAM_TABLE = "table";
     private static final String TAG = "EditorActivity";
     private Table table;
     private ArrayList<Entry> entries;
@@ -59,11 +68,11 @@ public class EditorActivity extends AppCompatActivity {
         // handle passed params
         boolean newTable = intent.getBooleanExtra(PARAM_NEW_TABLE, false);
         if (newTable) {
-            table = new Table(getString(R.string.Editor_Default_Column_A),getString(R.string.Editor_Default_Column_B),getString(R.string.Editor_Default_List_Name));
+            table = new Table(getString(R.string.Editor_Default_Column_A), getString(R.string.Editor_Default_Column_B), getString(R.string.Editor_Default_List_Name));
             Log.d(TAG, "new table mode");
             showTableInfoDialog(true);
         } else {
-            Table tbl = (Table) intent.getSerializableExtra(PARAM_PASSED_SELECTION);
+            Table tbl = (Table) intent.getSerializableExtra(PARAM_TABLE);
             if (tbl != null) {
                 this.table = tbl;
                 entries.addAll(db.getVocablesOfTable(table));
@@ -76,33 +85,33 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onPause(){
+    public void onPause() {
         saveTable();
         super.onPause();
     }
-    
+
     /**
      * Called upon click on save changes
      */
-    public void onSaveChangesClicked(View view){
+    public void onSaveChangesClicked(View view) {
         saveTable();
     }
 
     /**
-     *  Save the table to disk
+     * Save the table to disk
      */
-    private void saveTable(){
-        Log.d(TAG,"table: "+table);
-        if(db.upsertTable(table)) {
-            Log.d(TAG,"table: "+table);
-            if(db.upsertEntries(adapter.getAllEntries())){
+    private void saveTable() {
+        Log.d(TAG, "table: " + table);
+        if (db.upsertTable(table)) {
+            Log.d(TAG, "table: " + table);
+            if (db.upsertEntries(adapter.getAllEntries())) {
                 adapter.clearDeleted();
                 edited = false;
-            }else{
-                Log.e(TAG,"unable to upsert entries! aborting");
+            } else {
+                Log.e(TAG, "unable to upsert entries! aborting");
             }
-        }else{
-            Log.e(TAG,"unable to upsert table! aborting");
+        } else {
+            Log.e(TAG, "unable to upsert table! aborting");
         }
     }
 
@@ -115,7 +124,7 @@ public class EditorActivity extends AppCompatActivity {
         listView.setLongClickable(true);
 
         entries = new ArrayList<>();
-        adapter = new EntryListAdapter(this, entries,this);
+        adapter = new EntryListAdapter(this, entries, this);
 
         listView.setAdapter(adapter);
 
@@ -123,7 +132,7 @@ public class EditorActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, final View view, int pos, long id) {
                 Toast.makeText(EditorActivity.this, Integer.toString(pos) + " Clicked", Toast.LENGTH_SHORT).show();
-                showEntryEditDialog((Entry) adapter.getItem(pos),false);
+                showEntryEditDialog((Entry) adapter.getItem(pos), false);
             }
 
         });
@@ -131,8 +140,8 @@ public class EditorActivity extends AppCompatActivity {
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
-                                        int pos, long id) {
-                showEntryDeleteDialog((Entry) adapter.getItem(pos),pos);
+                                           int pos, long id) {
+                showEntryDeleteDialog((Entry) adapter.getItem(pos), pos);
                 return true;
             }
         });
@@ -142,23 +151,24 @@ public class EditorActivity extends AppCompatActivity {
      * Add an entry
      */
     public void addEntry(View view) {
-        Entry entry = new Entry("","","", table, -1);
+        Entry entry = new Entry("", "", "", table, -1);
         adapter.addEntryUnrendered(entry);
-        showEntryEditDialog(entry,true);
+        showEntryEditDialog(entry, true);
     }
 
     /**
      * Show entry delete dialog
+     *
      * @param entry
      * @param position
      */
     private void showEntryDeleteDialog(final Entry entry, final int position) {
-        if(entry.getId() == ID_RESERVED_SKIP)
+        if (entry.getId() == ID_RESERVED_SKIP)
             return;
         AlertDialog.Builder delDiag = new AlertDialog.Builder(this);
 
         delDiag.setTitle(R.string.Editor_Diag_delete_Title);
-        delDiag.setMessage(String.format(getString(R.string.Editor_Diag_delete_MSG_part)+"\n %s %s %s",entry.getAWord(),entry.getBWord(),entry.getTip()));
+        delDiag.setMessage(String.format(getString(R.string.Editor_Diag_delete_MSG_part) + "\n %s %s %s", entry.getAWord(), entry.getBWord(), entry.getTip()));
 
         delDiag.setPositiveButton(R.string.Editor_Diag_delete_btn_OK, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
@@ -183,11 +193,12 @@ public class EditorActivity extends AppCompatActivity {
 
     /**
      * Show entry edit dialog
-     * @param entry Entry to edit
+     *
+     * @param entry          Entry to edit
      * @param deleteOnCancel True if entry should be deleted on cancel
      */
-    private void showEntryEditDialog(final Entry entry,final boolean deleteOnCancel) {
-        if(entry.getId() == ID_RESERVED_SKIP){
+    private void showEntryEditDialog(final Entry entry, final boolean deleteOnCancel) {
+        if (entry.getId() == ID_RESERVED_SKIP) {
             showTableInfoDialog(false);
             return;
         }
@@ -225,7 +236,7 @@ public class EditorActivity extends AppCompatActivity {
 
         editDiag.setNegativeButton(R.string.Editor_Diag_edit_btn_CANCEL, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                if(deleteOnCancel){
+                if (deleteOnCancel) {
                     adapter.setDeleted(entry);
                     adapter.notifyDataSetChanged();
                 }
@@ -237,39 +248,45 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     /**
-     * Show table title editor dialog
-     * @param newTbl set to true if this is a new table
+     * Shows a dialog to edit the specified list data
+     *
+     * @param newTbl   Is new table
+     * @param tbl      Table object to edit
+     * @param callable Called upon ok press<br>
+     *                 Not called when user cancels dialog in any way
+     * @param context  Context to be used for this dialog
+     * @return Dialog created
      */
-    private void showTableInfoDialog(boolean newTbl) {
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+    public static AlertDialog showListEditorDialog(final boolean newTbl, final Table tbl, final Callable<Void> callable,final Context context) {
+        AlertDialog.Builder alert = new AlertDialog.Builder(context);
 
-        if(newTbl) {
+        if (newTbl) {
             alert.setTitle(R.string.Editor_Diag_table_Title_New);
-        }else{
+        } else {
             alert.setTitle(R.string.Editor_Diag_table_Title_Edit);
         }
         alert.setMessage("Please set the table information");
 
         // Set an EditText view to get user iName
-        final EditText iName = new EditText(this);
-        final EditText iColA = new EditText(this);
-        final EditText iColB = new EditText(this);
-        iName.setText(table.getName());
+        final EditText iName = new EditText(context);
+        final EditText iColA = new EditText(context);
+        final EditText iColB = new EditText(context);
+        iName.setText(tbl.getName());
         iName.setSingleLine();
         iName.setHint(R.string.Editor_Default_List_Name);
         iColA.setHint(R.string.Editor_Default_Column_A);
         iColB.setHint(R.string.Editor_Default_Column_B);
-        iColA.setText(table.getNameA());
+        iColA.setText(tbl.getNameA());
         iColA.setSingleLine();
         iColB.setSingleLine();
-        iColB.setText(table.getNameB());
+        iColB.setText(tbl.getNameB());
         if (newTbl) {
             iName.setSelectAllOnFocus(true);
             iColA.setSelectAllOnFocus(true);
             iColB.setSelectAllOnFocus(true);
         }
 
-        LinearLayout rl = new TableLayout(this);
+        LinearLayout rl = new TableLayout(context);
         rl.addView(iName);
         rl.addView(iColA);
         rl.addView(iColB);
@@ -277,30 +294,41 @@ public class EditorActivity extends AppCompatActivity {
 
         alert.setPositiveButton(R.string.Editor_Diag_table_btn_Ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                if(iColA.getText().length() == 0 || iColB.length() == 0 || iName.getText().length() == 0){
-                   Log.d(TAG,"empty insert");
+                if (iColA.getText().length() == 0 || iColB.length() == 0 || iName.getText().length() == 0) {
+                    Log.d(TAG, "empty insert");
                 }
-                updateName(iName.getText().toString());
-                table.setNameA(iColA.getText().toString());
-                table.setNameB(iColB.getText().toString());
-                adapter.setTableData(table);
-                edited = true;
+
+                tbl.setNameA(iColA.getText().toString());
+                tbl.setNameB(iColB.getText().toString());
+                tbl.setName(iName.getText().toString());
+                try {
+                    callable.call();
+                } catch (Exception e) { // has to be caught
+                    e.printStackTrace();
+                }
                 Log.d(TAG, "set table info");
             }
         });
 
-        alert.show();
+        return alert.show();
     }
 
     /**
-     * Update table name<br>
-     * handles title renaming
+     * Show table title editor dialog
      *
-     * @param name
+     * @param newTbl set to true if this is a new table
      */
-    private void updateName(final String name) {
-        setTitle("VocableTrainer - " + name);
-        table.setName(name);
+    private void showTableInfoDialog(final boolean newTbl) {
+        Callable<Void> callable = new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                setTitle("VocableTrainer - " + table.getName());
+                adapter.setTableData(table);
+                edited = true;
+                return null;
+            }
+        };
+        showListEditorDialog(newTbl, table, callable, this);
     }
 
     /**
@@ -320,9 +348,9 @@ public class EditorActivity extends AppCompatActivity {
         undoContainer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG,"undoing");
+                Log.d(TAG, "undoing");
                 lastDeleted.setDelete(false);
-                adapter.addEntryRendered(lastDeleted,deletedPosition);
+                adapter.addEntryRendered(lastDeleted, deletedPosition);
                 undoContainer.setVisibility(View.GONE);
             }
         });

@@ -35,13 +35,17 @@ public class TableListAdapter extends ArrayAdapter<Table> {
     TextView colB;
     Table header;
 
+    /**
+     * items >= starting item are real items and no header etc
+     */
+    public final static int STARTING_ITEM = 1;
     private final boolean displayCheckbox;
 
     public TableListAdapter(Context context, int textViewResourceId, ArrayList<Table> table, final boolean displayCheckbox) {
         super(context, textViewResourceId, table);
         this.dataItem = table;
         header = new Table(ID_RESERVED_SKIP,context.getString(R.string.Editor_Default_Column_A), context.getString(R.string.Editor_Default_Column_B), context.getString(R.string.Editor_Default_List_Name));
-        dataItem.add(0,header);
+        dataItem.add(STARTING_ITEM-1,header);
         resLayout = textViewResourceId;
         this.context = context;
         this.displayCheckbox = displayCheckbox;
@@ -95,7 +99,6 @@ public class TableListAdapter extends ArrayAdapter<Table> {
             colB.setTypeface(null,Typeface.BOLD);
         }
 
-        Log.d("TableListAdapter","setting text: "+item.getName()+" on "+colName.toString());
         colName.setText(item.getName());
         colA.setText(item.getNameA());
         colB.setText(String.valueOf(item.getNameB()));

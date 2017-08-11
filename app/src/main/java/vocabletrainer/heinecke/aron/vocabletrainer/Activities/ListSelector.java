@@ -1,10 +1,11 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.View;
@@ -21,45 +22,39 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
+import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TRESHOLD;
 
 /**
  * List selector activity
  */
 public class ListSelector extends AppCompatActivity {
 
-    private static final String TAG = "ListSelector";
-
     /**
      * Set whether multi-select is enabled or not<br>
      * Boolean expected
      */
     public static final String PARAM_MULTI_SELECT = "multiselect";
-
     /**
-     * Param which activity should called upon this one<br>
-     * A {@link Class} is expect for this param
+     * Param key for return of selected lists<br>
+     * This key contains a {@link Table} object or a {@link List} of {@link Table}
      */
-    public static final String PARAM_NEW_ACTIVITY = "activity";
-
-    /**
-     * Param under which the selected table / tables are passed<br>
-     * This is a {@link Table} object or a {@link List} of {@link Table}
-     */
-    public static final String PARAM_PASSED_SELECTION = "selected";
-
+    public static final String RETURN_LISTS = "selected";
     /**
      * Pass this flag as true to call this as an deletion activity
      */
     public static final String PARAM_DELETE_FLAG = "delete";
-
-    private Class nextActivity;
+    /**
+     * Optional Param key for already selected lists, available when multiselect is set<br>
+     * Expect a {@link List} of {@link Table}
+     */
+    public static final String PARAM_SELECTED = "selected";
+    private static final String TAG = "ListSelector";
+    Database db;
+    List<Table> tables;
     private boolean multiselect;
     private ListView listView;
     private TableListAdapter adapter;
     private boolean delete;
-    Database db;
-    List<Table> tables;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,27 +64,42 @@ public class ListSelector extends AppCompatActivity {
         Intent intent = getIntent();
         // handle passed params
         multiselect = intent.getBooleanExtra(PARAM_MULTI_SELECT, false);
-        nextActivity = (Class) intent.getSerializableExtra(PARAM_NEW_ACTIVITY);
         delete = intent.getBooleanExtra(PARAM_DELETE_FLAG, false);
 
         // setup listview
         initListView();
-
-        loadTables();
+        loadTables((ArrayList<Table>) intent.getSerializableExtra(PARAM_SELECTED));
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
-        loadTables();
+        loadTables(null);
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent returnIntent = new Intent();
+        setResult(Activity.RESULT_CANCELED, returnIntent);
+        finish();
     }
 
     /**
      * Load tables from db
+     *
+     * @param tickedTables already selected tables, can be null
      */
-    private void loadTables() {
+    private void loadTables(List<Table> tickedTables) {
         tables = db.getTables();
         adapter.setAllUpdated(tables);
+        if (tickedTables != null) {
+            for (int i = 0; i < adapter.getCount(); i++) {
+                Table tbl = adapter.getItem(i);
+                if (tbl.getId() >= MIN_ID_TRESHOLD && tickedTables.contains(tbl)) {
+                    listView.setItemChecked(i, true);
+                }
+            }
+        }
     }
 
     /**
@@ -119,17 +129,17 @@ public class ListSelector extends AppCompatActivity {
                     int chkItemsCount = checkedItems.size();
 
                     for (int i = 0; i < chkItemsCount; ++i) {
-                        int position = checkedItems.keyAt(i);
                         if (checkedItems.valueAt(i)) {
-                            selectedTables.add(adapter.getItem(position));
+                            selectedTables.add(adapter.getItem(checkedItems.keyAt(i)));
                         }
                     }
 
-                    Log.d(TAG, "Going to: " + nextActivity.toString() + " with " + selectedTables.size() + " selected items");
+                    Log.d(TAG, "returning with " + selectedTables.size() + " selected items");
 
-                    Intent intent = new Intent(ListSelector.this, nextActivity);
-                    intent.putExtra(PARAM_PASSED_SELECTION, selectedTables);
-                    ListSelector.this.startActivity(intent);
+                    Intent returnIntent = new Intent();
+                    returnIntent.putExtra(RETURN_LISTS, selectedTables);
+                    setResult(Activity.RESULT_OK, returnIntent);
+                    finish();
                 }
             });
         } else {
@@ -152,10 +162,10 @@ public class ListSelector extends AppCompatActivity {
                     public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
                         Table table = (Table) adapter.getItem(position);
                         if (table.getId() != ID_RESERVED_SKIP) {
-                            Log.d(TAG, nextActivity.toString());
-                            Intent intent = new Intent(ListSelector.this, nextActivity);
-                            intent.putExtra(PARAM_PASSED_SELECTION, table);
-                            ListSelector.this.startActivity(intent);
+                            Intent returnIntent = new Intent();
+                            returnIntent.putExtra(RETURN_LISTS, table);
+                            setResult(Activity.RESULT_OK, returnIntent);
+                            finish();
                         }
                     }
 
@@ -175,7 +185,7 @@ public class ListSelector extends AppCompatActivity {
 
         finishedDiag.setTitle(R.string.ListSelector_Diag_delete_Title);
         finishedDiag.setMessage(String.format(getText(R.string.ListSelector_Diag_delete_Msg).toString(),
-                tableToDelete.getName(),tableToDelete.getNameA(),tableToDelete.getNameB()));
+                tableToDelete.getName(), tableToDelete.getNameA(), tableToDelete.getNameB()));
 
         finishedDiag.setPositiveButton(R.string.ListSelector_Diag_delete_btn_Delete, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {

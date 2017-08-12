@@ -143,7 +143,7 @@ public class DBTest {
         List<Entry> entries = getEntries(tbl);
 
         assertTrue("UpsertEntries",db.upsertEntries(entries));
-        assertNotNull(db.getRandomTrainerEntry(tbl,null,new TrainerSettings(2, Trainer.TEST_MODE.RANDOM,true)));
+        assertNotNull(db.getRandomTrainerEntry(tbl,null,new TrainerSettings(2, Trainer.TEST_MODE.RANDOM,true),true));
     }
 
     @Test
@@ -186,10 +186,10 @@ public class DBTest {
 
         TrainerSettings settings = new TrainerSettings(points, Trainer.TEST_MODE.RANDOM,true);
 
-        Entry chosen = db.getRandomTrainerEntry(tbl,null,settings);
+        Entry chosen = db.getRandomTrainerEntry(tbl,null,settings,false);
         assertNotNull(chosen);
 
-        Entry secondChosen = db.getRandomTrainerEntry(tbl,chosen,settings);
+        Entry secondChosen = db.getRandomTrainerEntry(tbl,chosen,settings,false);
         assertNotNull(secondChosen);
         assertNotEquals("selected same entry twice",chosen.getId(),secondChosen.getId());
 
@@ -198,14 +198,14 @@ public class DBTest {
         assertTrue(db.updateEntryProgress(chosen));
         assertEquals("table points",chosen.getPoints(),db.getEntryPoints(chosen));
 
-        Entry thirdChosen = db.getRandomTrainerEntry(tbl,null,settings);
+        Entry thirdChosen = db.getRandomTrainerEntry(tbl,null,settings,false);
         assertNotNull(thirdChosen);
         assertNotEquals("selected entry with reached points",chosen.getId(),thirdChosen.getId());
 
         thirdChosen.setPoints(points);
         assertTrue(db.updateEntryProgress(thirdChosen));
 
-        Entry fourthChosen = db.getRandomTrainerEntry(tbl,null,settings);
+        Entry fourthChosen = db.getRandomTrainerEntry(tbl,null,settings,false);
         assertNull(fourthChosen);
     }
 }

@@ -52,7 +52,7 @@
     <string name="CSV_Format_Tabs">Tabs</string>
     <string name="Export_Exporting_Title">Exportiere..</string>
     <string name="Export_Cancel">Abbrechen</string>
-    <string name="Export_Message">Nach CSV Datei (mit list info) exportieren</string>
+    <string name="Export_Message">CSV Datei mit (mehreren) vokabel Listen(n) importieren.\nSiehe <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Import">Wiki Eintrag</a> für weiter Informationen.</string>
     <string name="Export_Ok">Exportieren</string>
     <string name="Export_chk_Multilist">Mehrere Listen exportieren</string>
     <string name="Export_chk_Table_Meta">Exportiere Listen Meta-daten</string>
@@ -70,11 +70,11 @@
     <string name="Import_Rawlist_MERGE">An Liste anhängen</string>
     <string name="Import_Singlelist_ADD">An Liste anhängen falls existent</string>
     <string name="Import_Rawlist_CREATE">Neue Liste erzeugen</string>
-    <string name="Import_Info_multilist">Mehrlisten Format erkannt</string>
+    <string name="Import_Info_multilist">mehrlisten Format erkannt</string>
     <string name="Import_Info_rawlist">Rohdaten Liste erkannt</string>
     <string name="Import_Info_singlelist">einfache Liste erkannt</string>
-    <string name="Import_Message">CSV Datei mit (mehreren) vokabel Listen(n) importieren</string>
-    <string name="Import_Multilist_ADD">bei bestehenden Listen hinzufügen</string>
+    <string name="Import_Message">CSV Datei mit (mehreren) Vokabelliste(n) importieren.\nSiehe <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Import">Wiki Eintrag</a> für weiter Informationen.</string>
+    <string name="Import_Multilist_ADD">Bei bestehenden Listen hinzufügen</string>
     <string name="Import_Multilist_IGNORE">Bestehende Listen ignorieren</string>
     <string name="Import_Multilist_REPLACE">Bestehende Listen überschreiben</string>
     <string name="Import_Singlelist_CREATE">Neue Liste erzeugen</string>
@@ -87,8 +87,10 @@
     <string name="Main_btn_Import">Importieren</string>
     <string name="Perm_CSV">Berechtigung wird für laden/schreiben Ihrer CSV-Dateien für den Import/Export benötigt.</string>
     <string name="Select_File_btn">Datei auswählen</string>
-    <string name="Export_File_select_Info">Datei für den Export auswählen</string>
-    <string name="File_Error_Mediastate">Es wurde kein Speichermedium gefudnen / nicht beschreibbar! Fortfahren unmöglich!</string>
+    <string name="Export_File_select_Info">Export Zieldatei auswählen</string>
+    <string name="File_Error_Mediastate">Es wurde kein Speichermedium gefunden / nicht beschreibbar! Fortfahren unmöglich!</string>
     <string name="File_Error_Nullpointer">Nullpointer, Dateien können nicht angezeigt werden.</string>
     <string name="File_Diag_MSG_part" formatted="false">Möchten Sie diese Datei überschreiben ? %f</string>
+    <string name="Import_File_select_Info">Import Quelldatei auswählen</string>
+    <string name="title_activity_export"></string>
 </resources>

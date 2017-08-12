@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -21,6 +22,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TableLayout;
+import android.widget.TextView;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -73,6 +75,7 @@ public class ExportActivity extends AppCompatActivity {
     private ExportOperation exportTask;
     private Spinner spFormat;
     private ArrayAdapter<GenericSpinnerEntry<CSVFormat>> spAdapterFormat;
+    private TextView tMsg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +89,7 @@ public class ExportActivity extends AppCompatActivity {
         chkExportMultiple = (CheckBox) findViewById(R.id.chkExportMulti);
         chkExportTalbeInfo = (CheckBox) findViewById(R.id.chkExportMeta);
         spFormat = (Spinner) findViewById(R.id.spExpFormat);
+        tMsg = (TextView) findViewById(R.id.tExportMsg);
 
         initView();
     }
@@ -94,6 +98,7 @@ public class ExportActivity extends AppCompatActivity {
      * Init list view
      */
     private void initView() {
+        tMsg.setMovementMethod(LinkMovementMethod.getInstance());
         tExportFile.setKeyListener(null);
         btnExport.setEnabled(false);
         tables = new ArrayList<>();

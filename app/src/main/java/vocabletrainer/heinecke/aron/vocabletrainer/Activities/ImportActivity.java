@@ -9,6 +9,7 @@ import android.support.constraint.ConstraintLayout;
 import android.support.v4.widget.Space;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -77,10 +78,11 @@ public class ImportActivity extends AppCompatActivity {
     private Button bImportOk;
     private ListView list;
     private ConstraintLayout singleLayout;
-    private TextView tImportMessage;
+    private TextView tInfo;
     private boolean isRawData = false;
     private boolean isMultilist = true;
     private PreviewParser previewParser;
+    private TextView tMsg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,14 +96,16 @@ public class ImportActivity extends AppCompatActivity {
         spSingleList = (Spinner) findViewById(R.id.spImportSingleMetadata);
         spMultilist = (Spinner) findViewById(R.id.spImportMultiple);
         singleLayout = (ConstraintLayout) findViewById(R.id.cImportNonMultilist);
-        tImportMessage = (TextView) findViewById(R.id.tImportMsg);
+        tInfo = (TextView) findViewById(R.id.tImportInfo);
         etList = (EditText) findViewById(R.id.tImportList);
         bSelectList = (Button) findViewById(R.id.bImportSelectList);
         etFile = (EditText) findViewById(R.id.tImportPath);
         bImportOk = (Button) findViewById(R.id.bImportOk);
         list = (ListView) findViewById(R.id.lstImportPreview);
         spFormat = (Spinner) findViewById(R.id.spImportFormat);
+        tMsg = (TextView) findViewById(R.id.tImportMsg);
 
+        tMsg.setMovementMethod(LinkMovementMethod.getInstance());
         list.setAdapter(adapter);
 
         bImportOk.setEnabled(false);
@@ -343,7 +347,7 @@ public class ImportActivity extends AppCompatActivity {
             text = R.string.Import_Info_multilist;
         else
             text = R.string.Import_Info_singlelist;
-        tImportMessage.setText(text);
+        tInfo.setText(text);
 
         checkInput();
     }

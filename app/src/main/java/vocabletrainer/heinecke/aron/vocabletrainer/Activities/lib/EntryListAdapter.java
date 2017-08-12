@@ -2,7 +2,6 @@ package vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,7 +10,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,10 +18,6 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
-
-/**
- * Created by aron on 26.04.17.
- */
 
 /**
  * BaseAdapter for entry list views
@@ -35,13 +29,6 @@ public class EntryListAdapter extends BaseAdapter {
     private List<Entry> deleted;
     private Activity activity;
     private LayoutInflater inflater;
-
-    private class ViewHolder {
-        protected TextView colA;
-        protected TextView colB;
-        protected TextView colTipp;
-    }
-
     private Entry header;
 
     /**
@@ -75,7 +62,6 @@ public class EntryListAdapter extends BaseAdapter {
         Log.d("EntryListAdapter", "setTableData");
     }
 
-
     @Override
     public int getCount() {
         return dataItems.size();
@@ -93,7 +79,7 @@ public class EntryListAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(final int position,View convertView,final ViewGroup parent) {
+    public View getView(final int position, View convertView, final ViewGroup parent) {
         final ViewHolder holder;
         final Entry item = dataItems.get(position);
 
@@ -112,13 +98,10 @@ public class EntryListAdapter extends BaseAdapter {
             convertView.setTag(R.id.entrySecondText, holder.colB);
             convertView.setTag(R.id.entryThirdText, holder.colTipp);
 
-            if(item.getId() == ID_RESERVED_SKIP){
-                holder.colA.setTypeface(null,Typeface.BOLD);
-//                holder.colA.setPaintFlags(holder.colA.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
-
-                holder.colB.setTypeface(null,Typeface.BOLD);
-
-                holder.colTipp.setTypeface(null,Typeface.BOLD);
+            if (item.getId() == ID_RESERVED_SKIP) {
+                holder.colA.setTypeface(null, Typeface.BOLD);
+                holder.colB.setTypeface(null, Typeface.BOLD);
+                holder.colTipp.setTypeface(null, Typeface.BOLD);
             }
         } else {
             holder = (ViewHolder) convertView.getTag();
@@ -194,5 +177,11 @@ public class EntryListAdapter extends BaseAdapter {
         ArrayList<Entry> entries = new ArrayList<>(this.dataItems);
         entries.addAll(deleted);
         return entries;
+    }
+
+    private class ViewHolder {
+        protected TextView colA;
+        protected TextView colB;
+        protected TextView colTipp;
     }
 }

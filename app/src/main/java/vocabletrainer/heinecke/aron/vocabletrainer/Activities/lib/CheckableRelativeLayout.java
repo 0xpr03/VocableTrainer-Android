@@ -11,11 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by aron on 02.05.17.
- */
-
-/**
  * Checkable relative layout
+ *
  * @see {http://adanware.blogspot.de/2012/04/android-multiple-selection-listview.html}
  */
 public class CheckableRelativeLayout extends RelativeLayout implements Checkable {
@@ -33,21 +30,16 @@ public class CheckableRelativeLayout extends RelativeLayout implements Checkable
         initialise(attrs);
     }
 
-    public CheckableRelativeLayout(Context context, int checkableId) {
-        super(context);
-        initialise(null);
-    }
-
-    /*
-  * @see android.widget.Checkable#isChecked()
-  */
+    /**
+     * @see android.widget.Checkable#isChecked()
+     */
     public boolean isChecked() {
         return isChecked;
     }
 
-    /*
-      * @see android.widget.Checkable#setChecked(boolean)
-      */
+    /**
+     * @see android.widget.Checkable#setChecked(boolean)
+     */
     public void setChecked(boolean isChecked) {
         this.isChecked = isChecked;
         for (Checkable c : checkableViews) {
@@ -55,9 +47,9 @@ public class CheckableRelativeLayout extends RelativeLayout implements Checkable
         }
     }
 
-    /*
-      * @see android.widget.Checkable#toggle()
-      */
+    /**
+     * @see android.widget.Checkable#toggle()
+     */
     public void toggle() {
         this.isChecked = !this.isChecked;
         for (Checkable c : checkableViews) {

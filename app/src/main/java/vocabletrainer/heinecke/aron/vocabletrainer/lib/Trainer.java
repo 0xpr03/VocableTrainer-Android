@@ -1,9 +1,5 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib;
 
-/**
- * Created by aron on 07.04.17.
- */
-
 import android.content.Context;
 import android.util.Log;
 
@@ -11,46 +7,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
 
 /**
  * Trainer class
  */
 public class Trainer {
     private final static String TAG = "Trainer";
-
-    public enum TEST_MODE {
-        A(0), B(1), RANDOM(2);
-        private final int id;
-
-        TEST_MODE(int id) {
-            this.id = id;
-        }
-
-        public int getValue() {
-            return id;
-        }
-
-        public static TEST_MODE fromInt(int code) {
-            for (TEST_MODE typе : TEST_MODE.values()) {
-                if (typе.getValue() == code) {
-                    return typе;
-                }
-            }
-            return null;
-        }
-    }
-
-    ;
     private Random rng;
-
-    private enum AB_MODE {A, B}
-
-    ;
-
-
     private AB_MODE order;
     private List<Table> tables;
     private List<Table> unsolvedTables;
@@ -219,7 +185,7 @@ public class Trainer {
             Table tbl = unsolvedTables.get(selected);
 
             boolean allowRepetition = false;
-            if(cVocable != null) {
+            if (cVocable != null) {
                 if (allowRepetition = unsolvedTables.size() == 1 && unsolvedTables.get(0).getUnfinishedVocs() == 1) {
                     Log.d(TAG, "one left");
                 } else if (tbl.getUnfinishedVocs() == 1 && tbl.getId() == cVocable.getTable().getId()) {
@@ -316,4 +282,35 @@ public class Trainer {
     public int solved() {
         return total - unsolved;
     }
+
+    /**
+     * Testing mode for trainer<br>
+     *     Ask column a/b/a&b random
+     */
+    public enum TEST_MODE {
+        A(0), B(1), RANDOM(2);
+        private final int id;
+
+        TEST_MODE(int id) {
+            this.id = id;
+        }
+
+        public static TEST_MODE fromInt(int code) {
+            for (TEST_MODE typе : TEST_MODE.values()) {
+                if (typе.getValue() == code) {
+                    return typе;
+                }
+            }
+            return null;
+        }
+
+        public int getValue() {
+            return id;
+        }
+    }
+
+    /**
+     * Enum to store the current column that is displayed
+     */
+    private enum AB_MODE {A, B}
 }

@@ -11,10 +11,6 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
 
 /**
- * Created by aron on 12.05.17.
- */
-
-/**
  * Manager for sessions, loading saving of settings
  */
 public class SessionStorageManager {
@@ -96,7 +92,7 @@ public class SessionStorageManager {
         }
 
         /**
-         * Does the actua loading
+         * Does the actual loading
          * @return null on errors
          */
         public TrainerSettings load() {

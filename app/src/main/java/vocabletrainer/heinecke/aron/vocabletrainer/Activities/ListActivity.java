@@ -27,7 +27,7 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TR
 /**
  * List selector activity
  */
-public class ListSelector extends AppCompatActivity {
+public class ListActivity extends AppCompatActivity {
 
     /**
      * Set whether multi-select is enabled or not<br>
@@ -48,7 +48,7 @@ public class ListSelector extends AppCompatActivity {
      * Expect a {@link List} of {@link Table}
      */
     public static final String PARAM_SELECTED = "selected";
-    private static final String TAG = "ListSelector";
+    private static final String TAG = "ListActivity";
     Database db;
     List<Table> tables;
     private boolean multiselect;
@@ -107,7 +107,6 @@ public class ListSelector extends AppCompatActivity {
      */
     private void initListView() {
         listView = (ListView) findViewById(R.id.listVIewLstSel);
-//        listView.setLongClickable(true);
 
         ArrayList<Table> tables = new ArrayList<>();
         adapter = new TableListAdapter(this, R.layout.table_list_view, tables, multiselect);
@@ -148,7 +147,7 @@ public class ListSelector extends AppCompatActivity {
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-                        Table table = (Table) adapter.getItem(position);
+                        Table table = adapter.getItem(position);
                         if (table.getId() != ID_RESERVED_SKIP) {
                             showDeleteDialog(table);
                         }
@@ -160,7 +159,7 @@ public class ListSelector extends AppCompatActivity {
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-                        Table table = (Table) adapter.getItem(position);
+                        Table table = adapter.getItem(position);
                         if (table.getId() != ID_RESERVED_SKIP) {
                             Intent returnIntent = new Intent();
                             returnIntent.putExtra(RETURN_LISTS, table);

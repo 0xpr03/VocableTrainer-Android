@@ -14,9 +14,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,7 +23,7 @@ import java.util.ArrayList;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib.FileListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Formater;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Formatter;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.BasicFileEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.FileEntry;
 
@@ -37,19 +35,16 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.MainActivit
  * To be called as startActivityForResult
  */
 public class FileActivity extends AppCompatActivity {
-    private static final String P_KEY_FA_LAST_DIR = "last_directory";
-    private static final String P_KEY_FA_LAST_FILENAME = "last_filename";
-
     /**
      * Param key under which the selected file is returned to the next activity<br>
      * File is passed as string containing the absolute path<br>
-     *     Type: File
+     * Type: File
      */
     public static final String RETURN_FILE = "file";
     /**
      * Param key for return of user friendly formated file path<br>
      * only containing the normal user-visible storage path<br>
-     *     Type: String
+     * Type: String
      */
     public static final String RETURN_FILE_USER_NAME = "user_file_path";
     /**
@@ -65,7 +60,8 @@ public class FileActivity extends AppCompatActivity {
      * Optional param key for default file name, used upon write flag set true
      */
     public static final String PARAM_DEFAULT_FILENAME = "default_filename";
-
+    private static final String P_KEY_FA_LAST_DIR = "last_directory";
+    private static final String P_KEY_FA_LAST_FILENAME = "last_filename";
     private static final String TAG = "FileActivity";
     private ListView listView;
     private EditText tFileName;
@@ -74,7 +70,7 @@ public class FileActivity extends AppCompatActivity {
 
     private ArrayList<BasicFileEntry> entries;
     private FileListAdapter adapter;
-    private Formater fmt;
+    private Formatter fmt;
     private boolean write;
     private File currentDir;
     private BasicFileEntry selectedEntry;
@@ -85,9 +81,9 @@ public class FileActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG,"init");
+        Log.d(TAG, "init");
         setContentView(R.layout.activity_file);
-        fmt = new Formater();
+        fmt = new Formatter();
 
         TextView msg = (TextView) findViewById(R.id.tFileMsg);
         tFileName = (EditText) findViewById(R.id.tFileName);
@@ -124,7 +120,7 @@ public class FileActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, final View view, int pos, long id) {
                 BasicFileEntry entry = entries.get(pos);
                 if (entry.getTypeID() == BasicFileEntry.TYPE_FILE) {
-                    Log.d(TAG, "selected: " + entry.getName()+" "+view.toString());
+                    Log.d(TAG, "selected: " + entry.getName() + " " + view.toString());
                     view.setSelected(true);
                     view.setActivated(true);
                     selectedEntry = entry;
@@ -167,14 +163,14 @@ public class FileActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onBackPressed(){
+    public void onBackPressed() {
         cancel();
     }
 
     /**
      * Cancel file activity
      */
-    private void cancel(){
+    private void cancel() {
         Intent returnIntent = new Intent();
         setResult(Activity.RESULT_CANCELED, returnIntent);
         finish();
@@ -187,8 +183,8 @@ public class FileActivity extends AppCompatActivity {
      */
     public void onOkPressed(View view) {
         if (write || selectedEntry != null) {
-            selectedFile = write ? new File(currentDir, tFileName.getText().toString()) : ((FileEntry)selectedEntry).getFile();
-            Log.d(TAG,"file:"+selectedFile.getAbsolutePath());
+            selectedFile = write ? new File(currentDir, tFileName.getText().toString()) : ((FileEntry) selectedEntry).getFile();
+            Log.d(TAG, "file:" + selectedFile.getAbsolutePath());
             if (write) {
                 if (selectedFile.isDirectory()) { // required !?
                     selectedFile = null;
@@ -196,7 +192,7 @@ public class FileActivity extends AppCompatActivity {
                     final AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
                     alert.setTitle(R.string.File_Diag_exists_Title);
-                    alert.setMessage(getString(R.string.File_Diag_MSG_part).replace("%f",selectedFile.getName()));
+                    alert.setMessage(getString(R.string.File_Diag_MSG_part).replace("%f", selectedFile.getName()));
 
                     alert.setPositiveButton(R.string.File_Diag_btn_OK, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
@@ -210,23 +206,23 @@ public class FileActivity extends AppCompatActivity {
                         }
                     });
                     alert.show();
-                }else{
+                } else {
                     useFile();
                 }
             }
 
-            if(!write && selectedFile != null){
+            if (!write && selectedFile != null) {
                 useFile();
             }
         }
     }
 
-    private void useFile(){
-        if(selectedFile != null){
+    private void useFile() {
+        if (selectedFile != null) {
             Intent returnIntent = new Intent();
-            returnIntent.putExtra(RETURN_FILE,selectedFile);
-            returnIntent.putExtra(RETURN_FILE_USER_NAME,tCurrentDir.getText().toString()+File.separator+selectedFile.getName());
-            setResult(Activity.RESULT_OK,returnIntent);
+            returnIntent.putExtra(RETURN_FILE, selectedFile);
+            returnIntent.putExtra(RETURN_FILE_USER_NAME, tCurrentDir.getText().toString() + File.separator + selectedFile.getName());
+            setResult(Activity.RESULT_OK, returnIntent);
             finish();
         }
     }
@@ -252,14 +248,14 @@ public class FileActivity extends AppCompatActivity {
      */
     private void setBasicDir() {
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        currentDir = new File(settings.getString(P_KEY_FA_LAST_DIR,""));
-        if(!currentDir.exists()){ // old value not valid anymore
-            Log.w(TAG,"old path is invalid");
+        currentDir = new File(settings.getString(P_KEY_FA_LAST_DIR, ""));
+        if (!currentDir.exists()) { // old value not valid anymore
+            Log.w(TAG, "old path is invalid");
             currentDir = Environment.getExternalStorageDirectory();
         }
         currentDir.mkdirs(); // mkdirs, we're sure to have a valid path
         this.basicDir = Environment.getExternalStorageDirectory().getAbsolutePath();
-        tFileName.setText(settings.getString(P_KEY_FA_LAST_FILENAME,defaultFileName));
+        tFileName.setText(settings.getString(P_KEY_FA_LAST_FILENAME, defaultFileName));
     }
 
     /**
@@ -295,13 +291,13 @@ public class FileActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStop(){
+    protected void onStop() {
         super.onStop();
         // Save values
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
-        editor.putString(P_KEY_FA_LAST_FILENAME,tFileName.getText().toString());
-        editor.putString(P_KEY_FA_LAST_DIR,currentDir.getAbsolutePath());
+        editor.putString(P_KEY_FA_LAST_FILENAME, tFileName.getText().toString());
+        editor.putString(P_KEY_FA_LAST_DIR, currentDir.getAbsolutePath());
         editor.apply();
     }
 }

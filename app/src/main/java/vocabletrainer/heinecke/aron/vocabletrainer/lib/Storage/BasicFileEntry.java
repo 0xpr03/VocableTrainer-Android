@@ -17,19 +17,20 @@ public class BasicFileEntry {
 
     /**
      * New Basic FileEntry
-     * @param name entry name column
-     * @param size String for size column
-     * @param typeID int for specifying the type of this entry (fe.: virtual entry)
+     *
+     * @param name      entry name column
+     * @param size      String for size column
+     * @param typeID    int for specifying the type of this entry (fe.: virtual entry)
      * @param underline underline this entry if true
      */
-    public BasicFileEntry(final String name, final String size, final int typeID, final boolean underline){
+    public BasicFileEntry(final String name, final String size, final int typeID, final boolean underline) {
         this.name = name;
         this.size = size;
         this.typeID = typeID;
         this.underline = underline;
     }
 
-    public String getName(){
+    public String getName() {
         return name;
     }
 

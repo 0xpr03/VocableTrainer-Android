@@ -117,7 +117,7 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, Integer> {
                     publishProgress(i);
                     lastUpdate = System.currentTimeMillis();
                 }
-//                Log.d(TAG, "processing " + record.toString());
+
                 if (record.size() < MIN_RECORD_SIZE) {
                     Log.w(TAG, "ignoring entry, missing values: " + record.toString());
                     continue;

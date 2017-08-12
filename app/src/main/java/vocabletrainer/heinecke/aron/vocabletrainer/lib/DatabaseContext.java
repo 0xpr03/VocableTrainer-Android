@@ -4,13 +4,12 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Environment;
 import android.util.Log;
 
 import java.io.File;
 
 /**
- * Adopoted after http://stackoverflow.com/a/9168969
+ * Adapted from http://stackoverflow.com/a/9168969
  */
 
 /**
@@ -18,11 +17,12 @@ import java.io.File;
  */
 class DatabaseContext extends ContextWrapper {
 
-    private File file;
     private static final String DEBUG_CONTEXT = "DatabaseContext";
+    private File file;
 
     /**
      * Creates a new DatabaseContext, which will just use the specified file for any DB requests
+     *
      * @param base
      * @param file
      */
@@ -32,14 +32,14 @@ class DatabaseContext extends ContextWrapper {
     }
 
     @Override
-    public File getDatabasePath(String name)  {
+    public File getDatabasePath(String name) {
         return file;
     }
 
     /* this version is called for android devices >= api-11. thank to @damccull for fixing this. */
     @Override
     public SQLiteDatabase openOrCreateDatabase(String name, int mode, SQLiteDatabase.CursorFactory factory, DatabaseErrorHandler errorHandler) {
-        return openOrCreateDatabase(name,mode, factory);
+        return openOrCreateDatabase(name, mode, factory);
     }
 
     /* this version is called for android devices < api-11 */

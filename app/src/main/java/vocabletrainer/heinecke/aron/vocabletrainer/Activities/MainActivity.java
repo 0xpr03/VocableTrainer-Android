@@ -12,7 +12,6 @@ import android.widget.Button;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
 
 /**
  * Main activity
@@ -63,13 +62,13 @@ public class MainActivity extends AppCompatActivity {
                 case REQUEST_EDITOR_LIST: {
                     Intent myIntent = new Intent(this, EditorActivity.class);
                     myIntent.putExtra(EditorActivity.PARAM_NEW_TABLE, false);
-                    myIntent.putExtra(EditorActivity.PARAM_TABLE, data.getSerializableExtra(ListSelector.RETURN_LISTS));
+                    myIntent.putExtra(EditorActivity.PARAM_TABLE, data.getSerializableExtra(ListActivity.RETURN_LISTS));
                     this.startActivity(myIntent);
                 }
                 break;
                 case REQUEST_TRAINER_LIST: {
                     Intent myIntent = new Intent(this, TrainerSettingsActivity.class);
-                    myIntent.putExtra(ListSelector.RETURN_LISTS, data.getSerializableExtra(ListSelector.RETURN_LISTS));
+                    myIntent.putExtra(ListActivity.RETURN_LISTS, data.getSerializableExtra(ListActivity.RETURN_LISTS));
                     this.startActivity(myIntent);
                 }
                 break;
@@ -121,8 +120,8 @@ public class MainActivity extends AppCompatActivity {
      * @param view
      */
     public void showEditTable(View view) {
-        Intent myIntent = new Intent(this, ListSelector.class);
-        myIntent.putExtra(ListSelector.PARAM_MULTI_SELECT, false);
+        Intent myIntent = new Intent(this, ListActivity.class);
+        myIntent.putExtra(ListActivity.PARAM_MULTI_SELECT, false);
         this.startActivityForResult(myIntent, REQUEST_EDITOR_LIST);
     }
 
@@ -132,8 +131,8 @@ public class MainActivity extends AppCompatActivity {
      * @param view
      */
     public void showTrainer(View view) {
-        Intent myIntent = new Intent(this, ListSelector.class);
-        myIntent.putExtra(ListSelector.PARAM_MULTI_SELECT, true);
+        Intent myIntent = new Intent(this, ListActivity.class);
+        myIntent.putExtra(ListActivity.PARAM_MULTI_SELECT, true);
         this.startActivityForResult(myIntent, REQUEST_TRAINER_LIST);
     }
 
@@ -143,8 +142,8 @@ public class MainActivity extends AppCompatActivity {
      * @param view
      */
     public void showDeleteTable(View view) {
-        Intent myIntent = new Intent(this, ListSelector.class);
-        myIntent.putExtra(ListSelector.PARAM_DELETE_FLAG, true);
+        Intent myIntent = new Intent(this, ListActivity.class);
+        myIntent.putExtra(ListActivity.PARAM_DELETE_FLAG, true);
         this.startActivity(myIntent);
     }
 

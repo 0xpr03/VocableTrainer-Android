@@ -1,9 +1,5 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage;
 
-/**
- * Created by aron on 07.04.17.
- */
-
 import java.io.Serializable;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer;
@@ -21,15 +17,17 @@ public class TrainerSettings implements Serializable {
 
     /**
      * Create a new Trainer Settings storage with default starting values
+     *
      * @param timesToSolve
      * @param mode
      */
-    public TrainerSettings(int timesToSolve, Trainer.TEST_MODE mode, boolean allowTips){
-        this(timesToSolve, mode, allowTips,0,0);
+    public TrainerSettings(int timesToSolve, Trainer.TEST_MODE mode, boolean allowTips) {
+        this(timesToSolve, mode, allowTips, 0, 0);
     }
 
     /**
      * Create a new Trainer Settings storage
+     *
      * @param timesToSolve
      * @param mode
      * @param allowTips

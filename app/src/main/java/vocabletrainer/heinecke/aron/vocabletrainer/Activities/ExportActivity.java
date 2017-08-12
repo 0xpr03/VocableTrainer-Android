@@ -41,28 +41,26 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEnt
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.MainActivity.PREFS_NAME;
-import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVHeaders.CSV_METADATA_COMMENT;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVHeaders.CSV_METADATA_START;
+import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
 
 /**
  * Export activity
  */
 public class ExportActivity extends AppCompatActivity {
 
-    private static final String P_KEY_B_EXP_TBL_META = "export_tbl_meta";
-    private static final String P_KEY_B_EXP_TBL_MULTI = "export_tbl_multi";
-    private static final String P_KEY_I_EXP_FORMAT = "export_format";
-
-    private static final int REQUEST_FILE_RESULT_CODE = 10;
-    private static final int REQUEST_TABLES_RESULT_CODE = 20;
-
-    private static final String TAG = "ExportActivity";
-    private static final int MAX_PROGRESS = 100;
     /**
      * This permission is required for this activity to work
      */
     public static final String REQUIRED_PERMISSION = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+    private static final String P_KEY_B_EXP_TBL_META = "export_tbl_meta";
+    private static final String P_KEY_B_EXP_TBL_MULTI = "export_tbl_multi";
+    private static final String P_KEY_I_EXP_FORMAT = "export_format";
+    private static final int REQUEST_FILE_RESULT_CODE = 10;
+    private static final int REQUEST_TABLES_RESULT_CODE = 20;
+    private static final String TAG = "ExportActivity";
+    private static final int MAX_PROGRESS = 100;
     private EditText tExportFile;
     private Button btnExport;
     private File expFile;
@@ -135,9 +133,9 @@ public class ExportActivity extends AppCompatActivity {
         spFormat.setAdapter(spAdapterFormat);
 
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        chkExportTalbeInfo.setChecked(settings.getBoolean(P_KEY_B_EXP_TBL_META,false));
-        chkExportMultiple.setChecked(settings.getBoolean(P_KEY_B_EXP_TBL_MULTI,false));
-        spFormat.setSelection(settings.getInt(P_KEY_I_EXP_FORMAT,0));
+        chkExportTalbeInfo.setChecked(settings.getBoolean(P_KEY_B_EXP_TBL_META, false));
+        chkExportMultiple.setChecked(settings.getBoolean(P_KEY_B_EXP_TBL_MULTI, false));
+        spFormat.setSelection(settings.getInt(P_KEY_I_EXP_FORMAT, 0));
     }
 
     @Override
@@ -147,8 +145,8 @@ public class ExportActivity extends AppCompatActivity {
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
         editor.putBoolean(P_KEY_B_EXP_TBL_MULTI, chkExportMultiple.isChecked());
-        editor.putBoolean(P_KEY_B_EXP_TBL_META,chkExportTalbeInfo.isChecked());
-        editor.putInt(P_KEY_I_EXP_FORMAT,spFormat.getSelectedItemPosition());
+        editor.putBoolean(P_KEY_B_EXP_TBL_META, chkExportTalbeInfo.isChecked());
+        editor.putInt(P_KEY_I_EXP_FORMAT, spFormat.getSelectedItemPosition());
         editor.apply();
     }
 
@@ -187,9 +185,9 @@ public class ExportActivity extends AppCompatActivity {
      * Calls select tables activity
      */
     private void runSelectTables() {
-        Intent myIntent = new Intent(this, ListSelector.class);
-        myIntent.putExtra(ListSelector.PARAM_SELECTED, tables);
-        myIntent.putExtra(ListSelector.PARAM_MULTI_SELECT, true);
+        Intent myIntent = new Intent(this, ListActivity.class);
+        myIntent.putExtra(ListActivity.PARAM_SELECTED, tables);
+        myIntent.putExtra(ListActivity.PARAM_MULTI_SELECT, true);
         startActivityForResult(myIntent, REQUEST_TABLES_RESULT_CODE);
     }
 
@@ -203,7 +201,7 @@ public class ExportActivity extends AppCompatActivity {
         final AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setCancelable(false);
         alert.setTitle(R.string.Export_Exporting_Title);
-        final ProgressBar pg = new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);
+        final ProgressBar pg = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
         pg.setIndeterminate(false);
         LinearLayout rl = new TableLayout(this);
         rl.addView(pg);
@@ -215,7 +213,7 @@ public class ExportActivity extends AppCompatActivity {
         });*/
         final AlertDialog dialog = alert.show();
         CSVFormat format = spAdapterFormat.getItem(spFormat.getSelectedItemPosition()).getObject();
-        ExportStorage es = new ExportStorage(format,tables, chkExportTalbeInfo.isChecked(), chkExportMultiple.isChecked(), expFile,dialog,pg);
+        ExportStorage es = new ExportStorage(format, tables, chkExportTalbeInfo.isChecked(), chkExportMultiple.isChecked(), expFile, dialog, pg);
         exportTask = new ExportOperation(es);
         exportTask.execute();
     }
@@ -229,7 +227,7 @@ public class ExportActivity extends AppCompatActivity {
                 tExportFile.setText(data.getStringExtra(FileActivity.RETURN_FILE_USER_NAME));
                 checkInputOk();
             } else if (requestCode == REQUEST_TABLES_RESULT_CODE) {
-                adapter.setAllUpdated((ArrayList<Table>) data.getSerializableExtra(ListSelector.RETURN_LISTS));
+                adapter.setAllUpdated((ArrayList<Table>) data.getSerializableExtra(ListActivity.RETURN_LISTS));
                 checkInputOk();
             }
         }
@@ -244,7 +242,7 @@ public class ExportActivity extends AppCompatActivity {
     }
 
     /**
-     * Export task class
+     * Export async task class
      */
     private class ExportOperation extends AsyncTask<Integer, Integer, String> {
         private final ExportStorage es;
@@ -252,6 +250,7 @@ public class ExportActivity extends AppCompatActivity {
 
         /**
          * Creates a new ExportOperation
+         *
          * @param es
          */
         public ExportOperation(ExportStorage es) {
@@ -261,18 +260,18 @@ public class ExportActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(Integer... params) {
-            Log.d(TAG,"Starting background task");
+            Log.d(TAG, "Starting background task");
             try (FileWriter fw = new FileWriter(es.file);
                  //TODO: enforce UTF-8
                  BufferedWriter writer = new BufferedWriter(fw);
-                 CSVPrinter printer = new CSVPrinter(writer, es.format);
+                 CSVPrinter printer = new CSVPrinter(writer, es.format)
             ) {
                 int i = 0;
                 for (Table tbl : es.tables) {
-                    if(tbl.getId() == ID_RESERVED_SKIP){
+                    if (tbl.getId() == ID_RESERVED_SKIP) {
                         continue;
                     }
-                    Log.d(TAG,"exporting tbl "+tbl.toString());
+                    Log.d(TAG, "exporting tbl " + tbl.toString());
                     if (es.exportTableInfo) {
                         printer.printRecord(CSV_METADATA_START);
                         printer.printComment(CSV_METADATA_COMMENT);
@@ -283,16 +282,16 @@ public class ExportActivity extends AppCompatActivity {
                     }
                     List<Entry> vocables = db.getVocablesOfTable(tbl);
 
-                    for(Entry ent : vocables){
+                    for (Entry ent : vocables) {
                         printer.print(ent.getAWord());
                         printer.print(ent.getBWord());
                         printer.print(ent.getTip());
                         printer.println();
                     }
                     i++;
-                    publishProgress((es.tables.size()/MAX_PROGRESS)*i);
+                    publishProgress((es.tables.size() / MAX_PROGRESS) * i);
                 }
-                Log.d(TAG,"closing all");
+                Log.d(TAG, "closing all");
                 printer.close();
                 writer.close();
                 fw.close();
@@ -304,8 +303,8 @@ public class ExportActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onProgressUpdate(Integer... values){
-            Log.d(TAG,"updating progress");
+        protected void onProgressUpdate(Integer... values) {
+            Log.d(TAG, "updating progress");
             es.progressBar.setProgress(values[0]);
         }
 
@@ -335,15 +334,16 @@ public class ExportActivity extends AppCompatActivity {
 
         /**
          * New export storage
-         * @param format CSV format to use
-         * @param tables table to export
+         *
+         * @param format          CSV format to use
+         * @param tables          table to export
          * @param exportTableInfo setting
-         * @param exportMultiple setting
-         * @param file file to read from
-         * @param dialog dialog for progress, closed on end
-         * @param progressBar progress bar that is updated
+         * @param exportMultiple  setting
+         * @param file            file to read from
+         * @param dialog          dialog for progress, closed on end
+         * @param progressBar     progress bar that is updated
          */
-        public ExportStorage(CSVFormat format,ArrayList<Table> tables, boolean exportTableInfo,
+        public ExportStorage(CSVFormat format, ArrayList<Table> tables, boolean exportTableInfo,
                              boolean exportMultiple, File file, AlertDialog dialog, ProgressBar progressBar) {
             this.format = format;
             this.tables = tables;

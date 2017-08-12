@@ -4,12 +4,13 @@ import android.content.res.Resources;
 import android.util.TypedValue;
 
 /**
- * Helper class
+ * Helper class for DPI calc
  */
 public class DPIHelper {
     /**
      * Convert DP to Pixels
-     * @param r Resrouce
+     *
+     * @param r  Resource
      * @param dp dp to convert
      * @return pixels float
      */

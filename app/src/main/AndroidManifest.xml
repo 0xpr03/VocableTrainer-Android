@@ -20,7 +20,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Activities.ListSelector" />
+        <activity android:name=".Activities.ListActivity" />
         <activity android:name=".Activities.TrainerSettingsActivity" />
         <activity android:name=".Activities.AboutActivity" />
         <activity android:name=".Activities.FileActivity" />

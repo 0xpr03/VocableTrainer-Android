@@ -23,6 +23,10 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
  * Doing all relevant DB stuff
  */
 public class Database {
+    public final static String DB_NAME_DEV = "test1.db";
+    public final static String DB_NAME_PRODUCTION = "voc.db";
+    public static final int MIN_ID_TRESHOLD = 0;
+    public static final int ID_RESERVED_SKIP = -2;
     private final static String TAG = "Database";
     private final static String TBL_VOCABLE = "vocables";
     private final static String TBL_TABLES = "voc_tables";
@@ -41,79 +45,15 @@ public class Database {
     private final static String KEY_POINTS = "points";
     private final static String KEY_MKEY = "key";
     private final static String KEY_MVALUE = "value";
-    public final static String DB_NAME_DEV = "test1.db";
-    public final static String DB_NAME_PRODUCTION = "voc.db";
     private static SQLiteDatabase dbIntern = null; // DB to internal file, 99% of the time used
     private SQLiteDatabase db = null; // pointer to DB used in this class
     private SQLiteOpenHelper helper = null;
-
-    public static final int MIN_ID_TRESHOLD = 0;
-    public static final int ID_RESERVED_SKIP = -2;
-
-    class internalDB extends SQLiteOpenHelper {
-        private final static int DATABASE_VERSION = 1;
-
-        internalDB(final Context context, File databaseFile) {
-            super(new DatabaseContext(context, databaseFile), "", null, DATABASE_VERSION);
-        }
-
-        public internalDB(Context context) {
-            this(context, false);
-        }
-
-        public internalDB(Context context, final boolean dev) {
-            super(context, dev ? DB_NAME_DEV : DB_NAME_PRODUCTION, null, DATABASE_VERSION);
-
-        }
-
-        @Override
-        public void onCreate(SQLiteDatabase db) {
-            try {
-                final String sql_a = "CREATE TABLE `" + TBL_VOCABLE + "` (`" + KEY_TABLE + "` INTEGER NOT NULL, "
-                        + "`" + KEY_VOC + "` INTEGER NOT NULL,"
-                        + "`" + KEY_WORD_A + "` TEXT NOT NULL, `" + KEY_WORD_B + "` TEXT NOT NULL, `" + KEY_TIP + "` TEXT, "
-                        + "`" + KEY_LAST_USED + "` INTEGER, PRIMARY KEY (`" + KEY_TABLE + "`,`" + KEY_VOC + "`) )";
-                final String sql_b = "CREATE TABLE `" + TBL_TABLES + "` ("
-                        + "`" + KEY_NAME_TBL + "` TEXT NOT NULL, `" + KEY_TABLE + "` INTEGER PRIMARY KEY,"
-                        + "`" + KEY_NAME_A + "` TEXT NOT NULL, `" + KEY_NAME_B + "` TEXT NOT NULL )";
-                final String sql_c = "CREATE TABLE `" + TBL_SESSION + "` ("
-                        + "`" + KEY_TABLE + "` INTEGER NOT NULL,"
-                        + "`" + KEY_VOC + "` INTEGER NOT NULL,"
-                        + "`" + KEY_POINTS + "` INTEGER NOT NULL,"
-                        + "PRIMARY KEY (`" + KEY_TABLE + "`,`" + KEY_VOC + "`))";
-                final String sql_d = "CREATE TABLE `" + TBL_SESSION_META + "` (`" + KEY_MKEY + "` TEXT NOT NULL,"
-                        + "`" + KEY_MVALUE + "` TEXT NOT NULL,"
-                        + "PRIMARY KEY (`" + KEY_MKEY + "`,`" + KEY_MVALUE + "`))";
-                final String sql_e = "CREATE TABLE `" + TBL_SESSION_TABLES + "` (`" + KEY_TABLE + "` INTEGER PRIMARY KEY)";
-                Log.d(TAG, sql_a);
-                Log.d(TAG, sql_b);
-                Log.d(TAG, sql_c);
-                Log.d(TAG, sql_d);
-                Log.d(TAG, sql_e);
-                db.execSQL(sql_a);
-                db.execSQL(sql_b);
-                db.execSQL(sql_c);
-                db.execSQL(sql_d);
-                db.execSQL(sql_e);
-            } catch (Exception e) {
-                Log.e(TAG, "", e);
-                throw e;
-            }
-        }
-
-        @Override
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
-        }
-
-
-    }
 
     /**
      * Database for export / import
      *
      * @param context
-     * @param file // file to use for this DB
+     * @param file    // file to use for this DB
      */
     public Database(Context context, final File file) {
         helper = new internalDB(context, file);
@@ -177,7 +117,6 @@ public class Database {
             return lst;
         }
     }
-
 
     /**
      * Debug function to retreive points of entry
@@ -329,7 +268,7 @@ public class Database {
                         updStm.bindLong(6, entry.getId());
                         updStm.execute();
                     }
-                } else if(!entry.isDelete()){
+                } else if (!entry.isDelete()) {
                     if (entry.getTable().getId() != lastTableID || lastID < MIN_ID_TRESHOLD) {
                         lastTableID = entry.getTable().getId();
                         Log.d(TAG, "lastTableID: " + lastTableID + " lastID: " + lastID);
@@ -362,36 +301,37 @@ public class Database {
 
     /**
      * Returns the ID of a table with the exact same naming <br>
-     *     this also updates the Table element itself to contains the right ID
+     * this also updates the Table element itself to contains the right ID
+     *
      * @param tbl Table to be used a search source
      * @return ID or  -1 if not found, -2 if an error occurred
      */
-    public int getTableID(final Table tbl){
-        if(tbl.getId() > -1) {
+    public int getTableID(final Table tbl) {
+        if (tbl.getId() > -1) {
             return tbl.getId();
         }
-        String[] args = new String[] {tbl.getName(), tbl.getNameA(), tbl.getNameB()};
-        try(
+        String[] args = new String[]{tbl.getName(), tbl.getNameA(), tbl.getNameB()};
+        try (
                 Cursor cursor = db.rawQuery("SELECT `" + KEY_TABLE + "` "
                         + "FROM `" + TBL_TABLES + "` "
                         + "WHERE `" + KEY_NAME_TBL + "` = ? "
-                        + "AND `"+KEY_NAME_A+"` = ? "
-                        + "AND `"+KEY_NAME_B+"`  = ? "
+                        + "AND `" + KEY_NAME_A + "` = ? "
+                        + "AND `" + KEY_NAME_B + "`  = ? "
                         + "LIMIT 1", args)
-                ){
+        ) {
             int id = -1;
-            if(cursor.moveToNext()){
+            if (cursor.moveToNext()) {
                 id = cursor.getInt(0);
             }
             tbl.setId(id);
             return id;
-        } catch (Exception e){
-            Log.e(TAG,"",e);
+        } catch (Exception e) {
+            Log.e(TAG, "", e);
             return -1;
         }
     }
 
-    public SQLiteStatement prepareInsertStatement(){
+    public SQLiteStatement prepareInsertStatement() {
         return db.compileStatement("");
     }
 
@@ -470,10 +410,11 @@ public class Database {
 
     /**
      * directly calls table empty SQL<br>
-     *     does not handle any transactions
+     * does not handle any transactions
+     *
      * @param arg String array containing the tbl ID at [0]
      */
-    private void emptyList_(String[] arg){
+    private void emptyList_(String[] arg) {
         db.delete("`" + TBL_SESSION + "`", "`" + KEY_TABLE + "` = ?", arg);
         db.delete("`" + TBL_SESSION_TABLES + "`", "`" + KEY_TABLE + "` = ?", arg);
         db.delete("`" + TBL_VOCABLE + "`", "`" + KEY_TABLE + "` = ?", arg);
@@ -481,11 +422,12 @@ public class Database {
 
     /**
      * Clear vocable list from all entries
+     *
      * @param tbl
      * @return
      */
-    public boolean emptyList(final Table tbl){
-        try{
+    public boolean emptyList(final Table tbl) {
+        try {
             db.beginTransaction();
 
             emptyList_(new String[]{String.valueOf(tbl.getId())});
@@ -496,7 +438,7 @@ public class Database {
             Log.e(TAG, "", e);
             return false;
         } finally {
-            if(db.inTransaction())
+            if (db.inTransaction())
                 db.endTransaction();
         }
     }
@@ -594,10 +536,10 @@ public class Database {
      */
     public ArrayList<Table> getSessionTables() {
         ArrayList<Table> lst = new ArrayList<>(10);
-        try (Cursor cursor = db.rawQuery("SELECT ses.`" + KEY_TABLE + "` tbl,`"+KEY_NAME_A+"`,`"+KEY_NAME_B+"`,`"+KEY_NAME_TBL+"` FROM `" + TBL_SESSION_TABLES + "` ses "
-                +"JOIN `"+TBL_TABLES+"` tbls ON tbls.`"+KEY_TABLE+"` == ses.`"+KEY_TABLE+"`", null)) {
+        try (Cursor cursor = db.rawQuery("SELECT ses.`" + KEY_TABLE + "` tbl,`" + KEY_NAME_A + "`,`" + KEY_NAME_B + "`,`" + KEY_NAME_TBL + "` FROM `" + TBL_SESSION_TABLES + "` ses "
+                + "JOIN `" + TBL_TABLES + "` tbls ON tbls.`" + KEY_TABLE + "` == ses.`" + KEY_TABLE + "`", null)) {
             while (cursor.moveToNext()) {
-                lst.add(new Table(cursor.getInt(0),cursor.getString(1), cursor.getString(2), cursor.getString(3)));
+                lst.add(new Table(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3)));
             }
         } catch (Exception e) {
             Log.e(TAG, "", e);
@@ -669,12 +611,12 @@ public class Database {
      */
     public Entry getRandomTrainerEntry(final Table tbl, final Entry lastEntry, final TrainerSettings ts, final boolean allowRepetition) {
         Log.d(TAG, "getRandomTrainerEntry");
-        int lastID = MIN_ID_TRESHOLD-1;
+        int lastID = MIN_ID_TRESHOLD - 1;
         if (lastEntry != null && lastEntry.getTable().getId() == tbl.getId() && !allowRepetition)
             lastID = lastEntry.getId();
 
         String[] arg = new String[]{String.valueOf(tbl.getId()), String.valueOf(lastID), String.valueOf(ts.timesToSolve)};
-        Log.d(TAG,Arrays.toString(arg));
+        Log.d(TAG, Arrays.toString(arg));
         try (
                 Cursor cursor = db.rawQuery("SELECT tbl.`" + KEY_VOC + "`, tbl.`" + KEY_TABLE + "`,`" + KEY_WORD_A + "`, `" + KEY_WORD_B + "`, `" + KEY_TIP + "`, `" + KEY_POINTS + "`, `" + KEY_LAST_USED + "` "
                         + "FROM `" + TBL_VOCABLE + "` tbl LEFT JOIN  `" + TBL_SESSION + "` ses"
@@ -796,6 +738,65 @@ public class Database {
             Log.wtf(TAG, "", e);
             return null;
         }
+
+    }
+
+    class internalDB extends SQLiteOpenHelper {
+        private final static int DATABASE_VERSION = 1;
+
+        internalDB(final Context context, File databaseFile) {
+            super(new DatabaseContext(context, databaseFile), "", null, DATABASE_VERSION);
+        }
+
+        public internalDB(Context context) {
+            this(context, false);
+        }
+
+        public internalDB(Context context, final boolean dev) {
+            super(context, dev ? DB_NAME_DEV : DB_NAME_PRODUCTION, null, DATABASE_VERSION);
+
+        }
+
+        @Override
+        public void onCreate(SQLiteDatabase db) {
+            try {
+                final String sql_a = "CREATE TABLE `" + TBL_VOCABLE + "` (`" + KEY_TABLE + "` INTEGER NOT NULL, "
+                        + "`" + KEY_VOC + "` INTEGER NOT NULL,"
+                        + "`" + KEY_WORD_A + "` TEXT NOT NULL, `" + KEY_WORD_B + "` TEXT NOT NULL, `" + KEY_TIP + "` TEXT, "
+                        + "`" + KEY_LAST_USED + "` INTEGER, PRIMARY KEY (`" + KEY_TABLE + "`,`" + KEY_VOC + "`) )";
+                final String sql_b = "CREATE TABLE `" + TBL_TABLES + "` ("
+                        + "`" + KEY_NAME_TBL + "` TEXT NOT NULL, `" + KEY_TABLE + "` INTEGER PRIMARY KEY,"
+                        + "`" + KEY_NAME_A + "` TEXT NOT NULL, `" + KEY_NAME_B + "` TEXT NOT NULL )";
+                final String sql_c = "CREATE TABLE `" + TBL_SESSION + "` ("
+                        + "`" + KEY_TABLE + "` INTEGER NOT NULL,"
+                        + "`" + KEY_VOC + "` INTEGER NOT NULL,"
+                        + "`" + KEY_POINTS + "` INTEGER NOT NULL,"
+                        + "PRIMARY KEY (`" + KEY_TABLE + "`,`" + KEY_VOC + "`))";
+                final String sql_d = "CREATE TABLE `" + TBL_SESSION_META + "` (`" + KEY_MKEY + "` TEXT NOT NULL,"
+                        + "`" + KEY_MVALUE + "` TEXT NOT NULL,"
+                        + "PRIMARY KEY (`" + KEY_MKEY + "`,`" + KEY_MVALUE + "`))";
+                final String sql_e = "CREATE TABLE `" + TBL_SESSION_TABLES + "` (`" + KEY_TABLE + "` INTEGER PRIMARY KEY)";
+                Log.d(TAG, sql_a);
+                Log.d(TAG, sql_b);
+                Log.d(TAG, sql_c);
+                Log.d(TAG, sql_d);
+                Log.d(TAG, sql_e);
+                db.execSQL(sql_a);
+                db.execSQL(sql_b);
+                db.execSQL(sql_c);
+                db.execSQL(sql_d);
+                db.execSQL(sql_e);
+            } catch (Exception e) {
+                Log.e(TAG, "", e);
+                throw e;
+            }
+        }
+
+        @Override
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+
+        }
+
 
     }
 }

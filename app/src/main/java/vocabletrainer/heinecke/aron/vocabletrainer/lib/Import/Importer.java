@@ -5,7 +5,6 @@ import android.util.Log;
 
 import java.util.ArrayList;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.Activities.ImportActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
@@ -21,14 +20,14 @@ public class Importer implements ImportHandler {
     private static final int BUFFER_CAPACITY = 100;
 
     private PreviewParser previewParser;
-    private ImportActivity.IMPORT_LIST_MODE mode;
+    private IMPORT_LIST_MODE mode;
     private Table overrideTable;
     private Table currentTable;
     private Database db;
     private ArrayList<Entry> insertBuffer = new ArrayList<>(BUFFER_CAPACITY);
     private boolean ignoreEntries;
 
-    public Importer(Context context, PreviewParser previewParser, ImportActivity.IMPORT_LIST_MODE mode, Table overrideTable) {
+    public Importer(Context context, PreviewParser previewParser, IMPORT_LIST_MODE mode, Table overrideTable) {
         if (previewParser.isRawData() && overrideTable == null) {
             Log.e(TAG, "RawData without passed table!");
             throw new IllegalArgumentException("Missing table!");
@@ -43,7 +42,7 @@ public class Importer implements ImportHandler {
     @Override
     public void start() {
         // raw data or single list with create flag
-        if (previewParser.isRawData() || (!previewParser.isMultiList() && mode == ImportActivity.IMPORT_LIST_MODE.CREATE)) {
+        if (previewParser.isRawData() || (!previewParser.isMultiList() && mode == IMPORT_LIST_MODE.CREATE)) {
             currentTable = overrideTable;
             db.upsertTable(currentTable);
         }
@@ -55,14 +54,14 @@ public class Importer implements ImportHandler {
         Table tbl = new Table(columnA, columnB, name);
         if (previewParser.isRawData()) {
             Log.w(TAG, "New Table command on raw data list!");
-        } else if (previewParser.isMultiList() || mode != ImportActivity.IMPORT_LIST_MODE.CREATE) {
+        } else if (previewParser.isMultiList() || mode != IMPORT_LIST_MODE.CREATE) {
             if (db.getTableID(tbl) >= MIN_ID_TRESHOLD) {
-                if (mode == ImportActivity.IMPORT_LIST_MODE.REPLACE) {
+                if (mode == IMPORT_LIST_MODE.REPLACE) {
                     db.emptyList(tbl);
-                } else if (mode == ImportActivity.IMPORT_LIST_MODE.IGNORE) {
+                } else if (mode == IMPORT_LIST_MODE.IGNORE) {
                     ignoreEntries = true;
                 }
-            }else{
+            } else {
                 db.upsertTable(tbl);
             }
 
@@ -92,5 +91,27 @@ public class Importer implements ImportHandler {
     @Override
     public void finish() {
         flushBuffer();
+    }
+
+    /**
+     * Import list handling mode
+     */
+    public enum IMPORT_LIST_MODE {
+        /**
+         * Replace existing list's vocables
+         */
+        REPLACE,
+        /**
+         * Add to existing lists
+         */
+        ADD,
+        /**
+         * Ignore existing lists
+         */
+        IGNORE,
+        /**
+         * Create new list
+         */
+        CREATE
     }
 }

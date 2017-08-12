@@ -48,15 +48,14 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TR
  */
 public class ImportActivity extends AppCompatActivity {
 
-    private static final String P_KEY_I_IMP_MULTI = "import_sp_multi";
-    private static final String P_KEY_I_IMP_SINGLE = "import_sp_single";
-    private static final String P_KEY_I_IMP_RAW = "import_sp_raw";
-    private static final String P_KEY_I_IMP_FORMAT = "import_sp_format";
-
     /**
      * This permission is required for this activity to work
      */
     public static final String REQUIRED_PERMISSION = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+    private static final String P_KEY_I_IMP_MULTI = "import_sp_multi";
+    private static final String P_KEY_I_IMP_SINGLE = "import_sp_single";
+    private static final String P_KEY_I_IMP_RAW = "import_sp_raw";
+    private static final String P_KEY_I_IMP_FORMAT = "import_sp_format";
     private static final int REQUEST_FILE_RESULT_CODE = 1;
     private static final int REQUEST_LIST_SELECT_CODE = 2;
     private static final String TAG = "ImportActivity";
@@ -65,9 +64,9 @@ public class ImportActivity extends AppCompatActivity {
     EntryListAdapter adapter;
     Table targetList;
     ArrayAdapter<GenericSpinnerEntry<CSVFormat>> spAdapterFormat;
-    ArrayAdapter<GenericSpinnerEntry<IMPORT_LIST_MODE>> spAdapterMultilist;
-    ArrayAdapter<GenericSpinnerEntry<IMPORT_LIST_MODE>> spAdapterSinglelist;
-    ArrayAdapter<GenericSpinnerEntry<IMPORT_LIST_MODE>> spAdapterRawlist;
+    ArrayAdapter<GenericSpinnerEntry<Importer.IMPORT_LIST_MODE>> spAdapterMultilist;
+    ArrayAdapter<GenericSpinnerEntry<Importer.IMPORT_LIST_MODE>> spAdapterSinglelist;
+    ArrayAdapter<GenericSpinnerEntry<Importer.IMPORT_LIST_MODE>> spAdapterRawlist;
     private Spinner spFormat;
     private Spinner spSingleList;
     private Spinner spSingelRaw;
@@ -129,16 +128,16 @@ public class ImportActivity extends AppCompatActivity {
         spAdapterFormat.add(new GenericSpinnerEntry<>(CSVFormat.RFC4180, getString(R.string.CSV_Format_RFC4180)));
         spAdapterFormat.add(new GenericSpinnerEntry<>(CSVFormat.TDF, getString(R.string.CSV_Format_Tabs)));
 
-        spAdapterMultilist.add(new GenericSpinnerEntry<>(IMPORT_LIST_MODE.REPLACE, getString(R.string.Import_Multilist_REPLACE)));
-        spAdapterMultilist.add(new GenericSpinnerEntry<>(IMPORT_LIST_MODE.ADD, getString(R.string.Import_Multilist_ADD)));
-        spAdapterMultilist.add(new GenericSpinnerEntry<>(IMPORT_LIST_MODE.IGNORE, getString(R.string.Import_Multilist_IGNORE)));
+        spAdapterMultilist.add(new GenericSpinnerEntry<>(Importer.IMPORT_LIST_MODE.REPLACE, getString(R.string.Import_Multilist_REPLACE)));
+        spAdapterMultilist.add(new GenericSpinnerEntry<>(Importer.IMPORT_LIST_MODE.ADD, getString(R.string.Import_Multilist_ADD)));
+        spAdapterMultilist.add(new GenericSpinnerEntry<>(Importer.IMPORT_LIST_MODE.IGNORE, getString(R.string.Import_Multilist_IGNORE)));
 
-        spAdapterRawlist.add(new GenericSpinnerEntry<>(IMPORT_LIST_MODE.CREATE, getString(R.string.Import_Rawlist_CREATE)));
-        spAdapterRawlist.add(new GenericSpinnerEntry<>(IMPORT_LIST_MODE.ADD, getString(R.string.Import_Rawlist_MERGE)));
+        spAdapterRawlist.add(new GenericSpinnerEntry<>(Importer.IMPORT_LIST_MODE.CREATE, getString(R.string.Import_Rawlist_CREATE)));
+        spAdapterRawlist.add(new GenericSpinnerEntry<>(Importer.IMPORT_LIST_MODE.ADD, getString(R.string.Import_Rawlist_MERGE)));
 
-        spAdapterSinglelist.add(new GenericSpinnerEntry<>(IMPORT_LIST_MODE.REPLACE, getString(R.string.Import_Singlelist_REPLACE)));
-        spAdapterSinglelist.add(new GenericSpinnerEntry<>(IMPORT_LIST_MODE.ADD, getString(R.string.Import_Singlelist_ADD)));
-        spAdapterSinglelist.add(new GenericSpinnerEntry<>(IMPORT_LIST_MODE.CREATE, getString(R.string.Import_Singlelist_CREATE)));
+        spAdapterSinglelist.add(new GenericSpinnerEntry<>(Importer.IMPORT_LIST_MODE.REPLACE, getString(R.string.Import_Singlelist_REPLACE)));
+        spAdapterSinglelist.add(new GenericSpinnerEntry<>(Importer.IMPORT_LIST_MODE.ADD, getString(R.string.Import_Singlelist_ADD)));
+        spAdapterSinglelist.add(new GenericSpinnerEntry<>(Importer.IMPORT_LIST_MODE.CREATE, getString(R.string.Import_Singlelist_CREATE)));
 
         spFormat.setAdapter(spAdapterFormat);
         spMultilist.setAdapter(spAdapterMultilist);
@@ -146,10 +145,10 @@ public class ImportActivity extends AppCompatActivity {
         spSingelRaw.setAdapter(spAdapterRawlist);
 
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        spFormat.setSelection(settings.getInt(P_KEY_I_IMP_FORMAT,0));
-        spSingelRaw.setSelection(settings.getInt(P_KEY_I_IMP_RAW,0));
-        spSingleList.setSelection(settings.getInt(P_KEY_I_IMP_SINGLE,0));
-        spMultilist.setSelection(settings.getInt(P_KEY_I_IMP_MULTI,0));
+        spFormat.setSelection(settings.getInt(P_KEY_I_IMP_FORMAT, 0));
+        spSingelRaw.setSelection(settings.getInt(P_KEY_I_IMP_RAW, 0));
+        spSingleList.setSelection(settings.getInt(P_KEY_I_IMP_SINGLE, 0));
+        spMultilist.setSelection(settings.getInt(P_KEY_I_IMP_MULTI, 0));
 
         spFormat.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -206,10 +205,10 @@ public class ImportActivity extends AppCompatActivity {
 
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
-        editor.putInt(P_KEY_I_IMP_MULTI,spMultilist.getSelectedItemPosition());
-        editor.putInt(P_KEY_I_IMP_SINGLE,spSingleList.getSelectedItemPosition());
-        editor.putInt(P_KEY_I_IMP_RAW,spSingelRaw.getSelectedItemPosition());
-        editor.putInt(P_KEY_I_IMP_FORMAT,spFormat.getSelectedItemPosition());
+        editor.putInt(P_KEY_I_IMP_MULTI, spMultilist.getSelectedItemPosition());
+        editor.putInt(P_KEY_I_IMP_SINGLE, spSingleList.getSelectedItemPosition());
+        editor.putInt(P_KEY_I_IMP_RAW, spSingelRaw.getSelectedItemPosition());
+        editor.putInt(P_KEY_I_IMP_FORMAT, spFormat.getSelectedItemPosition());
         editor.apply();
     }
 
@@ -224,9 +223,10 @@ public class ImportActivity extends AppCompatActivity {
 
     /**
      * Called on cancel click
+     *
      * @param view
      */
-    public void onCancel(View view){
+    public void onCancel(View view) {
         finish();
     }
 
@@ -243,7 +243,7 @@ public class ImportActivity extends AppCompatActivity {
             alert.setTitle(R.string.Import_Preview_Update_Title);
             final ProgressBar tw = new ProgressBar(this);
             Space sp = new Space(this);
-            sp.setMinimumHeight((int) DPIToPixels(getResources(),10)); // little space downside
+            sp.setMinimumHeight((int) DPIToPixels(getResources(), 10)); // little space downside
             LinearLayout rl = new TableLayout(this);
             rl.addView(tw);
             rl.addView(sp);
@@ -275,11 +275,11 @@ public class ImportActivity extends AppCompatActivity {
     }
 
     /**
-     * Returns the {@link IMPORT_LIST_MODE} of the relevant adapter
+     * Returns the {@link Importer.IMPORT_LIST_MODE} of the relevant adapter
      *
      * @return
      */
-    private IMPORT_LIST_MODE getListMode() {
+    private Importer.IMPORT_LIST_MODE getListMode() {
         if (isMultilist) {
             return spAdapterMultilist.getItem(spMultilist.getSelectedItemPosition()).getObject();
         } else if (isRawData) {
@@ -300,7 +300,7 @@ public class ImportActivity extends AppCompatActivity {
         final AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setCancelable(false);
         alert.setTitle(R.string.Import_Importing_Title);
-        final ProgressBar pg = new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);
+        final ProgressBar pg = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
         pg.setIndeterminate(false);
         LinearLayout rl = new TableLayout(this);
         rl.addView(pg);
@@ -318,7 +318,7 @@ public class ImportActivity extends AppCompatActivity {
                 return null;
             }
         };
-        Log.d(TAG,"amount: "+previewParser.getAmountRows());
+        Log.d(TAG, "amount: " + previewParser.getAmountRows());
         ImportFetcher imp = new ImportFetcher(format, impFile, dataHandler, previewParser.getAmountRows(), dialog, pg, callable);
         lst.clear();
         Log.d(TAG, "Starting task");
@@ -334,8 +334,8 @@ public class ImportActivity extends AppCompatActivity {
         spMultilist.setVisibility(isMultilist ? View.VISIBLE : View.GONE);
         spSingelRaw.setVisibility(isRawData ? View.VISIBLE : View.GONE);
         spSingleList.setVisibility(isRawData ? View.GONE : View.VISIBLE);
-        if(!isMultilist){
-            boolean hideListSelect = !isRawData && getListMode() != IMPORT_LIST_MODE.CREATE;
+        if (!isMultilist) {
+            boolean hideListSelect = !isRawData && getListMode() != Importer.IMPORT_LIST_MODE.CREATE;
             etList.setVisibility(hideListSelect ? View.GONE : View.VISIBLE);
             bSelectList.setVisibility(hideListSelect ? View.GONE : View.VISIBLE);
         }
@@ -371,7 +371,7 @@ public class ImportActivity extends AppCompatActivity {
      * @param view
      */
     public void selectList(View view) {
-        if (getListMode() == IMPORT_LIST_MODE.CREATE) {
+        if (getListMode() == Importer.IMPORT_LIST_MODE.CREATE) {
             targetList = new Table("", "", "");
             Callable<Void> callable = new Callable<Void>() {
                 @Override
@@ -383,10 +383,10 @@ public class ImportActivity extends AppCompatActivity {
             };
             EditorActivity.showListEditorDialog(true, targetList, callable, this);
         } else {
-            Intent myIntent = new Intent(this, ListSelector.class);
-            myIntent.putExtra(ListSelector.PARAM_MULTI_SELECT, false);
-            myIntent.putExtra(ListSelector.PARAM_DELETE_FLAG, false);
-            myIntent.putExtra(ListSelector.PARAM_SELECTED, targetList);
+            Intent myIntent = new Intent(this, ListActivity.class);
+            myIntent.putExtra(ListActivity.PARAM_MULTI_SELECT, false);
+            myIntent.putExtra(ListActivity.PARAM_DELETE_FLAG, false);
+            myIntent.putExtra(ListActivity.PARAM_SELECTED, targetList);
             startActivityForResult(myIntent, REQUEST_LIST_SELECT_CODE);
         }
     }
@@ -399,18 +399,18 @@ public class ImportActivity extends AppCompatActivity {
         if (impFile == null) {
             is_ok = false;
         }
-        IMPORT_LIST_MODE mode = getListMode();
+        Importer.IMPORT_LIST_MODE mode = getListMode();
         if (isMultilist) {
             //don't check the rest
         } else if (isRawData && targetList == null) {
             is_ok = false;
-        } else if (mode == IMPORT_LIST_MODE.CREATE) { // single list
+        } else if (mode == Importer.IMPORT_LIST_MODE.CREATE) { // single list
             if (targetList == null) {
                 is_ok = false;
             } else if (targetList.getId() >= MIN_ID_TRESHOLD) {
                 is_ok = false;
             }
-        } else if (isRawData && (mode == IMPORT_LIST_MODE.ADD || mode == IMPORT_LIST_MODE.REPLACE)) {
+        } else if (isRawData && (mode == Importer.IMPORT_LIST_MODE.ADD || mode == Importer.IMPORT_LIST_MODE.REPLACE)) {
             if (targetList == null) {
                 is_ok = false;
             } else if (targetList.getId() < MIN_ID_TRESHOLD) {
@@ -432,32 +432,10 @@ public class ImportActivity extends AppCompatActivity {
                 refreshParsing();
             } else if (requestCode == REQUEST_LIST_SELECT_CODE) {
                 Log.d(TAG, "got list");
-                targetList = (Table) data.getSerializableExtra(ListSelector.RETURN_LISTS);
+                targetList = (Table) data.getSerializableExtra(ListActivity.RETURN_LISTS);
                 etList.setText(targetList.getName());
                 checkInput();
             }
         }
-    }
-
-    /**
-     * Import list handling mode
-     */
-    public enum IMPORT_LIST_MODE {
-        /**
-         * Replace existing list's vocables
-         */
-        REPLACE,
-        /**
-         * Add to existing lists
-         */
-        ADD,
-        /**
-         * Ignore existing lists
-         */
-        IGNORE,
-        /**
-         * Create new list
-         */
-        CREATE
     }
 }

@@ -1,20 +1,15 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage;
 
-/**
- * Created by aron on 07.04.17.
- */
-
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TRESHOLD;
 
 /**
  * DB Entry
  */
 public class Entry {
+    private final Table table;
     private String AWord;
     private String BWord;
     private String tip;
-    private final Table table;
-
     private int id;
     private int points;
     private long date;
@@ -126,7 +121,7 @@ public class Entry {
 
     @Override
     public String toString() {
-        return AWord + " " + BWord+" ID:"+id+" P:"+points;
+        return AWord + " " + BWord + " ID:" + id + " P:" + points;
     }
 
     /**

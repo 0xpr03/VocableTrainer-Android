@@ -2,14 +2,14 @@ package vocabletrainer.heinecke.aron.vocabletrainer;
 
 import org.junit.Test;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Formater;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Formatter;
 
 import static org.junit.Assert.assertEquals;
 
-public class FormaterTest {
+public class FormatterTest {
     @Test
     public void format_isCorrect() throws Exception {
-        Formater fmt = new Formater();
+        Formatter fmt = new Formatter();
         fmt.changeSI(true);
         long bytes_1024 = 1024;
         long bytes_mib = 1048576;

@@ -64,28 +64,28 @@ public class TrainerActivity extends AppCompatActivity {
         boolean resume = intent.getBooleanExtra(PARAM_RESUME_SESSION_FLAG, false);
         ArrayList<Table> tables;
         if (resume) {
-            Log.d(TAG,"resuming");
+            Log.d(TAG, "resuming");
             settings = ssm.loadSession();
             tables = ssm.loadSessionTbls();
         } else {
-            Log.d(TAG,"not resuming");
+            Log.d(TAG, "not resuming");
             tables = (ArrayList<Table>) intent.getSerializableExtra(PARAM_TABLES);
             if (tables == null) {
                 Log.wtf(TAG, "Flag for tables passed but no tables received!");
             } else {
                 settings = (TrainerSettings) intent.getSerializableExtra(PARAM_TRAINER_SETTINGS);
-                if(settings == null){
-                    Log.wtf(TAG,"No trainer settings passed!");
-                }else{
-                    Log.d(TAG,"saving new session..");
-                    if (!db.deleteSession()){
-                        Log.wtf(TAG,"unable to delete past session");
-                    } else if(!ssm.saveSession(settings)){
-                        Log.wtf(TAG,"unable to save session meta");
-                    } else if(!ssm.saveSessionTbls(tables)){
-                        Log.wtf(TAG,"unable to save session tables");
-                    } else{
-                        Log.d(TAG,"saved session");
+                if (settings == null) {
+                    Log.wtf(TAG, "No trainer settings passed!");
+                } else {
+                    Log.d(TAG, "saving new session..");
+                    if (!db.deleteSession()) {
+                        Log.wtf(TAG, "unable to delete past session");
+                    } else if (!ssm.saveSession(settings)) {
+                        Log.wtf(TAG, "unable to save session meta");
+                    } else if (!ssm.saveSessionTbls(tables)) {
+                        Log.wtf(TAG, "unable to save session tables");
+                    } else {
+                        Log.d(TAG, "saved session");
                     }
                 }
 
@@ -98,8 +98,8 @@ public class TrainerActivity extends AppCompatActivity {
     /**
      * Show next vocable of trainer
      */
-    private void showNextVocable(){
-        if(trainer.isFinished()){
+    private void showNextVocable() {
+        if (trainer.isFinished()) {
             AlertDialog.Builder finishedDiag = new AlertDialog.Builder(this);
 
             finishedDiag.setTitle(R.string.Trainer_Diag_finished_Title);
@@ -116,7 +116,7 @@ public class TrainerActivity extends AppCompatActivity {
             });
 
             finishedDiag.show();
-        }else{
+        } else {
             tExercise.setText(trainer.getQuestion());
             tHint.setText("");
             tInput.setText("");
@@ -131,10 +131,10 @@ public class TrainerActivity extends AppCompatActivity {
     /**
      * Verify input against solution
      */
-    public void checkInput(View view){
-        if(trainer.checkSolution(tInput.getText().toString())){
+    public void checkInput(View view) {
+        if (trainer.checkSolution(tInput.getText().toString())) {
             showNextVocable();
-        }else{
+        } else {
             tInput.setSelectAllOnFocus(true);
             tInput.requestFocus();
         }
@@ -143,7 +143,7 @@ public class TrainerActivity extends AppCompatActivity {
     /**
      * Solve current vocable
      */
-    public void solve(View view){
+    public void solve(View view) {
         tInput.setText(trainer.getSolution());
         bSolve.setEnabled(false);
     }
@@ -151,8 +151,8 @@ public class TrainerActivity extends AppCompatActivity {
     /**
      * Action on hint request
      */
-    public void showHint(View view){
-        if(settings.allowTips){
+    public void showHint(View view) {
+        if (settings.allowTips) {
             tHint.setText(trainer.getTip());
         }
     }

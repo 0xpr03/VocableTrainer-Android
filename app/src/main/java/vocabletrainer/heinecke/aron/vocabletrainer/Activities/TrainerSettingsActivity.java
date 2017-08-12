@@ -2,8 +2,8 @@ package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -33,10 +33,10 @@ public class TrainerSettingsActivity extends AppCompatActivity {
     private final static String P_KEY_TS_ALLOW_HINTS = "hints_allowed";
 
     private static final String TAG = "TrainerSettings";
-    private Spinner spinner;
     public ArrayList<Table> tables;
     CheckBox bHints;
     EditText tTimesVocable;
+    private Spinner spinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,9 +44,9 @@ public class TrainerSettingsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_trainer_settings);
         setTitle(R.string.TSettings_Title);
         Intent intent = getIntent();
-        tables = (ArrayList<Table>) intent.getSerializableExtra(ListSelector.RETURN_LISTS);
-        if(tables == null){
-            Log.wtf(TAG,"No table list passed!");
+        tables = (ArrayList<Table>) intent.getSerializableExtra(ListActivity.RETURN_LISTS);
+        if (tables == null) {
+            Log.wtf(TAG, "No table list passed!");
             return;
         }
         bHints = (CheckBox) findViewById(R.id.tSettingsChkAllowTips);
@@ -66,26 +66,27 @@ public class TrainerSettingsActivity extends AppCompatActivity {
         // Load past values
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         // use string to show the hint at first via empty string
-        tTimesVocable.setText(settings.getString(P_KEY_TS_TIMES_VOCABLE,""));
-        spinner.setSelection(settings.getInt(P_KEY_TS_TRAIN_MODE,0));
-        bHints.setChecked(settings.getBoolean(P_KEY_TS_ALLOW_HINTS,false));
+        tTimesVocable.setText(settings.getString(P_KEY_TS_TIMES_VOCABLE, ""));
+        spinner.setSelection(settings.getInt(P_KEY_TS_TRAIN_MODE, 0));
+        bHints.setChecked(settings.getBoolean(P_KEY_TS_ALLOW_HINTS, false));
     }
 
     @Override
-    protected void onStop(){
+    protected void onStop() {
         super.onStop();
 
         // Save values
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
         editor.putBoolean(P_KEY_TS_ALLOW_HINTS, bHints.isChecked());
-        editor.putInt(P_KEY_TS_TRAIN_MODE,spinner.getSelectedItemPosition());
-        editor.putString(tTimesVocable.getText().toString(),P_KEY_TS_TIMES_VOCABLE);
+        editor.putInt(P_KEY_TS_TRAIN_MODE, spinner.getSelectedItemPosition());
+        editor.putString(tTimesVocable.getText().toString(), P_KEY_TS_TIMES_VOCABLE);
         editor.apply();
     }
 
     /**
      * Go to next activity -> start trainer
+     *
      * @param view
      */
     public void gotoNext(View view) {
@@ -103,7 +104,7 @@ public class TrainerSettingsActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, TrainerActivity.class);
         intent.putExtra(PARAM_TRAINER_SETTINGS, settings);
-        intent.putExtra(PARAM_TABLES,tables);
+        intent.putExtra(PARAM_TABLES, tables);
         startActivity(intent);
     }
 }

@@ -35,6 +35,7 @@ public class FileListAdapter extends BaseAdapter {
     private class ViewHolder {
         protected TextView colA;
         protected TextView colB;
+        protected int originPaintFlags;
     }
 
     private Entry header;
@@ -49,26 +50,8 @@ public class FileListAdapter extends BaseAdapter {
         super();
         this.activity = activity;
         this.dataItems = items;
-//        header = new Entry(context.getString(R.string.Editor_Default_Column_A),
-//                context.getString(R.string.Editor_Default_Column_B),
-//                context.getString(R.string.Editor_Default_Tip),
-//                ID_RESERVED_SKIP, new Table(ID_RESERVED_SKIP), -2L);
-//        dataItems.add(0, header);
         inflater = activity.getLayoutInflater();
     }
-
-    /**
-     * Set table data (Column Names)
-     *
-     * @param tbl
-     */
-    public void setTableData(Table tbl) {
-        header.setAWord(tbl.getNameA());
-        header.setBWord(tbl.getNameB());
-        this.notifyDataSetChanged();
-        Log.d("EntryListAdapter", "setTableData");
-    }
-
 
     @Override
     public int getCount() {
@@ -78,7 +61,6 @@ public class FileListAdapter extends BaseAdapter {
     @Override
     public Object getItem(int position) {
         return dataItems.get(position);
-        // -1 required as onItemClicked counts from 1 but the list starts a 0
     }
 
     @Override
@@ -94,16 +76,15 @@ public class FileListAdapter extends BaseAdapter {
         if (convertView == null) {
             holder = new ViewHolder();
 
-
-            convertView = inflater.inflate(R.layout.file_list_view, null);
+            convertView = inflater.inflate(R.layout.file_list_view, parent,false);
 
             holder.colA = (TextView) convertView.findViewById(R.id.entryFirstText);
             holder.colB = (TextView) convertView.findViewById(R.id.entrySecondText);
+            holder.originPaintFlags = holder.colA.getPaintFlags();
 
             convertView.setTag(holder);
             convertView.setTag(R.id.entryFirstText, holder.colA);
             convertView.setTag(R.id.entrySecondText, holder.colB);
-
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
@@ -112,34 +93,12 @@ public class FileListAdapter extends BaseAdapter {
         holder.colB.setText(item.getSize());
         if(item.isUnderline()){
             holder.colA.setPaintFlags(holder.colA.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+        } else{
+            holder.colA.setPaintFlags(holder.originPaintFlags);
         }
 
-        if(convertView.isSelected()){
-
-        }
+        //TODO: fix selection rendering on scrolling
 
         return convertView;
-    }
-
-    /**
-     * Add a new Entry to the view<br>
-     * Does not update the view
-     *
-     * @param entry
-     */
-    public void addEntryUnrendered(BasicFileEntry entry) {
-        dataItems.add(entry);
-    }
-
-    /**
-     * Add an Entry to the view at selected position.<br>
-     * Does update the view rendering
-     *
-     * @param entry    new Entry
-     * @param position Position at which it should be inserted
-     */
-    public void addEntryRendered(BasicFileEntry entry, int position) {
-        dataItems.add(position, entry);
-        this.notifyDataSetChanged();
     }
 }

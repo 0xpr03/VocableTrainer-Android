@@ -115,7 +115,6 @@ public class FileActivity extends AppCompatActivity {
         listView.setLongClickable(false);
 
         entries = new ArrayList<>(20); // just a good guess
-//        TEMP_add_file();
         adapter = new FileListAdapter(this, entries, this);
 
         listView.setAdapter(adapter);
@@ -125,8 +124,9 @@ public class FileActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, final View view, int pos, long id) {
                 BasicFileEntry entry = entries.get(pos);
                 if (entry.getTypeID() == BasicFileEntry.TYPE_FILE) {
-                    Log.d(TAG, "selected: " + entry.getName());
+                    Log.d(TAG, "selected: " + entry.getName()+" "+view.toString());
                     view.setSelected(true);
+                    view.setActivated(true);
                     selectedEntry = entry;
                     bOk.setEnabled(true);
                     if (write) {

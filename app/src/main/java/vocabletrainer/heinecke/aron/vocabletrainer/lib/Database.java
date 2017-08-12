@@ -1,15 +1,10 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib;
 
-/**
- * Created by aron on 04.04.17.
- */
-
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
-import android.provider.ContactsContract;
 import android.util.Log;
 
 import java.io.File;
@@ -25,13 +20,10 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
 
 /**
  * Database manager<br>
- * Doing all releveant DB stuff
+ * Doing all relevant DB stuff
  */
 public class Database {
-    private static final String TAG = "Database";
-    private static SQLiteDatabase dbIntern = null; // DB to internal file, 99% of the time used
-    private SQLiteDatabase db = null; // pointer to DB used in this class
-    private SQLiteOpenHelper helper = null;
+    private final static String TAG = "Database";
     private final static String TBL_VOCABLE = "vocables";
     private final static String TBL_TABLES = "voc_tables";
     private final static String TBL_SESSION = "session";
@@ -51,6 +43,9 @@ public class Database {
     private final static String KEY_MVALUE = "value";
     public final static String DB_NAME_DEV = "test1.db";
     public final static String DB_NAME_PRODUCTION = "voc.db";
+    private static SQLiteDatabase dbIntern = null; // DB to internal file, 99% of the time used
+    private SQLiteDatabase db = null; // pointer to DB used in this class
+    private SQLiteOpenHelper helper = null;
 
     public static final int MIN_ID_TRESHOLD = 0;
     public static final int ID_RESERVED_SKIP = -2;
@@ -294,7 +289,7 @@ public class Database {
 
     /**
      * Update and/or insert all Entries<br>
-     * This function used the delete and changed flags
+     * This function uses delete and changed flags in entries
      *
      * @param lst
      * @return
@@ -315,7 +310,7 @@ public class Database {
             int lastID = -1;
 
             for (Entry entry : lst) {
-                Log.d(TAG, "processing " + entry + " of " + entry.getTable());
+                //Log.d(TAG, "processing " + entry + " of " + entry.getTable());
                 if (entry.getId() == ID_RESERVED_SKIP) // skip spacer
                     continue;
                 if (entry.getId() >= MIN_ID_TRESHOLD) {
@@ -363,6 +358,41 @@ public class Database {
                 db.endTransaction();
             }
         }
+    }
+
+    /**
+     * Returns the ID of a table with the exact same naming <br>
+     *     this also updates the Table element itself to contains the right ID
+     * @param tbl Table to be used a search source
+     * @return ID or  -1 if not found, -2 if an error occurred
+     */
+    public int getTableID(final Table tbl){
+        if(tbl.getId() > -1) {
+            return tbl.getId();
+        }
+        String[] args = new String[] {tbl.getName(), tbl.getNameA(), tbl.getNameB()};
+        try(
+                Cursor cursor = db.rawQuery("SELECT `" + KEY_TABLE + "` "
+                        + "FROM `" + TBL_TABLES + "` "
+                        + "WHERE `" + KEY_NAME_TBL + "` = ? "
+                        + "AND `"+KEY_NAME_A+"` = ? "
+                        + "AND `"+KEY_NAME_B+"`  = ? "
+                        + "LIMIT 1", args)
+                ){
+            int id = -1;
+            if(cursor.moveToNext()){
+                id = cursor.getInt(0);
+            }
+            tbl.setId(id);
+            return id;
+        } catch (Exception e){
+            Log.e(TAG,"",e);
+            return -1;
+        }
+    }
+
+    public SQLiteStatement prepareInsertStatement(){
+        return db.compileStatement("");
     }
 
     /**
@@ -424,11 +454,8 @@ public class Database {
             db.beginTransaction();
 
             String[] arg = new String[]{String.valueOf(tbl.getId())};
-            int i = db.delete("`" + TBL_VOCABLE + "`", "`" + KEY_TABLE + "` = ?", arg);
-
+            emptyList_(arg);
             db.delete("`" + TBL_TABLES + "`", "`" + KEY_TABLE + "` = ?", arg);
-            db.delete("`" + TBL_SESSION + "`", "`" + KEY_TABLE + "` = ?", arg);
-            db.delete("`" + TBL_SESSION_TABLES + "`", "`" + KEY_TABLE + "` = ?", arg);
             db.setTransactionSuccessful();
             return true;
         } catch (Exception e) {
@@ -438,6 +465,39 @@ public class Database {
             if (db.inTransaction()) {
                 db.endTransaction();
             }
+        }
+    }
+
+    /**
+     * directly calls table empty SQL<br>
+     *     does not handle any transactions
+     * @param arg String array containing the tbl ID at [0]
+     */
+    private void emptyList_(String[] arg){
+        db.delete("`" + TBL_SESSION + "`", "`" + KEY_TABLE + "` = ?", arg);
+        db.delete("`" + TBL_SESSION_TABLES + "`", "`" + KEY_TABLE + "` = ?", arg);
+        db.delete("`" + TBL_VOCABLE + "`", "`" + KEY_TABLE + "` = ?", arg);
+    }
+
+    /**
+     * Clear vocable list from all entries
+     * @param tbl
+     * @return
+     */
+    public boolean emptyList(final Table tbl){
+        try{
+            db.beginTransaction();
+
+            emptyList_(new String[]{String.valueOf(tbl.getId())});
+
+            db.setTransactionSuccessful();
+            return true;
+        } catch (Exception e) {
+            Log.e(TAG, "", e);
+            return false;
+        } finally {
+            if(db.inTransaction())
+                db.endTransaction();
         }
     }
 
@@ -695,7 +755,6 @@ public class Database {
             return false;
         }
     }
-
 
     /**
      * Returns a statement to insert / replace session meta storage values

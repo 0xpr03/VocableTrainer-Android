@@ -126,7 +126,7 @@ public class Entry {
 
     @Override
     public String toString() {
-        return AWord + " " + BWord+" "+points;
+        return AWord + " " + BWord+" ID:"+id+" P:"+points;
     }
 
     /**

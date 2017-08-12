@@ -4,6 +4,8 @@ package vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage;
  * Created by aron on 14.04.17.
  */
 
+import android.util.Log;
+
 import java.io.Serializable;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TRESHOLD;
@@ -64,7 +66,18 @@ public class Table implements Serializable {
      * @return true when table IDs are equal
      */
     public boolean equals(Table table){
+        if(this == table){
+            return true;
+        }
         return this.id == table.getId();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof Table){
+            return equals((Table) obj);
+        }
+        return super.equals(obj);
     }
 
     public void setNameA(String nameA) {

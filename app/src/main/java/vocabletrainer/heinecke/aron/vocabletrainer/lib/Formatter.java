@@ -22,7 +22,7 @@ public class Formatter {
         if (i <= 0)
             return "0";
         int digitGroups = (int) (Math.log10(i) / Math.log10(USE_SI ? 1024 : 1000));
-        return formatBytes.format(i / Math.pow(1024, digitGroups)) + " " + (USE_SI ? unit_si[digitGroups] : units[digitGroups]);
+        return formatBytes.format(i / Math.pow(USE_SI ? 1024 : 1000, digitGroups)) + " " + (USE_SI ? unit_si[digitGroups] : units[digitGroups]);
     }
 
     /**

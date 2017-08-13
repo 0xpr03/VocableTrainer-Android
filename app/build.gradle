@@ -7,7 +7,7 @@ android {
         applicationId "vocabletrainer.heinecke.aron.vocabletrainer"
         minSdkVersion 19
         targetSdkVersion 25
-        versionCode 4
+        versionCode 5
         versionName "0.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }

@@ -48,7 +48,10 @@ public class EditorActivity extends AppCompatActivity {
     private View undoContainer;
     private Entry lastDeleted;
     private int deletedPosition;
-    private boolean edited;
+    /**
+     * data save will be ignored when set
+     */
+    private boolean noDataSave = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,8 +66,6 @@ public class EditorActivity extends AppCompatActivity {
 
         // setup listview
         initListView();
-
-        edited = false;
 
         // handle passed params
         boolean newTable = intent.getBooleanExtra(PARAM_NEW_TABLE, false);
@@ -102,12 +103,14 @@ public class EditorActivity extends AppCompatActivity {
      * Save the table to disk
      */
     private void saveTable() {
+        if(noDataSave){
+            return;
+        }
         Log.d(TAG, "table: " + table);
         if (db.upsertTable(table)) {
             Log.d(TAG, "table: " + table);
             if (db.upsertEntries(adapter.getAllEntries())) {
                 adapter.clearDeleted();
-                edited = false;
             } else {
                 Log.e(TAG, "unable to upsert entries! aborting");
             }
@@ -177,7 +180,6 @@ public class EditorActivity extends AppCompatActivity {
                 deletedPosition = position;
                 adapter.setDeleted(entry);
                 Toast.makeText(EditorActivity.this, entry.toString() + " deleted", Toast.LENGTH_SHORT).show();
-                edited = true;
                 showUndo();
                 Log.d(TAG, "deleted");
             }
@@ -230,7 +232,6 @@ public class EditorActivity extends AppCompatActivity {
                 entry.setBWord(editB.getText().toString());
                 entry.setTip(editTipp.getText().toString());
                 adapter.notifyDataSetChanged();
-                edited = true;
                 Log.d(TAG, "edited");
             }
         });
@@ -253,12 +254,14 @@ public class EditorActivity extends AppCompatActivity {
      *
      * @param newTbl   Is new table
      * @param tbl      Table object to edit
-     * @param callable Called upon ok press<br>
+     * @param onSuccessCallable Called upon ok press<br>
      *                 Not called when user cancels dialog in any way
+     * @param onCancelCallable Called when <b>newTbl is true and the dialog was canceled</b><br>
+     *                         Ignored when null
      * @param context  Context to be used for this dialog
      * @return Dialog created
      */
-    public static AlertDialog showListEditorDialog(final boolean newTbl, final Table tbl, final Callable<Void> callable,final Context context) {
+    public static AlertDialog showListEditorDialog(final boolean newTbl, final Table tbl, final Callable<Void> onSuccessCallable, final Callable<Void> onCancelCallable, final Context context) {
         AlertDialog.Builder alert = new AlertDialog.Builder(context);
 
         if (newTbl) {
@@ -303,19 +306,43 @@ public class EditorActivity extends AppCompatActivity {
                 tbl.setNameB(iColB.getText().toString());
                 tbl.setName(iName.getText().toString());
                 try {
-                    callable.call();
+                    onSuccessCallable.call();
                 } catch (Exception e) { // has to be caught
                     e.printStackTrace();
                 }
                 Log.d(TAG, "set table info");
             }
         });
+        if (newTbl) {
+            alert.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialogInterface) {
+                    try {
+                        if(onCancelCallable != null)
+                            onCancelCallable.call();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            alert.setNegativeButton(R.string.Editor_Diag_table_btn_Canel, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    try {
+                        if(onCancelCallable != null)
+                            onCancelCallable.call();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
 
         return alert.show();
     }
 
     /**
-     * Show table title editor dialog
+     * Show table title editor dialog<br>
+     *     Exit editor when newTbl is set and user cancels the dialog
      *
      * @param newTbl set to true if this is a new table
      */
@@ -325,11 +352,20 @@ public class EditorActivity extends AppCompatActivity {
             public Void call() throws Exception {
                 setTitle("VocableTrainer - " + table.getName());
                 adapter.setTableData(table);
-                edited = true;
                 return null;
             }
         };
-        showListEditorDialog(newTbl, table, callable, this);
+        Callable<Void> callableCancel = new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                if(newTbl) {
+                    noDataSave = true;
+                    finish();
+                }
+                return null;
+            }
+        };
+        showListEditorDialog(newTbl, table, callable,callableCancel, this);
     }
 
     /**

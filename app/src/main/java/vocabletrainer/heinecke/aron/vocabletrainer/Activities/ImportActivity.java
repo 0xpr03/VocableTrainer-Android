@@ -381,7 +381,7 @@ public class ImportActivity extends AppCompatActivity {
                     return null;
                 }
             };
-            EditorActivity.showListEditorDialog(true, targetList, callable, this);
+            EditorActivity.showListEditorDialog(true, targetList, callable,null, this);
         } else {
             Intent myIntent = new Intent(this, ListActivity.class);
             myIntent.putExtra(ListActivity.PARAM_MULTI_SELECT, false);

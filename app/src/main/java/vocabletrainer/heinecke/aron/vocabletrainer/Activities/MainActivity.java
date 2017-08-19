@@ -20,6 +20,8 @@ public class MainActivity extends AppCompatActivity {
     public static final String PREFS_NAME = "voc_prefs";
     private final static int REQUEST_EDITOR_LIST = 10;
     private final static int REQUEST_TRAINER_LIST = 20;
+    private final static int REQUEST_PERM_EXPORT = 30;
+    private final static int REQUEST_PERM_IMPORT = 35;
     private static final String P_KEY_ALPHA_DIALOG = "showedAlphaDialog";
     private static boolean showedDialog = false;
     Button btnContinue;
@@ -34,8 +36,8 @@ public class MainActivity extends AppCompatActivity {
         if (!showedDialog) {
             final AlertDialog.Builder finishedDiag = new AlertDialog.Builder(this);
 
-            finishedDiag.setTitle("Warning");
-            finishedDiag.setMessage("This software is an alpha state. This includes, but not limited to, data loss, destroying your phone, eating your children and burning your dog! You have been warned.");
+            finishedDiag.setTitle("Info");
+            finishedDiag.setMessage("This software is an beta state. This includes, but not limited to, data loss, destroying your phone, eating your children and burning your dog! You have been warned.");
 
             finishedDiag.setPositiveButton("TLDR", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
@@ -70,6 +72,14 @@ public class MainActivity extends AppCompatActivity {
                     Intent myIntent = new Intent(this, TrainerSettingsActivity.class);
                     myIntent.putExtra(ListActivity.RETURN_LISTS, data.getSerializableExtra(ListActivity.RETURN_LISTS));
                     this.startActivity(myIntent);
+                }
+                break;
+                case REQUEST_PERM_EXPORT: {
+                    startExportActivityUnchecked();
+                }
+                break;
+                case REQUEST_PERM_IMPORT: {
+                    startImportActivityUnchecked();
                 }
                 break;
             }
@@ -164,14 +174,12 @@ public class MainActivity extends AppCompatActivity {
      */
     public void showExport(View view) {
         if (PermActivity.hasPermission(getApplicationContext(), ExportActivity.REQUIRED_PERMISSION)) {
-            Intent myIntent = new Intent(this, ExportActivity.class);// dialog.dismiss();
-            this.startActivity(myIntent);
+            startExportActivityUnchecked();
         } else {
             Intent myIntent = new Intent(this, PermActivity.class);
-            myIntent.putExtra(PermActivity.PARAM_NEW_ACTIVITY, ExportActivity.class);
             myIntent.putExtra(PermActivity.PARAM_PERMISSION, ExportActivity.REQUIRED_PERMISSION);
             myIntent.putExtra(PermActivity.PARAM_MESSAGE, getString(R.string.Perm_CSV));
-            this.startActivity(myIntent);
+            this.startActivityForResult(myIntent,REQUEST_PERM_EXPORT);
         }
     }
 
@@ -182,15 +190,29 @@ public class MainActivity extends AppCompatActivity {
      */
     public void showImport(View view) {
         if (PermActivity.hasPermission(getApplicationContext(), ImportActivity.REQUIRED_PERMISSION)) {
-            Intent myIntent = new Intent(this, ImportActivity.class);
-            this.startActivity(myIntent);
+            startImportActivityUnchecked();
         } else {
             Intent myIntent = new Intent(this, PermActivity.class);
-            myIntent.putExtra(PermActivity.PARAM_NEW_ACTIVITY, ImportActivity.class);
             myIntent.putExtra(PermActivity.PARAM_PERMISSION, ImportActivity.REQUIRED_PERMISSION);
             myIntent.putExtra(PermActivity.PARAM_MESSAGE, getString(R.string.Perm_CSV));
-            this.startActivity(myIntent);
+            this.startActivityForResult(myIntent,REQUEST_PERM_IMPORT);
         }
+    }
+
+    /**
+     * Start import activity, does not check for permissions
+     */
+    private void startImportActivityUnchecked(){
+        Intent myIntent = new Intent(this, ImportActivity.class);
+        this.startActivity(myIntent);
+    }
+
+    /**
+     * Start export activity, does not check for permissions
+     */
+    private void startExportActivityUnchecked(){
+        Intent myIntent = new Intent(this, ExportActivity.class);// dialog.dismiss();
+        this.startActivity(myIntent);
     }
 
 }

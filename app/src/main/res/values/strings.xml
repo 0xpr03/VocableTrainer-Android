@@ -68,6 +68,7 @@
     <string name="Editor_Diag_table_Title_Edit">Edit List</string>
     <string name="Editor_Diag_table_MSG">Please set the list information</string>
     <string name="Editor_Diag_table_btn_Ok">Ok</string>
+    <string name="Editor_Diag_table_btn_Canel">Cancel</string>
     <string formatted="false" name="About_Msg" translatable="false">About: VocableTrainer %v\nCopyright 2017 Aron Heinecke\nLicensed under Apache License 2.0\n\nBug Reports &amp; Feature requests: %l\n\nUsing Apache Commons CSV</string>
     <string name="About_btn_Close">Close</string>
     <string name="ListSelector_Diag_delete_Title">Delete List</string>
@@ -85,8 +86,8 @@
     <string name="Perm_CSV">Permission is required to load/write your CSV files for import/export.</string>
     <string name="File_Error_Mediastate">No storage found / is writable! Unable to continue!</string>
     <string name="File_Error_Nullpointer">Unable to show files. Nullpointer</string>
-    <string name="Import_Message" formatted="true">Import a CSV file containing (multiple) vocable lists.\nSee the <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Import" >wiki page</a> for help.</string>
-    <string name="Export_Message" formatted="true">Export to CSV file (with list info)\nSee the <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Export">wiki page</a> for help.</string>
+    <string name="Import_Message" formatted="true">Import a UTF8 encoded CSV file containing (multiple) vocable lists.\nSee the <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Import" >wiki page</a> for help.</string>
+    <string name="Export_Message" formatted="true">Export to UTF8 encoded CSV file (with list info)\nSee the <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Export">wiki page</a> for help.</string>
     <!-- Spinner -->
     <string name="Import_Multilist_REPLACE">Replace existing lists</string>
     <string name="Import_Multilist_IGNORE">Ignore existing lists</string>

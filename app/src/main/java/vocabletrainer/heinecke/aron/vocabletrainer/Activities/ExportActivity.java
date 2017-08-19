@@ -237,7 +237,6 @@ public class ExportActivity extends AppCompatActivity {
      * Validate input & set export button accordingly
      */
     private void checkInputOk() {
-        Log.d(TAG, "tables:" + tables.size());
         btnExport.setEnabled(tables.size() > 1 && expFile != null && (chkExportMultiple.isChecked() || (!chkExportMultiple.isChecked() && tables.size() == 2)));
     }
 

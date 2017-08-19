@@ -13,21 +13,22 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.io.File;
+
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 
 /**
- * Activity to request permissions
+ * Activity to request permissions<br>
+ *     Returns success when permission was granted
  */
 public class PermActivity extends AppCompatActivity {
     public static final int MY_PERMISSIONS_REQUEST_READ_STORAGE = 10000;
-    public static final String PARAM_NEW_ACTIVITY = "next_activity";
     public static final String PARAM_PERMISSION = "permissions";
     public static final String PARAM_MESSAGE = "message";
     private static final String TAG = "PermActivity";
 
     private String permission;
     private String message;
-    private Class nextActivity;
     private Button bRetry;
 
     /**
@@ -73,10 +74,9 @@ public class PermActivity extends AppCompatActivity {
         Intent intent = getIntent();
         // handle passed params
         permission = intent.getStringExtra(PARAM_PERMISSION);
-        nextActivity = (Class) intent.getSerializableExtra(PARAM_NEW_ACTIVITY);
         message = intent.getStringExtra(PARAM_MESSAGE);
 
-        if (permission == null || message == null || nextActivity == null) {
+        if (permission == null || message == null) {
             Log.wtf(TAG, "missing parameters");
         }
 
@@ -85,15 +85,9 @@ public class PermActivity extends AppCompatActivity {
         bRetry = (Button) findViewById(R.id.bPermReqAgain);
         bRetry.setVisibility(View.INVISIBLE);
 
-        //TODO: allow ressource IDs as message
+        //TODO: allow resource IDs as message
 
         requestPerm();
-    }
-
-    private void showNextActivity() {
-        Intent intent = new Intent(PermActivity.this, nextActivity);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        this.startActivity(intent);
     }
 
     /**
@@ -119,7 +113,9 @@ public class PermActivity extends AppCompatActivity {
                 //permission to read storage
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    showNextActivity();
+                    Intent returnIntent = new Intent();
+                    setResult(Activity.RESULT_OK, returnIntent);
+                    finish();
                 } else { // allow for retry
                     bRetry.setVisibility(View.VISIBLE);
                 }
@@ -134,6 +130,9 @@ public class PermActivity extends AppCompatActivity {
      * @param view
      */
     public void onCancel(View view) {
+        Intent returnIntent = new Intent();
+        setResult(Activity.RESULT_CANCELED, returnIntent);
         finish();
     }
+
 }

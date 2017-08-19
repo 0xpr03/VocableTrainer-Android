@@ -55,6 +55,7 @@ public class ListActivity extends AppCompatActivity {
     private ListView listView;
     private TableListAdapter adapter;
     private boolean delete;
+    private Button bOk;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,10 +66,12 @@ public class ListActivity extends AppCompatActivity {
         // handle passed params
         multiselect = intent.getBooleanExtra(PARAM_MULTI_SELECT, false);
         delete = intent.getBooleanExtra(PARAM_DELETE_FLAG, false);
+        bOk = (Button) findViewById(R.id.btnOkSelect);
 
         // setup listview
         initListView();
         loadTables((ArrayList<Table>) intent.getSerializableExtra(PARAM_SELECTED));
+        updateOkButton();
     }
 
     @Override
@@ -117,10 +120,15 @@ public class ListActivity extends AppCompatActivity {
             setTitle(R.string.ListSelector_Title_Training);
             listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
             listView.setItemsCanFocus(false);
-
-            Button btn = (Button) findViewById(R.id.btnOkSelect);
-            btn.setVisibility(View.VISIBLE);
-            btn.setOnClickListener(new View.OnClickListener() {
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    updateOkButton();
+                }
+            });
+            updateOkButton();
+            bOk.setVisibility(View.VISIBLE);
+            bOk.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     ArrayList<Table> selectedTables = new ArrayList<Table>(10);
@@ -171,7 +179,13 @@ public class ListActivity extends AppCompatActivity {
                 });
             }
         }
+    }
 
+    /**
+     * Update enabled state of OK button
+     */
+    private void updateOkButton(){
+        bOk.setEnabled(listView.getCheckedItemCount() > 0);
     }
 
     /**

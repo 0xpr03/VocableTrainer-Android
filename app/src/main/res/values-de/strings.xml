@@ -34,6 +34,7 @@
     <string name="Editor_Diag_table_Title_Edit">Liste editieren</string>
     <string name="Editor_Diag_table_Title_New">Neue Liste</string>
     <string name="Editor_Diag_table_btn_Ok">Ok</string>
+    <string name="Editor_Diag_table_btn_Canel">Abbrechen</string>
     <string name="Editor_Undo">Rückgängig</string>
     <string name="ListSelector_Diag_delete_Msg" formatted="false">Möchten Sie diese Liste löschen: %s: %s, %s</string>
     <string name="ListSelector_Diag_delete_Title">Liste Löschen</string>
@@ -52,7 +53,7 @@
     <string name="CSV_Format_Tabs">Tabs</string>
     <string name="Export_Exporting_Title">Exportiere..</string>
     <string name="Export_Cancel">Abbrechen</string>
-    <string name="Export_Message">CSV Datei mit (mehreren) vokabel Listen(n) importieren.\nSiehe <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Import">Wiki Eintrag</a> für weiter Informationen.</string>
+    <string name="Export_Message">UTF8 kodierte CSV Datei mit (mehreren) vokabel Liste(n) importieren.\nSiehe <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Import">Wiki Eintrag</a> für weiter Informationen.</string>
     <string name="Export_Ok">Exportieren</string>
     <string name="Export_chk_Multilist">Mehrere Listen exportieren</string>
     <string name="Export_chk_Table_Meta">Exportiere Listen Meta-daten</string>
@@ -73,7 +74,7 @@
     <string name="Import_Info_multilist">mehrlisten Format erkannt</string>
     <string name="Import_Info_rawlist">Rohdaten Liste erkannt</string>
     <string name="Import_Info_singlelist">einfache Liste erkannt</string>
-    <string name="Import_Message">CSV Datei mit (mehreren) Vokabelliste(n) importieren.\nSiehe <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Import">Wiki Eintrag</a> für weiter Informationen.</string>
+    <string name="Import_Message">UTF-8 kodierte CSV Datei mit (mehreren) Vokabelliste(n) importieren.\nSiehe <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Import">Wiki Eintrag</a> für weiter Informationen.</string>
     <string name="Import_Multilist_ADD">Bei bestehenden Listen hinzufügen</string>
     <string name="Import_Multilist_IGNORE">Bestehende Listen ignorieren</string>
     <string name="Import_Multilist_REPLACE">Bestehende Listen überschreiben</string>

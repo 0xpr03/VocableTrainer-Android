@@ -410,10 +410,8 @@ public class ImportActivity extends AppCompatActivity {
             } else if (targetList.getId() >= MIN_ID_TRESHOLD) {
                 is_ok = false;
             }
-        } else if (isRawData && (mode == Importer.IMPORT_LIST_MODE.ADD || mode == Importer.IMPORT_LIST_MODE.REPLACE)) {
-            if (targetList == null) {
-                is_ok = false;
-            } else if (targetList.getId() < MIN_ID_TRESHOLD) {
+        } else if (isRawData && (mode == Importer.IMPORT_LIST_MODE.ADD || mode == Importer.IMPORT_LIST_MODE.REPLACE) && targetList.getId() < MIN_ID_TRESHOLD) {
+            if (targetList.getId() < MIN_ID_TRESHOLD) {
                 is_ok = false;
             }
         }

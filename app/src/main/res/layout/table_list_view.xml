@@ -6,45 +6,46 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
         <CheckBox
             android:id="@+id/tblCheckBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:focusable="false"
-            android:clickable="false"
             android:layout_alignParentLeft="true"
-            />
+            android:clickable="false"
+            android:focusable="false" />
 
         <TextView
             android:id="@+id/tableFirstText"
-            android:focusable="false"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_toRightOf="@id/tblCheckBox"
+            android:layout_weight="1"
+            android:focusable="false"
             android:text="First"></TextView>
 
         <TextView
             android:id="@+id/tableSecondText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:focusable="false"
-            android:layout_toRightOf="@id/tableFirstText"
             android:layout_centerVertical="true"
+            android:layout_toRightOf="@id/tableFirstText"
+            android:layout_weight="0.9"
+            android:focusable="false"
             android:text="Second"></TextView>
 
         <TextView
             android:id="@+id/tableThirdText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:focusable="false"
-            android:layout_centerVertical="true"
             android:layout_alignParentRight="true"
-            android:visibility="visible"
-            android:text="Third"></TextView>
+            android:layout_centerVertical="true"
+            android:layout_weight="0.9"
+            android:focusable="false"
+            android:text="Third"
+            android:visibility="visible"></TextView>
     </LinearLayout>
 
 </vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib.CheckableRelativeLayout>

@@ -92,20 +92,21 @@ public class EntryListAdapter extends BaseAdapter {
             holder.colA = (TextView) convertView.findViewById(R.id.entryFirstText);
             holder.colB = (TextView) convertView.findViewById(R.id.entrySecondText);
             holder.colTipp = (TextView) convertView.findViewById(R.id.entryThirdText);
+            holder.originTypeface = holder.colA.getTypeface().getStyle();
 
             convertView.setTag(holder);
             convertView.setTag(R.id.entryFirstText, holder.colA);
             convertView.setTag(R.id.entrySecondText, holder.colB);
             convertView.setTag(R.id.entryThirdText, holder.colTipp);
 
-            if (item.getId() == ID_RESERVED_SKIP) {
-                holder.colA.setTypeface(null, Typeface.BOLD);
-                holder.colB.setTypeface(null, Typeface.BOLD);
-                holder.colTipp.setTypeface(null, Typeface.BOLD);
-            }
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
+
+        boolean bold = item.getId() == ID_RESERVED_SKIP;
+        holder.colA.setTypeface(null, bold ? Typeface.BOLD : holder.originTypeface);
+        holder.colB.setTypeface(null, bold ? Typeface.BOLD : holder.originTypeface);
+        holder.colTipp.setTypeface(null, bold ? Typeface.BOLD : holder.originTypeface);
 
         holder.colA.setText(item.getAWord());
         holder.colB.setText(item.getBWord());
@@ -183,5 +184,6 @@ public class EntryListAdapter extends BaseAdapter {
         protected TextView colA;
         protected TextView colB;
         protected TextView colTipp;
+        protected int originTypeface;
     }
 }

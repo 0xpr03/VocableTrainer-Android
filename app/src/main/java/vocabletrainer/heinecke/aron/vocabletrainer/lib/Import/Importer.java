@@ -50,6 +50,7 @@ public class Importer implements ImportHandler {
 
     @Override
     public void newTable(String name, String columnA, String columnB) {
+        flushBuffer();
         ignoreEntries = false;
         Table tbl = new Table(columnA, columnB, name);
         if (previewParser.isRawData()) {
@@ -83,6 +84,9 @@ public class Importer implements ImportHandler {
      * Flushes the buffer and inserts everything
      */
     private void flushBuffer() {
+        if(insertBuffer.isEmpty()){
+            return;
+        }
         db.upsertEntries(insertBuffer);
         insertBuffer.clear();
         insertBuffer.ensureCapacity(BUFFER_CAPACITY);

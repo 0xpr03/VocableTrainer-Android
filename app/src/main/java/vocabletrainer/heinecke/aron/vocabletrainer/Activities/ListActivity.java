@@ -126,7 +126,6 @@ public class ListActivity extends AppCompatActivity {
                     updateOkButton();
                 }
             });
-            updateOkButton();
             bOk.setVisibility(View.VISIBLE);
             bOk.setOnClickListener(new View.OnClickListener() {
                 @Override

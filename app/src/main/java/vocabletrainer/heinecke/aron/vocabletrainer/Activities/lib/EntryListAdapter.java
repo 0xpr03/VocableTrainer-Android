@@ -24,6 +24,7 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERV
  */
 public class EntryListAdapter extends BaseAdapter {
 
+    private static final int ANDROID_WORKAROUND_STYLE = -1;
     private static final String TAG = "EntryListAdapter";
     private List<Entry> dataItems = null;
     private List<Entry> deleted;
@@ -92,7 +93,11 @@ public class EntryListAdapter extends BaseAdapter {
             holder.colA = (TextView) convertView.findViewById(R.id.entryFirstText);
             holder.colB = (TextView) convertView.findViewById(R.id.entrySecondText);
             holder.colTipp = (TextView) convertView.findViewById(R.id.entryThirdText);
-            holder.originTypeface = holder.colA.getTypeface().getStyle();
+            if(holder.colA.getTypeface() == null){
+                holder.originTypeface = ANDROID_WORKAROUND_STYLE;
+            }else {
+                holder.originTypeface = holder.colA.getTypeface().getStyle();
+            }
 
             convertView.setTag(holder);
             convertView.setTag(R.id.entryFirstText, holder.colA);
@@ -104,9 +109,15 @@ public class EntryListAdapter extends BaseAdapter {
         }
 
         boolean bold = item.getId() == ID_RESERVED_SKIP;
-        holder.colA.setTypeface(null, bold ? Typeface.BOLD : holder.originTypeface);
-        holder.colB.setTypeface(null, bold ? Typeface.BOLD : holder.originTypeface);
-        holder.colTipp.setTypeface(null, bold ? Typeface.BOLD : holder.originTypeface);
+        if(holder.originTypeface == ANDROID_WORKAROUND_STYLE){
+            holder.colA.setTypeface(null, bold ? Typeface.BOLD : Typeface.NORMAL);
+            holder.colB.setTypeface(null, bold ? Typeface.BOLD : Typeface.NORMAL);
+            holder.colTipp.setTypeface(null, bold ? Typeface.BOLD : Typeface.NORMAL);
+        }else {
+            holder.colA.setTypeface(null, bold ? Typeface.BOLD : holder.originTypeface);
+            holder.colB.setTypeface(null, bold ? Typeface.BOLD : holder.originTypeface);
+            holder.colTipp.setTypeface(null, bold ? Typeface.BOLD : holder.originTypeface);
+        }
 
         holder.colA.setText(item.getAWord());
         holder.colB.setText(item.getBWord());

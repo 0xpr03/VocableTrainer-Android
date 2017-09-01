@@ -4,8 +4,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -57,7 +59,7 @@ public class EditorActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         entries = new ArrayList<>();
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_editor__activity);
+        setContentView(R.layout.activity_editor_activity);
         db = new Database(getBaseContext());
 
         Intent intent = getIntent();
@@ -123,6 +125,11 @@ public class EditorActivity extends AppCompatActivity {
      * Setup listview
      */
     private void initListView() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ActionBar ab = getSupportActionBar();
+        ab.setDisplayHomeAsUpEnabled(true);
+
         listView = (ListView) findViewById(R.id.listviewEditor);
 
         listView.setLongClickable(true);

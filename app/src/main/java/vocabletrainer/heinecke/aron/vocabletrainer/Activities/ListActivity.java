@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.View;
@@ -62,6 +64,12 @@ public class ListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         db = new Database(this.getBaseContext());
         setContentView(R.layout.activity_list_selector);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ActionBar ab = getSupportActionBar();
+        ab.setDisplayHomeAsUpEnabled(true);
+
         Intent intent = getIntent();
         // handle passed params
         multiselect = intent.getBooleanExtra(PARAM_MULTI_SELECT, false);
@@ -72,6 +80,12 @@ public class ListActivity extends AppCompatActivity {
         initListView();
         loadTables((ArrayList<Table>) intent.getSerializableExtra(PARAM_SELECTED));
         updateOkButton();
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 
     @Override

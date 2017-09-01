@@ -3,8 +3,10 @@ package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -44,6 +46,12 @@ public class TrainerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trainer);
         setTitle(R.string.Trainer_Title);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ActionBar ab = getSupportActionBar();
+        ab.setDisplayHomeAsUpEnabled(true);
+
         tExercise = (TextView) findViewById(R.id.tTrainerExercise);
         tHint = (TextView) findViewById(R.id.tTrainerHint);
         tColumnQuestion = (TextView) findViewById(R.id.tTrainerExColumn);

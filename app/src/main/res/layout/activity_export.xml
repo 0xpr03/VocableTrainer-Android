@@ -1,160 +1,180 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="vocabletrainer.heinecke.aron.vocabletrainer.Activities.ExportActivity">
 
-
-    <Button
-        android:id="@+id/bExportStart"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:onClick="onOk"
-        android:text="@string/Export_Ok"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toRightOf="@+id/bCancel"
-        app:layout_constraintRight_toRightOf="parent" />
-
-    <Button
-        android:id="@+id/bCancel"
-        android:layout_width="0dp"
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:onClick="onCancel"
-        android:text="@string/Export_Cancel"
-        app:layout_constraintBaseline_toBaselineOf="@+id/bExportStart"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/bExportStart" />
+        android:theme="@style/AppTheme.AppBarOverlay">
 
-    <RelativeLayout
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:orientation="vertical"
-        app:layout_constraintHorizontal_bias="0.428"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:id="@+id/RLExportLW"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@+id/chkExportMulti"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/bExportStart">
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
 
-        <ListView
+    </android.support.design.widget.AppBarLayout>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <Button
+            android:id="@+id/bExportStart"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
+            android:onClick="onOk"
+            android:text="@string/Export_Ok"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@+id/bCancel"
+            app:layout_constraintRight_toRightOf="parent" />
+
+        <Button
+            android:id="@+id/bCancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:onClick="onCancel"
+            android:text="@string/Export_Cancel"
+            app:layout_constraintBaseline_toBaselineOf="@+id/bExportStart"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/bExportStart" />
+
+        <RelativeLayout
+            android:id="@+id/RLExportLW"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toTopOf="@+id/bExportStart"
+            app:layout_constraintHorizontal_bias="0.428"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/chkExportMulti">
+
+            <ListView
+                android:id="@+id/lExportListView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginStart="8dp" />
+
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/bExportAddTables"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/lExportListView"
+                android:layout_alignParentEnd="true"
+                android:layout_margin="@dimen/fab_margin"
+                app:backgroundTint="@color/colorPrimary"
+                app:rippleColor="@color/colorAccent"
+                app:srcCompat="@android:drawable/ic_input_add"
+                tools:layout_editor_absoluteX="0dp"
+                tools:layout_editor_absoluteY="0dp" />
+        </RelativeLayout>
+
+        <EditText
+            android:id="@+id/tExportFile"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginStart="8dp"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/lExportListView" />
+            android:layout_marginTop="4dp"
+            android:ems="10"
+            android:hint="@string/Export_file_placeholder"
+            android:inputType="textPersonName"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/bExportSelFile"
+            app:layout_constraintTop_toBottomOf="@+id/tExportMsg"
+            tools:focusable="false" />
 
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/bExportAddTables"
+        <Button
+            android:id="@+id/bExportSelFile"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/lExportListView"
-            android:layout_alignParentEnd="true"
-            android:layout_margin="@dimen/fab_margin"
-            app:backgroundTint="@color/colorPrimary"
-            app:rippleColor="@color/colorAccent"
-            app:srcCompat="@android:drawable/ic_input_add"
-            tools:layout_editor_absoluteX="0dp"
-            tools:layout_editor_absoluteY="0dp" />
-    </RelativeLayout>
+            android:layout_marginEnd="8dp"
+            android:onClick="selectFile"
+            android:text="@string/Select_File_btn"
+            app:layout_constraintBaseline_toBaselineOf="@+id/tExportFile"
+            app:layout_constraintRight_toRightOf="parent" />
 
-    <EditText
-        android:id="@+id/tExportFile"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginStart="8dp"
-        android:ems="10"
-        android:hint="@string/Export_file_placeholder"
-        android:inputType="textPersonName"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/bExportSelFile"
-        tools:focusable="false"
-        android:layout_marginTop="4dp"
-        app:layout_constraintTop_toBottomOf="@+id/tExportMsg" />
+        <CheckBox
+            android:id="@+id/chkExportMulti"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/Export_chk_Multilist"
+            app:layout_constraintHorizontal_bias="0.497"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/chkExportMeta" />
 
-    <Button
-        android:id="@+id/bExportSelFile"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:onClick="selectFile"
-        android:text="@string/Select_File_btn"
-        app:layout_constraintBaseline_toBaselineOf="@+id/tExportFile"
-        app:layout_constraintRight_toRightOf="parent" />
+        <CheckBox
+            android:id="@+id/chkExportMeta"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/Export_chk_Table_Meta"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/spExpFormat" />
 
-    <CheckBox
-        android:id="@+id/chkExportMulti"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/Export_chk_Multilist"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@+id/chkExportMeta"
-        android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintHorizontal_bias="0.497" />
+        <Spinner
+            android:id="@+id/spExpFormat"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="7dp"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/tExpFormatInfo"
+            app:layout_constraintTop_toBottomOf="@+id/tExportFile" />
 
-    <CheckBox
-        android:id="@+id/chkExportMeta"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/Export_chk_Table_Meta"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@+id/spExpFormat"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent" />
+        <TextView
+            android:id="@+id/tExpFormatInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="0dp"
+            android:text="@string/CSV_Format"
+            app:layout_constraintLeft_toRightOf="@+id/spExpFormat"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/spExpFormat" />
 
-    <Spinner
-        android:id="@+id/spExpFormat"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintRight_toLeftOf="@+id/tExpFormatInfo"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginTop="7dp"
-        app:layout_constraintTop_toBottomOf="@+id/tExportFile"
-        android:layout_marginStart="8dp"
-        app:layout_constraintHorizontal_chainStyle="spread"
-        android:layout_marginRight="8dp" />
+        <TextView
+            android:id="@+id/tExportMsg"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/Export_Message"
+            android:textAppearance="@style/TextAppearance.AppCompat"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/tExpFormatInfo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="0dp"
-        android:text="@string/CSV_Format"
-        app:layout_constraintLeft_toRightOf="@+id/spExpFormat"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/spExpFormat"
-        android:layout_marginLeft="8dp" />
+    </android.support.constraint.ConstraintLayout>
 
-    <TextView
-        android:id="@+id/tExportMsg"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp"
-        android:text="@string/Export_Message"
-        android:textAppearance="@style/TextAppearance.AppCompat"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-</android.support.constraint.ConstraintLayout>
+</android.support.design.widget.CoordinatorLayout>

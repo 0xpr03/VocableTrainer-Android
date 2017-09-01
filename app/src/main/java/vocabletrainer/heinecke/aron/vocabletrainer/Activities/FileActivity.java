@@ -6,8 +6,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.AbsListView;
@@ -81,8 +83,13 @@ public class FileActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "init");
         setContentView(R.layout.activity_file);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ActionBar ab = getSupportActionBar();
+        ab.setDisplayHomeAsUpEnabled(true);
+
         fmt = new Formatter();
 
         TextView msg = (TextView) findViewById(R.id.tFileMsg);
@@ -160,6 +167,12 @@ public class FileActivity extends AppCompatActivity {
      */
     public void onCancelPressed(View view) {
         cancel();
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        cancel();
+        return true;
     }
 
     @Override

@@ -3,7 +3,9 @@ package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -59,6 +61,11 @@ public class TrainerSettingsActivity extends AppCompatActivity {
      * Setup view
      */
     private void init() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ActionBar ab = getSupportActionBar();
+        ab.setDisplayHomeAsUpEnabled(true);
+
         spinner = (Spinner) findViewById(R.id.tSettingsSpinMode);
 
         spinner.setAdapter(new ArrayAdapter<Trainer.TEST_MODE>(this, android.R.layout.simple_list_item_1, Trainer.TEST_MODE.values()));

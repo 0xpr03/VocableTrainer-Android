@@ -140,8 +140,8 @@ public class ExportActivity extends AppCompatActivity {
         spFormat.setAdapter(spAdapterFormat);
 
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        chkExportTalbeInfo.setChecked(settings.getBoolean(P_KEY_B_EXP_TBL_META, false));
-        chkExportMultiple.setChecked(settings.getBoolean(P_KEY_B_EXP_TBL_MULTI, false));
+        chkExportTalbeInfo.setChecked(settings.getBoolean(P_KEY_B_EXP_TBL_META, true));
+        chkExportMultiple.setChecked(settings.getBoolean(P_KEY_B_EXP_TBL_MULTI, true));
         spFormat.setSelection(settings.getInt(P_KEY_I_EXP_FORMAT, 0));
     }
 

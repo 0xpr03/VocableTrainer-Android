@@ -109,6 +109,7 @@ public class EntryListAdapter extends BaseAdapter {
         }
 
         boolean bold = item.getId() == ID_RESERVED_SKIP;
+        //TODO: remove on drop of API 19 support
         if(holder.originTypeface == ANDROID_WORKAROUND_STYLE){
             holder.colA.setTypeface(null, bold ? Typeface.BOLD : Typeface.NORMAL);
             holder.colB.setTypeface(null, bold ? Typeface.BOLD : Typeface.NORMAL);
@@ -124,15 +125,6 @@ public class EntryListAdapter extends BaseAdapter {
         holder.colTipp.setText(item.getTip());
 
         return convertView;
-    }
-
-    /**
-     * Returns a list of deleted entries
-     *
-     * @return
-     */
-    public List<Entry> getDeleted() {
-        return deleted;
     }
 
     /**

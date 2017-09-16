@@ -8,12 +8,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RadioButton;
-import android.widget.RadioGroup;
-import android.widget.Spinner;
 
 import java.util.ArrayList;
 
@@ -35,10 +32,12 @@ public class TrainerSettingsActivity extends AppCompatActivity {
     private final static String P_KEY_TS_TIMES_VOCABLE = "vocable_repeat";
     private final static String P_KEY_TS_TRAIN_MODE = "training_mode";
     private final static String P_KEY_TS_ALLOW_HINTS = "hints_allowed";
+    private final static String P_KEY_TS_CASE_SENSITIVE = "case_sensitive";
 
     private static final String TAG = "TrainerSettings";
     public ArrayList<Table> tables;
     CheckBox bHints;
+    CheckBox bCaseSensitive;
     EditText tTimesVocable;
     private Trainer.TEST_MODE testMode;
     private RadioButton[] rButtons;
@@ -55,6 +54,7 @@ public class TrainerSettingsActivity extends AppCompatActivity {
             return;
         }
         bHints = (CheckBox) findViewById(R.id.tSettingsChkAllowTips);
+        bCaseSensitive = (CheckBox) findViewById(R.id.chkTSettingsChkCaseSens);
         tTimesVocable = (EditText) findViewById(R.id.tSettingsSolveTimes);
         RadioButton rbA = (RadioButton) findViewById(R.id.rTSettingsA);
         RadioButton rbB = (RadioButton) findViewById(R.id.rTSettingsB);
@@ -123,6 +123,8 @@ public class TrainerSettingsActivity extends AppCompatActivity {
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         // use string to show the hint at first via empty string
         tTimesVocable.setText(settings.getString(P_KEY_TS_TIMES_VOCABLE, ""));
+        bHints.setChecked(settings.getBoolean(P_KEY_TS_ALLOW_HINTS, false));
+        bCaseSensitive.setChecked(settings.getBoolean(P_KEY_TS_CASE_SENSITIVE,false));
 
         int cRB = (settings.getInt(P_KEY_TS_TRAIN_MODE, 0));
         RadioButton rbtn;
@@ -133,7 +135,6 @@ public class TrainerSettingsActivity extends AppCompatActivity {
         }
         rbtn.setChecked(true);
         refreshTestMode(rbtn); // update here to init testmode
-        bHints.setChecked(settings.getBoolean(P_KEY_TS_ALLOW_HINTS, false));
     }
 
     @Override
@@ -146,6 +147,7 @@ public class TrainerSettingsActivity extends AppCompatActivity {
         editor.putBoolean(P_KEY_TS_ALLOW_HINTS, bHints.isChecked());
         editor.putInt(P_KEY_TS_TRAIN_MODE, getChecked());
         editor.putString(tTimesVocable.getText().toString(), P_KEY_TS_TIMES_VOCABLE);
+        editor.putBoolean(P_KEY_TS_CASE_SENSITIVE,bCaseSensitive.isChecked());
         editor.apply();
     }
 
@@ -163,8 +165,9 @@ public class TrainerSettingsActivity extends AppCompatActivity {
             return;
         }
         boolean showHints = bHints.isChecked();
-        Log.d(TAG, "Settings:" + timesToSolve + " " + testMode + " " + showHints);
-        TrainerSettings settings = new TrainerSettings(timesToSolve, testMode, showHints);
+        boolean caseSensitive = bCaseSensitive.isChecked();
+        Log.d(TAG, "Settings: " + timesToSolve + " " + testMode + " SH:" + showHints+" CS:"+caseSensitive);
+        TrainerSettings settings = new TrainerSettings(timesToSolve, testMode, showHints, caseSensitive);
 
         Intent intent = new Intent(this, TrainerActivity.class);
         intent.putExtra(PARAM_TRAINER_SETTINGS, settings);

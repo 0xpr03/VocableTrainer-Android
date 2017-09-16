@@ -115,6 +115,20 @@ public class Trainer {
     }
 
     /**
+     * Check two string for equality, taking case sensitive settings into account
+     * @param a
+     * @param b
+     * @return true if they are equals according to this trainings settings
+     */
+    private boolean equals(final String a, final String b){
+        if(this.settings.caseSensitive){
+            return a.equals(b);
+        }else{
+            return a.equalsIgnoreCase(b);
+        }
+    }
+
+    /**
      * Checks for correct solution
      *
      * @param tSolution
@@ -126,7 +140,7 @@ public class Trainer {
             return false;
         }
         boolean bSolved;
-        if (bSolved = getSolutionUnchecked().equals(tSolution)) {
+        if (bSolved = equals(getSolutionUnchecked(),tSolution)) {
             if (!showedSolution)
                 this.cVocable.setPoints(this.cVocable.getPoints() + 1);
             if (cVocable.getPoints() >= timesToSolve) {

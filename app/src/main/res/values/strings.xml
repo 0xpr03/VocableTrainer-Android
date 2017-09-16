@@ -22,6 +22,7 @@
     <string name="TSettings_rb_A">Ask column A</string>
     <string name="TSettings_rb_B">Ask column B</string>
     <string name="TSettings_rb_Random">Ask random column</string>
+    <string name="TSettings_chkbx_CaseSensitive">check case sensitive</string>
     <string name="Editor_btn_Add_Row">Add Row</string>
     <string name="Editor_btn_Save">Save List</string>
     <string name="ListSelector_Title_Edit">Select list to edit</string>

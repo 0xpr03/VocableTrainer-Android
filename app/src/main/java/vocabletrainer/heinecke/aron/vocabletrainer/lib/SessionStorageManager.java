@@ -19,6 +19,7 @@ public class SessionStorageManager {
     private final static String KEY_TIPS_ALLOWED = "tips";
     private final static String KEY_GIVEN_TIPS = "t_tips_given";
     private final static String KEY_FAILED = "t_failed";
+    private final static String KEY_CASE_SENSITIVE = "t_case_sensitive";
 
     private final static int BIND_KEY = 1;
     private final static int BIND_VAL = 2;
@@ -105,8 +106,9 @@ public class SessionStorageManager {
             int tips = getInt(KEY_GIVEN_TIPS);
             int timesToSolve = getInt(KEY_SOLVE_TIMES_TO);
             boolean allowTips = getBoolean(KEY_TIPS_ALLOWED);
+            boolean caseSensitive = getBoolean(KEY_CASE_SENSITIVE);
 
-            return new TrainerSettings(timesToSolve, mode, allowTips,tips,failed);
+            return new TrainerSettings(timesToSolve, mode, allowTips,tips,failed,caseSensitive);
         }
 
         /**
@@ -169,6 +171,8 @@ public class SessionStorageManager {
             if (exec(KEY_FAILED, settings.timesFailed)) return false;
             if (exec(KEY_SOLVE_TIMES_TO, settings.timesToSolve)) return false;
             if (exec(KEY_TIPS_ALLOWED,settings.allowTips)) return false;
+            if (exec(KEY_CASE_SENSITIVE,settings.caseSensitive)) return false;
+
             stm.close();
             return true;
         }

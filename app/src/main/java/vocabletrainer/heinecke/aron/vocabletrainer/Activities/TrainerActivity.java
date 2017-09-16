@@ -50,7 +50,9 @@ public class TrainerActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
-        ab.setDisplayHomeAsUpEnabled(true);
+        if (ab != null) {
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
 
         tExercise = (TextView) findViewById(R.id.tTrainerExercise);
         tHint = (TextView) findViewById(R.id.tTrainerHint);

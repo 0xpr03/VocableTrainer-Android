@@ -10,15 +10,18 @@
     <string name="Main_btn_Resume_Session">Resume Session</string>
     <string name="Main_btn_Import">Import</string>
     <string name="Main_btn_Export">Export</string>
-    <string name="Trainer_Title" translatable="false">Vocabletrainer - Training</string>
+    <string name="Trainer_Title" translatable="false">Training</string>
     <string name="Trainer_btn_Hint">Show Hint</string>
     <string name="Trainer_btn_Solution">Show Solution</string>
     <string name="TSettings_Title">Training settings</string>
-    <string name="TSettings_Time_Solve">Times to solve</string>Ingore
+    <string name="TSettings_Time_Solve">Times to solve</string>
     <string name="TSettings_chkbx_Tips">Allow Hints</string>
     <string name="TSettings_Info">Training Settings</string>
     <string name="TSettings_lbl_Column_Asked">Column Asked</string>
     <string name="TSettings_btn_Start">Start Session</string>
+    <string name="TSettings_rb_A">Ask column A</string>
+    <string name="TSettings_rb_B">Ask column B</string>
+    <string name="TSettings_rb_Random">Ask random column</string>
     <string name="Editor_btn_Add_Row">Add Row</string>
     <string name="Editor_btn_Save">Save List</string>
     <string name="ListSelector_Title_Edit">Select list to edit</string>
@@ -69,7 +72,9 @@
     <string name="Editor_Diag_table_MSG">Please set the list information</string>
     <string name="Editor_Diag_table_btn_Ok">Ok</string>
     <string name="Editor_Diag_table_btn_Canel">Cancel</string>
-    <string name="About_Msg" formatted="false" translatable="false">About: VocableTrainer %v\nCopyright 2017 Aron Heinecke\nLicensed under Apache License 2.0\n\nBug Reports &amp; Feature requests: %l\n\nUsing Apache Commons CSV</string>
+
+    <!-- Special escape because of replacement & re-parsing as HTML \n = <br>-->
+    <string name="About_Msg" formatted="false" translatable="false">About: VocableTrainer %v\nCopyright 2017 Aron Heinecke\nLicensed under &lt;a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache License 2.0&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/issues">Bug Reports &amp; Feature requests&lt;/a>\n\nUsing &lt;a href="https://commons.apache.org/csv/">Apache Commons CSV&lt;/a></string>
     <string name="About_btn_Close">Close</string>
     <string name="ListSelector_Diag_delete_Title">Delete List</string>
     <string name="ListSelector_Diag_delete_Msg" formatted="false">Do you really want to delete the following list: %s: %s, %s</string>
@@ -84,7 +89,7 @@
     <string name="File_Diag_btn_CANCEL">Cancel</string>
     <!-- Messages -->
     <string name="Perm_CSV">Permission is required to load/write your CSV files for import/export.</string>
-    <string name="File_Error_Mediastate">No storage found / is writable! Unable to continue!</string>
+    <string name="File_Error_Mediastate">No storage found / is writable! Unable to continue.</string>
     <string name="File_Error_Nullpointer">Unable to show files. Nullpointer</string>
     <string name="Import_Message" formatted="true">Import a UTF8 encoded CSV file containing (multiple) vocable lists.\nSee the <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Import">wiki page</a> for help.</string>
     <string name="Export_Message" formatted="true">Export to UTF8 encoded CSV file (with list info)\nSee the <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Export">wiki page</a> for help.</string>

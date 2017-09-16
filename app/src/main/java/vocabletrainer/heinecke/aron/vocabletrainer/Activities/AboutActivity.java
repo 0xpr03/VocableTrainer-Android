@@ -22,8 +22,6 @@ import vocabletrainer.heinecke.aron.vocabletrainer.R;
  * About activity
  */
 public class AboutActivity extends AppCompatActivity {
-    private final static String LINK = "https://github.com/0xpr03/VocableTrainer-Android/issues";
-    private final static String LINK_HTML = "<u><a href=\"" + LINK + "\">github.com/0xpr03/VocableTrainer-Android/issues</a></u>";
     private static String MSG = null;
 
     @Override
@@ -34,17 +32,17 @@ public class AboutActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
-        ab.setDisplayHomeAsUpEnabled(true);
+        if (ab != null) {
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
 
         if (MSG == null) {
             String versionName = BuildConfig.VERSION_NAME;
-            MSG = getText(R.string.About_Msg).toString().replaceAll("\\n", "\n")
-                    .replaceAll("\\n", "<br>")
-                    .replaceAll("%v", versionName)
-                    .replace("%l", LINK_HTML);
+            MSG = getText(R.string.About_Msg).toString().replaceAll("\\n", "<br>")
+                    .replaceAll("%v", versionName);
         }
         TextView msgTextbox = (TextView) findViewById(R.id.etAboutMsg);
-        setTextViewHTML(msgTextbox, MSG);
+        setTextViewHTML(msgTextbox,MSG);
     }
 
     /**
@@ -58,7 +56,7 @@ public class AboutActivity extends AppCompatActivity {
         int flags = strBuilder.getSpanFlags(span);
         ClickableSpan clickable = new ClickableSpan() {
             public void onClick(View view) {
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(LINK));
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(span.getURL()));
                 if (browserIntent.resolveActivity(getPackageManager()) != null) {
                     startActivity(browserIntent);
                 } else {

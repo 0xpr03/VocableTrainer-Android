@@ -11,6 +11,8 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 
 import java.util.ArrayList;
@@ -38,7 +40,8 @@ public class TrainerSettingsActivity extends AppCompatActivity {
     public ArrayList<Table> tables;
     CheckBox bHints;
     EditText tTimesVocable;
-    private Spinner spinner;
+    private Trainer.TEST_MODE testMode;
+    private RadioButton[] rButtons;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,9 +56,57 @@ public class TrainerSettingsActivity extends AppCompatActivity {
         }
         bHints = (CheckBox) findViewById(R.id.tSettingsChkAllowTips);
         tTimesVocable = (EditText) findViewById(R.id.tSettingsSolveTimes);
+        RadioButton rbA = (RadioButton) findViewById(R.id.rTSettingsA);
+        RadioButton rbB = (RadioButton) findViewById(R.id.rTSettingsB);
+        RadioButton rbR = (RadioButton) findViewById(R.id.rTSettingsAB);
+        rButtons = new RadioButton[]{rbA,rbB,rbR};
+
 
         init();
     }
+
+    /**
+     * Radio button clicked handler
+     * @param view
+     */
+    public void onRadioButtonClicked(View view) {
+        refreshTestMode(view);
+    }
+
+    /**
+     * Update testmode based on selected view
+     * @param view
+     */
+    private void refreshTestMode(View view){
+        switch (view.getId()) {
+            case R.id.rTSettingsA:
+                testMode = Trainer.TEST_MODE.A;
+                break;
+            case R.id.rTSettingsB:
+                testMode = Trainer.TEST_MODE.B;
+                break;
+            case R.id.rTSettingsAB:
+                testMode = Trainer.TEST_MODE.RANDOM;
+                break;
+            default:
+                Log.w(TAG,"invalid view passed for mode refresh");
+        }
+    }
+
+
+    /**
+     * Returns position of the currently checked radio button in the list
+     * @return
+     */
+    private int getChecked(){
+        for(int i = 0; i < rButtons.length ; i++){
+            if (rButtons[i].isChecked())
+                return i;
+        }
+        Log.w(TAG,"no button selected!");
+        return 0;
+    }
+
 
     /**
      * Setup view
@@ -64,17 +115,24 @@ public class TrainerSettingsActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
-        ab.setDisplayHomeAsUpEnabled(true);
-
-        spinner = (Spinner) findViewById(R.id.tSettingsSpinMode);
-
-        spinner.setAdapter(new ArrayAdapter<Trainer.TEST_MODE>(this, android.R.layout.simple_list_item_1, Trainer.TEST_MODE.values()));
+        if (ab != null) {
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
 
         // Load past values
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         // use string to show the hint at first via empty string
         tTimesVocable.setText(settings.getString(P_KEY_TS_TIMES_VOCABLE, ""));
-        spinner.setSelection(settings.getInt(P_KEY_TS_TRAIN_MODE, 0));
+
+        int cRB = (settings.getInt(P_KEY_TS_TRAIN_MODE, 0));
+        RadioButton rbtn;
+        if(cRB < rButtons.length){
+            rbtn = rButtons[cRB];
+        }else{
+            rbtn = rButtons[0];
+        }
+        rbtn.setChecked(true);
+        refreshTestMode(rbtn); // update here to init testmode
         bHints.setChecked(settings.getBoolean(P_KEY_TS_ALLOW_HINTS, false));
     }
 
@@ -86,7 +144,7 @@ public class TrainerSettingsActivity extends AppCompatActivity {
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
         editor.putBoolean(P_KEY_TS_ALLOW_HINTS, bHints.isChecked());
-        editor.putInt(P_KEY_TS_TRAIN_MODE, spinner.getSelectedItemPosition());
+        editor.putInt(P_KEY_TS_TRAIN_MODE, getChecked());
         editor.putString(tTimesVocable.getText().toString(), P_KEY_TS_TIMES_VOCABLE);
         editor.apply();
     }
@@ -98,16 +156,15 @@ public class TrainerSettingsActivity extends AppCompatActivity {
      */
     public void gotoNext(View view) {
 
-        int timeToSolve = 0;
+        int timesToSolve = 0;
         try {
-            timeToSolve = Integer.valueOf(tTimesVocable.getText().toString());
+            timesToSolve = Integer.valueOf(tTimesVocable.getText().toString());
         } catch (NumberFormatException e) {
             return;
         }
-        Trainer.TEST_MODE mode = (Trainer.TEST_MODE) spinner.getSelectedItem();
         boolean showHints = bHints.isChecked();
-        Log.d(TAG, "" + timeToSolve + " " + mode + " " + showHints);
-        TrainerSettings settings = new TrainerSettings(timeToSolve, mode, showHints);
+        Log.d(TAG, "Settings:" + timesToSolve + " " + testMode + " " + showHints);
+        TrainerSettings settings = new TrainerSettings(timesToSolve, testMode, showHints);
 
         Intent intent = new Intent(this, TrainerActivity.class);
         intent.putExtra(PARAM_TRAINER_SETTINGS, settings);

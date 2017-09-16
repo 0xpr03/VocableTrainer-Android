@@ -18,6 +18,47 @@
             android:background="?attr/colorPrimary"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/tTrainerExercise"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="8dp"
+                android:layout_marginLeft="24dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_weight="1"
+                android:paddingLeft="24dp"
+                android:text="tTrainerExercise"
+                android:textAppearance="@style/TextAppearance.AppCompat"
+                android:textSize="18sp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginStart="24dp" />
+
+            <TextView
+                android:id="@+id/tTrainerExColumn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:paddingLeft="24dp"
+                android:text="tTrainerExColimn"
+                android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="@+id/tTrainerExercise"
+                app:layout_constraintTop_toBottomOf="@+id/tTrainerExercise"
+                app:layout_constraintVertical_bias="0.0" />
+        </android.support.constraint.ConstraintLayout>
+
     </android.support.design.widget.AppBarLayout>
 
     <android.support.constraint.ConstraintLayout
@@ -25,7 +66,7 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <LinearLayout
+        <android.support.constraint.ConstraintLayout
             android:id="@+id/taMainLayout"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -40,143 +81,111 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintDimensionRatio="">
 
-            <LinearLayout
-                android:id="@+id/taExLayout"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="0.2"
-                android:orientation="horizontal"
-                android:weightSum="1"
-                tools:layout_editor_absoluteX="8dp"
-                tools:layout_editor_absoluteY="8dp">
+            <EditText
+                android:id="@+id/tTrainerInput"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="@string/Trainer_hint_solution"
+                android:inputType="textPersonName"
+                android:text="tTrainerInput"
 
-                <TextView
-                    android:id="@+id/tTrainerExercise"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_alignParentBottom="true"
-                    android:layout_alignParentEnd="true"
-                    android:layout_weight="0.75"
-                    android:text="tTrainerExercise"
-                    tools:layout_editor_absoluteX="8dp"
-                    tools:layout_editor_absoluteY="251dp" />
-
-                <TextView
-                    android:id="@+id/tTrainerExColumn"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.25"
-                    android:text="tTrainerExColimn" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/taAnswerLayout"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="0.2"
-                android:orientation="horizontal"
-                android:weightSum="1"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tTrainerExercise"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginRight="8dp"
                 app:layout_constraintRight_toRightOf="parent"
-                tools:layout_editor_absoluteY="96dp">
-
-                <EditText
-                    android:id="@+id/tTrainerInput"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.75"
-                    android:ems="10"
-                    android:hint="@string/Trainer_hint_solution"
-                    android:inputType="textPersonName"
-                    android:text="tTrainerInput"
-                    tools:layout_editor_absoluteX="16dp"
-                    tools:layout_editor_absoluteY="202dp" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.25"
-                    android:orientation="vertical"
-                    android:weightSum="1"
-                    tools:layout_editor_absoluteX="16dp"
-                    tools:layout_editor_absoluteY="28dp">
-
-                    <TextView
-                        android:id="@+id/tTrainerInputColumn"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="0.5"
-                        android:text="tTraienrInputColumn" />
-
-                    <Button
-                        android:id="@+id/bTrainerEnter"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="0.5"
-                        android:onClick="checkInput"
-                        android:text="@string/Trainer_btn_ok"
-                        tools:layout_editor_absoluteX="91dp"
-                        tools:layout_editor_absoluteY="199dp" />
-                </LinearLayout>
-
-            </LinearLayout>
+                android:layout_marginEnd="8dp" />
 
             <TextView
-                android:id="@+id/tTrainerHint"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_marginBottom="8dp"
+                android:id="@+id/tTrainerInputColumn"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
+                android:text="tTraienrInputColumn"
+                android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                app:layout_constraintLeft_toLeftOf="@+id/tTrainerInput"
+                app:layout_constraintTop_toBottomOf="@+id/tTrainerInput" />
+
+            <Button
+                android:id="@+id/bTrainerEnter"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:layout_marginLeft="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginStart="8dp"
-                android:layout_weight="0.3"
-                android:text="tTrainerHint"
-                app:layout_constraintBottom_toTopOf="@+id/bTrainerSolve"
-                app:layout_constraintHorizontal_bias="0.0"
+                android:layout_marginTop="6dp"
+                android:onClick="checkInput"
+                android:text="@string/Trainer_btn_ok"
                 app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent" />
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tTrainerInputColumn" />
+
+            <TextView
+                android:id="@+id/tTrainerHint"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginTop="8dp"
+                android:text="tTrainerHint"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textSize="14sp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/bTrainerSolve"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="8dp" />
 
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="0.2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:weightSum="1"
-                tools:layout_editor_absoluteX="8dp"
-                tools:layout_editor_absoluteY="8dp">
+                tools:layout_editor_absoluteX="80dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginBottom="8dp">
 
-                <Button
-                    android:id="@+id/bTrainerSolve"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginRight="8dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_weight="0.5"
-                    android:onClick="solve"
-                    android:text="@string/Trainer_btn_Solution"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintRight_toLeftOf="@+id/bTrainerHint" />
-
-                <Button
-                    android:id="@+id/bTrainerHint"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginRight="8dp"
-                    android:layout_weight="0.5"
-                    android:onClick="showHint"
-                    android:text="@string/Trainer_btn_Hint"
-                    app:layout_constraintBaseline_toBaselineOf="@+id/bTrainerSolve"
-                    app:layout_constraintRight_toRightOf="parent" />
             </LinearLayout>
 
-        </LinearLayout>
+            <Button
+                android:id="@+id/bTrainerHint"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:onClick="showHint"
+                android:text="@string/Trainer_btn_Hint"
+                android:layout_marginTop="8dp"
+                app:layout_constraintTop_toBottomOf="@+id/bTrainerEnter"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@+id/bTrainerSolve"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp" />
+
+            <Button
+                android:id="@+id/bTrainerSolve"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:onClick="solve"
+                android:text="@string/Trainer_btn_Solution"
+                android:layout_marginTop="8dp"
+                app:layout_constraintTop_toBottomOf="@+id/bTrainerEnter"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintLeft_toRightOf="@+id/bTrainerHint"
+                android:layout_marginRight="8dp"
+                android:layout_marginEnd="8dp" />
+
+        </android.support.constraint.ConstraintLayout>
 
     </android.support.constraint.ConstraintLayout>
 

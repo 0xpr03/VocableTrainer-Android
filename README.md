@@ -16,8 +16,10 @@ There's also a [PC version](https://github.com/0xpr03/VocableTrainer)
 Feel free to open an Issue for ideas, bugs, localisation or feature requests. Or even better a PR.
 
 ## FAQ
+- Playstore version  
+  Google wants money for publishing a free app, as this project is done in my spare time I would have to pay for this by myself. (Sidenote: As I haven't started this project for myself & don't have a real use case I wouldn't even profit from a playstore version.)
 - What about a localisation for X ?  
-  I would appreciate a PR for localisation.
+  I would appreciate a PR for localisations.
 - What is this first `1.0` version before `0.1` about ?  
   Default values weren't changed. It is therefore "0.0"
 - The latest release is not on f-droid.  

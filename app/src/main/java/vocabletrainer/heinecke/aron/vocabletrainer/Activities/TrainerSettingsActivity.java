@@ -123,8 +123,8 @@ public class TrainerSettingsActivity extends AppCompatActivity {
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         // use string to show the hint at first via empty string
         tTimesVocable.setText(settings.getString(P_KEY_TS_TIMES_VOCABLE, ""));
-        bHints.setChecked(settings.getBoolean(P_KEY_TS_ALLOW_HINTS, false));
-        bCaseSensitive.setChecked(settings.getBoolean(P_KEY_TS_CASE_SENSITIVE,false));
+        bHints.setChecked(settings.getBoolean(P_KEY_TS_ALLOW_HINTS, true));
+        bCaseSensitive.setChecked(settings.getBoolean(P_KEY_TS_CASE_SENSITIVE,true));
 
         int cRB = (settings.getInt(P_KEY_TS_TRAIN_MODE, 0));
         RadioButton rbtn;
@@ -146,7 +146,7 @@ public class TrainerSettingsActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = settings.edit();
         editor.putBoolean(P_KEY_TS_ALLOW_HINTS, bHints.isChecked());
         editor.putInt(P_KEY_TS_TRAIN_MODE, getChecked());
-        editor.putString(tTimesVocable.getText().toString(), P_KEY_TS_TIMES_VOCABLE);
+        editor.putString(P_KEY_TS_TIMES_VOCABLE,tTimesVocable.getText().toString());
         editor.putBoolean(P_KEY_TS_CASE_SENSITIVE,bCaseSensitive.isChecked());
         editor.apply();
     }

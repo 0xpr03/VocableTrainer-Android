@@ -2,19 +2,15 @@
 <resources>
     <string name="Trainer_hint_solution">Antwort</string>
     <string name="Trainer_btn_ok">Ok</string>
-    <string name="Editor_btn_Add_Row">Zeile Hinzufügen</string>
-    <string name="Editor_btn_Save">Speichern</string>
     <string name="ListSelector_Title_Delete">Ausgewähltes Löschen</string>
     <string name="Main_btn_Delete_List">Liste Löschen</string>
     <string name="Main_btn_Edit_List">Liste Editieren</string>
     <string name="Main_btn_New_List">Liste Erzeugen</string>
     <string name="Main_btn_New_Session">Neue Sitzung</string>
     <string name="Main_btn_Resume_Session">Sitzung forsetzen</string>
-    <string name="TSettings_Info">Trainings Einstellungen</string>
     <string name="TSettings_Time_Solve">Anzahl zu lösen</string>
     <string name="TSettings_btn_Start">Training Starten</string>
     <string name="TSettings_chkbx_Tips">Hinweise Erlauben</string>
-    <string name="TSettings_lbl_Column_Asked">Gefragte Spalte</string>
     <string name="Trainer_btn_Hint">Zeige Hinweis</string>
     <string name="Trainer_btn_Solution">Lösung anzeigen</string>
     <string name="Main_btn_About">Über</string>
@@ -30,7 +26,6 @@
     <string name="Editor_Diag_edit_Title">Eintrag Editieren</string>
     <string name="Editor_Diag_edit_btn_CANCEL">Abbrechen</string>
     <string name="Editor_Diag_edit_btn_OK">Ok</string>
-    <string name="Editor_Diag_table_MSG">Bitte listen Infos ausfüllen</string>
     <string name="Editor_Diag_table_Title_Edit">Liste editieren</string>
     <string name="Editor_Diag_table_Title_New">Neue Liste</string>
     <string name="Editor_Diag_table_btn_Ok">Ok</string>
@@ -53,7 +48,7 @@
     <string name="CSV_Format_Tabs">Tabs</string>
     <string name="Export_Exporting_Title">Exportiere..</string>
     <string name="Export_Cancel">Abbrechen</string>
-    <string name="Export_Message">UTF8 kodierte CSV Datei mit (mehreren) vokabel Liste(n) importieren.\nSiehe <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Import">Wiki Eintrag</a> für weiter Informationen.</string>
+    <string name="Export_Message">UTF8 kodierte CSV Datei mit (mehreren) vokabel Liste(n) importieren.\nSiehe <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Export">Wiki Eintrag</a> für weiter Informationen.</string>
     <string name="Export_Ok">Exportieren</string>
     <string name="Export_chk_Multilist">Mehrere Listen exportieren</string>
     <string name="Export_chk_Table_Meta">Exportiere Listen Meta-daten</string>
@@ -93,5 +88,14 @@
     <string name="File_Error_Nullpointer">Nullpointer, Dateien können nicht angezeigt werden.</string>
     <string name="File_Diag_MSG_part" formatted="false">Möchten Sie diese Datei überschreiben ? %f</string>
     <string name="Import_File_select_Info">Import Quelldatei auswählen</string>
-    <string name="title_activity_export"></string>
+    <string name="Editor_ListSettings">Listen Einstellungen</string>
+    <string name="TSettings_chkbx_CaseSensitive">Groß- &amp; Kleinschreibung beachten</string>
+    <string name="TSettings_rb_A">Spalte A abfragen</string>
+    <string name="TSettings_rb_B">Spalte B abfragen</string>
+    <string name="TSettings_rb_Random">Zufällige Spalte abfragen</string>
+    <string name="About_Title">Über</string>
+    <string name="Editor_Title">Editor</string>
+    <string name="Export_Title">Exportieren</string>
+    <string name="Import_Title">Importieren</string>
+    <string name="Trainer_Title">Üben</string>
 </resources>

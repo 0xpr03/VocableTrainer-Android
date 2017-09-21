@@ -2,6 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_marginBottom="2dp"
+    android:layout_marginTop="4dp"
     android:background="@drawable/bg_file_entry"
     android:orientation="horizontal">
 
@@ -11,12 +13,15 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="First"
-        android:textSize="16sp"></TextView>
+        android:textAppearance="@style/TextAppearance.AppCompat"
+        android:textSize="14sp"></TextView>
 
     <TextView
         android:id="@+id/entrySecondText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="0.2"
-        android:text="Second"></TextView>
+        android:text="Second"
+        android:textAppearance="@style/TextAppearance.AppCompat"
+        android:textSize="14sp"></TextView>
 </LinearLayout>

@@ -81,6 +81,7 @@ public class ExportActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_export);
+        setTitle(R.string.Export_Title);
 
         tExportFile = (EditText) findViewById(R.id.tExportFile);
         btnExport = (Button) findViewById(R.id.bExportStart);

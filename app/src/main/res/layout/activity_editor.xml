@@ -27,7 +27,6 @@
         android:id="@+id/constraintLayout">
 
         <LinearLayout
-            android:id="@+id/linearLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
@@ -73,7 +72,6 @@
             app:layout_constraintRight_toRightOf="parent">
 
             <Button
-                android:id="@+id/undobar_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="#00f2f2f2"

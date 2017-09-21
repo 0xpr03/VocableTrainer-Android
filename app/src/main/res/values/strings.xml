@@ -10,24 +10,21 @@
     <string name="Main_btn_Resume_Session">Resume Session</string>
     <string name="Main_btn_Import">Import</string>
     <string name="Main_btn_Export">Export</string>
-    <string name="Trainer_Title" translatable="false">Training</string>
+    <string name="Trainer_Title">Training</string>
     <string name="Trainer_btn_Hint">Show Hint</string>
     <string name="Trainer_btn_Solution">Show Solution</string>
     <string name="TSettings_Title">Training settings</string>
     <string name="TSettings_Time_Solve">Times to solve</string>
     <string name="TSettings_chkbx_Tips">Allow Hints</string>
-    <string name="TSettings_Info">Training Settings</string>
-    <string name="TSettings_lbl_Column_Asked">Column Asked</string>
     <string name="TSettings_btn_Start">Start Session</string>
     <string name="TSettings_rb_A">Ask column A</string>
     <string name="TSettings_rb_B">Ask column B</string>
     <string name="TSettings_rb_Random">Ask random column</string>
     <string name="TSettings_chkbx_CaseSensitive">check case sensitive</string>
-    <string name="Editor_btn_Add_Row">Add Row</string>
-    <string name="Editor_btn_Save">Save List</string>
     <string name="ListSelector_Title_Edit">Select list to edit</string>
     <string name="ListSelector_Title_Delete">Delete selected Table</string>
     <string name="ListSelector_Title_Training">Select lists for training</string>
+    <string name="Editor_Title">Editor</string>
     <string name="Editor_Default_Column_A">Column A</string>
     <string name="Editor_Default_Column_B">Column B</string>
     <string name="Editor_Default_List_Name">List Name</string>
@@ -36,6 +33,7 @@
     <string name="Editor_ListSettings">List Settings</string>
     <string name="CSV_Format">CSV Format</string>
     <string name="Select_File_btn">Select File</string>
+    <string name="Import_Title">Import</string>
     <string name="Import_Ok">Import</string>
     <string name="Import_Cancel">Cancel</string>
     <string name="Import_file_placeholder">Import File</string>
@@ -48,6 +46,7 @@
     <string name="Import_File_select_Info">Select import source file</string>
     <string name="Import_Preview_Update_Title">Updating..</string>
     <string name="Import_Importing_Title">Importing..</string>
+    <string name="Export_Title">Export</string>
     <string name="Export_Ok">Export</string>
     <string name="Export_Cancel">Cancel</string>
     <string name="Export_file_placeholder">Export File</string>
@@ -71,20 +70,17 @@
     <string name="Editor_Diag_edit_btn_CANCEL">Cancel</string>
     <string name="Editor_Diag_table_Title_New">New List</string>
     <string name="Editor_Diag_table_Title_Edit">Edit List</string>
-    <string name="Editor_Diag_table_MSG">Please set the list information</string>
     <string name="Editor_Diag_table_btn_Ok">Ok</string>
     <string name="Editor_Diag_table_btn_Canel">Cancel</string>
 
+    <string name="About_Title">About</string>
     <!-- Special escape because of replacement & re-parsing as HTML \n = <br>-->
-    <string name="About_Msg" formatted="false" translatable="false">About: VocableTrainer %v\nCopyright 2017 Aron Heinecke\nLicensed under &lt;a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache License 2.0&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/issues">Bug Reports &amp; Feature requests&lt;/a>\n\nUsing &lt;a href="https://commons.apache.org/csv/">Apache Commons CSV&lt;/a></string>
+    <string name="About_Msg" formatted="false" translatable="false">About: VocableTrainer %v\nCopyright 2017 Aron Heinecke\nLicensed under &lt;a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache License 2.0&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/issues">Bug Reports &amp; Feature requests&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/releases">Changelog&lt;/a>\n\nUsing &lt;a href="https://commons.apache.org/csv/">Apache Commons CSV&lt;/a></string>
     <string name="About_btn_Close">Close</string>
     <string name="ListSelector_Diag_delete_Title">Delete List</string>
     <string name="ListSelector_Diag_delete_Msg" formatted="false">Do you really want to delete the following list: %s: %s, %s</string>
     <string name="ListSelector_Diag_delete_btn_Delete">Delete</string>
     <string name="ListSelector_Diag_delete_btn_Cancel">Cancel</string>
-    <string name="title_activity_permission">PermissionActivity</string>
-    <string name="title_activity_export">ExportActivity</string>
-    <string name="title_activity_import">ImportActivity</string>
     <string name="File_Diag_exists_Title">File exists</string>
     <string name="File_Diag_MSG_part" formatted="false">Do you really want to overwrite the file %f ?</string>
     <string name="File_Diag_btn_OK">Overwrite</string>

@@ -14,11 +14,7 @@
     <string name="TSettings_Title">トレーニング設定</string>
     <string name="TSettings_Time_Solve">解決までの時間</string>
     <string name="TSettings_chkbx_Tips">ヒントを許可</string>
-    <string name="TSettings_Info">トレーニング設定</string>
-    <string name="TSettings_lbl_Column_Asked">質問の項目</string>
     <string name="TSettings_btn_Start">セッションを開始</string>
-    <string name="Editor_btn_Add_Row">行を追加</string>
-    <string name="Editor_btn_Save">リストを保存</string>
     <string name="ListSelector_Title_Edit">編集するリストを選択</string>
     <string name="ListSelector_Title_Delete">選択した表を削除</string>
     <string name="ListSelector_Title_Training">トレーニングのリストを選択</string>
@@ -40,7 +36,6 @@
     <string name="Editor_Diag_edit_btn_CANCEL">キャンセル</string>
     <string name="Editor_Diag_table_Title_New">新しいリスト</string>
     <string name="Editor_Diag_table_Title_Edit">リストを編集</string>
-    <string name="Editor_Diag_table_MSG">リストの情報を設定してください</string>
     <string name="Editor_Diag_table_btn_Ok">OK</string>
 
     <string name="About_btn_Close">閉じる</string>

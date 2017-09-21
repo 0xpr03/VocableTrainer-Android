@@ -65,10 +65,10 @@ public class EditorActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         entries = new ArrayList<>();
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_editor_activity);
+        setContentView(R.layout.activity_editor);
         db = new Database(getBaseContext());
 
-        this.setTitle("Editor");
+        this.setTitle(R.string.Editor_Title);
 
         Intent intent = getIntent();
         undoContainer = findViewById(R.id.undobar);

@@ -75,7 +75,6 @@
         app:layout_constraintTop_toBottomOf="@+id/bEditTable" />
 
     <Button
-        android:id="@+id/bTrainerAbout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
@@ -101,7 +100,6 @@
         app:layout_constraintTop_toBottomOf="@+id/bDeleteTable" />
 
     <Button
-        android:id="@+id/bImport"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"

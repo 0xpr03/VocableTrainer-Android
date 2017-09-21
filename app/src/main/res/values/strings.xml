@@ -33,6 +33,7 @@
     <string name="Editor_Default_List_Name">List Name</string>
     <string name="Editor_Default_Tip">Hint</string>
     <string name="Editor_Undo">Undo</string>
+    <string name="Editor_ListSettings">List Settings</string>
     <string name="CSV_Format">CSV Format</string>
     <string name="Select_File_btn">Select File</string>
     <string name="Import_Ok">Import</string>

@@ -53,6 +53,7 @@
                 android:paddingLeft="24dp"
                 android:text="tTrainerExColimn"
                 android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                android:textSize="14sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintLeft_toLeftOf="@+id/tTrainerExercise"
                 app:layout_constraintTop_toBottomOf="@+id/tTrainerExercise"
@@ -96,13 +97,14 @@
                 android:text="tTrainerInput"
 
                 app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tTrainerExercise"
                 android:layout_marginLeft="8dp"
                 android:layout_marginStart="8dp"
-                android:layout_marginTop="30dp"
+                android:layout_marginTop="0dp"
                 android:layout_marginRight="8dp"
                 app:layout_constraintRight_toRightOf="parent"
-                android:layout_marginEnd="8dp" />
+                android:layout_marginEnd="8dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintHorizontal_bias="0.0" />
 
             <TextView
                 android:id="@+id/tTrainerInputColumn"
@@ -112,6 +114,7 @@
                 android:layout_marginStart="8dp"
                 android:text="tTraienrInputColumn"
                 android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                android:textSize="14sp"
                 app:layout_constraintLeft_toLeftOf="@+id/tTrainerInput"
                 app:layout_constraintTop_toBottomOf="@+id/tTrainerInput" />
 
@@ -120,56 +123,29 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
-                android:layout_marginLeft="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginStart="8dp"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="5dp"
                 android:onClick="checkInput"
                 android:text="@string/Trainer_btn_ok"
-                app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tTrainerInputColumn" />
+                app:layout_constraintTop_toBottomOf="@+id/tTrainerInputColumn"
+                android:layout_marginLeft="8dp"
+                app:layout_constraintLeft_toLeftOf="parent" />
 
             <TextView
                 android:id="@+id/tTrainerHint"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
+                android:layout_marginLeft="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginTop="8dp"
                 android:text="tTrainerHint"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                android:textSize="14sp"
+                android:textAppearance="@style/TextAppearance.AppCompat"
+                android:textSize="18sp"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/bTrainerSolve"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="8dp" />
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:weightSum="1"
-                tools:layout_editor_absoluteX="80dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                android:layout_marginBottom="8dp">
-
-            </LinearLayout>
-
-            <Button
-                android:id="@+id/bTrainerHint"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.5"
-                android:onClick="showHint"
-                android:text="@string/Trainer_btn_Hint"
-                android:layout_marginTop="8dp"
-                app:layout_constraintTop_toBottomOf="@+id/bTrainerEnter"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toLeftOf="@+id/bTrainerSolve"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp" />
+                app:layout_constraintTop_toBottomOf="@+id/bTrainerSolve" />
 
             <Button
                 android:id="@+id/bTrainerSolve"
@@ -178,12 +154,13 @@
                 android:layout_weight="0.5"
                 android:onClick="solve"
                 android:text="@string/Trainer_btn_Solution"
+                android:layout_marginEnd="8dp"
+                android:layout_marginRight="8dp"
+                app:layout_constraintRight_toRightOf="parent"
                 android:layout_marginTop="8dp"
                 app:layout_constraintTop_toBottomOf="@+id/bTrainerEnter"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintLeft_toRightOf="@+id/bTrainerHint"
-                android:layout_marginRight="8dp"
-                android:layout_marginEnd="8dp" />
+                android:layout_marginLeft="8dp"
+                app:layout_constraintLeft_toLeftOf="@+id/bTrainerEnter" />
 
         </android.support.constraint.ConstraintLayout>
 

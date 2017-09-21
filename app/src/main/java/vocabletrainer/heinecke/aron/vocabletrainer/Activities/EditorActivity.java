@@ -4,18 +4,24 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.ScaleAnimation;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TableLayout;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
@@ -62,9 +68,19 @@ public class EditorActivity extends AppCompatActivity {
         setContentView(R.layout.activity_editor_activity);
         db = new Database(getBaseContext());
 
+        this.setTitle("Editor");
+
         Intent intent = getIntent();
         undoContainer = findViewById(R.id.undobar);
         undoContainer.setVisibility(View.GONE);
+
+        FloatingActionButton bNewEntry = (FloatingActionButton) findViewById(R.id.bEditorNewEntry);
+        bNewEntry.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addEntry();
+            }
+        });
 
         // setup listview
         initListView();
@@ -89,9 +105,26 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.editor, menu);
+        return true;
+    }
+
+    @Override
     public void onPause() {
         saveTable();
         super.onPause();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.tEditorListEdit:
+                showTableInfoDialog(false);
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     /**
@@ -144,7 +177,6 @@ public class EditorActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, final View view, int pos, long id) {
-                Toast.makeText(EditorActivity.this, Integer.toString(pos) + " Clicked", Toast.LENGTH_SHORT).show();
                 showEntryEditDialog((Entry) adapter.getItem(pos), false);
             }
 
@@ -163,7 +195,7 @@ public class EditorActivity extends AppCompatActivity {
     /**
      * Add an entry
      */
-    public void addEntry(View view) {
+    public void addEntry() {
         Entry entry = new Entry("", "", "", table, -1);
         adapter.addEntryUnrendered(entry);
         showEntryEditDialog(entry, true);
@@ -188,7 +220,7 @@ public class EditorActivity extends AppCompatActivity {
                 lastDeleted = entry;
                 deletedPosition = position;
                 adapter.setDeleted(entry);
-                Toast.makeText(EditorActivity.this, entry.toString() + " deleted", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(EditorActivity.this, entry.toString() + " deleted", Toast.LENGTH_SHORT).show();
                 showUndo();
                 Log.d(TAG, "deleted");
             }
@@ -382,22 +414,70 @@ public class EditorActivity extends AppCompatActivity {
      */
     private void showUndo() {
         undoContainer.setVisibility(View.VISIBLE);
-        undoContainer.setAlpha(1);
-        undoContainer.animate().alpha(0.0f).setDuration(4000)
-                .withEndAction(new Runnable() {
+        undoContainer.bringToFront();
+        ScaleAnimation scaleAnimation = new ScaleAnimation(0f,1f,1f,1f,
+                Animation.RELATIVE_TO_SELF, 0f, // Pivot point of X scaling
+                Animation.RELATIVE_TO_SELF, 1f);
+        final AlphaAnimation alphaAnimation = new AlphaAnimation(0.0f,1.0f);
+
+        AnimationSet animationSet = new AnimationSet(true);
+        animationSet.addAnimation(scaleAnimation);
+        animationSet.addAnimation(alphaAnimation);
+        animationSet.setDuration(500);
+        animationSet.setFillEnabled(true);
+
+        animationSet.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {}
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                AnimationSet animationSetOut = new AnimationSet(true);
+                AlphaAnimation alphaAnimation1 = new AlphaAnimation(1f,0f);
+                ScaleAnimation scaleAnimation1 = new ScaleAnimation(1f,0f,1f,1f,
+                        Animation.RELATIVE_TO_SELF, 1f,
+                        Animation.RELATIVE_TO_SELF, 1f);
+                ScaleAnimation scaleAnimation2 = new ScaleAnimation(1f,0f,1f,0f,
+                        Animation.RELATIVE_TO_SELF, 1f,
+                        Animation.RELATIVE_TO_SELF, 1f);
+
+                scaleAnimation2.setStartOffset(500);
+                animationSetOut.addAnimation(alphaAnimation1);
+                animationSetOut.addAnimation(scaleAnimation1);
+                animationSetOut.addAnimation(scaleAnimation2);
+                animationSetOut.setDuration(2000);
+                animationSetOut.setStartOffset(2000);
+                animationSetOut.setFillEnabled(true);
+                animationSetOut.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {}
 
                     @Override
-                    public void run() {
+                    public void onAnimationEnd(Animation animation) {
                         undoContainer.setVisibility(View.GONE);
                     }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {}
                 });
+                undoContainer.setAnimation(animationSetOut);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {}
+        });
+        undoContainer.clearAnimation();
+        undoContainer.setAnimation(animationSet);
+
         undoContainer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "undoing");
                 lastDeleted.setDelete(false);
+                undoContainer.clearAnimation();
                 adapter.addEntryRendered(lastDeleted, deletedPosition);
                 undoContainer.setVisibility(View.GONE);
+                listView.setFocusable(true);
             }
         });
     }

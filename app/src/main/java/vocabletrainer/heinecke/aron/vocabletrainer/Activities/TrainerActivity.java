@@ -8,6 +8,8 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -34,12 +36,12 @@ public class TrainerActivity extends AppCompatActivity {
     private TextView tExercise;
     private TextView tHint;
     private EditText tInput;
-    private Button bHint;
     private Button bSolve;
     private TrainerSettings settings;
     private Trainer trainer;
     private TextView tColumnQuestion;
     private TextView tColumnAnswer;
+    private MenuItem tTip;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,9 +61,17 @@ public class TrainerActivity extends AppCompatActivity {
         tColumnQuestion = (TextView) findViewById(R.id.tTrainerExColumn);
         tColumnAnswer = (TextView) findViewById(R.id.tTrainerInputColumn);
         tInput = (EditText) findViewById(R.id.tTrainerInput);
-        bHint = (Button) findViewById(R.id.bTrainerHint);
         bSolve = (Button) findViewById(R.id.bTrainerSolve);
         initTrainer();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.trainer, menu);
+
+        tTip = menu.findItem(R.id.tMenu_Tip);
+
+        return true;
     }
 
     /**
@@ -105,6 +115,23 @@ public class TrainerActivity extends AppCompatActivity {
         showNextVocable();
     }
 
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        updateTip();
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.tMenu_Tip:
+                showHint();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
     /**
      * Show next vocable of trainer
      */
@@ -132,7 +159,7 @@ public class TrainerActivity extends AppCompatActivity {
             tInput.setText("");
             tInput.requestFocus();
             bSolve.setEnabled(true);
-            bHint.setEnabled(settings.allowTips);
+            updateTip();
             tColumnQuestion.setText(trainer.getColumnNameExercise());
             tColumnAnswer.setText(trainer.getColumnNameSolution());
         }
@@ -161,9 +188,19 @@ public class TrainerActivity extends AppCompatActivity {
     /**
      * Action on hint request
      */
-    public void showHint(View view) {
+    public void showHint() {
         if (settings.allowTips) {
             tHint.setText(trainer.getTip());
+        }
+    }
+
+    /**
+     * Function updates tTip enabled status
+     */
+    private void updateTip(){
+        if(tTip != null){
+            tTip.getIcon().setAlpha(settings.allowTips ? 255 : 155);
+            tTip.setEnabled(settings.allowTips);
         }
     }
 }

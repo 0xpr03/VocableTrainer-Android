@@ -7,13 +7,18 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateInterpolator;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenEntryComparator;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 
@@ -125,6 +130,15 @@ public class EntryListAdapter extends BaseAdapter {
         holder.colTipp.setText(item.getTip());
 
         return convertView;
+    }
+
+    /**
+     * Update sorting
+     * @param comp Comparator to use for sorting
+     */
+    public void updateSorting(Comparator<Entry> comp){
+        Collections.sort(dataItems,comp);
+        this.notifyDataSetChanged();
     }
 
     /**

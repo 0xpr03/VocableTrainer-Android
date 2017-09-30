@@ -3,6 +3,7 @@ package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBar;
@@ -28,10 +29,13 @@ import java.util.concurrent.Callable;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib.EntryListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenEntryComparator;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 
+import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.MainActivity.PREFS_NAME;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
 
 /**
@@ -48,6 +52,7 @@ public class EditorActivity extends AppCompatActivity {
      */
     public static final String PARAM_TABLE = "table";
     private static final String TAG = "EditorActivity";
+    private static final String P_KEY_EA_SORT = "EA_sorting";
     private Table table;
     private ArrayList<Entry> entries;
     private EntryListAdapter adapter;
@@ -56,6 +61,12 @@ public class EditorActivity extends AppCompatActivity {
     private View undoContainer;
     private Entry lastDeleted;
     private int deletedPosition;
+    private int sortSetting;
+    private GenEntryComparator cComp;
+    private GenEntryComparator compA;
+    private GenEntryComparator compB;
+    private GenEntryComparator compTip;
+
     /**
      * data save will be ignored when set
      */
@@ -69,6 +80,19 @@ public class EditorActivity extends AppCompatActivity {
         db = new Database(getBaseContext());
 
         this.setTitle(R.string.Editor_Title);
+
+        compA = new GenEntryComparator(new GenericComparator.ValueRetriever[] {
+                GenEntryComparator.retA,GenEntryComparator.retB,
+                GenEntryComparator.retTip
+        },ID_RESERVED_SKIP);
+        compB = new GenEntryComparator(new GenericComparator.ValueRetriever[] {
+                GenEntryComparator.retB,GenEntryComparator.retA,
+                GenEntryComparator.retTip
+        },ID_RESERVED_SKIP);
+        compTip = new GenEntryComparator(new GenericComparator.ValueRetriever[] {
+                GenEntryComparator.retTip,GenEntryComparator.retA,
+                GenEntryComparator.retB
+        },ID_RESERVED_SKIP);
 
         Intent intent = getIntent();
         undoContainer = findViewById(R.id.undobar);
@@ -85,6 +109,10 @@ public class EditorActivity extends AppCompatActivity {
         // setup listview
         initListView();
 
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        sortSetting = settings.getInt(P_KEY_EA_SORT, R.id.eMenu_sort_A);
+        updateComp();
+
         // handle passed params
         boolean newTable = intent.getBooleanExtra(PARAM_NEW_TABLE, false);
         if (newTable) {
@@ -97,10 +125,32 @@ public class EditorActivity extends AppCompatActivity {
                 this.table = tbl;
                 entries.addAll(db.getVocablesOfTable(table));
                 adapter.setTableData(tbl);
+                adapter.updateSorting(cComp);
                 Log.d(TAG, "edit table mode");
             } else {
                 Log.e(TAG, "Edit Table Flag set without passing a table");
             }
+        }
+    }
+
+    /**
+     * Changes cComp to current selection
+     */
+    private void updateComp(){
+        switch(sortSetting){
+            case R.id.eMenu_sort_A:
+                cComp = compA;
+                break;
+            case R.id.eMenu_sort_B:
+                cComp = compB;
+                break;
+            case R.id.eMenu_sort_Tip:
+                cComp = compTip;
+                break;
+            default:
+                cComp = compA;
+                sortSetting = R.id.eMenu_sort_A;
+                break;
         }
     }
 
@@ -121,6 +171,12 @@ public class EditorActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.tEditorListEdit:
                 showTableInfoDialog(false);
+                return true;
+            case R.id.eMenu_sort_A:
+            case R.id.eMenu_sort_B:
+            case R.id.eMenu_sort_Tip:
+                sortSetting = item.getItemId();
+                updateComp();
                 return true;
         }
 
@@ -220,7 +276,6 @@ public class EditorActivity extends AppCompatActivity {
                 lastDeleted = entry;
                 deletedPosition = position;
                 adapter.setDeleted(entry);
-//                Toast.makeText(EditorActivity.this, entry.toString() + " deleted", Toast.LENGTH_SHORT).show();
                 showUndo();
                 Log.d(TAG, "deleted");
             }
@@ -481,4 +536,14 @@ public class EditorActivity extends AppCompatActivity {
             }
         });
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putInt(P_KEY_EA_SORT, sortSetting);
+        editor.apply();
+    }
+
 }

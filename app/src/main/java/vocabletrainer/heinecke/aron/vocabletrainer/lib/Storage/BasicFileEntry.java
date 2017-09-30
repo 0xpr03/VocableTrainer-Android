@@ -10,6 +10,7 @@ public class BasicFileEntry {
     public static final int TYPE_VIRTUAL = -1;
     public static final int TYPE_UP = -2;
 
+    final long iSize;
     final String size;
     final String name;
     final int typeID;
@@ -20,14 +21,16 @@ public class BasicFileEntry {
      *
      * @param name      entry name column
      * @param size      String for size column
+     * @param iSize     long for size comparision
      * @param typeID    int for specifying the type of this entry (fe.: virtual entry)
      * @param underline underline this entry if true
      */
-    public BasicFileEntry(final String name, final String size, final int typeID, final boolean underline) {
+    public BasicFileEntry(final String name, final String size, final long iSize, final int typeID, final boolean underline) {
         this.name = name;
         this.size = size;
         this.typeID = typeID;
         this.underline = underline;
+        this.iSize = iSize;
     }
 
     public String getName() {
@@ -44,5 +47,9 @@ public class BasicFileEntry {
 
     public int getTypeID() {
         return typeID;
+    }
+
+    public long getISize() {
+        return iSize;
     }
 }

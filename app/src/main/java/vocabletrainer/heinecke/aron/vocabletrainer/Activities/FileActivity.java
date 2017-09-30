@@ -1,6 +1,8 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
 
 import android.app.Activity;
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,8 +11,11 @@ import android.os.Environment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
@@ -22,9 +27,12 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib.FileListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenFileEntryComparator;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Formatter;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.BasicFileEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.FileEntry;
@@ -64,6 +72,7 @@ public class FileActivity extends AppCompatActivity {
     public static final String PARAM_DEFAULT_FILENAME = "default_filename";
     private static final String P_KEY_FA_LAST_DIR = "last_directory";
     private static final String P_KEY_FA_LAST_FILENAME = "last_filename";
+    private static final String P_KEY_FA_SORT = "FA_sorting_name";
     private static final String TAG = "FileActivity";
     private ListView listView;
     private EditText tFileName;
@@ -79,6 +88,9 @@ public class FileActivity extends AppCompatActivity {
     private String basicDir; // user invisible part to remove
     private String defaultFileName;
     private File selectedFile;
+    private boolean sorting_name;
+    private Comparator<BasicFileEntry> compName;
+    private Comparator<BasicFileEntry> compSize;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,7 +100,18 @@ public class FileActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
-        ab.setDisplayHomeAsUpEnabled(true);
+        if(ab != null) {
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
+
+        compName = new GenFileEntryComparator<>(new GenericComparator.ValueRetriever[] {
+                GenFileEntryComparator.retType,GenFileEntryComparator.retName,
+                GenFileEntryComparator.retSize
+        });
+        compSize = new GenFileEntryComparator<>(new GenericComparator.ValueRetriever[] {
+                GenFileEntryComparator.retType,GenFileEntryComparator.retSize,
+                GenFileEntryComparator.retName
+        });
 
         fmt = new Formatter();
 
@@ -107,6 +130,28 @@ public class FileActivity extends AppCompatActivity {
         defaultFileName = defaultName == null ? "file.xy" : defaultName;
 
         initListView();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.file, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.fMenu_sort_name:
+                sorting_name = true;
+                applySorting();
+                return true;
+            case R.id.fMenu_sort_size:
+                sorting_name = false;
+                applySorting();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     /**
@@ -144,8 +189,18 @@ public class FileActivity extends AppCompatActivity {
             }
 
         });
-        setBasicDir();
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        sorting_name = settings.getBoolean(P_KEY_FA_SORT, true);
+        setBasicDir(settings);
         changeDir();
+    }
+
+    /**
+     * Does sorting<br>
+     * Notifies data change
+     */
+    private void applySorting() {
+        adapter.updateSorting(sorting_name ? compName : compSize);
     }
 
     /**
@@ -259,8 +314,7 @@ public class FileActivity extends AppCompatActivity {
     /**
      * Load default or last path / file into dialog
      */
-    private void setBasicDir() {
-        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+    private void setBasicDir(SharedPreferences settings) {
         currentDir = new File(settings.getString(P_KEY_FA_LAST_DIR, ""));
         if (!currentDir.exists()) { // old value not valid anymore
             Log.w(TAG, "old path is invalid");
@@ -288,14 +342,14 @@ public class FileActivity extends AppCompatActivity {
                     Log.e(TAG, "null file list!");
                     Toast.makeText(FileActivity.this, R.string.File_Error_Nullpointer, Toast.LENGTH_LONG).show();
                 } else {
-                    entries.add(new BasicFileEntry("..", "", BasicFileEntry.TYPE_UP, true)); // go back entry
+                    entries.add(new BasicFileEntry("..", "", 0, BasicFileEntry.TYPE_UP, true)); // go back entry
                     for (File file : files) {
                         entries.add(new FileEntry(file, fmt));
                     }
                 }
             }
         }
-        adapter.notifyDataSetChanged();
+        applySorting();
 
         String newDirLabel = currentDir.getAbsolutePath().replaceFirst(basicDir, "");
         if (newDirLabel.length() == 0)
@@ -311,6 +365,7 @@ public class FileActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = settings.edit();
         editor.putString(P_KEY_FA_LAST_FILENAME, tFileName.getText().toString());
         editor.putString(P_KEY_FA_LAST_DIR, currentDir.getAbsolutePath());
+        editor.putBoolean(P_KEY_FA_SORT, sorting_name);
         editor.apply();
     }
 }

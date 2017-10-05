@@ -143,7 +143,7 @@ public class DBTest {
         List<Entry> entries = getEntries(tbl);
 
         assertTrue("UpsertEntries",db.upsertEntries(entries));
-        assertNotNull(db.getRandomTrainerEntry(tbl,null,new TrainerSettings(2, Trainer.TEST_MODE.RANDOM,true),true));
+        assertNotNull(db.getRandomTrainerEntry(tbl,null,new TrainerSettings(2, Trainer.TEST_MODE.RANDOM,true, true),true));
     }
 
     @Test
@@ -184,7 +184,7 @@ public class DBTest {
 
         assertTrue("UpsertEntries",db.upsertEntries(entries));
 
-        TrainerSettings settings = new TrainerSettings(points, Trainer.TEST_MODE.RANDOM,true);
+        TrainerSettings settings = new TrainerSettings(points, Trainer.TEST_MODE.RANDOM,true,true);
 
         Entry chosen = db.getRandomTrainerEntry(tbl,null,settings,false);
         assertNotNull(chosen);

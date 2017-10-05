@@ -35,7 +35,7 @@ public class FileListAdapter extends BaseAdapter {
      * @param activity
      * @param items
      */
-    public FileListAdapter(Activity activity, List<BasicFileEntry> items, Context context) {
+    public FileListAdapter(Activity activity, List<BasicFileEntry> items) {
         super();
         this.activity = activity;
         this.dataItems = items;
@@ -100,6 +100,9 @@ public class FileListAdapter extends BaseAdapter {
         this.notifyDataSetChanged();
     }
 
+    /**
+     * View Holder, storing data for re-use
+     */
     private class ViewHolder {
         protected TextView colA;
         protected TextView colB;

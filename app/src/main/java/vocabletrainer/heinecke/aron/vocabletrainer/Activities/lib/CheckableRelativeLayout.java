@@ -20,11 +20,25 @@ public class CheckableRelativeLayout extends RelativeLayout implements Checkable
     private boolean isChecked;
     private List<Checkable> checkableViews;
 
+    /**
+     * New checkable relative layout
+     *
+     * @param context
+     * @param attrs
+     * @param defStyle style to use
+     */
     public CheckableRelativeLayout(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         initialise(attrs);
     }
 
+    /**
+     * New checkable relative layout<br>
+     * using context style
+     *
+     * @param context
+     * @param attrs
+     */
     public CheckableRelativeLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
         initialise(attrs);

@@ -226,7 +226,7 @@ public class EditorActivity extends AppCompatActivity {
         listView.setLongClickable(true);
 
         entries = new ArrayList<>();
-        adapter = new EntryListAdapter(this, entries, this);
+        adapter = new EntryListAdapter(this, entries);
 
         listView.setAdapter(adapter);
 

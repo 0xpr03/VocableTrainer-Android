@@ -163,7 +163,7 @@ public class FileActivity extends AppCompatActivity {
         listView.setLongClickable(false);
 
         entries = new ArrayList<>(20); // just a good guess
-        adapter = new FileListAdapter(this, entries, this);
+        adapter = new FileListAdapter(this, entries);
 
         listView.setAdapter(adapter);
 
@@ -285,6 +285,9 @@ public class FileActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * finishes & returns file if selected
+     */
     private void useFile() {
         if (selectedFile != null) {
             Intent returnIntent = new Intent();

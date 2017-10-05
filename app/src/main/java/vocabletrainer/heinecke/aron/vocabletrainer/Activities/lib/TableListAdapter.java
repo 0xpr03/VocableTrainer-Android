@@ -38,6 +38,14 @@ public class TableListAdapter extends ArrayAdapter<Table> {
     TextView colB;
     Table header;
 
+    /**
+     * New table list adapter
+     *
+     * @param context context to use, should be "this" for activities, avoiding style problems
+     * @param textViewResourceId row resource XML
+     * @param table
+     * @param displayCheckbox set to true to show checkbox for multi select
+     */
     public TableListAdapter(Context context, int textViewResourceId, ArrayList<Table> table, final boolean displayCheckbox) {
         super(context, textViewResourceId, table);
         this.dataItem = table;

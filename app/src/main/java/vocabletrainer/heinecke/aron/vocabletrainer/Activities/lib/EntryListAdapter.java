@@ -33,23 +33,20 @@ public class EntryListAdapter extends BaseAdapter {
     private static final String TAG = "EntryListAdapter";
     private List<Entry> dataItems = null;
     private List<Entry> deleted;
-    private Activity activity;
     private LayoutInflater inflater;
     private Entry header;
 
     /**
      * Creates a new entry list adapter
      *
-     * @param activity
      * @param items
      */
-    public EntryListAdapter(Activity activity, List<Entry> items, Context context) {
+    public EntryListAdapter(Activity activity,List<Entry> items) {
         super();
-        this.activity = activity;
         this.dataItems = items;
-        header = new Entry(context.getString(R.string.Editor_Default_Column_A),
-                context.getString(R.string.Editor_Default_Column_B),
-                context.getString(R.string.Editor_Default_Tip),
+        header = new Entry(activity.getString(R.string.Editor_Default_Column_A),
+                activity.getString(R.string.Editor_Default_Column_B),
+                activity.getString(R.string.Editor_Default_Tip),
                 ID_RESERVED_SKIP, new Table(ID_RESERVED_SKIP), -2L);
         dataItems.add(0, header);
         deleted = new ArrayList<>();
@@ -197,6 +194,9 @@ public class EntryListAdapter extends BaseAdapter {
         return entries;
     }
 
+    /**
+     * View Holder, storing data for re-use
+     */
     private class ViewHolder {
         protected TextView colA;
         protected TextView colB;

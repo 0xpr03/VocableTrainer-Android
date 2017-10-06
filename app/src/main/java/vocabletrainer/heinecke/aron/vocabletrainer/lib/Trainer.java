@@ -29,6 +29,8 @@ public class Trainer {
     private boolean showedSolution;
     private Database db;
     private TrainerSettings settings;
+    private SessionStorageManager ssm;
+    private boolean firstTimeVocLoad;
 
     /**
      * Creates a new Trainer
@@ -37,7 +39,8 @@ public class Trainer {
      * @param settings   Trainer settings storage
      * @param newSession whether this is a new or a continued session
      */
-    public Trainer(final ArrayList<Table> tables, final TrainerSettings settings, final Context context, final boolean newSession) {
+    public Trainer(final ArrayList<Table> tables, final TrainerSettings settings, final Context context, final boolean newSession,
+                   final SessionStorageManager ssm) {
         if (tables == null || tables.size() == 0 || settings == null)
             throw new IllegalArgumentException();
         this.settings = settings;
@@ -46,6 +49,7 @@ public class Trainer {
         this.tables = tables;
         this.timesToSolve = settings.timesToSolve;
         this.unsolvedTables = new ArrayList<>();
+        this.ssm = ssm;
         db = new Database(context);
         rng = new Random();
 
@@ -53,9 +57,20 @@ public class Trainer {
             wipeSession();
         }
 
+        firstTimeVocLoad = settings.questioning != null; // load voc from settings.questioning
         getTableData();
         prepareData();
         this.getNext();
+    }
+
+    /**
+     * Save vocable state<br>
+     *  saves last vocable in question for later continue
+     */
+    public void saveVocState(){
+        if(!ssm.saveLastVoc(cVocable)){
+            Log.w(TAG,"unable to save vocable");
+        }
     }
 
     /**
@@ -214,7 +229,12 @@ public class Trainer {
                 }
             }
 
-            cVocable = db.getRandomTrainerEntry(tbl, cVocable, settings, allowRepetition);
+            if(firstTimeVocLoad){
+                firstTimeVocLoad = false;
+                cVocable = settings.questioning;
+            }else {
+                cVocable = db.getRandomTrainerEntry(tbl, cVocable, settings, allowRepetition);
+            }
             if (cVocable == null) {
                 Log.e(TAG, "New vocable is null!");
             }

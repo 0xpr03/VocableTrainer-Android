@@ -15,6 +15,11 @@ public class TrainerSettings implements Serializable {
     public final int tipsGiven;
     public final int timesFailed;
     public final boolean caseSensitive;
+    /**
+     * Last questioning, outstanding vocable<br>
+     * <b>Can be null!</b>
+     */
+    public Entry questioning;
 
     /**
      * Create a new Trainer Settings storage with default starting values
@@ -24,7 +29,7 @@ public class TrainerSettings implements Serializable {
      */
     public TrainerSettings(final int timesToSolve, final Trainer.TEST_MODE mode, final boolean allowTips,
                            final boolean caseSensitive) {
-        this(timesToSolve, mode, allowTips, 0, 0,caseSensitive);
+        this(timesToSolve, mode, allowTips, 0, 0,caseSensitive,null);
     }
 
     /**
@@ -36,15 +41,18 @@ public class TrainerSettings implements Serializable {
      * @param tipsGiven
      * @param failedTimes
      * @param caseSensitive
+     * @param entry last Entry asked
      */
     public TrainerSettings(final int timesToSolve, final Trainer.TEST_MODE mode, final boolean allowTips,
-                           final int tipsGiven, final int failedTimes, final boolean caseSensitive) {
+                           final int tipsGiven, final int failedTimes, final boolean caseSensitive,
+                           final Entry entry) {
         this.timesToSolve = timesToSolve;
         this.mode = mode;
         this.allowTips = allowTips;
         this.tipsGiven = tipsGiven;
         this.timesFailed = failedTimes;
         this.caseSensitive = caseSensitive;
+        this.questioning = entry;
     }
 
 }

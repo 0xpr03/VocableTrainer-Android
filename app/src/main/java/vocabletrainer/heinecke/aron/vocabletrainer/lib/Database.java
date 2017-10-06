@@ -85,6 +85,29 @@ public class Database {
     }
 
     /**
+     * Retrieve vocable by ID & list ID
+     * @param vocID
+     * @param listID
+     * @return Entry with set List<br>
+     *     Null on failure
+     */
+    public Entry getVocable(final int vocID, final int listID){
+        try (Cursor cursor = db.rawQuery("SELECT `" + KEY_WORD_A + "`,`" + KEY_WORD_B + "`,`" + KEY_TIP + "`,`" + KEY_VOC + "`,tVoc.`" + KEY_TABLE + "`,`" + KEY_LAST_USED + "`,`"
+                + KEY_NAME_A+"`,`"+KEY_NAME_B+"`,`"+KEY_NAME_TBL+"` "
+                + "FROM `" + TBL_VOCABLE + "` tVoc "
+                + "JOIN `"+TBL_TABLES+"` tList ON tVoc.`"+KEY_TABLE+"` = tList.`"+KEY_TABLE+"` "
+                + "WHERE tVoc.`" + KEY_TABLE + "` = ? AND `"+KEY_VOC+"` = ?", new String[]{String.valueOf(listID),String.valueOf(vocID)})){
+            if(cursor.moveToNext()){
+                Table tbl = new Table(listID,cursor.getString(6),cursor.getString(7),cursor.getString(8));
+                return new Entry(cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getInt(3), tbl, cursor.getLong(5));
+            }else{
+                Log.w(TAG,"vocable not found by ID!");
+                return null;
+            }
+        }
+    }
+
+    /**
      * Wipe all session points
      *
      * @return

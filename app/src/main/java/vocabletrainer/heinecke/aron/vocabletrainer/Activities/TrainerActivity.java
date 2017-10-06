@@ -42,6 +42,7 @@ public class TrainerActivity extends AppCompatActivity {
     private TextView tColumnQuestion;
     private TextView tColumnAnswer;
     private MenuItem tTip;
+    private SessionStorageManager ssm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +80,7 @@ public class TrainerActivity extends AppCompatActivity {
      */
     private void initTrainer() {
         final Database db = new Database(getBaseContext());
-        SessionStorageManager ssm = new SessionStorageManager(db);
+        ssm = new SessionStorageManager(db);
         Intent intent = getIntent();
         boolean resume = intent.getBooleanExtra(PARAM_RESUME_SESSION_FLAG, false);
         ArrayList<Table> tables;
@@ -111,8 +112,15 @@ public class TrainerActivity extends AppCompatActivity {
 
             }
         }
-        trainer = new Trainer(tables, settings, getBaseContext(), !resume);
+        trainer = new Trainer(tables, settings, getBaseContext(), !resume,ssm);
         showNextVocable();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG,"saving vocable");
+        trainer.saveVocState();
     }
 
     @Override

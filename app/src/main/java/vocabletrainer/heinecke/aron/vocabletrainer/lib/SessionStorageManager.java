@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
 
@@ -20,6 +21,8 @@ public class SessionStorageManager {
     private final static String KEY_GIVEN_TIPS = "t_tips_given";
     private final static String KEY_FAILED = "t_failed";
     private final static String KEY_CASE_SENSITIVE = "t_case_sensitive";
+    private final static String KEY_VOCABLE_ID = "t_last_voc_id";
+    private final static String KEY_VOCABLE_LST_ID = "t_last_lst_id";
 
     private final static int BIND_KEY = 1;
     private final static int BIND_VAL = 2;
@@ -56,6 +59,16 @@ public class SessionStorageManager {
     public TrainerSettings loadSession(){
         Loader l = new Loader(db);
         return l.load();
+    }
+
+    /**
+     * Write vocable
+     * @param entry
+     * @return true on success
+     */
+    public boolean saveLastVoc(Entry entry){
+        Writer w = new Writer(null,db);
+        return w.writeVocable(entry);
     }
 
     /**
@@ -107,8 +120,14 @@ public class SessionStorageManager {
             int timesToSolve = getInt(KEY_SOLVE_TIMES_TO);
             boolean allowTips = getBoolean(KEY_TIPS_ALLOWED);
             boolean caseSensitive = getBoolean(KEY_CASE_SENSITIVE);
+            Entry entry = null;
+            if(map.containsKey(KEY_VOCABLE_ID) && map.containsKey(KEY_VOCABLE_LST_ID)){
+                int vocID = getInt(KEY_VOCABLE_ID);
+                int lstID = getInt(KEY_VOCABLE_LST_ID);
+                entry = db.getVocable(vocID,lstID);
+            }
 
-            return new TrainerSettings(timesToSolve, mode, allowTips,tips,failed,caseSensitive);
+            return new TrainerSettings(timesToSolve, mode, allowTips,tips,failed,caseSensitive,entry);
         }
 
         /**
@@ -149,15 +168,30 @@ public class SessionStorageManager {
         }
 
         /**
+         * Prepares writing, init statement
+         */
+        private void prepareWrite(){
+            stm = db.getSessionInsertStm();
+        }
+
+        /**
+         * End write
+         * @param success commits changes on true
+         */
+        private void endWrite(boolean success){
+            db.endSessionTransaction(success);
+        }
+
+        /**
          * Writes data to DB
          *
          * @return true on success
          */
         public boolean write() {
             Log.d("write","entry");
-            stm = db.getSessionInsertStm();
+            prepareWrite();
             boolean success = write_();
-            db.endSessionTransaction(success);
+            endWrite(success);
             return success;
         }
 
@@ -172,8 +206,36 @@ public class SessionStorageManager {
             if (exec(KEY_SOLVE_TIMES_TO, settings.timesToSolve)) return false;
             if (exec(KEY_TIPS_ALLOWED,settings.allowTips)) return false;
             if (exec(KEY_CASE_SENSITIVE,settings.caseSensitive)) return false;
+            if (!writeVocable_(settings.questioning)) return false;
 
             stm.close();
+            return true;
+        }
+
+        /**
+         * Write vocable<br>
+         *     public method doing prepare & commit
+         * @param entry
+         * @return true on success
+         */
+        public boolean writeVocable(final Entry entry){
+            prepareWrite();
+            boolean success = writeVocable_(entry);
+            endWrite(success);
+            return success;
+        }
+
+        /**
+         * Write vocable to session<br>
+         *     internal, does not preapre & commit changes
+         * @param entry
+         * @return true on success
+         */
+        private boolean writeVocable_(final Entry entry){
+            if (entry != null){
+                if(exec(KEY_VOCABLE_ID,entry.getId())) return false;
+                if(exec(KEY_VOCABLE_LST_ID,entry.getTable().getId())) return false;
+            }
             return true;
         }
 

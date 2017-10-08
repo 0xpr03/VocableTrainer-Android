@@ -17,7 +17,7 @@ public class FileEntry extends BasicFileEntry {
      * @param fmt  Formatter for length
      */
     public FileEntry(final File file, final Formatter fmt) {
-        super(file.getName(), fmt.formatFileLength(file), (file.isFile() ? TYPE_FILE : TYPE_DIR), file.isDirectory());
+        super(file.getName(), fmt.formatFileLength(file),file.length(), (file.isFile() ? TYPE_FILE : TYPE_DIR), file.isDirectory());
         this.file = file;
     }
 

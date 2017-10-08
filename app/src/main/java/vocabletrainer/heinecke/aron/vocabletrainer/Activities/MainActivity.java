@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
         editor.putBoolean(P_KEY_ALPHA_DIALOG, showedDialog);
-        editor.commit();
+        editor.apply();
     }
 
     @Override

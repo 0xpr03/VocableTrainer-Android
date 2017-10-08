@@ -99,7 +99,7 @@ public class ImportActivity extends AppCompatActivity {
         }
 
         lst = new ArrayList<>();
-        adapter = new EntryListAdapter(this, lst, getApplicationContext());
+        adapter = new EntryListAdapter(this, lst);
 
         spSingelRaw = (Spinner) findViewById(R.id.spImportSingleRaw);
         spSingleList = (Spinner) findViewById(R.id.spImportSingleMetadata);

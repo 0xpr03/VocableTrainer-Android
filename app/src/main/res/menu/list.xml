@@ -1,28 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" xmlns:support="http://schemas.android.com/apk/res-auto">
-
     <item
-        android:title="@string/Editor_ListSettings"
-        android:id="@+id/tEditorListEdit"
-        android:icon="@drawable/ic_settings_white_48dp"
-        support:showAsAction="always"
-        />
-    <item
-        android:id="@+id/eMenu_sort"
+        android:id="@+id/lMenu_sort"
         android:icon="@drawable/ic_sort_white_48dp"
         android:title="@string/GEN_Sort"
         support:showAsAction="always">
 
         <menu>
             <item
-                android:id="@+id/eMenu_sort_A"
+                android:id="@+id/lMenu_sort_Name"
+                android:title="@string/Sort_Col_Name" />
+            <item
+                android:id="@+id/lMenu_sort_A"
                 android:title="@string/Sort_Col_A" />
             <item
-                android:id="@+id/eMenu_sort_B"
+                android:id="@+id/lMenu_sort_B"
                 android:title="@string/Sort_Col_B" />
-            <item
-                android:id="@+id/eMenu_sort_Tip"
-                android:title="@string/Sort_Col_Tip" />
         </menu>
 
     </item>

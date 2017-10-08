@@ -37,6 +37,8 @@ import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib.TableListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenTableComparator;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
@@ -76,6 +78,7 @@ public class ExportActivity extends AppCompatActivity {
     private Spinner spFormat;
     private ArrayAdapter<GenericSpinnerEntry<CSVFormat>> spAdapterFormat;
     private TextView tMsg;
+    private GenericComparator compTables;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +94,12 @@ public class ExportActivity extends AppCompatActivity {
         chkExportTalbeInfo = (CheckBox) findViewById(R.id.chkExportMeta);
         spFormat = (Spinner) findViewById(R.id.spExpFormat);
         tMsg = (TextView) findViewById(R.id.tExportMsg);
+
+        GenericComparator.ValueRetriever[] retrievers = new GenericComparator.ValueRetriever[]{
+                GenTableComparator.retName,GenTableComparator.retA,GenTableComparator.retB
+        };
+
+        compTables = new GenTableComparator(retrievers,ID_RESERVED_SKIP);
 
         initView();
     }
@@ -237,7 +246,7 @@ public class ExportActivity extends AppCompatActivity {
                 tExportFile.setText(data.getStringExtra(FileActivity.RETURN_FILE_USER_NAME));
                 checkInputOk();
             } else if (requestCode == REQUEST_TABLES_RESULT_CODE) {
-                adapter.setAllUpdated((ArrayList<Table>) data.getSerializableExtra(ListActivity.RETURN_LISTS));
+                adapter.setAllUpdated((ArrayList<Table>) data.getSerializableExtra(ListActivity.RETURN_LISTS),compTables);
                 checkInputOk();
             }
         }

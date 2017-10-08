@@ -9,9 +9,13 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenTableComparator;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
@@ -34,6 +38,14 @@ public class TableListAdapter extends ArrayAdapter<Table> {
     TextView colB;
     Table header;
 
+    /**
+     * New table list adapter
+     *
+     * @param context context to use, should be "this" for activities, avoiding style problems
+     * @param textViewResourceId row resource XML
+     * @param table
+     * @param displayCheckbox set to true to show checkbox for multi select
+     */
     public TableListAdapter(Context context, int textViewResourceId, ArrayList<Table> table, final boolean displayCheckbox) {
         super(context, textViewResourceId, table);
         this.dataItem = table;
@@ -50,10 +62,20 @@ public class TableListAdapter extends ArrayAdapter<Table> {
      *
      * @param entries
      */
-    public void setAllUpdated(List<Table> entries) {
+    public void setAllUpdated(List<Table> entries, Comparator<Table> comparator) {
         dataItem.clear();
         dataItem.add(header);
         dataItem.addAll(entries);
+        Collections.sort(dataItem,comparator);
+        this.notifyDataSetChanged();
+    }
+
+    /**
+     * Updates sort order
+     * @param comparator Comparator to use
+     */
+    public void updateSorting(Comparator<Table> comparator){
+        Collections.sort(dataItem,comparator);
         this.notifyDataSetChanged();
     }
 

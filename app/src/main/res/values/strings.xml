@@ -24,6 +24,11 @@
     <string name="ListSelector_Title_Edit">Select list to edit</string>
     <string name="ListSelector_Title_Delete">Delete selected Table</string>
     <string name="ListSelector_Title_Training">Select lists for training</string>
+    <string name="Sort_Col_Name">Name</string>
+    <string name="Sort_Col_A">Column A</string>
+    <string name="Sort_Col_B">Column B</string>
+    <string name="Sort_Col_Tip">Column Tip</string>
+    <string name="Editor_search_hint">Filename</string>
     <string name="Editor_Title">Editor</string>
     <string name="Editor_Default_Column_A">Column A</string>
     <string name="Editor_Default_Column_B">Column B</string>
@@ -57,6 +62,10 @@
     <string name="File_btn_OK">Ok</string>
     <string name="File_btn_Cancel">Cancel</string>
     <string name="File_t_hint">File_Name.xyz</string>
+    <string name="File_Menu_Sort_Name">name</string>
+    <string name="File_Menu_Sort_Size">size</string>
+    <!-- General -->
+    <string name="GEN_Sort">Sorting</string>
     <!-- Dialogs -->
     <string name="Trainer_Diag_finished_Title">Finished</string>
     <string name="Trainer_Diag_finished_MSG">You\'ve finished this training session.</string>

@@ -9,11 +9,14 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.BasicFileEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.FileEntry;
 
 /**
  * BaseAdapter for file list views
@@ -32,7 +35,7 @@ public class FileListAdapter extends BaseAdapter {
      * @param activity
      * @param items
      */
-    public FileListAdapter(Activity activity, List<BasicFileEntry> items, Context context) {
+    public FileListAdapter(Activity activity, List<BasicFileEntry> items) {
         super();
         this.activity = activity;
         this.dataItems = items;
@@ -88,6 +91,18 @@ public class FileListAdapter extends BaseAdapter {
         return convertView;
     }
 
+    /**
+     * Updated sorting
+     * @param comparator Comparator to use for sorting
+     */
+    public void updateSorting(Comparator<BasicFileEntry> comparator){
+        Collections.sort(dataItems,comparator);
+        this.notifyDataSetChanged();
+    }
+
+    /**
+     * View Holder, storing data for re-use
+     */
     private class ViewHolder {
         protected TextView colA;
         protected TextView colB;

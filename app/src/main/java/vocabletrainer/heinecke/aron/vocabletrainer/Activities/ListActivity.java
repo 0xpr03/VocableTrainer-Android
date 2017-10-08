@@ -3,6 +3,7 @@ package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -10,6 +11,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.SparseBooleanArray;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -20,9 +23,12 @@ import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib.TableListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenTableComparator;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 
+import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.MainActivity.PREFS_NAME;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TRESHOLD;
 
@@ -51,6 +57,7 @@ public class ListActivity extends AppCompatActivity {
      */
     public static final String PARAM_SELECTED = "selected";
     private static final String TAG = "ListActivity";
+    private static final String P_KEY_LA_SORT = "LA_sorting";
     Database db;
     List<Table> tables;
     private boolean multiselect;
@@ -58,6 +65,11 @@ public class ListActivity extends AppCompatActivity {
     private TableListAdapter adapter;
     private boolean delete;
     private Button bOk;
+    private int sort_type;
+    private GenTableComparator compName;
+    private GenTableComparator compA;
+    private GenTableComparator compB;
+    private GenTableComparator cComp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,16 +84,77 @@ public class ListActivity extends AppCompatActivity {
             ab.setDisplayHomeAsUpEnabled(true);
         }
 
+        // lambdas without lambdas
+        compName = new GenTableComparator(
+                new GenericComparator.ValueRetriever[]{GenTableComparator.retName,
+                        GenTableComparator.retA, GenTableComparator.retB}
+        ,ID_RESERVED_SKIP);
+        compA = new GenTableComparator(
+                new GenericComparator.ValueRetriever[]{GenTableComparator.retA,
+                        GenTableComparator.retB, GenTableComparator.retName}
+        ,ID_RESERVED_SKIP);
+        compB = new GenTableComparator(
+                new GenericComparator.ValueRetriever[]{GenTableComparator.retB,
+                        GenTableComparator.retA, GenTableComparator.retName}
+        ,ID_RESERVED_SKIP);
+
         Intent intent = getIntent();
         // handle passed params
         multiselect = intent.getBooleanExtra(PARAM_MULTI_SELECT, false);
         delete = intent.getBooleanExtra(PARAM_DELETE_FLAG, false);
         bOk = (Button) findViewById(R.id.btnOkSelect);
 
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        sort_type = settings.getInt(P_KEY_LA_SORT, R.id.lMenu_sort_Name);
+        updateComp();
+
         // setup listview
         initListView();
         loadTables((ArrayList<Table>) intent.getSerializableExtra(PARAM_SELECTED));
         updateOkButton();
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.list, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.lMenu_sort_Name:
+            case R.id.lMenu_sort_A:
+            case R.id.lMenu_sort_B:
+                sort_type = item.getItemId();
+                updateComp();
+                adapter.updateSorting(cComp);
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Update sorting type
+     */
+    private void updateComp() {
+        switch (sort_type) {
+            case R.id.lMenu_sort_A:
+                cComp = compA;
+                break;
+            case R.id.lMenu_sort_B:
+                cComp = compB;
+                break;
+            case R.id.lMenu_sort_Name:
+                cComp = compName;
+                break;
+            default:
+                cComp = compName;
+                sort_type = R.id.lMenu_sort_Name;
+                break;
+        }
     }
 
     @Override
@@ -103,6 +176,7 @@ public class ListActivity extends AppCompatActivity {
         finish();
     }
 
+
     /**
      * Load tables from db
      *
@@ -110,7 +184,7 @@ public class ListActivity extends AppCompatActivity {
      */
     private void loadTables(List<Table> tickedTables) {
         tables = db.getTables();
-        adapter.setAllUpdated(tables);
+        adapter.setAllUpdated(tables, cComp);
         if (tickedTables != null) {
             for (int i = 0; i < adapter.getCount(); i++) {
                 Table tbl = adapter.getItem(i);
@@ -133,7 +207,7 @@ public class ListActivity extends AppCompatActivity {
         listView.setAdapter(adapter);
 
         if (multiselect) {
-            setTitle(R.string.ListSelector_Title_Training);
+            // TODO: title; setTitle(R.string.ListSelector_Title_Training);
             listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
             listView.setItemsCanFocus(false);
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -199,7 +273,7 @@ public class ListActivity extends AppCompatActivity {
     /**
      * Update enabled state of OK button
      */
-    private void updateOkButton(){
+    private void updateOkButton() {
         bOk.setEnabled(listView.getCheckedItemCount() > 0);
     }
 
@@ -229,5 +303,15 @@ public class ListActivity extends AppCompatActivity {
         });
 
         finishedDiag.show();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Save values
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putInt(P_KEY_LA_SORT, sort_type);
+        editor.apply();
     }
 }

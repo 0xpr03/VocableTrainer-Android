@@ -7,13 +7,18 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateInterpolator;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenEntryComparator;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 
@@ -28,23 +33,20 @@ public class EntryListAdapter extends BaseAdapter {
     private static final String TAG = "EntryListAdapter";
     private List<Entry> dataItems = null;
     private List<Entry> deleted;
-    private Activity activity;
     private LayoutInflater inflater;
     private Entry header;
 
     /**
      * Creates a new entry list adapter
      *
-     * @param activity
      * @param items
      */
-    public EntryListAdapter(Activity activity, List<Entry> items, Context context) {
+    public EntryListAdapter(Activity activity,List<Entry> items) {
         super();
-        this.activity = activity;
         this.dataItems = items;
-        header = new Entry(context.getString(R.string.Editor_Default_Column_A),
-                context.getString(R.string.Editor_Default_Column_B),
-                context.getString(R.string.Editor_Default_Tip),
+        header = new Entry(activity.getString(R.string.Editor_Default_Column_A),
+                activity.getString(R.string.Editor_Default_Column_B),
+                activity.getString(R.string.Editor_Default_Tip),
                 ID_RESERVED_SKIP, new Table(ID_RESERVED_SKIP), -2L);
         dataItems.add(0, header);
         deleted = new ArrayList<>();
@@ -128,6 +130,15 @@ public class EntryListAdapter extends BaseAdapter {
     }
 
     /**
+     * Update sorting
+     * @param comp Comparator to use for sorting
+     */
+    public void updateSorting(Comparator<Entry> comp){
+        Collections.sort(dataItems,comp);
+        this.notifyDataSetChanged();
+    }
+
+    /**
      * Set entry as deleted
      *
      * @param entry
@@ -183,6 +194,9 @@ public class EntryListAdapter extends BaseAdapter {
         return entries;
     }
 
+    /**
+     * View Holder, storing data for re-use
+     */
     private class ViewHolder {
         protected TextView colA;
         protected TextView colB;

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" xmlns:support="http://schemas.android.com/apk/res-auto">
+    <item
+        android:title="@string/Pref_Reset_Previous"
+        android:id="@+id/fResetPrev"
+        />
+    <item
+        android:title="@string/Pref_Reset_Default"
+        android:id="@+id/fResetDefault"
+        />
+</menu>

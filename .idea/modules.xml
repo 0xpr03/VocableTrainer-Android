@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/VocableTrainer.iml" filepath="$PROJECT_DIR$/VocableTrainer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/VocableTrainer-Android.iml" filepath="$PROJECT_DIR$/VocableTrainer-Android.iml" />
       <module fileurl="file://$PROJECT_DIR$/VocableTrainer_Android.iml" filepath="$PROJECT_DIR$/VocableTrainer_Android.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>

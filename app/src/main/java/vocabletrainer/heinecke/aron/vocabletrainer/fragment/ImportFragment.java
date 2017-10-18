@@ -1,19 +1,21 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
+package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.widget.Space;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -32,6 +34,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import vocabletrainer.heinecke.aron.vocabletrainer.Activities.EditorActivity;
+import vocabletrainer.heinecke.aron.vocabletrainer.Activities.FileActivity;
+import vocabletrainer.heinecke.aron.vocabletrainer.Activities.ListActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib.EntryListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.ImportFetcher;
@@ -41,6 +46,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 
+import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.ExImportActivity.populateFormatSpinnerAdapter;
 import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.MainActivity.PREFS_NAME;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.DPIHelper.DPIToPixels;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TRESHOLD;
@@ -48,19 +54,15 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TR
 /*
  * Import Activity
  */
-public class ImportActivity extends AppCompatActivity {
+public class ImportFragment extends BaseFragment {
 
-    /**
-     * This permission is required for this activity to work
-     */
-    public static final String REQUIRED_PERMISSION = Manifest.permission.WRITE_EXTERNAL_STORAGE;
     private static final String P_KEY_I_IMP_MULTI = "import_sp_multi";
     private static final String P_KEY_I_IMP_SINGLE = "import_sp_single";
     private static final String P_KEY_I_IMP_RAW = "import_sp_raw";
     private static final String P_KEY_I_IMP_FORMAT = "import_sp_format";
     private static final int REQUEST_FILE_RESULT_CODE = 1;
     private static final int REQUEST_LIST_SELECT_CODE = 2;
-    private static final String TAG = "ImportActivity";
+    private static final String TAG = "ImportFragment";
     File impFile;
     List<Entry> lst;
     EntryListAdapter adapter;
@@ -84,35 +86,52 @@ public class ImportActivity extends AppCompatActivity {
     private boolean isMultilist = true;
     private PreviewParser previewParser;
     private TextView tMsg;
+    private View view;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_import);
-        setTitle(R.string.Import_Title);
+    private boolean showedCustomFormatFragment = false;
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar ab = getSupportActionBar();
-        if (ab != null) {
-            ab.setDisplayHomeAsUpEnabled(true);
-        }
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+        view = inflater.inflate(R.layout.fragment_import, container, false);
+
+        setHasOptionsMenu(true);
 
         lst = new ArrayList<>();
-        adapter = new EntryListAdapter(this, lst);
+        adapter = new EntryListAdapter(getActivity(), lst);
 
-        spSingelRaw = (Spinner) findViewById(R.id.spImportSingleRaw);
-        spSingleList = (Spinner) findViewById(R.id.spImportSingleMetadata);
-        spMultilist = (Spinner) findViewById(R.id.spImportMultiple);
-        singleLayout = (ConstraintLayout) findViewById(R.id.cImportNonMultilist);
-        tInfo = (TextView) findViewById(R.id.tImportInfo);
-        etList = (EditText) findViewById(R.id.tImportList);
-        bSelectList = (Button) findViewById(R.id.bImportSelectList);
-        etFile = (EditText) findViewById(R.id.tImportPath);
-        bImportOk = (Button) findViewById(R.id.bImportOk);
-        list = (ListView) findViewById(R.id.lstImportPreview);
-        spFormat = (Spinner) findViewById(R.id.spImportFormat);
-        tMsg = (TextView) findViewById(R.id.tImportMsg);
+        spSingelRaw = (Spinner) view.findViewById(R.id.spImportSingleRaw);
+        spSingleList = (Spinner) view.findViewById(R.id.spImportSingleMetadata);
+        spMultilist = (Spinner) view.findViewById(R.id.spImportMultiple);
+        singleLayout = (ConstraintLayout) view.findViewById(R.id.cImportNonMultilist);
+        tInfo = (TextView) view.findViewById(R.id.tImportInfo);
+        etList = (EditText) view.findViewById(R.id.tImportList);
+        bSelectList = (Button) view.findViewById(R.id.bImportSelectList);
+        etFile = (EditText) view.findViewById(R.id.tImportPath);
+        bImportOk = (Button) view.findViewById(R.id.bImportOk);
+        list = (ListView) view.findViewById(R.id.lstImportPreview);
+        spFormat = (Spinner) view.findViewById(R.id.spImportFormat);
+        tMsg = (TextView) view.findViewById(R.id.tImportMsg);
+
+        bSelectList.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectList();
+            }
+        });
+
+        bImportOk.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onImport();
+            }
+        });
+
+        Button bSelectFile = (Button) view.findViewById(R.id.bImportFile);
+        bSelectFile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectFile();
+            }
+        });
 
         tMsg.setMovementMethod(LinkMovementMethod.getInstance());
         list.setAdapter(adapter);
@@ -122,21 +141,40 @@ public class ImportActivity extends AppCompatActivity {
         etFile.setKeyListener(null);
 
         initSpinner();
+
+        return view;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        menu.clear();
+        inflater.inflate(R.menu.exp_import, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                getFragmentActivity().finish();
+                return true;
+            case R.id.tCustomFormat:
+                showedCustomFormatFragment = true;
+                FormatFragment formatFragment = new FormatFragment();
+                getFragmentActivity().addFragment(this,formatFragment);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     /**
      * Setup spinners
      */
     private void initSpinner() {
-        spAdapterFormat = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
-        spAdapterMultilist = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
-        spAdapterSinglelist = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
-        spAdapterRawlist = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
-
-        spAdapterFormat.add(new GenericSpinnerEntry<>(CSVFormat.DEFAULT, getString(R.string.CSV_Format_Default)));
-        spAdapterFormat.add(new GenericSpinnerEntry<>(CSVFormat.EXCEL, getString(R.string.CSV_Format_EXCEL)));
-        spAdapterFormat.add(new GenericSpinnerEntry<>(CSVFormat.RFC4180, getString(R.string.CSV_Format_RFC4180)));
-        spAdapterFormat.add(new GenericSpinnerEntry<>(CSVFormat.TDF, getString(R.string.CSV_Format_Tabs)));
+        spAdapterFormat = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item);
+        spAdapterMultilist = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item);
+        spAdapterSinglelist = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item);
+        spAdapterRawlist = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item);
 
         spAdapterMultilist.add(new GenericSpinnerEntry<>(Importer.IMPORT_LIST_MODE.REPLACE, getString(R.string.Import_Multilist_REPLACE)));
         spAdapterMultilist.add(new GenericSpinnerEntry<>(Importer.IMPORT_LIST_MODE.ADD, getString(R.string.Import_Multilist_ADD)));
@@ -149,12 +187,15 @@ public class ImportActivity extends AppCompatActivity {
         spAdapterSinglelist.add(new GenericSpinnerEntry<>(Importer.IMPORT_LIST_MODE.ADD, getString(R.string.Import_Singlelist_ADD)));
         spAdapterSinglelist.add(new GenericSpinnerEntry<>(Importer.IMPORT_LIST_MODE.CREATE, getString(R.string.Import_Singlelist_CREATE)));
 
+        SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
+
+        populateFormatSpinnerAdapter(spAdapterFormat, getActivity(), settings);
+
         spFormat.setAdapter(spAdapterFormat);
         spMultilist.setAdapter(spAdapterMultilist);
         spSingleList.setAdapter(spAdapterSinglelist);
         spSingelRaw.setAdapter(spAdapterRawlist);
 
-        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         spFormat.setSelection(settings.getInt(P_KEY_I_IMP_FORMAT, 0));
         spSingelRaw.setSelection(settings.getInt(P_KEY_I_IMP_RAW, 0));
         spSingleList.setSelection(settings.getInt(P_KEY_I_IMP_SINGLE, 0));
@@ -210,10 +251,10 @@ public class ImportActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStop() {
+    public void onStop() {
         super.onStop();
 
-        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
         editor.putInt(P_KEY_I_IMP_MULTI, spMultilist.getSelectedItemPosition());
         editor.putInt(P_KEY_I_IMP_SINGLE, spSingleList.getSelectedItemPosition());
@@ -232,29 +273,20 @@ public class ImportActivity extends AppCompatActivity {
     }
 
     /**
-     * Called on cancel click
-     *
-     * @param view
-     */
-    public void onCancel(View view) {
-        finish();
-    }
-
-    /**
      * Refresh preview parsing, change view accordingly
      */
     private void refreshParsing() {
         if (impFile != null && impFile.exists()) {
             CSVFormat format = getFormatSelected();
             final PreviewParser dataHandler = new PreviewParser(lst);
-            final AlertDialog.Builder alert = new AlertDialog.Builder(this);
+            final AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
             alert.setCancelable(false);
             alert.setMessage("");
             alert.setTitle(R.string.Import_Preview_Update_Title);
-            final ProgressBar tw = new ProgressBar(this);
-            Space sp = new Space(this);
+            final ProgressBar tw = new ProgressBar(getActivity());
+            Space sp = new Space(getActivity());
             sp.setMinimumHeight((int) DPIToPixels(getResources(), 10)); // little space downside
-            LinearLayout rl = new TableLayout(this);
+            LinearLayout rl = new TableLayout(getActivity());
             rl.addView(tw);
             rl.addView(sp);
             alert.setView(rl);
@@ -301,18 +333,16 @@ public class ImportActivity extends AppCompatActivity {
 
     /**
      * Called when import was clickeds
-     *
-     * @param view
      */
-    public void onImport(View view) {
+    public void onImport() {
         CSVFormat format = getFormatSelected();
-        final Importer dataHandler = new Importer(getApplicationContext(), previewParser, getListMode(), targetList);
-        final AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        final Importer dataHandler = new Importer(getActivity().getApplicationContext(), previewParser, getListMode(), targetList);
+        final AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
         alert.setCancelable(false);
         alert.setTitle(R.string.Import_Importing_Title);
-        final ProgressBar pg = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        final ProgressBar pg = new ProgressBar(getActivity(), null, android.R.attr.progressBarStyleHorizontal);
         pg.setIndeterminate(false);
-        LinearLayout rl = new TableLayout(this);
+        LinearLayout rl = new TableLayout(getActivity());
         rl.addView(pg);
         alert.setView(rl);
         /*alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -324,7 +354,7 @@ public class ImportActivity extends AppCompatActivity {
         Callable<Void> callable = new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                finish();
+                getActivity().finish();
                 return null;
             }
         };
@@ -364,11 +394,9 @@ public class ImportActivity extends AppCompatActivity {
 
     /**
      * Called on file select click
-     *
-     * @param view
      */
-    public void selectFile(View view) {
-        Intent myIntent = new Intent(this, FileActivity.class);
+    public void selectFile() {
+        Intent myIntent = new Intent(getActivity(), FileActivity.class);
         myIntent.putExtra(FileActivity.PARAM_WRITE_FLAG, false);
         myIntent.putExtra(FileActivity.PARAM_MESSAGE, getString(R.string.Import_File_select_Info));
         myIntent.putExtra(FileActivity.PARAM_DEFAULT_FILENAME, "list.csv");
@@ -377,10 +405,8 @@ public class ImportActivity extends AppCompatActivity {
 
     /**
      * Called on list select click
-     *
-     * @param view
      */
-    public void selectList(View view) {
+    public void selectList() {
         if (getListMode() == Importer.IMPORT_LIST_MODE.CREATE) {
             targetList = new Table("", "", "");
             Callable<Void> callable = new Callable<Void>() {
@@ -391,9 +417,9 @@ public class ImportActivity extends AppCompatActivity {
                     return null;
                 }
             };
-            EditorActivity.showListEditorDialog(true, targetList, callable,null, this);
+            EditorActivity.showListEditorDialog(true, targetList, callable, null, getActivity());
         } else {
-            Intent myIntent = new Intent(this, ListActivity.class);
+            Intent myIntent = new Intent(getActivity(), ListActivity.class);
             myIntent.putExtra(ListActivity.PARAM_MULTI_SELECT, false);
             myIntent.putExtra(ListActivity.PARAM_DELETE_FLAG, false);
             myIntent.putExtra(ListActivity.PARAM_SELECTED, targetList);
@@ -410,6 +436,7 @@ public class ImportActivity extends AppCompatActivity {
             is_ok = false;
         }
         Importer.IMPORT_LIST_MODE mode = getListMode();
+        //noinspection StatementWithEmptyBody
         if (isMultilist) {
             //don't check the rest
         } else if (isRawData && targetList == null) {
@@ -430,19 +457,33 @@ public class ImportActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onResume() {
+        super.onResume();
+        if (showedCustomFormatFragment) {
+            showedCustomFormatFragment = false;
+            SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
+            populateFormatSpinnerAdapter(spAdapterFormat, getActivity(), settings);
+            refreshParsing();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == REQUEST_FILE_RESULT_CODE) {
-                Log.d(TAG, "got file:" + data.getStringExtra(FileActivity.RETURN_FILE_USER_NAME));
-                impFile = (File) data.getSerializableExtra(FileActivity.RETURN_FILE);
-                etFile.setText(data.getStringExtra(FileActivity.RETURN_FILE_USER_NAME));
-                checkInput();
-                refreshParsing();
-            } else if (requestCode == REQUEST_LIST_SELECT_CODE) {
-                Log.d(TAG, "got list");
-                targetList = (Table) data.getSerializableExtra(ListActivity.RETURN_LISTS);
-                etList.setText(targetList.getName());
-                checkInput();
+            switch (requestCode) {
+                case REQUEST_FILE_RESULT_CODE:
+                    Log.d(TAG, "got file:" + data.getStringExtra(FileActivity.RETURN_FILE_USER_NAME));
+                    impFile = (File) data.getSerializableExtra(FileActivity.RETURN_FILE);
+                    etFile.setText(data.getStringExtra(FileActivity.RETURN_FILE_USER_NAME));
+                    checkInput();
+                    refreshParsing();
+                    break;
+                case REQUEST_LIST_SELECT_CODE:
+                    Log.d(TAG, "got list");
+                    targetList = (Table) data.getSerializableExtra(ListActivity.RETURN_LISTS);
+                    etList.setText(targetList.getName());
+                    checkInput();
+                    break;
             }
         }
     }

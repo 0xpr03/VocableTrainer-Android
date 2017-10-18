@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:persistent="true"
+        android:title="@string/Pref_General" >
+    </PreferenceCategory>
+    <EditTextPreference
+        android:key="@string/k_pref_delimiter"
+        android:summary="@string/Pref_Delimiter_Desc"
+        android:title="@string/Pref_Delimiter" />
+    <SwitchPreference
+        android:key="@string/k_pref_first_line_header"
+        android:title="@string/Pref_Ignore_First_Line" />
+    <SwitchPreference
+        android:key="@string/k_pref_ignore_spaces"
+        android:title="@string/Pref_Ignore_Spaces" />
+    <SwitchPreference
+        android:key="@string/k_pref_ignore_empty_lines"
+        android:title="@string/Pref_Strip_Empty_Lines" />
+    <PreferenceCategory
+        android:persistent="false"
+        android:title="@string/Pref_Escape">
+        <SwitchPreference
+            android:key="@string/k_pref_escape"
+            android:title="@string/Pref_Escape"
+            android:summary="@string/Pref_Escape_Desc"/>
+        <EditTextPreference
+            android:dependency="@string/k_pref_escape"
+            android:key="@string/k_pref_escape_char"
+            android:title="@string/Pref_Quote_Char"
+            android:summary="@string/Pref_Quote_Char_Desc" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:persistent="false"
+        android:title="@string/Pref_Comment">
+        <SwitchPreference
+            android:key="@string/k_pref_comment"
+            android:title="@string/Pref_Comment"
+            android:summary="@string/Pref_Comment_Desc"/>
+        <EditTextPreference
+            android:dependency="@string/k_pref_comment"
+            android:key="@string/k_pref_comment_char"
+            android:title="@string/Pref_Comment_Char"
+            android:summary="@string/Pref_Comment_Char_Desc"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:persistent="false"
+        android:title="@string/Pref_Quote">
+        <SwitchPreference
+            android:key="@string/k_pref_quote"
+            android:title="@string/Pref_Quote"
+            android:summary="@string/Pref_Quote_Desc"/>
+        <EditTextPreference
+            android:dependency="@string/k_pref_quote"
+            android:key="@string/k_pref_quote_char"
+            android:title="@string/Pref_Quote_Char"
+            android:summary="@string/Pref_Quote_Char_Desc" />
+    </PreferenceCategory>
+</PreferenceScreen>

@@ -1,19 +1,23 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
+package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -35,6 +39,8 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import vocabletrainer.heinecke.aron.vocabletrainer.Activities.FileActivity;
+import vocabletrainer.heinecke.aron.vocabletrainer.Activities.ListActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib.TableListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenTableComparator;
@@ -44,26 +50,23 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 
+import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.ExImportActivity.populateFormatSpinnerAdapter;
 import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.MainActivity.PREFS_NAME;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVHeaders.CSV_METADATA_COMMENT;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVHeaders.CSV_METADATA_START;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
 
 /**
- * Export activity
+ * Export fragment
  */
-public class ExportActivity extends AppCompatActivity {
+public class ExportFragment extends BaseFragment {
 
-    /**
-     * This permission is required for this activity to work
-     */
-    public static final String REQUIRED_PERMISSION = Manifest.permission.WRITE_EXTERNAL_STORAGE;
     private static final String P_KEY_B_EXP_TBL_META = "export_tbl_meta";
     private static final String P_KEY_B_EXP_TBL_MULTI = "export_tbl_multi";
     private static final String P_KEY_I_EXP_FORMAT = "export_format";
     private static final int REQUEST_FILE_RESULT_CODE = 10;
     private static final int REQUEST_TABLES_RESULT_CODE = 20;
-    private static final String TAG = "ExportActivity";
+    private static final String TAG = "ExportFragment";
     private static final int MAX_PROGRESS = 100;
     private EditText tExportFile;
     private Button btnExport;
@@ -79,42 +82,83 @@ public class ExportActivity extends AppCompatActivity {
     private ArrayAdapter<GenericSpinnerEntry<CSVFormat>> spAdapterFormat;
     private TextView tMsg;
     private GenericComparator compTables;
+    private View view;
 
+    private boolean showedCustomFormatFragment = false;
+
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_export);
-        setTitle(R.string.Export_Title);
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+        view = inflater.inflate(R.layout.fragment_export, container, false);
 
-        tExportFile = (EditText) findViewById(R.id.tExportFile);
-        btnExport = (Button) findViewById(R.id.bExportStart);
-        listView = (ListView) findViewById(R.id.lExportListView);
-        addButton = (FloatingActionButton) findViewById(R.id.bExportAddTables);
-        chkExportMultiple = (CheckBox) findViewById(R.id.chkExportMulti);
-        chkExportTalbeInfo = (CheckBox) findViewById(R.id.chkExportMeta);
-        spFormat = (Spinner) findViewById(R.id.spExpFormat);
-        tMsg = (TextView) findViewById(R.id.tExportMsg);
+        setHasOptionsMenu(true);
+
+        tExportFile = (EditText) view.findViewById(R.id.tExportFile);
+        btnExport = (Button) view.findViewById(R.id.bExportStart);
+        listView = (ListView) view.findViewById(R.id.lExportListView);
+        addButton = (FloatingActionButton) view.findViewById(R.id.bExportAddTables);
+        chkExportMultiple = (CheckBox) view.findViewById(R.id.chkExportMulti);
+        chkExportTalbeInfo = (CheckBox) view.findViewById(R.id.chkExportMeta);
+        spFormat = (Spinner) view.findViewById(R.id.spExpFormat);
+        tMsg = (TextView) view.findViewById(R.id.tExportMsg);
 
         GenericComparator.ValueRetriever[] retrievers = new GenericComparator.ValueRetriever[]{
-                GenTableComparator.retName,GenTableComparator.retA,GenTableComparator.retB
+                GenTableComparator.retName, GenTableComparator.retA, GenTableComparator.retB
         };
 
-        compTables = new GenTableComparator(retrievers,ID_RESERVED_SKIP);
+        compTables = new GenTableComparator(retrievers, ID_RESERVED_SKIP);
 
         initView();
+
+        return view;
+    }
+
+    @Override
+    public void onDestroyView() {
+        Log.d(TAG, "destroying view");
+        super.onDestroyView();
+        view = null;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        Log.d(TAG, "inflating the menu");
+        menu.clear();
+        inflater.inflate(R.menu.exp_import, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+
+        Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
+        Log.d(TAG, "tool bar is null " + String.valueOf(toolbar == null));
+        ActionBar ab = getFragmentActivity().getSupportActionBar();
+        if (ab != null) {
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                getFragmentActivity().finish();
+                return true;
+            case R.id.tCustomFormat:
+                showedCustomFormatFragment = true;
+                FormatFragment formatFragment = new FormatFragment();
+                getFragmentActivity().addFragment(this,formatFragment);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     /**
      * Init list view
      */
     private void initView() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar ab = getSupportActionBar();
-        if (ab != null) {
-            ab.setDisplayHomeAsUpEnabled(true);
-        }
-
         tMsg.setMovementMethod(LinkMovementMethod.getInstance());
         tExportFile.setKeyListener(null);
         btnExport.setEnabled(false);
@@ -132,7 +176,23 @@ public class ExportActivity extends AppCompatActivity {
             }
         });
 
-        adapter = new TableListAdapter(this, R.layout.table_list_view, tables, false);
+        Button btnOk = (Button) view.findViewById(R.id.bExportStart);
+        btnOk.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onOk();
+            }
+        });
+
+        Button btnFileDialog = (Button) view.findViewById(R.id.bExportSelFile);
+        btnFileDialog.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectFile();
+            }
+        });
+
+        adapter = new TableListAdapter(getActivity(), R.layout.table_list_view, tables, false);
         listView.setAdapter(adapter);
         listView.setLongClickable(false);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -142,26 +202,24 @@ public class ExportActivity extends AppCompatActivity {
             }
         });
 
-        spAdapterFormat = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
+        spAdapterFormat = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item);
 
-        spAdapterFormat.add(new GenericSpinnerEntry<>(CSVFormat.DEFAULT, getString(R.string.CSV_Format_Default)));
-        spAdapterFormat.add(new GenericSpinnerEntry<>(CSVFormat.EXCEL, getString(R.string.CSV_Format_EXCEL)));
-        spAdapterFormat.add(new GenericSpinnerEntry<>(CSVFormat.RFC4180, getString(R.string.CSV_Format_RFC4180)));
-        spAdapterFormat.add(new GenericSpinnerEntry<>(CSVFormat.TDF, getString(R.string.CSV_Format_Tabs)));
+        SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
+
+        populateFormatSpinnerAdapter(spAdapterFormat, getActivity(), settings);
 
         spFormat.setAdapter(spAdapterFormat);
 
-        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         chkExportTalbeInfo.setChecked(settings.getBoolean(P_KEY_B_EXP_TBL_META, true));
         chkExportMultiple.setChecked(settings.getBoolean(P_KEY_B_EXP_TBL_MULTI, true));
         spFormat.setSelection(settings.getInt(P_KEY_I_EXP_FORMAT, 0));
     }
 
     @Override
-    protected void onStop() {
+    public void onStop() {
         super.onStop();
 
-        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
         editor.putBoolean(P_KEY_B_EXP_TBL_MULTI, chkExportMultiple.isChecked());
         editor.putBoolean(P_KEY_B_EXP_TBL_META, chkExportTalbeInfo.isChecked());
@@ -170,21 +228,10 @@ public class ExportActivity extends AppCompatActivity {
     }
 
     /**
-     * Called on cancel button click
-     *
-     * @param view
-     */
-    public void onCancel(View view) {
-        finish();
-    }
-
-    /**
      * Called on file select click
-     *
-     * @param view
      */
-    public void selectFile(View view) {
-        Intent myIntent = new Intent(this, FileActivity.class);
+    public void selectFile() {
+        Intent myIntent = new Intent(getActivity(), FileActivity.class);
         myIntent.putExtra(FileActivity.PARAM_WRITE_FLAG, true);
         myIntent.putExtra(FileActivity.PARAM_MESSAGE, getString(R.string.Export_File_select_Info));
         myIntent.putExtra(FileActivity.PARAM_DEFAULT_FILENAME, "list.csv");
@@ -192,19 +239,10 @@ public class ExportActivity extends AppCompatActivity {
     }
 
     /**
-     * Called on table select click
-     *
-     * @param view
-     */
-    public void onSelectTables(View view) {
-        runSelectTables();
-    }
-
-    /**
      * Calls select tables activity
      */
     private void runSelectTables() {
-        Intent myIntent = new Intent(this, ListActivity.class);
+        Intent myIntent = new Intent(getActivity(), ListActivity.class);
         myIntent.putExtra(ListActivity.PARAM_SELECTED, tables);
         myIntent.putExtra(ListActivity.PARAM_MULTI_SELECT, true);
         startActivityForResult(myIntent, REQUEST_TABLES_RESULT_CODE);
@@ -212,17 +250,14 @@ public class ExportActivity extends AppCompatActivity {
 
     /**
      * Called upon ok press
-     *
-     * @param view
      */
-    public void onOk(View view) {
-
-        final AlertDialog.Builder alert = new AlertDialog.Builder(this);
+    public void onOk() {
+        final AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
         alert.setCancelable(false);
         alert.setTitle(R.string.Export_Exporting_Title);
-        final ProgressBar pg = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        final ProgressBar pg = new ProgressBar(getActivity(), null, android.R.attr.progressBarStyleHorizontal);
         pg.setIndeterminate(false);
-        LinearLayout rl = new TableLayout(this);
+        LinearLayout rl = new TableLayout(getActivity());
         rl.addView(pg);
         alert.setView(rl);
         /*alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -238,16 +273,29 @@ public class ExportActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onResume() {
+        super.onResume();
+        if (showedCustomFormatFragment) {
+            showedCustomFormatFragment = false;
+            SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
+            populateFormatSpinnerAdapter(spAdapterFormat, getActivity(), settings);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == REQUEST_FILE_RESULT_CODE) {
-                Log.d(TAG, "got file:" + data.getStringExtra(FileActivity.RETURN_FILE_USER_NAME));
-                expFile = (File) data.getSerializableExtra(FileActivity.RETURN_FILE);
-                tExportFile.setText(data.getStringExtra(FileActivity.RETURN_FILE_USER_NAME));
-                checkInputOk();
-            } else if (requestCode == REQUEST_TABLES_RESULT_CODE) {
-                adapter.setAllUpdated((ArrayList<Table>) data.getSerializableExtra(ListActivity.RETURN_LISTS),compTables);
-                checkInputOk();
+            switch (requestCode) {
+                case REQUEST_FILE_RESULT_CODE:
+                    Log.d(TAG, "got file:" + data.getStringExtra(FileActivity.RETURN_FILE_USER_NAME));
+                    expFile = (File) data.getSerializableExtra(FileActivity.RETURN_FILE);
+                    tExportFile.setText(data.getStringExtra(FileActivity.RETURN_FILE_USER_NAME));
+                    checkInputOk();
+                    break;
+                case REQUEST_TABLES_RESULT_CODE:
+                    adapter.setAllUpdated((ArrayList<Table>) data.getSerializableExtra(ListActivity.RETURN_LISTS), compTables);
+                    checkInputOk();
+                    break;
             }
         }
     }
@@ -273,7 +321,7 @@ public class ExportActivity extends AppCompatActivity {
          */
         public ExportOperation(ExportStorage es) {
             this.es = es;
-            db = new Database(getApplicationContext());
+            db = new Database(getActivity().getApplicationContext());
         }
 
         @Override
@@ -334,7 +382,7 @@ public class ExportActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             es.dialog.dismiss();
-            finish();
+            getActivity().finish();
         }
     }
 
@@ -342,13 +390,13 @@ public class ExportActivity extends AppCompatActivity {
      * Export storage class
      */
     private class ExportStorage {
-        public final ArrayList<Table> tables;
-        public final boolean exportTableInfo;
-        public final boolean exportMultiple;
-        public final File file;
-        public final AlertDialog dialog;
-        public final CSVFormat format;
-        public final ProgressBar progressBar;
+        final ArrayList<Table> tables;
+        final boolean exportTableInfo;
+        final boolean exportMultiple;
+        final File file;
+        final AlertDialog dialog;
+        final CSVFormat format;
+        final ProgressBar progressBar;
 
         /**
          * New export storage
@@ -361,8 +409,8 @@ public class ExportActivity extends AppCompatActivity {
          * @param dialog          dialog for progress, closed on end
          * @param progressBar     progress bar that is updated
          */
-        public ExportStorage(CSVFormat format, ArrayList<Table> tables, boolean exportTableInfo,
-                             boolean exportMultiple, File file, AlertDialog dialog, ProgressBar progressBar) {
+        ExportStorage(CSVFormat format, ArrayList<Table> tables, boolean exportTableInfo,
+                      boolean exportMultiple, File file, AlertDialog dialog, ProgressBar progressBar) {
             this.format = format;
             this.tables = tables;
             this.exportTableInfo = exportTableInfo;

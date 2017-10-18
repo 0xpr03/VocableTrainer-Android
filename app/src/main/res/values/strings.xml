@@ -38,6 +38,7 @@
     <string name="Editor_ListSettings">List Settings</string>
     <string name="CSV_Format">CSV Format</string>
     <string name="Select_File_btn">Select File</string>
+    <string name="ExImport_Edit_CustomFormat">Edit custom format</string>
     <string name="Import_Title">Import</string>
     <string name="Import_Ok">Import</string>
     <string name="Import_Cancel">Cancel</string>
@@ -113,7 +114,34 @@
     <string name="Import_Rawlist_MERGE">Add to list</string>
 
     <string name="CSV_Format_EXCEL">Excel</string>
-    <string name="CSV_Format_RFC4180">RFC 4180</string>
+    <string name="CSV_Format_RFC4180" translatable="false">RFC 4180</string>
     <string name="CSV_Format_Default">Default</string>
     <string name="CSV_Format_Tabs">Tabs</string>
+    <string name="CSV_Format_Mysql" translatable="false">Mysql</string>
+    <string name="CSV_Format_INFORMIX_UNLOAD" translatable="false">INFORMIX_UNLOAD</string>
+    <string name="CSV_Format_INFORMIX_UNLOAD_CSV" translatable="false">INFORMIX_UNLOAD_CSV</string>
+    <string name="CSV_Format_Custom_Format">Custom Format</string>
+    <string name="title_activity_format">FormatActivity</string>
+
+    <!-- preferences -->
+    <string name="Pref_Delimiter">Delimiter</string>
+    <string name="Pref_Delimiter_Desc">Delimiter character to use</string>
+    <string name="Pref_Comment">Comment</string>
+    <string name="Pref_Comment_Desc">Handle comments</string>
+    <string name="Pref_Comment_Char">Comment Char</string>
+    <string name="Pref_Comment_Char_Desc">Comment character to parse</string>
+    <string name="Pref_Escape">Escaping</string>
+    <string name="Pref_Escape_Desc">Handle Escapes</string>
+    <string name="Pref_Escape_Char">Escape Char</string>
+    <string name="Pref_Escape_Char_Desc">Escape character to parse</string>
+    <string name="Pref_Quote">Quote</string>
+    <string name="Pref_Quote_Desc">Handle Quotes</string>
+    <string name="Pref_Quote_Char">Quote Char</string>
+    <string name="Pref_Quote_Char_Desc">Quote character to parse</string>
+    <string name="Pref_Strip_Empty_Lines">Ignore empty lines</string>
+    <string name="Pref_Ignore_Spaces">Ignore sourrounding spaces</string>
+    <string name="Pref_Ignore_First_Line">Ignore first line as header</string>
+    <string name="Pref_General">General</string>
+    <string name="Pref_Reset_Previous">Reset to previous</string>
+    <string name="Pref_Reset_Default">Reset to default</string>
 </resources>

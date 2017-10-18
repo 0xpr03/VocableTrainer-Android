@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.Button;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ImportFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 
 /**
@@ -173,11 +174,11 @@ public class MainActivity extends AppCompatActivity {
      * @param view
      */
     public void showExport(View view) {
-        if (PermActivity.hasPermission(getApplicationContext(), ExportActivity.REQUIRED_PERMISSION)) {
+        if (PermActivity.hasPermission(getApplicationContext(), ExImportActivity.REQUIRED_PERMISSION)) {
             startExportActivityUnchecked();
         } else {
             Intent myIntent = new Intent(this, PermActivity.class);
-            myIntent.putExtra(PermActivity.PARAM_PERMISSION, ExportActivity.REQUIRED_PERMISSION);
+            myIntent.putExtra(PermActivity.PARAM_PERMISSION, ExImportActivity.REQUIRED_PERMISSION);
             myIntent.putExtra(PermActivity.PARAM_MESSAGE, getString(R.string.Perm_CSV));
             this.startActivityForResult(myIntent,REQUEST_PERM_EXPORT);
         }
@@ -189,11 +190,11 @@ public class MainActivity extends AppCompatActivity {
      * @param view
      */
     public void showImport(View view) {
-        if (PermActivity.hasPermission(getApplicationContext(), ImportActivity.REQUIRED_PERMISSION)) {
+        if (PermActivity.hasPermission(getApplicationContext(), ExImportActivity.REQUIRED_PERMISSION)) {
             startImportActivityUnchecked();
         } else {
             Intent myIntent = new Intent(this, PermActivity.class);
-            myIntent.putExtra(PermActivity.PARAM_PERMISSION, ImportActivity.REQUIRED_PERMISSION);
+            myIntent.putExtra(PermActivity.PARAM_PERMISSION, ExImportActivity.REQUIRED_PERMISSION);
             myIntent.putExtra(PermActivity.PARAM_MESSAGE, getString(R.string.Perm_CSV));
             this.startActivityForResult(myIntent,REQUEST_PERM_IMPORT);
         }
@@ -203,7 +204,8 @@ public class MainActivity extends AppCompatActivity {
      * Start import activity, does not check for permissions
      */
     private void startImportActivityUnchecked(){
-        Intent myIntent = new Intent(this, ImportActivity.class);
+        Intent myIntent = new Intent(this, ExImportActivity.class);
+        myIntent.putExtra(ExImportActivity.PARAM_IMPORT,true);
         this.startActivity(myIntent);
     }
 
@@ -211,7 +213,8 @@ public class MainActivity extends AppCompatActivity {
      * Start export activity, does not check for permissions
      */
     private void startExportActivityUnchecked(){
-        Intent myIntent = new Intent(this, ExportActivity.class);// dialog.dismiss();
+        Intent myIntent = new Intent(this, ExImportActivity.class);
+        myIntent.putExtra(ExImportActivity.PARAM_IMPORT,false);
         this.startActivity(myIntent);
     }
 

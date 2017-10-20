@@ -118,8 +118,8 @@
     <string name="CSV_Format_Default">Default</string>
     <string name="CSV_Format_Tabs">Tabs</string>
     <string name="CSV_Format_Mysql" translatable="false">Mysql</string>
-    <string name="CSV_Format_INFORMIX_UNLOAD" translatable="false">INFORMIX_UNLOAD</string>
-    <string name="CSV_Format_INFORMIX_UNLOAD_CSV" translatable="false">INFORMIX_UNLOAD_CSV</string>
+    <string name="CSV_Format_INFORMIX_UNLOAD" translatable="false">Informix CSV UNLOAD</string>
+    <string name="CSV_Format_INFORMIX_UNLOAD_CSV" translatable="false">Informix CSV UNLOAD</string>
     <string name="CSV_Format_Custom_Format">Custom Format</string>
     <string name="title_activity_format">FormatActivity</string>
 

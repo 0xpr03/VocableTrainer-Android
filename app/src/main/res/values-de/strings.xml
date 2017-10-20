@@ -44,7 +44,6 @@
     <string name="CSV_Format">CSV Format</string>
     <string name="CSV_Format_Default">Standard</string>
     <string name="CSV_Format_EXCEL">Excel</string>
-    <string name="CSV_Format_RFC4180">RFC 4180</string>
     <string name="CSV_Format_Tabs">Tabs</string>
     <string name="Export_Exporting_Title">Exportiere..</string>
     <string name="Export_Cancel">Abbrechen</string>

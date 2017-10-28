@@ -1,4 +1,4 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
+package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -27,7 +27,7 @@ import android.widget.TableLayout;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib.EntryListAdapter;
+import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.EntryListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenEntryComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
@@ -35,7 +35,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 
-import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.MainActivity.PREFS_NAME;
+import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
 
 /**

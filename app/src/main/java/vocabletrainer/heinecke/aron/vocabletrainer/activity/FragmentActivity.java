@@ -1,4 +1,4 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
+package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
 import android.app.Fragment;
 import android.app.FragmentManager;

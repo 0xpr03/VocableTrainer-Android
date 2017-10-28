@@ -16,11 +16,11 @@ import android.widget.EditText;
 
 import org.apache.commons.csv.CSVFormat;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.Activities.ExImportActivity;
-import vocabletrainer.heinecke.aron.vocabletrainer.Activities.FragmentActivity;
+import vocabletrainer.heinecke.aron.vocabletrainer.activity.ExImportActivity;
+import vocabletrainer.heinecke.aron.vocabletrainer.activity.FragmentActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 
-import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.MainActivity.PREFS_NAME;
+import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
 
 /**
  * Fragment for custom format preferences

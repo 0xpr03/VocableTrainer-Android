@@ -1,4 +1,4 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
+package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,8 +12,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-
-import java.io.File;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 

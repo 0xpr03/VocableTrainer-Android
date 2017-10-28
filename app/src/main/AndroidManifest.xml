@@ -12,14 +12,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".Activities.TrainerActivity"
-            android:parentActivityName=".Activities.MainActivity"
+            android:name=".activity.TrainerActivity"
+            android:parentActivityName=".activity.MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activities.EditorActivity"
-            android:parentActivityName=".Activities.MainActivity"
+            android:name=".activity.EditorActivity"
+            android:parentActivityName=".activity.MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".Activities.MainActivity">
+        <activity android:name=".activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -27,22 +27,22 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Activities.ListActivity"
+            android:name=".activity.ListActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activities.TrainerSettingsActivity"
-            android:parentActivityName=".Activities.MainActivity"
+            android:name=".activity.TrainerSettingsActivity"
+            android:parentActivityName=".activity.MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activities.AboutActivity"
-            android:parentActivityName=".Activities.MainActivity"
+            android:name=".activity.AboutActivity"
+            android:parentActivityName=".activity.MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activities.FileActivity"
+            android:name=".activity.FileActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".Activities.PermActivity" />
+        <activity android:name=".activity.PermActivity" />
         <activity
-            android:name=".Activities.ExImportActivity"
+            android:name=".activity.ExImportActivity"
             android:label="@string/title_activity_format"
             android:theme="@style/AppTheme.NoActionBar" />
     </application>

@@ -1,7 +1,6 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib;
+package vocabletrainer.heinecke.aron.vocabletrainer.activity.lib;
 
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,7 +15,6 @@ import java.util.List;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.BasicFileEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.FileEntry;
 
 /**
  * BaseAdapter for file list views

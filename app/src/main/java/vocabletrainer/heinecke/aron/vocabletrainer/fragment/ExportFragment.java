@@ -39,9 +39,9 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.Activities.FileActivity;
-import vocabletrainer.heinecke.aron.vocabletrainer.Activities.ListActivity;
-import vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib.TableListAdapter;
+import vocabletrainer.heinecke.aron.vocabletrainer.activity.FileActivity;
+import vocabletrainer.heinecke.aron.vocabletrainer.activity.ListActivity;
+import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.TableListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenTableComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
@@ -50,8 +50,8 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 
-import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.ExImportActivity.populateFormatSpinnerAdapter;
-import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.MainActivity.PREFS_NAME;
+import static vocabletrainer.heinecke.aron.vocabletrainer.activity.ExImportActivity.populateFormatSpinnerAdapter;
+import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVHeaders.CSV_METADATA_COMMENT;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVHeaders.CSV_METADATA_START;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;

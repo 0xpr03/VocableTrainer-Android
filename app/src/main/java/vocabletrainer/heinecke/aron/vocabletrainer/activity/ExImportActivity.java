@@ -1,4 +1,4 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
+package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
 import android.Manifest;
 import android.content.Context;
@@ -24,7 +24,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ExportFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ImportFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
 
-import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.MainActivity.PREFS_NAME;
+import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
 
 /**
  * Activity for import/export

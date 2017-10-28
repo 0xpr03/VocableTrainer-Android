@@ -1,13 +1,11 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib;
+package vocabletrainer.heinecke.aron.vocabletrainer.activity.lib;
 
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.Typeface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateInterpolator;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
@@ -17,8 +15,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenEntryComparator;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 

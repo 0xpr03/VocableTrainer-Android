@@ -2,7 +2,7 @@ package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
 import android.app.Fragment;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.Activities.FragmentActivity;
+import vocabletrainer.heinecke.aron.vocabletrainer.activity.FragmentActivity;
 
 /**
  * Base fragment to be used

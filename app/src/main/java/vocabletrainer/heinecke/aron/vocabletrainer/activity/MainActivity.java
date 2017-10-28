@@ -1,4 +1,4 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
+package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -11,7 +11,6 @@ import android.view.View;
 import android.widget.Button;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ImportFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 
 /**

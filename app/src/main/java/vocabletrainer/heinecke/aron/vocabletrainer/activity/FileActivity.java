@@ -1,8 +1,6 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
+package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
 import android.app.Activity;
-import android.app.SearchManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,7 +9,6 @@ import android.os.Environment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -29,7 +26,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib.FileListAdapter;
+import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.FileListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenFileEntryComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
@@ -37,7 +34,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Formatter;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.BasicFileEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.FileEntry;
 
-import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.MainActivity.PREFS_NAME;
+import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
 
 /**
  * File activity for file requests<br>

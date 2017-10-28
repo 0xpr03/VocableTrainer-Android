@@ -1,4 +1,4 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.Activities;
+package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,9 +19,9 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer;
 
-import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.MainActivity.PREFS_NAME;
-import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.TrainerActivity.PARAM_TABLES;
-import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.TrainerActivity.PARAM_TRAINER_SETTINGS;
+import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
+import static vocabletrainer.heinecke.aron.vocabletrainer.activity.TrainerActivity.PARAM_TABLES;
+import static vocabletrainer.heinecke.aron.vocabletrainer.activity.TrainerActivity.PARAM_TRAINER_SETTINGS;
 
 /**
  * Trainer settings activity

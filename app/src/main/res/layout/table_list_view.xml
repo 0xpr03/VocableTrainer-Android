@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib.CheckableRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.CheckableRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal">
@@ -55,4 +55,4 @@
             android:visibility="visible"></TextView>
     </LinearLayout>
 
-</vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib.CheckableRelativeLayout>
+</vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.CheckableRelativeLayout>

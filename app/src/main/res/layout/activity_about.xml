@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="vocabletrainer.heinecke.aron.vocabletrainer.Activities.AboutActivity">
+    tools:context="vocabletrainer.heinecke.aron.vocabletrainer.activity.AboutActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"

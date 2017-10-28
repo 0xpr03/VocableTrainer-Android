@@ -1,4 +1,4 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib;
+package vocabletrainer.heinecke.aron.vocabletrainer.activity.lib;
 
 import android.content.Context;
 import android.graphics.Typeface;
@@ -14,8 +14,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenTableComparator;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;

@@ -34,10 +34,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.Activities.EditorActivity;
-import vocabletrainer.heinecke.aron.vocabletrainer.Activities.FileActivity;
-import vocabletrainer.heinecke.aron.vocabletrainer.Activities.ListActivity;
-import vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib.EntryListAdapter;
+import vocabletrainer.heinecke.aron.vocabletrainer.activity.EditorActivity;
+import vocabletrainer.heinecke.aron.vocabletrainer.activity.FileActivity;
+import vocabletrainer.heinecke.aron.vocabletrainer.activity.ListActivity;
+import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.EntryListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.ImportFetcher;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.Importer;
@@ -46,8 +46,8 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
 
-import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.ExImportActivity.populateFormatSpinnerAdapter;
-import static vocabletrainer.heinecke.aron.vocabletrainer.Activities.MainActivity.PREFS_NAME;
+import static vocabletrainer.heinecke.aron.vocabletrainer.activity.ExImportActivity.populateFormatSpinnerAdapter;
+import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.DPIHelper.DPIToPixels;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TRESHOLD;
 

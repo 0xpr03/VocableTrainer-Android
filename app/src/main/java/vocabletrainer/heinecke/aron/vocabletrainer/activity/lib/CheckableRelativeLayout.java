@@ -1,4 +1,4 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.Activities.lib;
+package vocabletrainer.heinecke.aron.vocabletrainer.activity.lib;
 
 import android.content.Context;
 import android.util.AttributeSet;

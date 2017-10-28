@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="vocabletrainer.heinecke.aron.vocabletrainer.Activities.FormatActivity">
+    tools:context="vocabletrainer.heinecke.aron.vocabletrainer.activity.FormatActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -24,14 +24,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:context="vocabletrainer.heinecke.aron.vocabletrainer.Activities.FormatActivity">
+        tools:context="vocabletrainer.heinecke.aron.vocabletrainer.activity.FormatActivity">
 
         <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
             xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            tools:context="vocabletrainer.heinecke.aron.vocabletrainer.Activities.FormatActivity"
+            tools:context="vocabletrainer.heinecke.aron.vocabletrainer.activity.FormatActivity"
             tools:showIn="@layout/activity_format">
 
 

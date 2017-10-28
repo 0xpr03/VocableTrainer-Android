@@ -6,8 +6,8 @@ import android.util.Log;
 import java.util.ArrayList;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 
 import static android.content.ContentValues.TAG;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TRESHOLD;
@@ -21,20 +21,20 @@ public class Importer implements ImportHandler {
 
     private PreviewParser previewParser;
     private IMPORT_LIST_MODE mode;
-    private Table overrideTable;
-    private Table currentTable;
+    private VList overrideList;
+    private VList currentList;
     private Database db;
-    private ArrayList<Entry> insertBuffer = new ArrayList<>(BUFFER_CAPACITY);
+    private ArrayList<VEntry> insertBuffer = new ArrayList<>(BUFFER_CAPACITY);
     private boolean ignoreEntries;
 
-    public Importer(Context context, PreviewParser previewParser, IMPORT_LIST_MODE mode, Table overrideTable) {
-        if (previewParser.isRawData() && overrideTable == null) {
+    public Importer(Context context, PreviewParser previewParser, IMPORT_LIST_MODE mode, VList overrideList) {
+        if (previewParser.isRawData() && overrideList == null) {
             Log.e(TAG, "RawData without passed table!");
             throw new IllegalArgumentException("Missing table!");
         }
         this.previewParser = previewParser;
         this.mode = mode;
-        this.overrideTable = overrideTable;
+        this.overrideList = overrideList;
         db = new Database(context);
         ignoreEntries = false;
     }
@@ -43,8 +43,8 @@ public class Importer implements ImportHandler {
     public void start() {
         // raw data or single list with create flag
         if (previewParser.isRawData() || (!previewParser.isMultiList() && mode == IMPORT_LIST_MODE.CREATE)) {
-            currentTable = overrideTable;
-            db.upsertTable(currentTable);
+            currentList = overrideList;
+            db.upsertTable(currentList);
         }
     }
 
@@ -52,9 +52,9 @@ public class Importer implements ImportHandler {
     public void newTable(String name, String columnA, String columnB) {
         flushBuffer();
         ignoreEntries = false;
-        Table tbl = new Table(columnA, columnB, name);
+        VList tbl = new VList(columnA, columnB, name);
         if (previewParser.isRawData()) {
-            Log.w(TAG, "New Table command on raw data list!");
+            Log.w(TAG, "New VList command on raw data list!");
         } else if (previewParser.isMultiList() || mode != IMPORT_LIST_MODE.CREATE) {
             if (db.getTableID(tbl) >= MIN_ID_TRESHOLD) {
                 if (mode == IMPORT_LIST_MODE.REPLACE) {
@@ -66,14 +66,14 @@ public class Importer implements ImportHandler {
                 db.upsertTable(tbl);
             }
 
-            currentTable = tbl;
+            currentList = tbl;
         }
     }
 
     @Override
     public void newEntry(String A, String B, String Tipp) {
         if (!ignoreEntries) {
-            insertBuffer.add(new Entry(A, B, Tipp, currentTable, -1L));
+            insertBuffer.add(new VEntry(A, B, Tipp, currentList, -1L));
             if (insertBuffer.size() >= BUFFER_CAPACITY) {
                 flushBuffer();
             }

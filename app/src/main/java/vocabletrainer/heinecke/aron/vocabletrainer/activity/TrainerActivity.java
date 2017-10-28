@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.SessionStorageManager;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer;
 
@@ -30,7 +30,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer;
 public class TrainerActivity extends AppCompatActivity {
     public static final String PARAM_RESUME_SESSION_FLAG = "resume_session";
     public static final String PARAM_TRAINER_SETTINGS = "trainer_settings";
-    public static final String PARAM_TABLES = "tables";
+    public static final String PARAM_TABLES = "lists";
     private static final String TAG = "TrainerActivity";
 
     private TextView tExercise;
@@ -83,16 +83,16 @@ public class TrainerActivity extends AppCompatActivity {
         ssm = new SessionStorageManager(db);
         Intent intent = getIntent();
         boolean resume = intent.getBooleanExtra(PARAM_RESUME_SESSION_FLAG, false);
-        ArrayList<Table> tables;
+        ArrayList<VList> lists;
         if (resume) {
             Log.d(TAG, "resuming");
             settings = ssm.loadSession();
-            tables = ssm.loadSessionTbls();
+            lists = ssm.loadSessionTbls();
         } else {
             Log.d(TAG, "not resuming");
-            tables = (ArrayList<Table>) intent.getSerializableExtra(PARAM_TABLES);
-            if (tables == null) {
-                Log.wtf(TAG, "Flag for tables passed but no tables received!");
+            lists = (ArrayList<VList>) intent.getSerializableExtra(PARAM_TABLES);
+            if (lists == null) {
+                Log.wtf(TAG, "Flag for lists passed but no lists received!");
             } else {
                 settings = (TrainerSettings) intent.getSerializableExtra(PARAM_TRAINER_SETTINGS);
                 if (settings == null) {
@@ -103,8 +103,8 @@ public class TrainerActivity extends AppCompatActivity {
                         Log.wtf(TAG, "unable to delete past session");
                     } else if (!ssm.saveSession(settings)) {
                         Log.wtf(TAG, "unable to save session meta");
-                    } else if (!ssm.saveSessionTbls(tables)) {
-                        Log.wtf(TAG, "unable to save session tables");
+                    } else if (!ssm.saveSessionTbls(lists)) {
+                        Log.wtf(TAG, "unable to save session lists");
                     } else {
                         Log.d(TAG, "saved session");
                     }
@@ -112,7 +112,7 @@ public class TrainerActivity extends AppCompatActivity {
 
             }
         }
-        trainer = new Trainer(tables, settings, getBaseContext(), !resume,ssm);
+        trainer = new Trainer(lists, settings, getBaseContext(), !resume,ssm);
         showNextVocable();
     }
 

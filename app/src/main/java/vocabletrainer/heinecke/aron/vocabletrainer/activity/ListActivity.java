@@ -26,7 +26,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenTableComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
@@ -44,7 +44,7 @@ public class ListActivity extends AppCompatActivity {
     public static final String PARAM_MULTI_SELECT = "multiselect";
     /**
      * Param key for return of selected lists<br>
-     * This key contains a {@link Table} object or a {@link List} of {@link Table}
+     * This key contains a {@link VList} object or a {@link List} of {@link VList}
      */
     public static final String RETURN_LISTS = "selected";
     /**
@@ -53,13 +53,13 @@ public class ListActivity extends AppCompatActivity {
     public static final String PARAM_DELETE_FLAG = "delete";
     /**
      * Optional Param key for already selected lists, available when multiselect is set<br>
-     * Expect a {@link List} of {@link Table}
+     * Expect a {@link List} of {@link VList}
      */
     public static final String PARAM_SELECTED = "selected";
     private static final String TAG = "ListActivity";
     private static final String P_KEY_LA_SORT = "LA_sorting";
     Database db;
-    List<Table> tables;
+    List<VList> lists;
     private boolean multiselect;
     private ListView listView;
     private TableListAdapter adapter;
@@ -110,7 +110,7 @@ public class ListActivity extends AppCompatActivity {
 
         // setup listview
         initListView();
-        loadTables((ArrayList<Table>) intent.getSerializableExtra(PARAM_SELECTED));
+        loadTables((ArrayList<VList>) intent.getSerializableExtra(PARAM_SELECTED));
         updateOkButton();
     }
 
@@ -178,17 +178,17 @@ public class ListActivity extends AppCompatActivity {
 
 
     /**
-     * Load tables from db
+     * Load lists from db
      *
-     * @param tickedTables already selected tables, can be null
+     * @param tickedLists already selected lists, can be null
      */
-    private void loadTables(List<Table> tickedTables) {
-        tables = db.getTables();
-        adapter.setAllUpdated(tables, cComp);
-        if (tickedTables != null) {
+    private void loadTables(List<VList> tickedLists) {
+        lists = db.getTables();
+        adapter.setAllUpdated(lists, cComp);
+        if (tickedLists != null) {
             for (int i = 0; i < adapter.getCount(); i++) {
-                Table tbl = adapter.getItem(i);
-                if (tbl.getId() >= MIN_ID_TRESHOLD && tickedTables.contains(tbl)) {
+                VList tbl = adapter.getItem(i);
+                if (tbl.getId() >= MIN_ID_TRESHOLD && tickedLists.contains(tbl)) {
                     listView.setItemChecked(i, true);
                 }
             }
@@ -201,8 +201,8 @@ public class ListActivity extends AppCompatActivity {
     private void initListView() {
         listView = (ListView) findViewById(R.id.listVIewLstSel);
 
-        ArrayList<Table> tables = new ArrayList<>();
-        adapter = new TableListAdapter(this, R.layout.table_list_view, tables, multiselect);
+        ArrayList<VList> lists = new ArrayList<>();
+        adapter = new TableListAdapter(this, R.layout.table_list_view, lists, multiselect);
 
         listView.setAdapter(adapter);
 
@@ -220,20 +220,20 @@ public class ListActivity extends AppCompatActivity {
             bOk.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ArrayList<Table> selectedTables = new ArrayList<Table>(10);
+                    ArrayList<VList> selectedLists = new ArrayList<VList>(10);
                     final SparseBooleanArray checkedItems = listView.getCheckedItemPositions();
                     int chkItemsCount = checkedItems.size();
 
                     for (int i = 0; i < chkItemsCount; ++i) {
                         if (checkedItems.valueAt(i)) {
-                            selectedTables.add(adapter.getItem(checkedItems.keyAt(i)));
+                            selectedLists.add(adapter.getItem(checkedItems.keyAt(i)));
                         }
                     }
 
-                    Log.d(TAG, "returning with " + selectedTables.size() + " selected items");
+                    Log.d(TAG, "returning with " + selectedLists.size() + " selected items");
 
                     Intent returnIntent = new Intent();
-                    returnIntent.putExtra(RETURN_LISTS, selectedTables);
+                    returnIntent.putExtra(RETURN_LISTS, selectedLists);
                     setResult(Activity.RESULT_OK, returnIntent);
                     finish();
                 }
@@ -244,9 +244,9 @@ public class ListActivity extends AppCompatActivity {
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-                        Table table = adapter.getItem(position);
-                        if (table.getId() != ID_RESERVED_SKIP) {
-                            showDeleteDialog(table);
+                        VList list = adapter.getItem(position);
+                        if (list.getId() != ID_RESERVED_SKIP) {
+                            showDeleteDialog(list);
                         }
                     }
 
@@ -256,10 +256,10 @@ public class ListActivity extends AppCompatActivity {
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-                        Table table = adapter.getItem(position);
-                        if (table.getId() != ID_RESERVED_SKIP) {
+                        VList list = adapter.getItem(position);
+                        if (list.getId() != ID_RESERVED_SKIP) {
                             Intent returnIntent = new Intent();
-                            returnIntent.putExtra(RETURN_LISTS, table);
+                            returnIntent.putExtra(RETURN_LISTS, list);
                             setResult(Activity.RESULT_OK, returnIntent);
                             finish();
                         }
@@ -280,19 +280,19 @@ public class ListActivity extends AppCompatActivity {
     /**
      * Show delete dialog for table
      *
-     * @param tableToDelete
+     * @param listToDelete
      */
-    private void showDeleteDialog(final Table tableToDelete) {
+    private void showDeleteDialog(final VList listToDelete) {
         final AlertDialog.Builder finishedDiag = new AlertDialog.Builder(this);
 
         finishedDiag.setTitle(R.string.ListSelector_Diag_delete_Title);
         finishedDiag.setMessage(String.format(getText(R.string.ListSelector_Diag_delete_Msg).toString(),
-                tableToDelete.getName(), tableToDelete.getNameA(), tableToDelete.getNameB()));
+                listToDelete.getName(), listToDelete.getNameA(), listToDelete.getNameB()));
 
         finishedDiag.setPositiveButton(R.string.ListSelector_Diag_delete_btn_Delete, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                db.deleteTable(tableToDelete);
-                adapter.removeEntryUpdated(tableToDelete);
+                db.deleteTable(listToDelete);
+                adapter.removeEntryUpdated(listToDelete);
             }
         });
 

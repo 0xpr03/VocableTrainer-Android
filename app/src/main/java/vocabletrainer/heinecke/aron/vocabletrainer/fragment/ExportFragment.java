@@ -46,9 +46,9 @@ import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenTableComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.ExImportActivity.populateFormatSpinnerAdapter;
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
@@ -73,7 +73,7 @@ public class ExportFragment extends BaseFragment {
     private File expFile;
     private ListView listView;
     private FloatingActionButton addButton;
-    private ArrayList<Table> tables;
+    private ArrayList<VList> lists;
     private TableListAdapter adapter;
     private CheckBox chkExportTalbeInfo;
     private CheckBox chkExportMultiple;
@@ -162,7 +162,7 @@ public class ExportFragment extends BaseFragment {
         tMsg.setMovementMethod(LinkMovementMethod.getInstance());
         tExportFile.setKeyListener(null);
         btnExport.setEnabled(false);
-        tables = new ArrayList<>();
+        lists = new ArrayList<>();
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -192,7 +192,7 @@ public class ExportFragment extends BaseFragment {
             }
         });
 
-        adapter = new TableListAdapter(getActivity(), R.layout.table_list_view, tables, false);
+        adapter = new TableListAdapter(getActivity(), R.layout.table_list_view, lists, false);
         listView.setAdapter(adapter);
         listView.setLongClickable(false);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -239,11 +239,11 @@ public class ExportFragment extends BaseFragment {
     }
 
     /**
-     * Calls select tables activity
+     * Calls select lists activity
      */
     private void runSelectTables() {
         Intent myIntent = new Intent(getActivity(), ListActivity.class);
-        myIntent.putExtra(ListActivity.PARAM_SELECTED, tables);
+        myIntent.putExtra(ListActivity.PARAM_SELECTED, lists);
         myIntent.putExtra(ListActivity.PARAM_MULTI_SELECT, true);
         startActivityForResult(myIntent, REQUEST_TABLES_RESULT_CODE);
     }
@@ -267,7 +267,7 @@ public class ExportFragment extends BaseFragment {
         });*/
         final AlertDialog dialog = alert.show();
         CSVFormat format = spAdapterFormat.getItem(spFormat.getSelectedItemPosition()).getObject();
-        ExportStorage es = new ExportStorage(format, tables, chkExportTalbeInfo.isChecked(), chkExportMultiple.isChecked(), expFile, dialog, pg);
+        ExportStorage es = new ExportStorage(format, lists, chkExportTalbeInfo.isChecked(), chkExportMultiple.isChecked(), expFile, dialog, pg);
         exportTask = new ExportOperation(es);
         exportTask.execute();
     }
@@ -293,7 +293,7 @@ public class ExportFragment extends BaseFragment {
                     checkInputOk();
                     break;
                 case REQUEST_TABLES_RESULT_CODE:
-                    adapter.setAllUpdated((ArrayList<Table>) data.getSerializableExtra(ListActivity.RETURN_LISTS), compTables);
+                    adapter.setAllUpdated((ArrayList<VList>) data.getSerializableExtra(ListActivity.RETURN_LISTS), compTables);
                     checkInputOk();
                     break;
             }
@@ -304,7 +304,7 @@ public class ExportFragment extends BaseFragment {
      * Validate input & set export button accordingly
      */
     private void checkInputOk() {
-        btnExport.setEnabled(tables.size() > 1 && expFile != null && (chkExportMultiple.isChecked() || (!chkExportMultiple.isChecked() && tables.size() == 2)));
+        btnExport.setEnabled(lists.size() > 1 && expFile != null && (chkExportMultiple.isChecked() || (!chkExportMultiple.isChecked() && lists.size() == 2)));
     }
 
     /**
@@ -333,7 +333,7 @@ public class ExportFragment extends BaseFragment {
                  CSVPrinter printer = new CSVPrinter(writer, es.format)
             ) {
                 int i = 0;
-                for (Table tbl : es.tables) {
+                for (VList tbl : es.lists) {
                     if (tbl.getId() == ID_RESERVED_SKIP) {
                         continue;
                     }
@@ -346,16 +346,16 @@ public class ExportFragment extends BaseFragment {
                         printer.print(tbl.getNameB());
                         printer.println();
                     }
-                    List<Entry> vocables = db.getVocablesOfTable(tbl);
+                    List<VEntry> vocables = db.getVocablesOfTable(tbl);
 
-                    for (Entry ent : vocables) {
+                    for (VEntry ent : vocables) {
                         printer.print(ent.getAWord());
                         printer.print(ent.getBWord());
                         printer.print(ent.getTip());
                         printer.println();
                     }
                     i++;
-                    publishProgress((es.tables.size() / MAX_PROGRESS) * i);
+                    publishProgress((es.lists.size() / MAX_PROGRESS) * i);
                 }
                 Log.d(TAG, "closing all");
                 printer.close();
@@ -376,7 +376,7 @@ public class ExportFragment extends BaseFragment {
 
         @Override
         protected void onPreExecute() {
-            es.progressBar.setMax(tables.size());
+            es.progressBar.setMax(lists.size());
         }
 
         @Override
@@ -390,7 +390,7 @@ public class ExportFragment extends BaseFragment {
      * Export storage class
      */
     private class ExportStorage {
-        final ArrayList<Table> tables;
+        final ArrayList<VList> lists;
         final boolean exportTableInfo;
         final boolean exportMultiple;
         final File file;
@@ -402,17 +402,17 @@ public class ExportFragment extends BaseFragment {
          * New export storage
          *
          * @param format          CSV format to use
-         * @param tables          table to export
+         * @param lists          table to export
          * @param exportTableInfo setting
          * @param exportMultiple  setting
          * @param file            file to read from
          * @param dialog          dialog for progress, closed on end
          * @param progressBar     progress bar that is updated
          */
-        ExportStorage(CSVFormat format, ArrayList<Table> tables, boolean exportTableInfo,
+        ExportStorage(CSVFormat format, ArrayList<VList> lists, boolean exportTableInfo,
                       boolean exportMultiple, File file, AlertDialog dialog, ProgressBar progressBar) {
             this.format = format;
-            this.tables = tables;
+            this.lists = lists;
             this.exportTableInfo = exportTableInfo;
             this.exportMultiple = exportMultiple;
             this.file = file;

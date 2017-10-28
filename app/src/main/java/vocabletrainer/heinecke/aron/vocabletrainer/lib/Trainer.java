@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
 
 /**
@@ -18,9 +18,9 @@ public class Trainer {
     private final static String TAG = "Trainer";
     private Random rng;
     private AB_MODE order;
-    private List<Table> tables;
-    private List<Table> unsolvedTables;
-    private Entry cVocable = null;
+    private List<VList> lists;
+    private List<VList> unsolvedLists;
+    private VEntry cVocable = null;
     private int tips;
     private int total;
     private int unsolved;
@@ -35,20 +35,20 @@ public class Trainer {
     /**
      * Creates a new Trainer
      *
-     * @param tables     Vocable tables to use
+     * @param lists     Vocable lists to use
      * @param settings   Trainer settings storage
      * @param newSession whether this is a new or a continued session
      */
-    public Trainer(final ArrayList<Table> tables, final TrainerSettings settings, final Context context, final boolean newSession,
+    public Trainer(final ArrayList<VList> lists, final TrainerSettings settings, final Context context, final boolean newSession,
                    final SessionStorageManager ssm) {
-        if (tables == null || tables.size() == 0 || settings == null)
+        if (lists == null || lists.size() == 0 || settings == null)
             throw new IllegalArgumentException();
         this.settings = settings;
         this.tips = settings.tipsGiven;
         this.failed = settings.timesFailed;
-        this.tables = tables;
+        this.lists = lists;
         this.timesToSolve = settings.timesToSolve;
-        this.unsolvedTables = new ArrayList<>();
+        this.unsolvedLists = new ArrayList<>();
         this.ssm = ssm;
         db = new Database(context);
         rng = new Random();
@@ -88,7 +88,7 @@ public class Trainer {
     private void prepareData() {
         total = 0;
         unsolved = 0;
-        for (Table tbl : tables) {
+        for (VList tbl : lists) {
             total += tbl.getTotalVocs();
             unsolved += tbl.getUnfinishedVocs();
         }
@@ -98,7 +98,7 @@ public class Trainer {
      * Retreive information from DB
      */
     private void getTableData() {
-        db.getSessionTableData(tables, unsolvedTables, settings);
+        db.getSessionTableData(lists, unsolvedLists, settings);
     }
 
     /**
@@ -159,12 +159,12 @@ public class Trainer {
             if (!showedSolution)
                 this.cVocable.setPoints(this.cVocable.getPoints() + 1);
             if (cVocable.getPoints() >= timesToSolve) {
-                Table tbl = cVocable.getTable();
+                VList tbl = cVocable.getList();
                 tbl.setUnfinishedVocs(tbl.getUnfinishedVocs() - 1);
                 if (tbl.getUnfinishedVocs() <= 0) {
-                    unsolvedTables.remove(tbl);
+                    unsolvedLists.remove(tbl);
 
-                    if (unsolvedTables.size() == 0) {
+                    if (unsolvedLists.size() == 0) {
                         db.deleteSession();
                         Log.d(TAG, "finished");
                     }
@@ -183,7 +183,7 @@ public class Trainer {
      * @return
      */
     public boolean isFinished() {
-        return unsolvedTables.size() == 0;
+        return unsolvedLists.size() == 0;
     }
 
     /**
@@ -207,25 +207,25 @@ public class Trainer {
         }
         showedSolution = false;
 
-        if (unsolvedTables.size() == 0) {
-            Log.d(TAG, "no unsolved tables remaining!");
+        if (unsolvedLists.size() == 0) {
+            Log.d(TAG, "no unsolved lists remaining!");
         } else {
-            int selected = rng.nextInt(unsolvedTables.size());
-            Table tbl = unsolvedTables.get(selected);
+            int selected = rng.nextInt(unsolvedLists.size());
+            VList tbl = unsolvedLists.get(selected);
 
             boolean allowRepetition = false;
             if (cVocable != null) {
-                if (allowRepetition = unsolvedTables.size() == 1 && unsolvedTables.get(0).getUnfinishedVocs() == 1) {
+                if (allowRepetition = unsolvedLists.size() == 1 && unsolvedLists.get(0).getUnfinishedVocs() == 1) {
                     Log.d(TAG, "one left");
-                } else if (tbl.getUnfinishedVocs() == 1 && tbl.getId() == cVocable.getTable().getId()) {
+                } else if (tbl.getUnfinishedVocs() == 1 && tbl.getId() == cVocable.getList().getId()) {
                     // handle table has only one entry left
                     // prevent repeating last vocable of table
-                    if (selected + 1 >= unsolvedTables.size())
+                    if (selected + 1 >= unsolvedLists.size())
                         selected--;
                     else
                         selected++;
-                    Log.d(TAG, "selectionID:" + selected + " max(-1):" + unsolvedTables.size());
-                    tbl = unsolvedTables.get(selected);
+                    Log.d(TAG, "selectionID:" + selected + " max(-1):" + unsolvedLists.size());
+                    tbl = unsolvedLists.get(selected);
                 }
             }
 
@@ -287,7 +287,7 @@ public class Trainer {
         if (this.cVocable == null)
             return "";
 
-        return order == AB_MODE.A ? cVocable.getTable().getNameB() : cVocable.getTable().getNameA();
+        return order == AB_MODE.A ? cVocable.getList().getNameB() : cVocable.getList().getNameA();
     }
 
     /**
@@ -300,7 +300,7 @@ public class Trainer {
         if (this.cVocable == null)
             return "";
 
-        return order == AB_MODE.B ? cVocable.getTable().getNameB() : cVocable.getTable().getNameA();
+        return order == AB_MODE.B ? cVocable.getList().getNameB() : cVocable.getList().getNameA();
     }
 
     /**

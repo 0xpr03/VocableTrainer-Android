@@ -2,8 +2,8 @@ package vocabletrainer.heinecke.aron.vocabletrainer.lib.Import;
 
 import java.util.List;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
 
@@ -13,19 +13,19 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERV
  */
 public class PreviewParser implements ImportHandler {
     private final static int PARSE_LIMIT = 5;
-    private final List<Entry> list;
-    private final Table tbl = null;
+    private final List<VEntry> list;
+    private final VList tbl = null;
     private int parsed_limiter = 0;
     private int tblCount = 0;
     private int rows = 0;
 
-    public PreviewParser(List<Entry> list) {
+    public PreviewParser(List<VEntry> list) {
         this.list = list;
     }
 
     @Override
     public void newTable(String name, String columnA, String columnB) {
-        list.add(new Entry(columnA, columnB, name, ID_RESERVED_SKIP, tbl, -2L));
+        list.add(new VEntry(columnA, columnB, name, ID_RESERVED_SKIP, tbl, -2L));
         parsed_limiter = 0;
         tblCount++;
         rows++;
@@ -35,7 +35,7 @@ public class PreviewParser implements ImportHandler {
     public void newEntry(String A, String B, String Tipp) {
         rows++;
         if (parsed_limiter < PARSE_LIMIT) {
-            list.add(new Entry(A, B, Tipp, null, -2L));
+            list.add(new VEntry(A, B, Tipp, null, -2L));
             parsed_limiter++;
         }
     }

@@ -3,10 +3,10 @@ package vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TRESHOLD;
 
 /**
- * DB Entry
+ * DB Vocable Entry
  */
-public class Entry {
-    private final Table table;
+public class VEntry {
+    private final VList list;
     private String AWord;
     private String BWord;
     private String tip;
@@ -17,49 +17,49 @@ public class Entry {
     private boolean delete = false;
 
     /**
-     * Creates a new Entry
+     * Creates a new VEntry
      *
      * @param AWord
      * @param BWord
      * @param tip
      * @param id     ID, list unique
-     * @param table  List ID
+     * @param list  List ID
      * @param points (training session break)
      * @param date   (last used)
      */
-    public Entry(String AWord, String BWord, String tip, int id, Table table, int points, long date) {
+    public VEntry(String AWord, String BWord, String tip, int id, VList list, int points, long date) {
         this.AWord = AWord;
         this.BWord = BWord;
         this.tip = tip;
-        this.table = table;
+        this.list = list;
         this.points = points;
         this.date = date;
         this.id = id;
     }
 
     /**
-     * Creates a new Entry with 0 points
+     * Creates a new VEntry with 0 points
      *
      * @param AWord
      * @param BWord
      * @param tip
      * @param id
-     * @param table
+     * @param list
      */
-    public Entry(String AWord, String BWord, String tip, int id, Table table, long date) {
-        this(AWord, BWord, tip, id, table, 0, date);
+    public VEntry(String AWord, String BWord, String tip, int id, VList list, long date) {
+        this(AWord, BWord, tip, id, list, 0, date);
     }
 
     /**
-     * Creates a new Entry with 0 points, -1 ID
+     * Creates a new VEntry with 0 points, -1 ID
      *
      * @param AWord
      * @param BWord
      * @param tip
-     * @param table
+     * @param list
      */
-    public Entry(String AWord, String BWord, String tip, Table table, long date) {
-        this(AWord, BWord, tip, MIN_ID_TRESHOLD - 1, table, 0, date);
+    public VEntry(String AWord, String BWord, String tip, VList list, long date) {
+        this(AWord, BWord, tip, MIN_ID_TRESHOLD - 1, list, 0, date);
     }
 
     /**
@@ -125,17 +125,17 @@ public class Entry {
     }
 
     /**
-     * Test for equality based on entry & table ID
+     * Test for equality based on entry & list ID
      *
      * @param entry
      * @return
      */
-    public boolean equals(Entry entry) {
-        return this.getId() == entry.getId() && this.getTable() == entry.getTable();
+    public boolean equals(VEntry entry) {
+        return this.getId() == entry.getId() && this.getList() == entry.getList();
     }
 
     /**
-     * Returns whether the Data of this Entry was changed
+     * Returns whether the Data of this VEntry was changed
      *
      * @return
      */
@@ -143,8 +143,8 @@ public class Entry {
         return changed;
     }
 
-    public Table getTable() {
-        return table;
+    public VList getList() {
+        return list;
     }
 
     public int getPoints() {

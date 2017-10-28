@@ -14,8 +14,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
 
 /**
@@ -88,18 +88,18 @@ public class Database {
      * Retrieve vocable by ID & list ID
      * @param vocID
      * @param listID
-     * @return Entry with set List<br>
+     * @return VEntry with set List<br>
      *     Null on failure
      */
-    public Entry getVocable(final int vocID, final int listID){
+    public VEntry getVocable(final int vocID, final int listID){
         try (Cursor cursor = db.rawQuery("SELECT `" + KEY_WORD_A + "`,`" + KEY_WORD_B + "`,`" + KEY_TIP + "`,`" + KEY_VOC + "`,tVoc.`" + KEY_TABLE + "`,`" + KEY_LAST_USED + "`,`"
                 + KEY_NAME_A+"`,`"+KEY_NAME_B+"`,`"+KEY_NAME_TBL+"` "
                 + "FROM `" + TBL_VOCABLE + "` tVoc "
                 + "JOIN `"+TBL_TABLES+"` tList ON tVoc.`"+KEY_TABLE+"` = tList.`"+KEY_TABLE+"` "
                 + "WHERE tVoc.`" + KEY_TABLE + "` = ? AND `"+KEY_VOC+"` = ?", new String[]{String.valueOf(listID),String.valueOf(vocID)})){
             if(cursor.moveToNext()){
-                Table tbl = new Table(listID,cursor.getString(6),cursor.getString(7),cursor.getString(8));
-                return new Entry(cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getInt(3), tbl, cursor.getLong(5));
+                VList tbl = new VList(listID,cursor.getString(6),cursor.getString(7),cursor.getString(8));
+                return new VEntry(cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getInt(3), tbl, cursor.getLong(5));
             }else{
                 Log.w(TAG,"vocable not found by ID!");
                 return null;
@@ -123,19 +123,19 @@ public class Database {
     }
 
     /**
-     * Retruns a List of Entries for the specified table
+     * Retruns a List of Entries for the specified list
      *
-     * @param table Table for which all entries should be retrieved
-     * @return List<Entry>
+     * @param list VList for which all entries should be retrieved
+     * @return List<VEntry>
      */
-    public List<Entry> getVocablesOfTable(Table table) {
+    public List<VEntry> getVocablesOfTable(VList list) {
         try (
                 Cursor cursor = db.rawQuery("SELECT `" + KEY_WORD_A + "`,`" + KEY_WORD_B + "`,`" + KEY_TIP + "`,`" + KEY_VOC + "`,`" + KEY_TABLE + "`,`" + KEY_LAST_USED + "` "
                         + "FROM `" + TBL_VOCABLE + "` "
-                        + "WHERE `" + KEY_TABLE + "` = ?", new String[]{String.valueOf(table.getId())})) {
-            List<Entry> lst = new ArrayList<>();
+                        + "WHERE `" + KEY_TABLE + "` = ?", new String[]{String.valueOf(list.getId())})) {
+            List<VEntry> lst = new ArrayList<>();
             while (cursor.moveToNext()) {
-                lst.add(new Entry(cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getInt(3), table, cursor.getLong(5)));
+                lst.add(new VEntry(cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getInt(3), list, cursor.getLong(5)));
             }
             return lst;
         }
@@ -147,10 +147,10 @@ public class Database {
      * @return
      */
     @Deprecated
-    public int getEntryPoints(final Entry ent) {
+    public int getEntryPoints(final VEntry ent) {
         try (
                 Cursor cursor = db.rawQuery("SELECT `" + KEY_POINTS + "` "
-                        + "FROM `" + TBL_SESSION + "` WHERE `" + KEY_TABLE + "` = ? AND `" + KEY_VOC + "` = ?", new String[]{String.valueOf(ent.getTable().getId()), String.valueOf(ent.getId())});
+                        + "FROM `" + TBL_SESSION + "` WHERE `" + KEY_TABLE + "` = ? AND `" + KEY_VOC + "` = ?", new String[]{String.valueOf(ent.getList().getId()), String.valueOf(ent.getId())});
         ) {
             if (cursor.moveToNext())
                 return cursor.getInt(0);
@@ -162,18 +162,18 @@ public class Database {
     }
 
     /**
-     * Get a list of all tables
+     * Get a list of all lists
      *
-     * @return ArrayList<\Table>
+     * @return ArrayList<\VList>
      */
-    public List<Table> getTables() {
+    public List<VList> getTables() {
         try (
                 Cursor cursor = db.rawQuery("SELECT `" + KEY_TABLE + "`,`" + KEY_NAME_A + "`,`" + KEY_NAME_B + "`,`" + KEY_NAME_TBL + "` "
                         + "FROM `" + TBL_TABLES + "` WHERE 1", null)
         ) {
-            List<Table> list = new ArrayList<>();
+            List<VList> list = new ArrayList<>();
             while (cursor.moveToNext()) {
-                list.add(new Table(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3)));
+                list.add(new VList(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3)));
             }
             return list;
         } catch (Exception e) {
@@ -183,12 +183,12 @@ public class Database {
     }
 
     /**
-     * Update or insert the provided Table datac
+     * Update or insert the provided VList datac
      *
      * @param tbl
      * @return true on succuess
      */
-    public boolean upsertTable(Table tbl) {
+    public boolean upsertTable(VList tbl) {
         if (tbl.getId() >= MIN_ID_TRESHOLD) {
             try (
                     SQLiteStatement upd = db.compileStatement("UPDATE `" + TBL_TABLES + "` SET `" + KEY_NAME_A + "` = ?, `" + KEY_NAME_B + "` = ?, `" + KEY_NAME_TBL + "` = ? "
@@ -229,10 +229,10 @@ public class Database {
      * Test is table exists
      *
      * @param db  Writeable database
-     * @param tbl Table
+     * @param tbl VList
      * @return true if it exists
      */
-    private boolean testTableExists(SQLiteDatabase db, Table tbl) {
+    private boolean testTableExists(SQLiteDatabase db, VList tbl) {
         if (db == null)
             throw new IllegalArgumentException("illegal sql db");
         if (tbl.getId() < MIN_ID_TRESHOLD)
@@ -256,7 +256,7 @@ public class Database {
      * @param lst
      * @return
      */
-    public boolean upsertEntries(final List<Entry> lst) {
+    public boolean upsertEntries(final List<VEntry> lst) {
         try (
                 SQLiteStatement delStm = db.compileStatement("DELETE FROM `" + TBL_VOCABLE + "` WHERE `" + KEY_VOC + "` = ? AND `" + KEY_TABLE + "` = ?");
                 SQLiteStatement updStm = db.compileStatement("UPDATE `" + TBL_VOCABLE + "` SET `" + KEY_WORD_A + "` = ?, `" + KEY_WORD_B + "` = ?, `" + KEY_TIP + "` = ?, `"
@@ -271,15 +271,15 @@ public class Database {
             int lastTableID = -1;
             int lastID = -1;
 
-            for (Entry entry : lst) {
-                //Log.d(TAG, "processing " + entry + " of " + entry.getTable());
+            for (VEntry entry : lst) {
+                //Log.d(TAG, "processing " + entry + " of " + entry.getList());
                 if (entry.getId() == ID_RESERVED_SKIP) // skip spacer
                     continue;
                 if (entry.getId() >= MIN_ID_TRESHOLD) {
                     if (entry.isDelete()) {
                         delStm.clearBindings();
                         delStm.bindLong(1, entry.getId());
-                        delStm.bindLong(2, entry.getTable().getId());
+                        delStm.bindLong(2, entry.getList().getId());
                         delStm.execute();
                     } else if (entry.isChanged()) {
                         updStm.clearBindings();
@@ -287,13 +287,13 @@ public class Database {
                         updStm.bindString(2, entry.getBWord());
                         updStm.bindString(3, entry.getTip());
                         updStm.bindLong(4, entry.getDate());
-                        updStm.bindLong(5, entry.getTable().getId());
+                        updStm.bindLong(5, entry.getList().getId());
                         updStm.bindLong(6, entry.getId());
                         updStm.execute();
                     }
                 } else if (!entry.isDelete()) {
-                    if (entry.getTable().getId() != lastTableID || lastID < MIN_ID_TRESHOLD) {
-                        lastTableID = entry.getTable().getId();
+                    if (entry.getList().getId() != lastTableID || lastID < MIN_ID_TRESHOLD) {
+                        lastTableID = entry.getList().getId();
                         Log.d(TAG, "lastTableID: " + lastTableID + " lastID: " + lastID);
                         lastID = getHighestVocID(db, lastTableID);
                     }
@@ -303,7 +303,7 @@ public class Database {
                     insStm.bindString(2, entry.getBWord());
                     insStm.bindString(3, entry.getTip());
                     insStm.bindLong(4, entry.getDate());
-                    insStm.bindLong(5, entry.getTable().getId());
+                    insStm.bindLong(5, entry.getList().getId());
                     insStm.bindLong(6, lastID);
                     insStm.execute();
                     entry.setId(lastID);
@@ -324,12 +324,12 @@ public class Database {
 
     /**
      * Returns the ID of a table with the exact same naming <br>
-     * this also updates the Table element itself to contains the right ID
+     * this also updates the VList element itself to contains the right ID
      *
-     * @param tbl Table to be used a search source
+     * @param tbl VList to be used a search source
      * @return ID or  -1 if not found, -2 if an error occurred
      */
-    public int getTableID(final Table tbl) {
+    public int getTableID(final VList tbl) {
         if (tbl.getId() > -1) {
             return tbl.getId();
         }
@@ -363,7 +363,7 @@ public class Database {
      *
      * @param db
      * @param table table ID<br>
-     *              This is on purpose no Table object
+     *              This is on purpose no VList object
      * @return highest ID <b>or -1 if none is found</b>
      */
     private int getHighestVocID(final SQLiteDatabase db, final int table) throws Exception {
@@ -409,10 +409,10 @@ public class Database {
     /**
      * Deletes the given table and all its vocables
      *
-     * @param tbl Table to delete
+     * @param tbl VList to delete
      * @return true on success
      */
-    public boolean deleteTable(final Table tbl) {
+    public boolean deleteTable(final VList tbl) {
         try {
             db.beginTransaction();
 
@@ -449,7 +449,7 @@ public class Database {
      * @param tbl
      * @return
      */
-    public boolean emptyList(final Table tbl) {
+    public boolean emptyList(final VList tbl) {
         try {
             db.beginTransaction();
 
@@ -491,19 +491,19 @@ public class Database {
     }
 
     /**
-     * Updates a transaction Entry
+     * Updates a transaction VEntry
      *
-     * @param entry Entry to update
+     * @param entry VEntry to update
      * @return true on success
      */
-    public boolean updateEntryProgress(Entry entry) {
+    public boolean updateEntryProgress(VEntry entry) {
         try (
                 SQLiteStatement updStm = db.compileStatement("INSERT OR REPLACE INTO `" + TBL_SESSION + "` ( `" + KEY_TABLE + "`,`" + KEY_VOC + "`,`" + KEY_POINTS + "` )"
                         + "VALUES (?,?,?)")
         ) {
             Log.d(TAG, entry.toString());
             //TODO: update date
-            updStm.bindLong(1, entry.getTable().getId());
+            updStm.bindLong(1, entry.getList().getId());
             updStm.bindLong(2, entry.getId());
             updStm.bindLong(3, entry.getPoints());
             if (updStm.executeInsert() > 0) { // possible problem ( insert / update..)
@@ -523,17 +523,17 @@ public class Database {
      * Starts a new session based on the table entries<br>
      * Overriding any old session data!
      *
-     * @param tables The Table to use for this sessions
+     * @param lists The VList to use for this sessions
      * @return true on success
      */
-    public boolean createSession(Collection<Table> tables) {
+    public boolean createSession(Collection<VList> lists) {
         Log.d(TAG, "entry createSession");
 
         db.beginTransaction();
 
         try (SQLiteStatement insStm = db.compileStatement("INSERT INTO `" + TBL_SESSION_TABLES + "` (`" + KEY_TABLE + "`) VALUES (?)")) {
             //TODO: update last_used
-            for (Table tbl : tables) {
+            for (VList tbl : lists) {
                 insStm.clearBindings();
                 insStm.bindLong(1, tbl.getId());
                 if (insStm.executeInsert() < 0) {
@@ -557,12 +557,12 @@ public class Database {
      *
      * @return never null
      */
-    public ArrayList<Table> getSessionTables() {
-        ArrayList<Table> lst = new ArrayList<>(10);
+    public ArrayList<VList> getSessionTables() {
+        ArrayList<VList> lst = new ArrayList<>(10);
         try (Cursor cursor = db.rawQuery("SELECT ses.`" + KEY_TABLE + "` tbl,`" + KEY_NAME_A + "`,`" + KEY_NAME_B + "`,`" + KEY_NAME_TBL + "` FROM `" + TBL_SESSION_TABLES + "` ses "
                 + "JOIN `" + TBL_TABLES + "` tbls ON tbls.`" + KEY_TABLE + "` == ses.`" + KEY_TABLE + "`", null)) {
             while (cursor.moveToNext()) {
-                lst.add(new Table(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3)));
+                lst.add(new VList(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3)));
             }
         } catch (Exception e) {
             Log.e(TAG, "", e);
@@ -579,7 +579,7 @@ public class Database {
                 return true;
             }
         } catch (Exception e) {
-            Log.wtf(TAG, "unable to get session tables row count", e);
+            Log.wtf(TAG, "unable to get session lists row count", e);
         }
         return false;
     }
@@ -587,32 +587,32 @@ public class Database {
     /**
      * Set total and unfinished vocables for each table, generate list of finished
      *
-     * @param tables           list of tables to process
-     * @param unfinishedTables List to which to unfinished tables are added onto
+     * @param lists           list of lists to process
+     * @param unfinishedLists List to which to unfinished lists are added onto
      * @param settings         TrainerSettings, used for points treshold etc
      * @return true on success
      */
-    public boolean getSessionTableData(final List<Table> tables, final List<Table> unfinishedTables, TrainerSettings settings) {
-        if (tables == null || unfinishedTables == null || tables.size() == 0) {
+    public boolean getSessionTableData(final List<VList> lists, final List<VList> unfinishedLists, TrainerSettings settings) {
+        if (lists == null || unfinishedLists == null || lists.size() == 0) {
             throw new IllegalArgumentException();
         }
-        unfinishedTables.clear();
-        for (Table table : tables) {
+        unfinishedLists.clear();
+        for (VList list : lists) {
             try (
-                    Cursor curLeng = db.rawQuery("SELECT COUNT(*) FROM `" + TBL_VOCABLE + "` WHERE `" + KEY_TABLE + "`  = ?", new String[]{String.valueOf(table.getId())});
-                    Cursor curFinished = db.rawQuery("SELECT COUNT(*) FROM `" + TBL_SESSION + "` WHERE `" + KEY_TABLE + "`  = ? AND `" + KEY_POINTS + "` >= ?", new String[]{String.valueOf(table.getId()), String.valueOf(settings.timesToSolve)});
+                    Cursor curLeng = db.rawQuery("SELECT COUNT(*) FROM `" + TBL_VOCABLE + "` WHERE `" + KEY_TABLE + "`  = ?", new String[]{String.valueOf(list.getId())});
+                    Cursor curFinished = db.rawQuery("SELECT COUNT(*) FROM `" + TBL_SESSION + "` WHERE `" + KEY_TABLE + "`  = ? AND `" + KEY_POINTS + "` >= ?", new String[]{String.valueOf(list.getId()), String.valueOf(settings.timesToSolve)});
             ) {
                 if (!curLeng.moveToNext())
                     return false;
-                table.setTotalVocs(curLeng.getInt(0));
+                list.setTotalVocs(curLeng.getInt(0));
                 if (!curFinished.moveToNext())
                     return false;
-                int unfinished = table.getTotalVocs() - curFinished.getInt(0);
-                table.setUnfinishedVocs(unfinished);
+                int unfinished = list.getTotalVocs() - curFinished.getInt(0);
+                list.setUnfinishedVocs(unfinished);
                 if (unfinished > 0) {
-                    unfinishedTables.add(table);
+                    unfinishedLists.add(list);
                 }
-                Log.d(TAG, table.toString());
+                Log.d(TAG, list.toString());
                 curLeng.close();
                 curFinished.close();
             } catch (Exception e) {
@@ -625,17 +625,17 @@ public class Database {
 
     /**
      * Returns a random entry from the specified table, which matche the trainer settings criteria<br>
-     * The Entry is guaranteed to be not the "lastEntry" provided here
+     * The VEntry is guaranteed to be not the "lastEntry" provided here
      *
      * @param tbl
      * @param ts
      * @param allowRepetition set to true to allow selecting the same vocable as lastEntry again
      * @return null on error
      */
-    public Entry getRandomTrainerEntry(final Table tbl, final Entry lastEntry, final TrainerSettings ts, final boolean allowRepetition) {
+    public VEntry getRandomTrainerEntry(final VList tbl, final VEntry lastEntry, final TrainerSettings ts, final boolean allowRepetition) {
         Log.d(TAG, "getRandomTrainerEntry");
         int lastID = MIN_ID_TRESHOLD - 1;
-        if (lastEntry != null && lastEntry.getTable().getId() == tbl.getId() && !allowRepetition)
+        if (lastEntry != null && lastEntry.getList().getId() == tbl.getId() && !allowRepetition)
             lastID = lastEntry.getId();
 
         String[] arg = new String[]{String.valueOf(tbl.getId()), String.valueOf(lastID), String.valueOf(ts.timesToSolve)};
@@ -652,10 +652,10 @@ public class Database {
             if (cursor.moveToNext()) {
                 if (cursor.isNull(5)) { // KEY_POINTS optional
                     Log.d(TAG, "no points for entry");
-                    Entry newEntry = new Entry(cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getInt(0), tbl, 0, cursor.getLong(6));
+                    VEntry newEntry = new VEntry(cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getInt(0), tbl, 0, cursor.getLong(6));
                     return newEntry;
                 }
-                return new Entry(cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getInt(0), tbl, cursor.getInt(5), cursor.getLong(6));
+                return new VEntry(cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getInt(0), tbl, cursor.getInt(5), cursor.getLong(6));
             } else {
                 Log.w(TAG, "no entries found!");
                 return null;

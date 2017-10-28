@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
 
 /**
@@ -66,25 +66,25 @@ public class SessionStorageManager {
      * @param entry
      * @return true on success
      */
-    public boolean saveLastVoc(Entry entry){
+    public boolean saveLastVoc(VEntry entry){
         Writer w = new Writer(null,db);
         return w.writeVocable(entry);
     }
 
     /**
      * Save table selection for session
-     * @param tables
+     * @param lists
      * @return true on success
      */
-    public boolean saveSessionTbls(Collection<Table> tables){
-        return db.createSession(tables);
+    public boolean saveSessionTbls(Collection<VList> lists){
+        return db.createSession(lists);
     }
 
     /**
      * Load table selection of session
      * @return
      */
-    public ArrayList<Table> loadSessionTbls(){
+    public ArrayList<VList> loadSessionTbls(){
         return db.getSessionTables();
     }
 
@@ -120,7 +120,7 @@ public class SessionStorageManager {
             int timesToSolve = getInt(KEY_SOLVE_TIMES_TO);
             boolean allowTips = getBoolean(KEY_TIPS_ALLOWED);
             boolean caseSensitive = getBoolean(KEY_CASE_SENSITIVE);
-            Entry entry = null;
+            VEntry entry = null;
             if(map.containsKey(KEY_VOCABLE_ID) && map.containsKey(KEY_VOCABLE_LST_ID)){
                 int vocID = getInt(KEY_VOCABLE_ID);
                 int lstID = getInt(KEY_VOCABLE_LST_ID);
@@ -218,7 +218,7 @@ public class SessionStorageManager {
          * @param entry
          * @return true on success
          */
-        public boolean writeVocable(final Entry entry){
+        public boolean writeVocable(final VEntry entry){
             prepareWrite();
             boolean success = writeVocable_(entry);
             endWrite(success);
@@ -231,10 +231,10 @@ public class SessionStorageManager {
          * @param entry
          * @return true on success
          */
-        private boolean writeVocable_(final Entry entry){
+        private boolean writeVocable_(final VEntry entry){
             if (entry != null){
                 if(exec(KEY_VOCABLE_ID,entry.getId())) return false;
-                if(exec(KEY_VOCABLE_LST_ID,entry.getTable().getId())) return false;
+                if(exec(KEY_VOCABLE_LST_ID,entry.getList().getId())) return false;
             }
             return true;
         }

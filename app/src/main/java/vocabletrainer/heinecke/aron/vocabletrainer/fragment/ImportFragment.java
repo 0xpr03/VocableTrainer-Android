@@ -42,9 +42,9 @@ import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.ImportFetcher;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.Importer;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.PreviewParser;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.ExImportActivity.populateFormatSpinnerAdapter;
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
@@ -64,9 +64,9 @@ public class ImportFragment extends BaseFragment {
     private static final int REQUEST_LIST_SELECT_CODE = 2;
     private static final String TAG = "ImportFragment";
     File impFile;
-    List<Entry> lst;
+    List<VEntry> lst;
     EntryListAdapter adapter;
-    Table targetList;
+    VList targetList;
     ArrayAdapter<GenericSpinnerEntry<CSVFormat>> spAdapterFormat;
     ArrayAdapter<GenericSpinnerEntry<Importer.IMPORT_LIST_MODE>> spAdapterMultilist;
     ArrayAdapter<GenericSpinnerEntry<Importer.IMPORT_LIST_MODE>> spAdapterSinglelist;
@@ -408,7 +408,7 @@ public class ImportFragment extends BaseFragment {
      */
     public void selectList() {
         if (getListMode() == Importer.IMPORT_LIST_MODE.CREATE) {
-            targetList = new Table("", "", "");
+            targetList = new VList("", "", "");
             Callable<Void> callable = new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
@@ -480,7 +480,7 @@ public class ImportFragment extends BaseFragment {
                     break;
                 case REQUEST_LIST_SELECT_CODE:
                     Log.d(TAG, "got list");
-                    targetList = (Table) data.getSerializableExtra(ListActivity.RETURN_LISTS);
+                    targetList = (VList) data.getSerializableExtra(ListActivity.RETURN_LISTS);
                     etList.setText(targetList.getName());
                     checkInput();
                     break;

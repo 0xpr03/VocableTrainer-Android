@@ -32,8 +32,8 @@ import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenEntryComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
@@ -44,22 +44,22 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERV
 public class EditorActivity extends AppCompatActivity {
     private final static int LIST_SELECT_REQUEST_CODE = 10;
     /**
-     * Param key for new table, default is false
+     * Param key for new list, default is false
      */
     public static final String PARAM_NEW_TABLE = "NEW_TABLE";
     /**
      * Param key for list to load upon new_table false
      */
-    public static final String PARAM_TABLE = "table";
+    public static final String PARAM_TABLE = "list";
     private static final String TAG = "EditorActivity";
     private static final String P_KEY_EA_SORT = "EA_sorting";
-    private Table table;
-    private ArrayList<Entry> entries;
+    private VList list;
+    private ArrayList<VEntry> entries;
     private EntryListAdapter adapter;
     private ListView listView;
     private Database db;
     private View undoContainer;
-    private Entry lastDeleted;
+    private VEntry lastDeleted;
     private int deletedPosition;
     private int sortSetting;
     private GenEntryComparator cComp;
@@ -116,19 +116,19 @@ public class EditorActivity extends AppCompatActivity {
         // handle passed params
         boolean newTable = intent.getBooleanExtra(PARAM_NEW_TABLE, false);
         if (newTable) {
-            table = new Table(getString(R.string.Editor_Default_Column_A), getString(R.string.Editor_Default_Column_B), getString(R.string.Editor_Default_List_Name));
-            Log.d(TAG, "new table mode");
+            list = new VList(getString(R.string.Editor_Default_Column_A), getString(R.string.Editor_Default_Column_B), getString(R.string.Editor_Default_List_Name));
+            Log.d(TAG, "new list mode");
             showTableInfoDialog(true);
         } else {
-            Table tbl = (Table) intent.getSerializableExtra(PARAM_TABLE);
+            VList tbl = (VList) intent.getSerializableExtra(PARAM_TABLE);
             if (tbl != null) {
-                this.table = tbl;
-                entries.addAll(db.getVocablesOfTable(table));
+                this.list = tbl;
+                entries.addAll(db.getVocablesOfTable(list));
                 adapter.setTableData(tbl);
                 adapter.updateSorting(cComp);
-                Log.d(TAG, "edit table mode");
+                Log.d(TAG, "edit list mode");
             } else {
-                Log.e(TAG, "Edit Table Flag set without passing a table");
+                Log.e(TAG, "Edit VList Flag set without passing a list");
             }
         }
     }
@@ -191,22 +191,22 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     /**
-     * Save the table to disk
+     * Save the list to disk
      */
     private void saveTable() {
         if(noDataSave){
             return;
         }
-        Log.d(TAG, "table: " + table);
-        if (db.upsertTable(table)) {
-            Log.d(TAG, "table: " + table);
+        Log.d(TAG, "list: " + list);
+        if (db.upsertTable(list)) {
+            Log.d(TAG, "list: " + list);
             if (db.upsertEntries(adapter.getAllEntries())) {
                 adapter.clearDeleted();
             } else {
                 Log.e(TAG, "unable to upsert entries! aborting");
             }
         } else {
-            Log.e(TAG, "unable to upsert table! aborting");
+            Log.e(TAG, "unable to upsert list! aborting");
         }
     }
 
@@ -233,7 +233,7 @@ public class EditorActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, final View view, int pos, long id) {
-                showEntryEditDialog((Entry) adapter.getItem(pos), false);
+                showEntryEditDialog((VEntry) adapter.getItem(pos), false);
             }
 
         });
@@ -242,7 +242,7 @@ public class EditorActivity extends AppCompatActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
                                            int pos, long id) {
-                showEntryDeleteDialog((Entry) adapter.getItem(pos), pos);
+                showEntryDeleteDialog((VEntry) adapter.getItem(pos), pos);
                 return true;
             }
         });
@@ -252,7 +252,7 @@ public class EditorActivity extends AppCompatActivity {
      * Add an entry
      */
     public void addEntry() {
-        Entry entry = new Entry("", "", "", table, -1);
+        VEntry entry = new VEntry("", "", "", list, -1);
         adapter.addEntryUnrendered(entry);
         showEntryEditDialog(entry, true);
     }
@@ -263,7 +263,7 @@ public class EditorActivity extends AppCompatActivity {
      * @param entry
      * @param position
      */
-    private void showEntryDeleteDialog(final Entry entry, final int position) {
+    private void showEntryDeleteDialog(final VEntry entry, final int position) {
         if (entry.getId() == ID_RESERVED_SKIP)
             return;
         AlertDialog.Builder delDiag = new AlertDialog.Builder(this);
@@ -293,10 +293,10 @@ public class EditorActivity extends AppCompatActivity {
     /**
      * Show entry edit dialog
      *
-     * @param entry          Entry to edit
+     * @param entry          VEntry to edit
      * @param deleteOnCancel True if entry should be deleted on cancel
      */
-    private void showEntryEditDialog(final Entry entry, final boolean deleteOnCancel) {
+    private void showEntryEditDialog(final VEntry entry, final boolean deleteOnCancel) {
         if (entry.getId() == ID_RESERVED_SKIP) {
             showTableInfoDialog(false);
             return;
@@ -348,8 +348,8 @@ public class EditorActivity extends AppCompatActivity {
     /**
      * Shows a dialog to edit the specified list data
      *
-     * @param newTbl   Is new table
-     * @param tbl      Table object to edit
+     * @param newTbl   Is new list
+     * @param tbl      VList object to edit
      * @param onSuccessCallable Called upon ok press<br>
      *                 Not called when user cancels dialog in any way
      * @param onCancelCallable Called when <b>newTbl is true and the dialog was canceled</b><br>
@@ -357,7 +357,7 @@ public class EditorActivity extends AppCompatActivity {
      * @param context  Context to be used for this dialog
      * @return Dialog created
      */
-    public static AlertDialog showListEditorDialog(final boolean newTbl, final Table tbl, final Callable<Void> onSuccessCallable, final Callable<Void> onCancelCallable, final Context context) {
+    public static AlertDialog showListEditorDialog(final boolean newTbl, final VList tbl, final Callable<Void> onSuccessCallable, final Callable<Void> onCancelCallable, final Context context) {
         AlertDialog.Builder alert = new AlertDialog.Builder(context);
 
         if (newTbl) {
@@ -365,7 +365,7 @@ public class EditorActivity extends AppCompatActivity {
         } else {
             alert.setTitle(R.string.Editor_Diag_table_Title_Edit);
         }
-        alert.setMessage("Please set the table information");
+        alert.setMessage("Please set the list information");
 
         // Set an EditText view to get user iName
         final EditText iName = new EditText(context);
@@ -406,7 +406,7 @@ public class EditorActivity extends AppCompatActivity {
                 } catch (Exception e) { // has to be caught
                     e.printStackTrace();
                 }
-                Log.d(TAG, "set table info");
+                Log.d(TAG, "set list info");
             }
         });
         if (newTbl) {
@@ -437,17 +437,17 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     /**
-     * Show table title editor dialog<br>
+     * Show list title editor dialog<br>
      *     Exit editor when newTbl is set and user cancels the dialog
      *
-     * @param newTbl set to true if this is a new table
+     * @param newTbl set to true if this is a new list
      */
     private void showTableInfoDialog(final boolean newTbl) {
         Callable<Void> callable = new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                setTitle("VocableTrainer - " + table.getName());
-                adapter.setTableData(table);
+                setTitle("VocableTrainer - " + list.getName());
+                adapter.setTableData(list);
                 return null;
             }
         };
@@ -461,7 +461,7 @@ public class EditorActivity extends AppCompatActivity {
                 return null;
             }
         };
-        showListEditorDialog(newTbl, table, callable,callableCancel, this);
+        showListEditorDialog(newTbl, list, callable,callableCancel, this);
     }
 
     /**

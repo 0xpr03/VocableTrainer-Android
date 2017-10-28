@@ -1,7 +1,6 @@
 package vocabletrainer.heinecke.aron.vocabletrainer;
 
 import android.content.Context;
-import android.provider.ContactsContract;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
@@ -17,8 +16,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer;
 
@@ -43,14 +42,14 @@ public class DBTest {
         assertEquals("vocabletrainer.heinecke.aron.vocabletrainer", appContext.getPackageName());
     }
 
-    private Table getTable(){
-        return new Table("A","B","C");
+    private VList getTable(){
+        return new VList("A","B","C");
     }
 
-    private List<Entry> getEntries(Table tbl){
-        List<Entry> entries = new ArrayList<>(100);
+    private List<VEntry> getEntries(VList tbl){
+        List<VEntry> entries = new ArrayList<>(100);
         for(int i = 0; i < 100; i++){
-            entries.add(new Entry("A"+i,"B"+i,"C"+i,tbl,0));
+            entries.add(new VEntry("A"+i,"B"+i,"C"+i,tbl,0));
         }
         return entries;
     }
@@ -76,9 +75,9 @@ public class DBTest {
     public void testDBInsertTable(){
         Database db = new Database(InstrumentationRegistry.getTargetContext(),true);
 
-        Table tbl = getTable();
+        VList tbl = getTable();
         assertTrue("UpsertTable",db.upsertTable(tbl));
-        List<Table> tbls = db.getTables();
+        List<VList> tbls = db.getTables();
         assertEquals("Invalid amount of entries",1,tbls.size());
         assertTrue("Unequal table after insert",tbl.equals( tbls.get(0)));
     }
@@ -86,33 +85,33 @@ public class DBTest {
     @Test
     public void testDBInsertEntries(){
         Database db = new Database(InstrumentationRegistry.getTargetContext(),true);
-        Table tbl = getTable();
+        VList tbl = getTable();
         assertTrue("UpsertTable",db.upsertTable(tbl));
 
-        List<Entry> entries = getEntries(tbl);
+        List<VEntry> entries = getEntries(tbl);
 
         assertTrue("UpsertEntries",db.upsertEntries(entries));
-        List<Entry> result = db.getVocablesOfTable(tbl);
+        List<VEntry> result = db.getVocablesOfTable(tbl);
         assertEquals("invalid amount of entries",entries.size(),result.size());
     }
 
     @Test
     public void testDBEditEntries(){
         Database db = new Database(InstrumentationRegistry.getTargetContext(),true);
-        Table tbl = getTable();
+        VList tbl = getTable();
         assertTrue("UpsertTable",db.upsertTable(tbl));
 
-        List<Entry> entries = getEntries(tbl);
+        List<VEntry> entries = getEntries(tbl);
 
         assertTrue("UpsertEntries",db.upsertEntries(entries));
-        List<Entry> result = db.getVocablesOfTable(tbl);
+        List<VEntry> result = db.getVocablesOfTable(tbl);
         assertEquals("invalid amount of entries",entries.size(),result.size());
 
         result.get(20).setAWord("New Word");
         result.get(30).setDelete(true);
         assertTrue("UpsertEntries",db.upsertEntries(result));
 
-        List<Entry> edited = db.getVocablesOfTable(tbl);
+        List<VEntry> edited = db.getVocablesOfTable(tbl);
         assertEquals("invalid amount of entries",entries.size()-1,edited.size());
         assertEquals("invalid entry data", result.get(20).getAWord(),edited.get(20).getAWord());
         assertEquals("invalid entry data", result.get(20).getBWord(),edited.get(20).getBWord());
@@ -122,25 +121,25 @@ public class DBTest {
     @Test
     public void testDBDelete(){
         Database db = new Database(InstrumentationRegistry.getTargetContext(), true);
-        Table tbl = getTable();
+        VList tbl = getTable();
         assertTrue("upserttable",db.upsertTable(tbl));
-        List<Entry> entries = getEntries(tbl);
+        List<VEntry> entries = getEntries(tbl);
         assertTrue("UpsertEntries", db.upsertEntries(entries));
 
         assertEquals("invalid amount entries", entries.size(), db.getVocablesOfTable(tbl).size());
-        assertEquals("invalid amount tables", 1, db.getTables().size());
+        assertEquals("invalid amount lists", 1, db.getTables().size());
         assertTrue("delete table",db.deleteTable(tbl));
         assertEquals("invalid amount entries", 0, db.getVocablesOfTable(tbl).size());
-        assertEquals("invalid amount tables", 0, db.getTables().size());
+        assertEquals("invalid amount lists", 0, db.getTables().size());
     }
 
     @Test
     public void testDBRandomSelect(){
         Database db = new Database(InstrumentationRegistry.getTargetContext(),true);
-        Table tbl = getTable();
+        VList tbl = getTable();
         assertTrue("UpsertTable",db.upsertTable(tbl));
 
-        List<Entry> entries = getEntries(tbl);
+        List<VEntry> entries = getEntries(tbl);
 
         assertTrue("UpsertEntries",db.upsertEntries(entries));
         assertNotNull(db.getRandomTrainerEntry(tbl,null,new TrainerSettings(2, Trainer.TEST_MODE.RANDOM,true, true),true));
@@ -149,13 +148,13 @@ public class DBTest {
     @Test
     public void testDBEntryPointsInsert(){
         Database db = new Database(InstrumentationRegistry.getTargetContext(),true);
-        Table tbl = getTable();
+        VList tbl = getTable();
         assertTrue("UpsertTable",db.upsertTable(tbl));
 
-        List<Entry> entries = getEntries(tbl);
+        List<VEntry> entries = getEntries(tbl);
 
         assertTrue("UpsertEntries",db.upsertEntries(entries));
-        Entry ent = entries.get(0);
+        VEntry ent = entries.get(0);
         ent.setPoints(2);
         assertEquals(2,ent.getPoints());
         assertTrue(db.updateEntryProgress(ent));
@@ -175,10 +174,10 @@ public class DBTest {
     public void testDbEntryRandomSelect(){
         final int points = 1;
         Database db = new Database(InstrumentationRegistry.getTargetContext(),true);
-        Table tbl = getTable();
+        VList tbl = getTable();
         assertTrue("UpsertTable",db.upsertTable(tbl));
 
-        List<Entry> entries = getEntries(tbl);
+        List<VEntry> entries = getEntries(tbl);
         entries = entries.subList(0,2);
         assertEquals(2,entries.size());
 
@@ -186,10 +185,10 @@ public class DBTest {
 
         TrainerSettings settings = new TrainerSettings(points, Trainer.TEST_MODE.RANDOM,true,true);
 
-        Entry chosen = db.getRandomTrainerEntry(tbl,null,settings,false);
+        VEntry chosen = db.getRandomTrainerEntry(tbl,null,settings,false);
         assertNotNull(chosen);
 
-        Entry secondChosen = db.getRandomTrainerEntry(tbl,chosen,settings,false);
+        VEntry secondChosen = db.getRandomTrainerEntry(tbl,chosen,settings,false);
         assertNotNull(secondChosen);
         assertNotEquals("selected same entry twice",chosen.getId(),secondChosen.getId());
 
@@ -198,14 +197,14 @@ public class DBTest {
         assertTrue(db.updateEntryProgress(chosen));
         assertEquals("table points",chosen.getPoints(),db.getEntryPoints(chosen));
 
-        Entry thirdChosen = db.getRandomTrainerEntry(tbl,null,settings,false);
+        VEntry thirdChosen = db.getRandomTrainerEntry(tbl,null,settings,false);
         assertNotNull(thirdChosen);
         assertNotEquals("selected entry with reached points",chosen.getId(),thirdChosen.getId());
 
         thirdChosen.setPoints(points);
         assertTrue(db.updateEntryProgress(thirdChosen));
 
-        Entry fourthChosen = db.getRandomTrainerEntry(tbl,null,settings,false);
+        VEntry fourthChosen = db.getRandomTrainerEntry(tbl,null,settings,false);
         assertNull(fourthChosen);
     }
 }

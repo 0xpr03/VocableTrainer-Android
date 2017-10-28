@@ -15,7 +15,7 @@ import android.widget.RadioButton;
 import java.util.ArrayList;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer;
 
@@ -35,7 +35,7 @@ public class TrainerSettingsActivity extends AppCompatActivity {
     private final static String P_KEY_TS_CASE_SENSITIVE = "case_sensitive";
 
     private static final String TAG = "TrainerSettings";
-    public ArrayList<Table> tables;
+    public ArrayList<VList> lists;
     CheckBox bHints;
     CheckBox bCaseSensitive;
     EditText tTimesVocable;
@@ -48,8 +48,8 @@ public class TrainerSettingsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_trainer_settings);
         setTitle(R.string.TSettings_Title);
         Intent intent = getIntent();
-        tables = (ArrayList<Table>) intent.getSerializableExtra(ListActivity.RETURN_LISTS);
-        if (tables == null) {
+        lists = (ArrayList<VList>) intent.getSerializableExtra(ListActivity.RETURN_LISTS);
+        if (lists == null) {
             Log.wtf(TAG, "No table list passed!");
             return;
         }
@@ -171,7 +171,7 @@ public class TrainerSettingsActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, TrainerActivity.class);
         intent.putExtra(PARAM_TRAINER_SETTINGS, settings);
-        intent.putExtra(PARAM_TABLES, tables);
+        intent.putExtra(PARAM_TABLES, lists);
         startActivity(intent);
     }
 }

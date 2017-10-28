@@ -5,9 +5,9 @@ import java.io.Serializable;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TRESHOLD;
 
 /**
- * Table entry
+ * DB Vocable List entry
  */
-public class Table implements Serializable {
+public class VList implements Serializable {
     private String nameA;
     private String nameB;
     private String name;
@@ -16,13 +16,13 @@ public class Table implements Serializable {
     private int id;
 
     /**
-     * Creates a new Table data object
+     * Creates a new VList data object
      *
      * @param id    ID
      * @param nameA Name for A Column
      * @param nameB Name for B Column
      */
-    public Table(final int id, final String nameA, final String nameB, final String name) {
+    public VList(final int id, final String nameA, final String nameB, final String name) {
         this.id = id;
         this.nameA = nameA;
         this.nameB = nameB;
@@ -32,12 +32,12 @@ public class Table implements Serializable {
     }
 
     /**
-     * Create a new Table with none-ID -1
+     * Create a new VList with none-ID -1
      *
      * @param nameA Name for A Column
      * @param nameB Name for B Column
      */
-    public Table(final String nameA, final String nameB, final String name) {
+    public VList(final String nameA, final String nameB, final String name) {
         this(MIN_ID_TRESHOLD - 1, nameA, nameB, name);
     }
 
@@ -47,7 +47,7 @@ public class Table implements Serializable {
      *
      * @param id
      */
-    public Table(final int id) {
+    public VList(final int id) {
         this(id, null, null, null);
     }
 
@@ -58,22 +58,22 @@ public class Table implements Serializable {
 
 
     /**
-     * Tests for equality based on table ID
+     * Tests for equality based on list ID
      *
-     * @param table
-     * @return true when table IDs are equal
+     * @param list
+     * @return true when list IDs are equal
      */
-    public boolean equals(Table table) {
-        if (this == table) {
+    public boolean equals(VList list) {
+        if (this == list) {
             return true;
         }
-        return this.id == table.getId();
+        return this.id == list.getId();
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Table) {
-            return equals((Table) obj);
+        if (obj instanceof VList) {
+            return equals((VList) obj);
         }
         return super.equals(obj);
     }
@@ -137,7 +137,7 @@ public class Table implements Serializable {
         if (this.id < MIN_ID_TRESHOLD)
             this.id = id;
         else
-            throw new IllegalAccessError("Can't override existing Table ID");
+            throw new IllegalAccessError("Can't override existing VList ID");
     }
 
     public String getName() {

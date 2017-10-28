@@ -8,14 +8,14 @@ public interface ImportHandler {
      * Called when a new table starts<br>
      * Note that this function is not called when the provided source doesn't have table metadata.
      *
-     * @param name    Table name
+     * @param name    VList name
      * @param columnA Column A name
      * @param columnB Column B name
      */
     void newTable(String name, String columnA, String columnB);
 
     /**
-     * Called for a new Entry, for last "newTable" called
+     * Called for a new VEntry, for last "newTable" called
      *
      * @param A
      * @param B

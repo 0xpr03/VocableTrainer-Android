@@ -5,7 +5,7 @@ import java.io.File;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Formatter;
 
 /**
- * File Entry holding also a real file
+ * File VEntry holding also a real file
  */
 public class FileEntry extends BasicFileEntry {
     private final File file;

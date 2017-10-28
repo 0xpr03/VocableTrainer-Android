@@ -14,40 +14,40 @@ import java.util.Comparator;
 import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
 
 /**
  * ArrayAdapter for table listviews
  */
-public class TableListAdapter extends ArrayAdapter<Table> {
+public class TableListAdapter extends ArrayAdapter<VList> {
 
     /**
      * items >= starting item are real items and no header etc
      */
     public final static int STARTING_ITEM = 1;
     private final boolean displayCheckbox;
-    ArrayList<Table> dataItem;
+    ArrayList<VList> dataItem;
     Context context;
     int resLayout;
     TextView colName;
     TextView colA;
     TextView colB;
-    Table header;
+    VList header;
 
     /**
-     * New table list adapter
+     * New lists list adapter
      *
      * @param context context to use, should be "this" for activities, avoiding style problems
      * @param textViewResourceId row resource XML
-     * @param table
+     * @param lists
      * @param displayCheckbox set to true to show checkbox for multi select
      */
-    public TableListAdapter(Context context, int textViewResourceId, ArrayList<Table> table, final boolean displayCheckbox) {
-        super(context, textViewResourceId, table);
-        this.dataItem = table;
-        header = new Table(ID_RESERVED_SKIP, context.getString(R.string.Editor_Default_Column_A), context.getString(R.string.Editor_Default_Column_B), context.getString(R.string.Editor_Default_List_Name));
+    public TableListAdapter(Context context, int textViewResourceId, ArrayList<VList> lists, final boolean displayCheckbox) {
+        super(context, textViewResourceId, lists);
+        this.dataItem = lists;
+        header = new VList(ID_RESERVED_SKIP, context.getString(R.string.Editor_Default_Column_A), context.getString(R.string.Editor_Default_Column_B), context.getString(R.string.Editor_Default_List_Name));
         dataItem.add(STARTING_ITEM - 1, header);
         resLayout = textViewResourceId;
         this.context = context;
@@ -60,7 +60,7 @@ public class TableListAdapter extends ArrayAdapter<Table> {
      *
      * @param entries
      */
-    public void setAllUpdated(List<Table> entries, Comparator<Table> comparator) {
+    public void setAllUpdated(List<VList> entries, Comparator<VList> comparator) {
         dataItem.clear();
         dataItem.add(header);
         dataItem.addAll(entries);
@@ -72,7 +72,7 @@ public class TableListAdapter extends ArrayAdapter<Table> {
      * Updates sort order
      * @param comparator Comparator to use
      */
-    public void updateSorting(Comparator<Table> comparator){
+    public void updateSorting(Comparator<VList> comparator){
         Collections.sort(dataItem,comparator);
         this.notifyDataSetChanged();
     }
@@ -83,7 +83,7 @@ public class TableListAdapter extends ArrayAdapter<Table> {
      *
      * @param tbl
      */
-    public void removeEntryUpdated(Table tbl) {
+    public void removeEntryUpdated(VList tbl) {
         dataItem.remove(tbl);
         this.notifyDataSetChanged();
     }
@@ -103,7 +103,7 @@ public class TableListAdapter extends ArrayAdapter<Table> {
         }
 
 
-        Table item = dataItem.get(position);
+        VList item = dataItem.get(position);
         if (item.getId() == ID_RESERVED_SKIP) {
             if (displayCheckbox)
                 convertView.findViewById(R.id.tblCheckBox).setVisibility(View.INVISIBLE);

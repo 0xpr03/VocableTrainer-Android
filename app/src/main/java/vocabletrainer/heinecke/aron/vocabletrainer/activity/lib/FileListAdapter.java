@@ -14,7 +14,7 @@ import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.BasicFileEntry;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Entry;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
 
 /**
  * BaseAdapter for file list views
@@ -25,7 +25,7 @@ public class FileListAdapter extends BaseAdapter {
     private List<BasicFileEntry> dataItems = null;
     private Activity activity;
     private LayoutInflater inflater;
-    private Entry header;
+    private VEntry header;
 
     /**
      * Creates a new entry list adapter

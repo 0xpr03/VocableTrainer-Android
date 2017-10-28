@@ -1,20 +1,18 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Table;
-
-import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 
 /**
- * Generic comparator for tables<br>
+ * Generic comparator for lists<br>
  * Checks for top table objects according to their ID<br>
  * can't handle more than one head table
  */
-public class GenTableComparator extends GenericComparator<Table, String> {
+public class GenTableComparator extends GenericComparator<VList, String> {
 
     private final int headID;
 
     /**
-     * Generic Table Comparator
+     * Generic VList Comparator
      *
      * @param retrievers retrievers to use for comparision<br>
      *                   passed array order defines the comparision priority
@@ -26,7 +24,7 @@ public class GenTableComparator extends GenericComparator<Table, String> {
     }
 
     @Override
-    public int compare(Table o1, Table o2) {
+    public int compare(VList o1, VList o2) {
         if (o1.getId() == headID)
             return -1;
         if (o2.getId() == headID)
@@ -37,9 +35,9 @@ public class GenTableComparator extends GenericComparator<Table, String> {
     /**
      * Name retriever
      */
-    public static final GenericComparator.ValueRetriever retName = new GenericComparator.ValueRetriever<Table, String>() {
+    public static final GenericComparator.ValueRetriever retName = new GenericComparator.ValueRetriever<VList, String>() {
         @Override
-        public String getV(Table obj) {
+        public String getV(VList obj) {
             return obj.getName();
         }
     };
@@ -47,9 +45,9 @@ public class GenTableComparator extends GenericComparator<Table, String> {
     /**
      * A retriever
      */
-    public static final GenericComparator.ValueRetriever retA = new GenericComparator.ValueRetriever<Table, String>() {
+    public static final GenericComparator.ValueRetriever retA = new GenericComparator.ValueRetriever<VList, String>() {
         @Override
-        public String getV(Table obj) {
+        public String getV(VList obj) {
             return obj.getNameA();
         }
     };
@@ -57,9 +55,9 @@ public class GenTableComparator extends GenericComparator<Table, String> {
     /**
      * B retriever
      */
-    public static final GenericComparator.ValueRetriever retB = new GenericComparator.ValueRetriever<Table, String>() {
+    public static final GenericComparator.ValueRetriever retB = new GenericComparator.ValueRetriever<VList, String>() {
         @Override
-        public String getV(Table obj) {
+        public String getV(VList obj) {
             return obj.getNameB();
         }
     };

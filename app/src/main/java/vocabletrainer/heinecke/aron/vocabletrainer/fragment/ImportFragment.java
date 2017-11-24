@@ -39,6 +39,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.activity.FileActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.ListActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.EntryListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.dialog.VListEditorDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.ImportFetcher;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.Importer;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.PreviewParser;
@@ -417,7 +418,9 @@ public class ImportFragment extends BaseFragment {
                     return null;
                 }
             };
-            EditorActivity.showListEditorDialog(true, targetList, callable, null, getActivity());
+            VListEditorDialog dialog = VListEditorDialog.newInstance(true, targetList);
+            dialog.setOkAction(callable);
+            dialog.show(getFragmentManager(),VListEditorDialog.TAG);
         } else {
             Intent myIntent = new Intent(getActivity(), ListActivity.class);
             myIntent.putExtra(ListActivity.PARAM_MULTI_SELECT, false);

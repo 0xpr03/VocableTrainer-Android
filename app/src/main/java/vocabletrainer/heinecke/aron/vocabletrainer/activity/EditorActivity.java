@@ -29,6 +29,8 @@ import java.util.concurrent.Callable;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.EntryListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.dialog.VEntryEditorDialog;
+import vocabletrainer.heinecke.aron.vocabletrainer.dialog.VListEditorDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenEntryComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
@@ -78,8 +80,6 @@ public class EditorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
         db = new Database(getBaseContext());
-
-        this.setTitle(R.string.Editor_Title);
 
         compA = new GenEntryComparator(new GenericComparator.ValueRetriever[] {
                 GenEntryComparator.retA,GenEntryComparator.retB,
@@ -131,6 +131,7 @@ public class EditorActivity extends AppCompatActivity {
                 Log.e(TAG, "Edit VList Flag set without passing a list");
             }
         }
+        this.setTitle(list.getName());
     }
 
     /**
@@ -301,139 +302,28 @@ public class EditorActivity extends AppCompatActivity {
             showTableInfoDialog(false);
             return;
         }
-        AlertDialog.Builder editDiag = new AlertDialog.Builder(this);
-
-        editDiag.setTitle(R.string.Editor_Diag_edit_Title);
-
-        final EditText editA = new EditText(this);
-        final EditText editB = new EditText(this);
-        final EditText editTipp = new EditText(this);
-        editA.setText(entry.getAWord());
-        editB.setText(entry.getBWord());
-        editTipp.setText(entry.getTip());
-        editA.setHint(R.string.Editor_Default_Column_A);
-        editB.setHint(R.string.Editor_Default_Column_B);
-        editTipp.setHint(R.string.Editor_Default_Tip);
-
-        LinearLayout rl = new TableLayout(this);
-        rl.addView(editA);
-        rl.addView(editB);
-        rl.addView(editTipp);
-
-        editDiag.setView(rl);
-
-        editDiag.setPositiveButton(R.string.Editor_Diag_edit_btn_OK, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                entry.setAWord(editA.getText().toString());
-                entry.setBWord(editB.getText().toString());
-                entry.setTip(editTipp.getText().toString());
+        VEntryEditorDialog dialog = VEntryEditorDialog.newInstance(entry);
+        dialog.setOkAction(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
                 adapter.notifyDataSetChanged();
-                Log.d(TAG, "edited");
+                Log.d(TAG,"edited");
+                return null;
             }
         });
-
-        editDiag.setNegativeButton(R.string.Editor_Diag_edit_btn_CANCEL, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                if (deleteOnCancel) {
+        dialog.setCancelAction(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                if(deleteOnCancel){
                     adapter.setDeleted(entry);
                     adapter.notifyDataSetChanged();
                 }
-                Log.d(TAG, "canceled");
+                Log.d(TAG,"canceled");
+                return null;
             }
         });
 
-        editDiag.show();
-    }
-
-    /**
-     * Shows a dialog to edit the specified list data
-     *
-     * @param newTbl   Is new list
-     * @param tbl      VList object to edit
-     * @param onSuccessCallable Called upon ok press<br>
-     *                 Not called when user cancels dialog in any way
-     * @param onCancelCallable Called when <b>newTbl is true and the dialog was canceled</b><br>
-     *                         Ignored when null
-     * @param context  Context to be used for this dialog
-     * @return Dialog created
-     */
-    public static AlertDialog showListEditorDialog(final boolean newTbl, final VList tbl, final Callable<Void> onSuccessCallable, final Callable<Void> onCancelCallable, final Context context) {
-        AlertDialog.Builder alert = new AlertDialog.Builder(context);
-
-        if (newTbl) {
-            alert.setTitle(R.string.Editor_Diag_table_Title_New);
-        } else {
-            alert.setTitle(R.string.Editor_Diag_table_Title_Edit);
-        }
-        alert.setMessage("Please set the list information");
-
-        // Set an EditText view to get user iName
-        final EditText iName = new EditText(context);
-        final EditText iColA = new EditText(context);
-        final EditText iColB = new EditText(context);
-        iName.setText(tbl.getName());
-        iName.setSingleLine();
-        iName.setHint(R.string.Editor_Default_List_Name);
-        iColA.setHint(R.string.Editor_Default_Column_A);
-        iColB.setHint(R.string.Editor_Default_Column_B);
-        iColA.setText(tbl.getNameA());
-        iColA.setSingleLine();
-        iColB.setSingleLine();
-        iColB.setText(tbl.getNameB());
-        if (newTbl) {
-            iName.setSelectAllOnFocus(true);
-            iColA.setSelectAllOnFocus(true);
-            iColB.setSelectAllOnFocus(true);
-        }
-
-        LinearLayout rl = new TableLayout(context);
-        rl.addView(iName);
-        rl.addView(iColA);
-        rl.addView(iColB);
-        alert.setView(rl);
-
-        alert.setPositiveButton(R.string.Editor_Diag_table_btn_Ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                if (iColA.getText().length() == 0 || iColB.length() == 0 || iName.getText().length() == 0) {
-                    Log.d(TAG, "empty insert");
-                }
-
-                tbl.setNameA(iColA.getText().toString());
-                tbl.setNameB(iColB.getText().toString());
-                tbl.setName(iName.getText().toString());
-                try {
-                    onSuccessCallable.call();
-                } catch (Exception e) { // has to be caught
-                    e.printStackTrace();
-                }
-                Log.d(TAG, "set list info");
-            }
-        });
-        if (newTbl) {
-            alert.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                @Override
-                public void onCancel(DialogInterface dialogInterface) {
-                    try {
-                        if(onCancelCallable != null)
-                            onCancelCallable.call();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            alert.setNegativeButton(R.string.Editor_Diag_table_btn_Canel, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    try {
-                        if(onCancelCallable != null)
-                            onCancelCallable.call();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-        }
-
-        return alert.show();
+        dialog.show(getFragmentManager(), VEntryEditorDialog.TAG);
     }
 
     /**
@@ -443,10 +333,10 @@ public class EditorActivity extends AppCompatActivity {
      * @param newTbl set to true if this is a new list
      */
     private void showTableInfoDialog(final boolean newTbl) {
-        Callable<Void> callable = new Callable<Void>() {
+        Callable<Void> callableOk = new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                setTitle("VocableTrainer - " + list.getName());
+                setTitle(list.getName());
                 adapter.setTableData(list);
                 return null;
             }
@@ -461,7 +351,10 @@ public class EditorActivity extends AppCompatActivity {
                 return null;
             }
         };
-        showListEditorDialog(newTbl, list, callable,callableCancel, this);
+        VListEditorDialog dialog = VListEditorDialog.newInstance(newTbl, list);
+        dialog.setCancelAction(callableCancel);
+        dialog.setOkAction(callableOk);
+        dialog.show(getFragmentManager(), VListEditorDialog.TAG);
     }
 
     /**

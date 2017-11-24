@@ -1,11 +1,13 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage;
 
+import java.io.Serializable;
+
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TRESHOLD;
 
 /**
  * DB Vocable Entry
  */
-public class VEntry {
+public class VEntry implements Serializable {
     private final VList list;
     private String AWord;
     private String BWord;

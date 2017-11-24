@@ -26,6 +26,7 @@ public class Trainer {
     private int unsolved;
     private int failed;
     private int timesToSolve;
+    private int timesShowedSolution;
     private boolean showedSolution;
     private Database db;
     private TrainerSettings settings;
@@ -50,6 +51,7 @@ public class Trainer {
         this.timesToSolve = settings.timesToSolve;
         this.unsolvedLists = new ArrayList<>();
         this.ssm = ssm;
+        this.timesShowedSolution = 0;//todo: load from params
         db = new Database(context);
         rng = new Random();
 
@@ -107,11 +109,25 @@ public class Trainer {
      * @return
      */
     public String getSolution() {
+        Log.d(TAG,"getSolution");
+        timesShowedSolution++;
+        return getSolutionUnchecked();
+    }
+
+    /**
+     * Returns the solution to the current vocable<br>
+     *     Does not count it as failed.
+     *
+     *     <br><br>
+     *         not to be confused with getSolutionUnchecked
+     * @return Solution
+     */
+    public String getSolutionUncounted(){
+        Log.d(TAG,"getSolutionUncounted");
         if (this.cVocable == null) {
             Log.e(TAG, "Null vocable!");
             return "";
         }
-        this.failed++;
         showedSolution = true;
         return getSolutionUnchecked();
     }
@@ -144,37 +160,62 @@ public class Trainer {
     }
 
     /**
-     * Checks for correct solution
+     * Checks for correct solution <br>
+     *     Retrieves next vocable if correct
      *
      * @param tSolution
-     * @return true on success
+     * @return true on tSolution is correct
      */
     public boolean checkSolution(final String tSolution) {
-        if (this.cVocable == null) {
-            Log.e(TAG, "Null vocable!");
-            return false;
-        }
-        boolean bSolved;
-        if (bSolved = equals(getSolutionUnchecked(),tSolution)) {
-            if (!showedSolution)
-                this.cVocable.setPoints(this.cVocable.getPoints() + 1);
-            if (cVocable.getPoints() >= timesToSolve) {
-                VList tbl = cVocable.getList();
-                tbl.setUnfinishedVocs(tbl.getUnfinishedVocs() - 1);
-                if (tbl.getUnfinishedVocs() <= 0) {
-                    unsolvedLists.remove(tbl);
-
-                    if (unsolvedLists.size() == 0) {
-                        db.deleteSession();
-                        Log.d(TAG, "finished");
-                    }
-                }
-            }
-            getNext();
-        } else {
+        Log.d(TAG,"checkSolution");
+        boolean bSolved = equals(getSolutionUnchecked(),tSolution);
+        if(bSolved) {
+            accountVocable(bSolved);
+        }else {
             this.failed++;
         }
         return bSolved;
+    }
+
+    /** Accounts vocable as passed based on the parameter.<br>
+     *     This function is called from external when checkSolution does not apply.
+     * @param correct true when the vocable was answered correct
+     */
+    private void accountVocable(final boolean correct){
+        Log.d(TAG,"accountVocable(correct:"+correct+")");
+        if (this.cVocable == null) {
+            Log.e(TAG, "Null vocable!");
+            return;
+        }
+        if (correct)
+            this.cVocable.setPoints(this.cVocable.getPoints() + 1);
+        if (cVocable.getPoints() >= timesToSolve) {
+            VList tbl = cVocable.getList();
+            tbl.setUnfinishedVocs(tbl.getUnfinishedVocs() - 1);
+            if (tbl.getUnfinishedVocs() <= 0) {
+                unsolvedLists.remove(tbl);
+
+                if (unsolvedLists.size() == 0) {
+                    db.deleteSession();
+                    Log.d(TAG, "finished");
+                }
+            }
+        }
+        Log.d(TAG,"getting next");
+        getNext();
+    }
+
+    /**
+     * function for modes where checkSolution doesn't apply<br>
+     *     reads next vocabe & accounts passed=false as solution showed & failed
+     * @param passed
+     */
+    public void updateVocable(final boolean passed){
+        if(!passed){
+            this.failed++;
+            timesShowedSolution++;
+        }
+        accountVocable(passed);
     }
 
     /**

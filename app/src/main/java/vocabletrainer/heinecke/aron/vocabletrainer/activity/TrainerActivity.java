@@ -1,52 +1,61 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
-import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.dialog.TrainerResultDialog;
+import vocabletrainer.heinecke.aron.vocabletrainer.fragment.TrainerClassicFragment;
+import vocabletrainer.heinecke.aron.vocabletrainer.fragment.TrainerModeFragment;
+import vocabletrainer.heinecke.aron.vocabletrainer.fragment.TrainerQuickFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.SessionStorageManager;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer;
+
+import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
 
 /**
  * Trainer activity
  */
-public class TrainerActivity extends AppCompatActivity {
+public class TrainerActivity extends FragmentActivity {
     public static final String PARAM_RESUME_SESSION_FLAG = "resume_session";
     public static final String PARAM_TRAINER_SETTINGS = "trainer_settings";
+    private static final String KEY_TRAINER_MODE = "trainer_mode";
     public static final String PARAM_TABLES = "lists";
     private static final String TAG = "TrainerActivity";
 
+    private TextView tColumnQuestion;
     private TextView tExercise;
-    private TextView tHint;
-    private EditText tInput;
-    private Button bSolve;
     private TrainerSettings settings;
     private Trainer trainer;
-    private TextView tColumnQuestion;
-    private TextView tColumnAnswer;
     private MenuItem tTip;
     private SessionStorageManager ssm;
+    private TrainerClassicFragment classicFragment;
+    private TrainerModeFragment cTrainingFragment;
+    private int trainingMode = -1;
+    private TrainerModeFragment[] modeStorage = new TrainerModeFragment[2];
+
+    private static final int modeClassicID = 0;
+    private static final int modeQuickID = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG,"oncreate0");
         super.onCreate(savedInstanceState);
+        Log.d(TAG,"oncreate1");
         setContentView(R.layout.activity_trainer);
         setTitle(R.string.Trainer_Title);
 
@@ -58,12 +67,83 @@ public class TrainerActivity extends AppCompatActivity {
         }
 
         tExercise = (TextView) findViewById(R.id.tTrainerExercise);
-        tHint = (TextView) findViewById(R.id.tTrainerHint);
         tColumnQuestion = (TextView) findViewById(R.id.tTrainerExColumn);
-        tColumnAnswer = (TextView) findViewById(R.id.tTrainerInputColumn);
-        tInput = (EditText) findViewById(R.id.tTrainerInput);
-        bSolve = (Button) findViewById(R.id.bTrainerSolve);
+
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        trainingMode = -1;
+
         initTrainer();
+
+        // do not show vocable now, onPostCreate has to handle this
+        setTrainingMode(settings.getInt(KEY_TRAINER_MODE, modeClassicID));
+    }
+
+    /**
+     * Function to be called by fragments to request an update of the exercise question display
+     */
+    public void updateQuestion(){
+        tExercise.setText(trainer.getQuestion());
+        tColumnQuestion.setText(trainer.getColumnNameExercise());
+    }
+
+    /**
+     * Set training mode to specified value<br>
+     *     also sets trainingMode<br>
+     * @param mode Mode to dispaly
+     */
+    private void setTrainingMode(final int mode){
+        Log.d(TAG,"init fragments");
+        if(trainingMode == mode) {
+            Log.d(TAG,"GUI mode already set");
+            return;
+        }
+        switch(mode){
+            default:
+                Log.w(TAG,"unknown training mode! "+mode);
+                return;
+            case modeClassicID:
+                if(modeStorage[modeClassicID] == null) {
+                    modeStorage[modeClassicID] = new TrainerClassicFragment();
+                }
+                cTrainingFragment = modeStorage[modeClassicID];
+                break;
+            case modeQuickID:
+                if(modeStorage[modeQuickID] == null) {
+                    modeStorage[modeQuickID] = new TrainerQuickFragment();
+                }
+                cTrainingFragment = modeStorage[modeQuickID];
+                break;
+        }
+        cTrainingFragment.setTrainer(trainer);
+        cTrainingFragment.setTrainerActivity(this);
+        setFragment(cTrainingFragment);
+        trainingMode = mode;
+    }
+
+    /**
+     * Shows result dialog on training end
+     */
+    public void showResultDialog(){
+        if(trainer.isFinished()){
+            Callable callable = new Callable() {
+                @Override
+                public Object call() throws Exception {
+                    Intent myIntent = new Intent(TrainerActivity.this, MainActivity.class);
+                    myIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(myIntent);
+                    return null;
+                }
+            };
+            TrainerResultDialog resultDialog = TrainerResultDialog.newInstance(trainer,callable);
+            resultDialog.show(getFragmentManager(),TAG);
+        }
+    }
+
+    @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        Log.d(TAG,"post create");
+        showNextVocable();
     }
 
     @Override
@@ -113,14 +193,17 @@ public class TrainerActivity extends AppCompatActivity {
             }
         }
         trainer = new Trainer(lists, settings, getBaseContext(), !resume,ssm);
-        showNextVocable();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d(TAG,"saving vocable");
         trainer.saveVocState();
+
+        SharedPreferences preferences = getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt(KEY_TRAINER_MODE,trainingMode);
+        editor.apply();
     }
 
     @Override
@@ -133,8 +216,14 @@ public class TrainerActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.tMenu_Tip:
-                showHint();
+                cTrainingFragment.showTip(trainer.getTip());
                 return true;
+            case R.id.tMenu_Classic:
+                setTrainingMode(modeClassicID);
+                break;
+            case R.id.tMenu_Quick:
+                setTrainingMode(modeQuickID);
+                break;
         }
 
         return super.onOptionsItemSelected(item);
@@ -145,60 +234,9 @@ public class TrainerActivity extends AppCompatActivity {
      */
     private void showNextVocable() {
         if (trainer.isFinished()) {
-            AlertDialog.Builder finishedDiag = new AlertDialog.Builder(this);
-
-            finishedDiag.setTitle(R.string.Trainer_Diag_finished_Title);
-            finishedDiag.setMessage(R.string.Trainer_Diag_finished_MSG);
-
-            finishedDiag.setPositiveButton(R.string.Trainer_Diag_finished_btn_OK, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    Log.d(TAG, "ok");
-
-                    Intent myIntent = new Intent(TrainerActivity.this, MainActivity.class);
-                    myIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(myIntent);
-                }
-            });
-
-            finishedDiag.show();
+            showResultDialog();
         } else {
-            tExercise.setText(trainer.getQuestion());
-            tHint.setText("");
-            tInput.setText("");
-            tInput.requestFocus();
-            bSolve.setEnabled(true);
             updateTip();
-            tColumnQuestion.setText(trainer.getColumnNameExercise());
-            tColumnAnswer.setText(trainer.getColumnNameSolution());
-        }
-    }
-
-    /**
-     * Verify input against solution
-     */
-    public void checkInput(View view) {
-        if (trainer.checkSolution(tInput.getText().toString())) {
-            showNextVocable();
-        } else {
-            tInput.setSelectAllOnFocus(true);
-            tInput.requestFocus();
-        }
-    }
-
-    /**
-     * Solve current vocable
-     */
-    public void solve(View view) {
-        tInput.setText(trainer.getSolution());
-        bSolve.setEnabled(false);
-    }
-
-    /**
-     * Action on hint request
-     */
-    public void showHint() {
-        if (settings.allowTips) {
-            tHint.setText(trainer.getTip());
         }
     }
 

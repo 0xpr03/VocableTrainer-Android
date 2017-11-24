@@ -5,4 +5,14 @@
         android:icon="@drawable/ic_help_white_48dp"
         android:title="@string/Trainer_btn_Hint"
         support:showAsAction="always"/>
+    <item
+        android:id="@+id/tMenu_Classic"
+        android:title="Classic Mode"
+        support:showAsAction="never"
+        />
+    <item
+        android:id="@+id/tMenu_Quick"
+        android:title="Quick Mode"
+        support:showAsAction="never"
+        />
 </menu>

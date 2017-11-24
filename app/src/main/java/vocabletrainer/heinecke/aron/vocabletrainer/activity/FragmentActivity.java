@@ -46,20 +46,6 @@ public abstract class FragmentActivity extends AppCompatActivity{
     }
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_activity);
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar ab = getSupportActionBar();
-        if (ab != null) {
-            ab.setDisplayHomeAsUpEnabled(true);
-            ab.setTitle(null);
-        }
-    }
-
-    @Override
     public void onBackPressed() {
         if(backButtonListner != null) {
             if (backButtonListner.onBackPressed()) {
@@ -110,6 +96,7 @@ public abstract class FragmentActivity extends AppCompatActivity{
 
     /**
      * Set fragment to show<br>
+
      *     Replaces current fragment
      * @param fragment
      */

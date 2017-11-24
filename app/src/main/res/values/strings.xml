@@ -2,6 +2,10 @@
     <string name="app_name" translatable="false">VocableTrainer Beta</string>
     <string name="Trainer_hint_solution">Answer</string>
     <string name="Trainer_btn_ok">Ok</string>
+    <string name="Trainer_Quick_btn_Correct">Correct</string>
+    <string name="Trainer_Quick_btn_Wrong">Wrong</string>
+    <string name="Trainer_Quick_btn_Resolve">Resolve</string>
+    <string name="Trainer_Quick_Asked">Asked</string>
     <string name="Main_btn_About">About</string>
     <string name="Main_btn_Delete_List">Delete List</string>
     <string name="Main_btn_Edit_List">Edit List</string>

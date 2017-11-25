@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
             final AlertDialog.Builder finishedDiag = new AlertDialog.Builder(this);
 
             finishedDiag.setTitle("Info");
-            finishedDiag.setMessage("This software is an beta state. This includes, but not limited to, data loss, destroying your phone, eating your children and burning your dog! You have been warned.");
+            finishedDiag.setMessage("This software is currently in beta state. This includes, but not limited to, data loss, destroying your phone, eating your children and burning your dog! You have been warned.");
 
             finishedDiag.setPositiveButton("TLDR", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {

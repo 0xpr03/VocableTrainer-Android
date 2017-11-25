@@ -71,6 +71,7 @@
     <string name="File_Menu_Sort_Size">size</string>
     <!-- General -->
     <string name="GEN_Sort">Sorting</string>
+    <string name="GEN_Ok">Ok</string>
     <!-- Dialogs -->
     <string name="Trainer_Diag_finished_Title">Finished</string>
     <string name="Trainer_Diag_finished_MSG">You\'ve finished this training session.</string>
@@ -86,6 +87,7 @@
     <string name="Editor_Diag_table_Title_Edit">Edit List</string>
     <string name="Editor_Diag_table_btn_Ok">Ok</string>
     <string name="Editor_Diag_table_btn_Canel">Cancel</string>
+    <string name="Format_Diag_error_Title">Invalid Input</string>
 
     <string name="About_Title">About</string>
     <!-- Special escape because of replacement & re-parsing as HTML \n = <br>-->
@@ -105,6 +107,7 @@
     <string name="File_Error_Nullpointer">Unable to show files. Nullpointer</string>
     <string name="Import_Message" formatted="true">Import a UTF8 encoded CSV file containing (multiple) vocable lists.\nSee the <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Import">wiki page</a> for help.</string>
     <string name="Export_Message" formatted="true">Export to UTF8 encoded CSV file (with list info)\nSee the <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Export">wiki page</a> for help.</string>
+    <string name="Format_Error_Input_equals">The values of the following options should not be equal: $A : $B</string>
     <!-- Spinner -->
     <string name="Import_Multilist_REPLACE">Replace existing lists</string>
     <string name="Import_Multilist_IGNORE">Ignore existing lists</string>

@@ -1,5 +1,7 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
@@ -7,6 +9,7 @@ import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.text.InputFilter;
 import android.util.Log;
 import android.view.Menu;
@@ -15,6 +18,7 @@ import android.view.MenuItem;
 import android.widget.EditText;
 
 import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.QuoteMode;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.ExImportActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.FragmentActivity;
@@ -25,8 +29,9 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.
 /**
  * Fragment for custom format preferences
  */
-public class FormatFragment extends PreferenceFragment {
+public class FormatFragment extends PreferenceFragment implements FragmentActivity.BackButtonListner{
     private static final String TAG = "FormatFragment";
+    private static final int CHAR_POS = 0;
     SwitchPreference swEscaping;
     SwitchPreference swComment;
     SwitchPreference swQuote;
@@ -79,10 +84,13 @@ public class FormatFragment extends PreferenceFragment {
         loadPrefs();
     }
 
+
+
     @Override
     public void onStop() {
         super.onStop();
-        ExImportActivity.updateCustomFormat(savePrefsToCSVFormat());
+        if(verifyFormat())
+            ExImportActivity.updateCustomFormat(savePrefsToCSVFormat());
     }
 
     /**
@@ -113,18 +121,80 @@ public class FormatFragment extends PreferenceFragment {
     }
 
     /**
+     * Verify the CSV Format input and return true on success<br>
+     *     Shows a warning dialog on errors
+     * @return
+     */
+    private boolean verifyFormat(){
+        int partA = -1; // we have to initialize this..
+        int partB = R.string.Pref_Delimiter;
+
+        boolean passed = true;
+
+        char delimiter = tDelimtier.getText().charAt(CHAR_POS);
+
+        if (swQuote.isChecked() && delimiter == tQuote.getText().charAt(CHAR_POS)) {
+            partA = R.string.Pref_Quote;
+            passed = false;
+        }
+
+        if (swEscaping.isChecked() && delimiter == tEscaping.getText().charAt(CHAR_POS)) {
+            partA = R.string.Pref_Escape;
+            passed = false;
+        }
+
+        if (swComment.isChecked() && delimiter == tComment.getText().charAt(CHAR_POS)) {
+            partA = R.string.Pref_Comment;
+            passed = false;
+        }
+
+        if (swQuote.isChecked() && tQuote.getText().charAt(CHAR_POS) == tComment.getText().charAt(CHAR_POS)) {
+            partA = R.string.Pref_Quote;
+            partB = R.string.Pref_Comment;
+            passed = false;
+        }
+
+        if (swEscaping.isChecked() && tEscaping.getText().charAt(CHAR_POS) == tComment.getText().charAt(CHAR_POS)) {
+            partA = R.string.Pref_Escape;
+            partB = R.string.Pref_Comment;
+            passed = false;
+        }
+
+        if(!passed){
+            String sA = getString(partA);
+            String sB = getString(partB);
+
+            String msg = getString(R.string.Format_Error_Input_equals).replace("$A",sA).replace("$B",sB);
+
+            final AlertDialog.Builder errorDiag = new AlertDialog.Builder(getActivity());
+
+            errorDiag.setTitle(R.string.Format_Diag_error_Title);
+            errorDiag.setMessage(msg);
+            errorDiag.setPositiveButton(R.string.GEN_Ok, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                }
+            });
+
+            errorDiag.show();
+        }
+
+        return passed;
+    }
+
+
+    /**
      * Creates a CSVFormat object out of the settings
      *
      * @return
      */
     private CSVFormat savePrefsToCSVFormat() {
-        CSVFormat format = CSVFormat.newFormat(tDelimtier.getText().charAt(0));
+        CSVFormat format = CSVFormat.newFormat(tDelimtier.getText().charAt(CHAR_POS));
         if (swEscaping.isChecked())
-            format = format.withEscape(tEscaping.getText().charAt(0));
+            format = format.withEscape(tEscaping.getText().charAt(CHAR_POS));
         if (swComment.isChecked())
-            format = format.withCommentMarker(tComment.getText().charAt(0));
+            format = format.withCommentMarker(tComment.getText().charAt(CHAR_POS));
         if (swQuote.isChecked())
-            format = format.withQuote(tQuote.getText().charAt(0));
+            format = format.withQuote(tQuote.getText().charAt(CHAR_POS));
         if (swHeaderLine.isChecked())
             format = format.withFirstRecordAsHeader();
         if (swIgnEmptyLines.isChecked())
@@ -172,5 +242,10 @@ public class FormatFragment extends PreferenceFragment {
         EditText editText1 = ((EditTextPreference) findPreference(getString(key)))
                 .getEditText();
         editText1.setFilters(filters);
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        return verifyFormat();
     }
 }

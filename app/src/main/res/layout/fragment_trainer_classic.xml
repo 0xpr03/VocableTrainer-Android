@@ -34,11 +34,10 @@
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginStart="8dp"
-
+            android:inputType="text|textNoSuggestions"
             android:layout_marginTop="0dp"
             android:ems="10"
             android:hint="@string/Trainer_hint_solution"
-            android:inputType="textPersonName"
             android:text="tTrainerInput"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintLeft_toLeftOf="parent"

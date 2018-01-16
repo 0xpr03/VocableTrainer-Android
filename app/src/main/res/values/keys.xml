@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="k_pref_delimiter">pref_format_txt_delimiter</string>
-    <string name="k_pref_first_line_header">pref_format_first_line_header</string>
-    <string name="k_pref_ignore_spaces">pref_format_strip_spaces</string>
-    <string name="k_pref_ignore_empty_lines">pref_format_strip_empty_lines</string>
-    <string name="k_pref_escape">pref_format_escape</string>
-    <string name="k_pref_escape_char">pref_format_escape_char</string>
-    <string name="k_pref_comment">pref_format_comment</string>
-    <string name="k_pref_comment_char">pref_format_comment_char</string>
-    <string name="k_pref_quote">pref_format_quote</string>
-    <string name="k_pref_quote_char">pref_format_quote_char</string>
+    <string name="k_pref_delimiter" translatable="false">pref_format_txt_delimiter</string>
+    <string name="k_pref_first_line_header" translatable="false">pref_format_first_line_header</string>
+    <string name="k_pref_ignore_spaces" translatable="false">pref_format_strip_spaces</string>
+    <string name="k_pref_ignore_empty_lines" translatable="false">pref_format_strip_empty_lines</string>
+    <string name="k_pref_escape" translatable="false">pref_format_escape</string>
+    <string name="k_pref_escape_char" translatable="false">pref_format_escape_char</string>
+    <string name="k_pref_comment" translatable="false">pref_format_comment</string>
+    <string name="k_pref_comment_char" translatable="false">pref_format_comment_char</string>
+    <string name="k_pref_quote" translatable="false">pref_format_quote</string>
+    <string name="k_pref_quote_char" translatable="false">pref_format_quote_char</string>
 </resources>

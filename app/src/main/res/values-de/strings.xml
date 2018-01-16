@@ -97,4 +97,20 @@
     <string name="Export_Title">Exportieren</string>
     <string name="Import_Title">Importieren</string>
     <string name="Trainer_Title">Üben</string>
+    <string name="Trainer_Quick_btn_Correct">Richtig</string>
+    <string name="GEN_Sort">Sortierung</string>
+    <string name="GEN_Ok">Ok</string>
+    <string name="File_Menu_Sort_Name">Name</string>
+    <string name="File_Menu_Sort_Size">Größe</string>
+    <string name="ExImport_Edit_CustomFormat">Custom Format editieren</string>
+    <string name="Editor_search_hint">Dateiname</string>
+    <string name="Sort_Col_Tip">Spalte Tip</string>
+    <string name="Sort_Col_B">Spalte B</string>
+    <string name="Sort_Col_A">Spalte A</string>
+    <string name="Sort_Col_Name">Name</string>
+    <string name="Trainer_Quick_btn_Wrong">Falsch</string>
+    <string name="Trainer_Quick_btn_Resolve">Auflösen</string>
+    <string name="Trainer_Quick_Asked">Gefragt</string>
+    <string name="Format_Error_Input_equals">Die folgenden Werte drüfen nicht gleich sein: $A : $B</string>
+    <string name="Format_Diag_error_Title">Ungültige Eingabe</string>
 </resources>

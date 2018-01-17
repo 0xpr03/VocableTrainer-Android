@@ -25,6 +25,7 @@
     <string name="TSettings_rb_B">Ask column B</string>
     <string name="TSettings_rb_Random">Ask random column</string>
     <string name="TSettings_chkbx_CaseSensitive">check case sensitive</string>
+    <string name="TSettings_chkbx_TrimSpaces">Ignore surrounding spaces</string>
     <string name="ListSelector_Title_Edit">Select list to edit</string>
     <string name="ListSelector_Title_Delete">Delete selected Table</string>
     <string name="ListSelector_Title_Training">Select lists for training</string>

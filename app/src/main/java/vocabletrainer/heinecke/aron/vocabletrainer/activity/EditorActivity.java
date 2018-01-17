@@ -68,6 +68,8 @@ public class EditorActivity extends AppCompatActivity {
     private GenEntryComparator compA;
     private GenEntryComparator compB;
     private GenEntryComparator compTip;
+    private MenuItem mSort_ColA;
+    private MenuItem mSort_ColB;
 
     /**
      * data save will be ignored when set
@@ -123,8 +125,8 @@ public class EditorActivity extends AppCompatActivity {
             VList tbl = (VList) intent.getSerializableExtra(PARAM_TABLE);
             if (tbl != null) {
                 this.list = tbl;
+                // do not call updateColumnNames as we've to wait for onCreateOptionsMenu, calling it
                 entries.addAll(db.getVocablesOfTable(list));
-                adapter.setTableData(tbl);
                 adapter.updateSorting(cComp);
                 Log.d(TAG, "edit list mode");
             } else {
@@ -132,6 +134,15 @@ public class EditorActivity extends AppCompatActivity {
             }
         }
         this.setTitle(list.getName());
+    }
+
+    /**
+     * Handles list column name changes
+     */
+    private void updateColumnNames(){
+        mSort_ColB.setTitle(list.getNameB());
+        mSort_ColA.setTitle(list.getNameA());
+        adapter.setTableData(list);
     }
 
     /**
@@ -158,6 +169,9 @@ public class EditorActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.editor, menu);
+        mSort_ColA = menu.findItem(R.id.eMenu_sort_A);
+        mSort_ColB = menu.findItem(R.id.eMenu_sort_B);
+        updateColumnNames();
         return true;
     }
 
@@ -337,7 +351,7 @@ public class EditorActivity extends AppCompatActivity {
             @Override
             public Void call() throws Exception {
                 setTitle(list.getName());
-                adapter.setTableData(list);
+                updateColumnNames();
                 return null;
             }
         };

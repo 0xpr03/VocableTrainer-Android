@@ -25,6 +25,7 @@
     <string name="TSettings_rb_B">Ask column B</string>
     <string name="TSettings_rb_Random">Ask random column</string>
     <string name="TSettings_chkbx_CaseSensitive">check case sensitive</string>
+    <string name="TSettings_chkbx_TrimSpaces">Ignore surrounding spaces</string>
     <string name="ListSelector_Title_Edit">Select list to edit</string>
     <string name="ListSelector_Title_Delete">Delete selected Table</string>
     <string name="ListSelector_Title_Training">Select lists for training</string>
@@ -125,15 +126,15 @@
     <string name="CSV_Format_Default">Default</string>
     <string name="CSV_Format_Tabs">Tabs</string>
     <string name="CSV_Format_Mysql" translatable="false">Mysql</string>
-    <string name="CSV_Format_INFORMIX_UNLOAD" translatable="false">Informix CSV UNLOAD</string>
-    <string name="CSV_Format_INFORMIX_UNLOAD_CSV" translatable="false">Informix CSV UNLOAD</string>
+    <string name="CSV_Format_INFORMIX_UNLOAD" translatable="false">Informix UNLOAD</string>
+    <string name="CSV_Format_INFORMIX_UNLOAD_CSV" translatable="false">Informix UNLOAD CSV</string>
     <string name="CSV_Format_Custom_Format">Custom Format</string>
     <string name="title_activity_format">FormatActivity</string>
 
     <!-- preferences -->
     <string name="Pref_Delimiter">Delimiter</string>
     <string name="Pref_Delimiter_Desc">Delimiter character to use</string>
-    <string name="Pref_Comment">Comment</string>
+    <string name="Pref_Comment">Comments</string>
     <string name="Pref_Comment_Desc">Handle comments</string>
     <string name="Pref_Comment_Char">Comment Char</string>
     <string name="Pref_Comment_Char_Desc">Comment character to parse</string>
@@ -146,7 +147,7 @@
     <string name="Pref_Quote_Char">Quote Char</string>
     <string name="Pref_Quote_Char_Desc">Quote character to parse</string>
     <string name="Pref_Strip_Empty_Lines">Ignore empty lines</string>
-    <string name="Pref_Ignore_Spaces">Ignore sourrounding spaces</string>
+    <string name="Pref_Ignore_Spaces">Ignore surrounding spaces</string>
     <string name="Pref_Ignore_First_Line">Ignore first line as header</string>
     <string name="Pref_General">General</string>
     <string name="Pref_Reset_Previous">Reset to previous</string>

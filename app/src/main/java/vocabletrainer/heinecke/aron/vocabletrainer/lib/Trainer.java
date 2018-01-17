@@ -146,12 +146,16 @@ public class Trainer {
     }
 
     /**
-     * Check two string for equality, taking case sensitive settings into account
+     * Check two strings for equality, taking case sensitive & space ignore settings into account
      * @param a
      * @param b
      * @return true if they are equals according to this trainings settings
      */
-    private boolean equals(final String a, final String b){
+    private boolean equals(String a, String b){
+        if(settings.trimSpaces){
+            a = a.trim();
+            b = b.trim();
+        }
         if(this.settings.caseSensitive){
             return a.equals(b);
         }else{
@@ -163,7 +167,7 @@ public class Trainer {
      * Checks for correct solution <br>
      *     Retrieves next vocable if correct
      *
-     * @param tSolution
+     * @param tSolution input to be checked against the solution
      * @return true on tSolution is correct
      */
     public boolean checkSolution(final String tSolution) {

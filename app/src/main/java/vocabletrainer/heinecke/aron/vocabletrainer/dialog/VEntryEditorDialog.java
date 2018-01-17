@@ -76,8 +76,15 @@ public class VEntryEditorDialog extends DialogFragment {
         final EditText iColTip = new EditText(getActivity());
         iColA.setText(entry.getAWord());
         iColA.setSingleLine();
-        iColA.setHint(R.string.Editor_Default_Column_A);
-        iColB.setHint(R.string.Editor_Default_Column_B);
+        VList list;
+        if((list = entry.getList()) != null) {
+            iColA.setHint(list.getNameA());
+            iColB.setHint(list.getNameB());
+        }else{
+            iColA.setHint(R.string.Editor_Default_Column_A);
+            iColB.setHint(R.string.Editor_Default_Column_B);
+            Log.w(TAG,"Vocable has no VList!");
+        }
         iColTip.setHint(R.string.Editor_Default_Tip);
         iColB.setText(entry.getBWord());
         iColB.setSingleLine();

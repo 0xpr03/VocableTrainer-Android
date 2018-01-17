@@ -92,6 +92,7 @@ public class ExportFragment extends BaseFragment {
         view = inflater.inflate(R.layout.fragment_export, container, false);
 
         setHasOptionsMenu(true);
+        getActivity().setTitle(R.string.Export_Title);
 
         tExportFile = (EditText) view.findViewById(R.id.tExportFile);
         btnExport = (Button) view.findViewById(R.id.bExportStart);

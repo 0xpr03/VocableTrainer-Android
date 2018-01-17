@@ -68,16 +68,15 @@
             app:layout_constraintTop_toBottomOf="@+id/tSettingsSolveTimes" />
 
         <RadioGroup
+            android:id="@+id/radioGroup"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            app:layout_constraintLeft_toLeftOf="parent"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
-            app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
-            android:id="@+id/radioGroup"
-            android:layout_marginTop="8dp"
-            app:layout_constraintTop_toBottomOf="@+id/chkTSettingsChkCaseSens">
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tSettingsChkTrimSpaces">
 
             <RadioButton
                 android:id="@+id/rTSettingsA"
@@ -118,6 +117,18 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tSettingsChkAllowTips" />
+
+        <CheckBox
+            android:id="@+id/tSettingsChkTrimSpaces"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/TSettings_chkbx_TrimSpaces"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/chkTSettingsChkCaseSens" />
 
     </android.support.constraint.ConstraintLayout>
 </android.support.design.widget.CoordinatorLayout>

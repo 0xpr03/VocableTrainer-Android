@@ -95,6 +95,7 @@ public class ImportFragment extends BaseFragment {
         view = inflater.inflate(R.layout.fragment_import, container, false);
 
         setHasOptionsMenu(true);
+        getActivity().setTitle(R.string.Import_Title);
 
         lst = new ArrayList<>();
         adapter = new EntryListAdapter(getActivity(), lst);

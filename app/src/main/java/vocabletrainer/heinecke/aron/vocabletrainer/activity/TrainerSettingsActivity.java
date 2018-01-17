@@ -38,6 +38,7 @@ public class TrainerSettingsActivity extends AppCompatActivity {
     public ArrayList<VList> lists;
     CheckBox bHints;
     CheckBox bCaseSensitive;
+    CheckBox bTrimSpaces;
     EditText tTimesVocable;
     private Trainer.TEST_MODE testMode;
     private RadioButton[] rButtons;
@@ -55,6 +56,7 @@ public class TrainerSettingsActivity extends AppCompatActivity {
         }
         bHints = (CheckBox) findViewById(R.id.tSettingsChkAllowTips);
         bCaseSensitive = (CheckBox) findViewById(R.id.chkTSettingsChkCaseSens);
+        bTrimSpaces = (CheckBox) findViewById(R.id.tSettingsChkTrimSpaces);
         tTimesVocable = (EditText) findViewById(R.id.tSettingsSolveTimes);
         RadioButton rbA = (RadioButton) findViewById(R.id.rTSettingsA);
         RadioButton rbB = (RadioButton) findViewById(R.id.rTSettingsB);
@@ -166,8 +168,9 @@ public class TrainerSettingsActivity extends AppCompatActivity {
         }
         boolean showHints = bHints.isChecked();
         boolean caseSensitive = bCaseSensitive.isChecked();
-        Log.d(TAG, "Settings: " + timesToSolve + " " + testMode + " SH:" + showHints+" CS:"+caseSensitive);
-        TrainerSettings settings = new TrainerSettings(timesToSolve, testMode, showHints, caseSensitive);
+        boolean trimSpaces = bTrimSpaces.isChecked();
+        TrainerSettings settings = new TrainerSettings(timesToSolve, testMode,
+                showHints, caseSensitive,trimSpaces);
 
         Intent intent = new Intent(this, TrainerActivity.class);
         intent.putExtra(PARAM_TRAINER_SETTINGS, settings);

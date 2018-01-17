@@ -4,7 +4,7 @@ It provides traning with different modes, sessions and multiple lists.
 
 Available for free on [f-droid store](https://f-droid.org/packages/vocabletrainer.heinecke.aron.vocabletrainer/)  
   
-There's also a [PC version](https://github.com/0xpr03/VocableTrainer)
+There's also a [PC version](https://github.com/0xpr03/VocableTrainer) (less active developed)
 
 ## Features
 - [X] A<->B Random training over multiple lists

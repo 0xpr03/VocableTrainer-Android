@@ -32,6 +32,24 @@ public class VList implements Serializable {
     }
 
     /**
+     * Check whether this entry is existing, according to it's ID<br>
+     *     <b>Note:</b> this is not a check whether this entity exists in the Database
+     * @return true if the ID is valid
+     */
+    public boolean isExisting(){
+        return isIDValid(id);
+    }
+
+    /**
+     * Checks whether a given ID is valid, according to MIN_ID_TRESHOLD
+     * @param id ID to check
+     * @return true if ID is valid
+     */
+    public static boolean isIDValid(final int id){
+        return id >= MIN_ID_TRESHOLD;
+    }
+
+    /**
      * Create a new VList with none-ID -1
      *
      * @param nameA Name for A Column

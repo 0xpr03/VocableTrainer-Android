@@ -423,6 +423,7 @@ public class ImportFragment extends BaseFragment {
             dialog.setOkAction(callable);
             dialog.show(getFragmentManager(),VListEditorDialog.TAG);
         } else {
+            targetList = null;
             Intent myIntent = new Intent(getActivity(), ListActivity.class);
             myIntent.putExtra(ListActivity.PARAM_MULTI_SELECT, false);
             myIntent.putExtra(ListActivity.PARAM_DELETE_FLAG, false);
@@ -448,11 +449,11 @@ public class ImportFragment extends BaseFragment {
         } else if (mode == Importer.IMPORT_LIST_MODE.CREATE) { // single list
             if (targetList == null) {
                 is_ok = false;
-            } else if (targetList.getId() >= MIN_ID_TRESHOLD) {
+            } else if (targetList.isExisting()) {
                 is_ok = false;
             }
-        } else if (isRawData && (mode == Importer.IMPORT_LIST_MODE.ADD || mode == Importer.IMPORT_LIST_MODE.REPLACE) && targetList.getId() < MIN_ID_TRESHOLD) {
-            if (targetList.getId() < MIN_ID_TRESHOLD) {
+        } else if (isRawData && (mode == Importer.IMPORT_LIST_MODE.ADD || mode == Importer.IMPORT_LIST_MODE.REPLACE) && !targetList.isExisting()) {
+            if (!targetList.isExisting()) {
                 is_ok = false;
             }
         }

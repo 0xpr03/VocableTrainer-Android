@@ -189,7 +189,7 @@ public class Database {
      * @return true on succuess
      */
     public boolean upsertTable(VList tbl) {
-        if (tbl.getId() >= MIN_ID_TRESHOLD) {
+        if (tbl.isExisting()) {
             try (
                     SQLiteStatement upd = db.compileStatement("UPDATE `" + TBL_TABLES + "` SET `" + KEY_NAME_A + "` = ?, `" + KEY_NAME_B + "` = ?, `" + KEY_NAME_TBL + "` = ? "
                             + "WHERE `" + KEY_TABLE + "` = ? ")) {
@@ -235,8 +235,8 @@ public class Database {
     private boolean testTableExists(SQLiteDatabase db, VList tbl) {
         if (db == null)
             throw new IllegalArgumentException("illegal sql db");
-        if (tbl.getId() < MIN_ID_TRESHOLD)
-            return true;
+        if (tbl.isExisting())
+            return false;
 
         try (
                 Cursor cursor = db.rawQuery("SELECT 1 "
@@ -275,7 +275,7 @@ public class Database {
                 //Log.d(TAG, "processing " + entry + " of " + entry.getList());
                 if (entry.getId() == ID_RESERVED_SKIP) // skip spacer
                     continue;
-                if (entry.getId() >= MIN_ID_TRESHOLD) {
+                if (entry.isExisting()) {
                     if (entry.isDelete()) {
                         delStm.clearBindings();
                         delStm.bindLong(1, entry.getId());
@@ -367,19 +367,20 @@ public class Database {
      * @return highest ID <b>or -1 if none is found</b>
      */
     private int getHighestVocID(final SQLiteDatabase db, final int table) throws Exception {
-        if (table < MIN_ID_TRESHOLD)
-            throw new IllegalArgumentException("table ID is negative!");
-
-        try (Cursor cursor = db.rawQuery("SELECT MAX(`" + KEY_VOC + "`) "
-                + "FROM `" + TBL_VOCABLE + "` "
-                + "WHERE `" + KEY_TABLE + "` = ? ", new String[]{String.valueOf(table)})) {
-            if (cursor.moveToNext()) {
-                return cursor.getInt(0);
-            } else {
-                return MIN_ID_TRESHOLD - 1;
+        if (VList.isIDValid(table)) {
+            try (Cursor cursor = db.rawQuery("SELECT MAX(`" + KEY_VOC + "`) "
+                    + "FROM `" + TBL_VOCABLE + "` "
+                    + "WHERE `" + KEY_TABLE + "` = ? ", new String[]{String.valueOf(table)})) {
+                if (cursor.moveToNext()) {
+                    return cursor.getInt(0);
+                } else {
+                    return MIN_ID_TRESHOLD - 1;
+                }
+            } catch (Exception e) {
+                throw e;
             }
-        } catch (Exception e) {
-            throw e;
+        } else {
+            throw new IllegalArgumentException("invalid table ID!");
         }
     }
 

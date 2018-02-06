@@ -30,7 +30,6 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
-import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TRESHOLD;
 
 /**
  * List selector activity
@@ -53,7 +52,8 @@ public class ListActivity extends AppCompatActivity {
     public static final String PARAM_DELETE_FLAG = "delete";
     /**
      * Optional Param key for already selected lists, available when multiselect is set<br>
-     * Expect a {@link List} of {@link VList}
+     * Expects a {@link List} of {@link VList}<br>
+     *     This can be null, if nothing is selected
      */
     public static final String PARAM_SELECTED = "selected";
     private static final String TAG = "ListActivity";
@@ -188,7 +188,7 @@ public class ListActivity extends AppCompatActivity {
         if (tickedLists != null) {
             for (int i = 0; i < adapter.getCount(); i++) {
                 VList tbl = adapter.getItem(i);
-                if (tbl.getId() >= MIN_ID_TRESHOLD && tickedLists.contains(tbl)) {
+                if (tbl.isExisting() && tickedLists.contains(tbl)) {
                     listView.setItemChecked(i, true);
                 }
             }

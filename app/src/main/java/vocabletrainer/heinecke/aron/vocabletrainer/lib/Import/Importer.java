@@ -10,7 +10,6 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 
 import static android.content.ContentValues.TAG;
-import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TRESHOLD;
 
 /**
  * Importer, does actual importing
@@ -56,7 +55,7 @@ public class Importer implements ImportHandler {
         if (previewParser.isRawData()) {
             Log.w(TAG, "New VList command on raw data list!");
         } else if (previewParser.isMultiList() || mode != IMPORT_LIST_MODE.CREATE) {
-            if (db.getTableID(tbl) >= MIN_ID_TRESHOLD) {
+            if (VList.isIDValid(db.getTableID(tbl))) {
                 if (mode == IMPORT_LIST_MODE.REPLACE) {
                     db.emptyList(tbl);
                 } else if (mode == IMPORT_LIST_MODE.IGNORE) {

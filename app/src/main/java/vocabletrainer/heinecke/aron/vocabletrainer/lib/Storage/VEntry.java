@@ -3,6 +3,7 @@ package vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage;
 import java.io.Serializable;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TRESHOLD;
+import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList.isIDValid;
 
 /**
  * DB Vocable Entry
@@ -134,6 +135,15 @@ public class VEntry implements Serializable {
      */
     public boolean equals(VEntry entry) {
         return this.getId() == entry.getId() && this.getList() == entry.getList();
+    }
+
+    /**
+     * Check whether this entry is existing, according to it's ID<br>
+     *     <b>Note:</b> this is not a check whether this entity exists in the Database
+     * @return true if the ID is valid
+     */
+    public boolean isExisting(){
+        return isIDValid(id);
     }
 
     /**

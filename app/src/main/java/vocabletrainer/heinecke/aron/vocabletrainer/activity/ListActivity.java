@@ -21,8 +21,8 @@ import android.widget.ListView;
 import java.util.ArrayList;
 import java.util.List;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.TableListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.TableListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenTableComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;

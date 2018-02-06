@@ -1,24 +1,7 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.util.Base64;
-import android.util.Log;
-import android.widget.ArrayAdapter;
-import android.widget.Spinner;
-
-import org.apache.commons.csv.CSVFormat;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.text.DecimalFormat;
-
-import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
 
 /**
  * Formatter<br>

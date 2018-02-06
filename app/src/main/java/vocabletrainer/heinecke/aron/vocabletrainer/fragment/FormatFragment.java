@@ -1,6 +1,5 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -18,11 +17,10 @@ import android.view.MenuItem;
 import android.widget.EditText;
 
 import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.QuoteMode;
 
+import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.ExImportActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.FragmentActivity;
-import vocabletrainer.heinecke.aron.vocabletrainer.R;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
 

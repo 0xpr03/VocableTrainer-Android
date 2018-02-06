@@ -10,7 +10,6 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer;
 
 /**
  * Trainer quick mode fragment

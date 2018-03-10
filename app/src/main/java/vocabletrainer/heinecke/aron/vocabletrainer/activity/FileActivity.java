@@ -26,8 +26,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.FileListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.FileListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenFileEntryComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Formatter;
@@ -40,6 +40,7 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.
  * File activity for file requests<br>
  * <b>requires WRITE_EXTERNAL_STORAGE</b><br>
  * To be called as startActivityForResult
+ * @author Aron Heinecke
  */
 public class FileActivity extends AppCompatActivity {
     /**
@@ -204,12 +205,20 @@ public class FileActivity extends AppCompatActivity {
      * Go on directory up in navigation, if possible
      */
     private void goUp() {
-        if (currentDir.getAbsolutePath().equals(basicDir)) {
+        if (isRoot()) {
             Log.d(TAG, "cancel go up");
         } else {
             currentDir = currentDir.getParentFile();
             changeDir();
         }
+    }
+
+    /**
+     * Check whether we're at root dir and can't go further above
+     * @return true on root
+     */
+    private boolean isRoot(){
+        return currentDir.getAbsolutePath().equals(basicDir);
     }
 
     /**
@@ -316,11 +325,10 @@ public class FileActivity extends AppCompatActivity {
      */
     private void setBasicDir(SharedPreferences settings) {
         currentDir = new File(settings.getString(P_KEY_FA_LAST_DIR, ""));
-        if (!currentDir.exists()) { // old value not valid anymore
+        if (!currentDir.exists() || !currentDir.canWrite()) { // old value not valid anymore
             Log.w(TAG, "old path is invalid");
             currentDir = Environment.getExternalStorageDirectory();
         }
-        currentDir.mkdirs(); // mkdirs, we're sure to have a valid path
         this.basicDir = Environment.getExternalStorageDirectory().getAbsolutePath();
         tFileName.setText(settings.getString(P_KEY_FA_LAST_FILENAME, defaultFileName));
     }
@@ -334,22 +342,26 @@ public class FileActivity extends AppCompatActivity {
         if (!write) {
             bOk.setEnabled(false);
         }
-        entries.clear();
         if (checkMediaState()) {
             if (currentDir != null) {
                 File[] files = currentDir.listFiles();
                 if (files == null) {
                     Log.e(TAG, "null file list!");
                     Toast.makeText(FileActivity.this, R.string.File_Error_Nullpointer, Toast.LENGTH_LONG).show();
-                } else {
-                    entries.add(new BasicFileEntry("..", "", 0, BasicFileEntry.TYPE_UP, true)); // go back entry
-                    for (File file : files) {
-                        entries.add(new FileEntry(file, fmt));
+                    if(isRoot()){ // can't do anything, no access to base dir
+                        return;
                     }
+                    currentDir = currentDir.getParentFile();
+                    files = currentDir.listFiles();
                 }
+                entries.clear();
+                entries.add(new BasicFileEntry("..", "", 0, BasicFileEntry.TYPE_UP, true)); // go back entry
+                for (File file : files) {
+                    entries.add(new FileEntry(file, fmt));
+                }
+                applySorting();
             }
         }
-        applySorting();
 
         String newDirLabel = currentDir.getAbsolutePath().replaceFirst(basicDir, "");
         if (newDirLabel.length() == 0)

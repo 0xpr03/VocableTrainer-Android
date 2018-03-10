@@ -34,23 +34,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.activity.EditorActivity;
+import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.FileActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.ListActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.EntryListAdapter;
-import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ImportLogDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.VListEditorDialog;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Function;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.ImportFetcher;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.ImportFetcherBuilder;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.Importer;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.PreviewParser;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.ExImportActivity.populateFormatSpinnerAdapter;
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.DPIHelper.DPIToPixels;
-import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TRESHOLD;
 
 /*
  * Import Activity
@@ -88,6 +89,7 @@ public class ImportFragment extends BaseFragment {
     private PreviewParser previewParser;
     private TextView tMsg;
     private View view;
+    private ImportFetcher.MessageProvider mp;
 
     private boolean showedCustomFormatFragment = false;
 
@@ -143,6 +145,8 @@ public class ImportFragment extends BaseFragment {
         etFile.setKeyListener(null);
 
         initSpinner();
+
+        mp = new ImportFetcher.MessageProvider(this);
 
         return view;
     }
@@ -299,10 +303,9 @@ public class ImportFragment extends BaseFragment {
                 }
             });*/
             final AlertDialog dialog = alert.show();
-            Callable<Void> callable = new Callable<Void>() {
+            Function<Void,String> callback = new Function<Void, String>() {
                 @Override
-                public Void call() throws Exception {
-//                    dialog.dismiss();
+                public Void function(String param) {
                     isMultilist = dataHandler.isMultiList();
                     isRawData = dataHandler.isRawData();
                     refreshView();
@@ -311,7 +314,17 @@ public class ImportFragment extends BaseFragment {
                     return null;
                 }
             };
-            ImportFetcher imp = new ImportFetcher(format, impFile, dataHandler, 0, dialog, tw, callable);
+            ImportFetcher imp = new ImportFetcherBuilder()
+                    .setFormat(format)
+                    .setSource(impFile)
+                    .setHandler(dataHandler)
+                    .setMaxEntries(0)
+                    .setDialog(dialog)
+                    .setLogErrors(false)
+                    .setProgressBar(tw)
+                    .setMessageProvider(mp)
+                    .setImportCallback(callback)
+                    .createImportFetcher();
             lst.clear();
             Log.d(TAG, "Starting task");
             imp.execute(0); // 0 is just to pass smth
@@ -353,15 +366,26 @@ public class ImportFragment extends BaseFragment {
             }
         });*/
         final AlertDialog dialog = alert.show();
-        Callable<Void> callable = new Callable<Void>() {
+        Function<Void,String> callback = new Function<Void, String>() {
             @Override
-            public Void call() throws Exception {
-                getActivity().finish();
+            public Void function(String param) {
+                ImportLogDialog dialog = ImportLogDialog.newInstance(param);
+                dialog.show(getFragmentManager(),ImportLogDialog.TAG);
                 return null;
             }
         };
         Log.d(TAG, "amount: " + previewParser.getAmountRows());
-        ImportFetcher imp = new ImportFetcher(format, impFile, dataHandler, previewParser.getAmountRows(), dialog, pg, callable);
+
+        ImportFetcher imp = new ImportFetcherBuilder()
+                .setFormat(format)
+                .setSource(impFile)
+                .setHandler(dataHandler)
+                .setMaxEntries(previewParser.getAmountRows())
+                .setDialog(dialog)
+                .setProgressBar(pg)
+                .setMessageProvider(mp)
+                .setImportCallback(callback)
+                .createImportFetcher();
         lst.clear();
         Log.d(TAG, "Starting task");
         imp.execute(0); // 0 is just to pass smth

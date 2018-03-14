@@ -90,6 +90,9 @@
     <string name="Editor_Diag_table_btn_Ok">Ok</string>
     <string name="Editor_Diag_table_btn_Canel">Cancel</string>
     <string name="Format_Diag_error_Title">Invalid Input</string>
+    <string name="tDB_Update_Text" formatted="true" translatable="false">VA is going to make a major DB upgrade, allowing for N:N vocable lists.\nFor more Information see <a href="https://github.com/0xpr03/VocableTrainer-Android/issues/22">here.</a>\nPlease backup your lists via export just in case.</string>
+    <string name="tDB_Update_Close">Close</string>
+    <string name="tDB_Update_Close_Dismissed">Don\'t show again</string>
 
     <string name="About_Title">About</string>
     <!-- Special escape because of replacement & re-parsing as HTML \n = <br>-->

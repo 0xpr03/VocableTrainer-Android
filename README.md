@@ -7,6 +7,7 @@ Available for free on [f-droid store](https://f-droid.org/packages/vocabletraine
 There's also a [PC version](https://github.com/0xpr03/VocableTrainer) (less active developed)
 
 ## Features
+- [ ] N:N vocable support
 - [X] A<->B Random training over multiple lists
 - [X] Stop/Continue training sessions at any time
 - [X] Classic mode, type in & verify

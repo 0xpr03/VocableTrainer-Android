@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.io.File;
@@ -23,28 +24,28 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
  * Doing all relevant DB stuff
  */
 public class Database {
+    private final static String TAG = "Database";
     public final static String DB_NAME_DEV = "test1.db";
     public final static String DB_NAME_PRODUCTION = "voc.db";
-    public static final int MIN_ID_TRESHOLD = 0;
-    public static final int ID_RESERVED_SKIP = -2;
-    private final static String TAG = "Database";
-    private final static String TBL_VOCABLE = "vocables";
-    private final static String TBL_TABLES = "voc_tables";
-    private final static String TBL_SESSION = "session";
-    private final static String TBL_SESSION_META = "session_meta";
-    private final static String TBL_SESSION_TABLES = "session_tables";
-    private final static String KEY_VOC = "voc";
-    private final static String KEY_WORD_A = "word_a";
-    private final static String KEY_WORD_B = "word_b";
-    private final static String KEY_TIP = "tip";
-    private final static String KEY_TABLE = "table";
-    private final static String KEY_LAST_USED = "last_used";
-    private final static String KEY_NAME_TBL = "name";
-    private final static String KEY_NAME_A = "name_a";
-    private final static String KEY_NAME_B = "name_b";
-    private final static String KEY_POINTS = "points";
-    private final static String KEY_MKEY = "key";
-    private final static String KEY_MVALUE = "value";
+    public final static int MIN_ID_TRESHOLD = 0;
+    public final static int ID_RESERVED_SKIP = -2;
+    private final static String TBL_VOCABLE = "`vocables`";
+    private final static String TBL_TABLES = "`voc_tables`";
+    private final static String TBL_SESSION = "`session`";
+    private final static String TBL_SESSION_META = "`session_meta`";
+    private final static String TBL_SESSION_TABLES = "`session_tables`";
+    private final static String KEY_VOC = "`voc`";
+    private final static String KEY_WORD_A = "`word_a`";
+    private final static String KEY_WORD_B = "`word_b`";
+    private final static String KEY_TIP = "`tip`";
+    private final static String KEY_TABLE = "`table`";
+    private final static String KEY_LAST_USED = "`last_used`";
+    private final static String KEY_NAME_TBL = "`name`";
+    private final static String KEY_NAME_A = "`name_a`";
+    private final static String KEY_NAME_B = "`name_b`";
+    private final static String KEY_POINTS = "`points`";
+    private final static String KEY_MKEY = "`key`";
+    private final static String KEY_MVALUE = "`value`";
     private static SQLiteDatabase dbIntern = null; // DB to internal file, 99% of the time used
     private SQLiteDatabase db = null; // pointer to DB used in this class
     private SQLiteOpenHelper helper = null;
@@ -92,11 +93,11 @@ public class Database {
      *     Null on failure
      */
     public VEntry getVocable(final int vocID, final int listID){
-        try (Cursor cursor = db.rawQuery("SELECT `" + KEY_WORD_A + "`,`" + KEY_WORD_B + "`,`" + KEY_TIP + "`,`" + KEY_VOC + "`,tVoc.`" + KEY_TABLE + "`,`" + KEY_LAST_USED + "`,`"
-                + KEY_NAME_A+"`,`"+KEY_NAME_B+"`,`"+KEY_NAME_TBL+"` "
-                + "FROM `" + TBL_VOCABLE + "` tVoc "
-                + "JOIN `"+TBL_TABLES+"` tList ON tVoc.`"+KEY_TABLE+"` = tList.`"+KEY_TABLE+"` "
-                + "WHERE tVoc.`" + KEY_TABLE + "` = ? AND `"+KEY_VOC+"` = ?", new String[]{String.valueOf(listID),String.valueOf(vocID)})){
+        try (Cursor cursor = db.rawQuery("SELECT " + KEY_WORD_A + "," + KEY_WORD_B + "," + KEY_TIP + "," + KEY_VOC + ",tVoc." + KEY_TABLE + "," + KEY_LAST_USED + ","
+                + KEY_NAME_A+","+KEY_NAME_B+","+KEY_NAME_TBL
+                + " FROM " + TBL_VOCABLE + " tVoc "
+                + "JOIN "+TBL_TABLES+" tList ON tVoc."+KEY_TABLE+" = tList."+KEY_TABLE
+                + " WHERE tVoc." + KEY_TABLE + " = ? AND "+KEY_VOC+" = ?", new String[]{String.valueOf(listID),String.valueOf(vocID)})){
             if(cursor.moveToNext()){
                 VList tbl = new VList(listID,cursor.getString(6),cursor.getString(7),cursor.getString(8));
                 return new VEntry(cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getInt(3), tbl, cursor.getLong(5));
@@ -114,7 +115,7 @@ public class Database {
      */
     public boolean wipeSessionPoints() {
         try {
-            db.delete("`" + TBL_SESSION + "`", null, null);
+            db.delete(TBL_SESSION + "", null, null);
             return true;
         } catch (Exception e) {
             Log.e(TAG, "", e);
@@ -128,11 +129,11 @@ public class Database {
      * @param list VList for which all entries should be retrieved
      * @return List<VEntry>
      */
-    public List<VEntry> getVocablesOfTable(VList list) {
+    public List<VEntry> getVocablesOfTable(@NonNull final VList list) {
         try (
-                Cursor cursor = db.rawQuery("SELECT `" + KEY_WORD_A + "`,`" + KEY_WORD_B + "`,`" + KEY_TIP + "`,`" + KEY_VOC + "`,`" + KEY_TABLE + "`,`" + KEY_LAST_USED + "` "
-                        + "FROM `" + TBL_VOCABLE + "` "
-                        + "WHERE `" + KEY_TABLE + "` = ?", new String[]{String.valueOf(list.getId())})) {
+                Cursor cursor = db.rawQuery("SELECT " + KEY_WORD_A + "," + KEY_WORD_B + "," + KEY_TIP + "," + KEY_VOC + "," + KEY_TABLE + "," + KEY_LAST_USED + " "
+                        + "FROM " + TBL_VOCABLE + " "
+                        + "WHERE " + KEY_TABLE + " = ?", new String[]{String.valueOf(list.getId())})) {
             List<VEntry> lst = new ArrayList<>();
             while (cursor.moveToNext()) {
                 lst.add(new VEntry(cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getInt(3), list, cursor.getLong(5)));
@@ -147,10 +148,10 @@ public class Database {
      * @return
      */
     @Deprecated
-    public int getEntryPoints(final VEntry ent) {
+    public int getEntryPoints(@NonNull final VEntry ent) {
         try (
-                Cursor cursor = db.rawQuery("SELECT `" + KEY_POINTS + "` "
-                        + "FROM `" + TBL_SESSION + "` WHERE `" + KEY_TABLE + "` = ? AND `" + KEY_VOC + "` = ?", new String[]{String.valueOf(ent.getList().getId()), String.valueOf(ent.getId())});
+                Cursor cursor = db.rawQuery("SELECT " + KEY_POINTS + " "
+                        + "FROM " + TBL_SESSION + " WHERE " + KEY_TABLE + " = ? AND " + KEY_VOC + " = ?", new String[]{String.valueOf(ent.getList().getId()), String.valueOf(ent.getId())});
         ) {
             if (cursor.moveToNext())
                 return cursor.getInt(0);
@@ -168,8 +169,8 @@ public class Database {
      */
     public List<VList> getTables() {
         try (
-                Cursor cursor = db.rawQuery("SELECT `" + KEY_TABLE + "`,`" + KEY_NAME_A + "`,`" + KEY_NAME_B + "`,`" + KEY_NAME_TBL + "` "
-                        + "FROM `" + TBL_TABLES + "` WHERE 1", null)
+                Cursor cursor = db.rawQuery("SELECT " + KEY_TABLE + "," + KEY_NAME_A + "," + KEY_NAME_B + "," + KEY_NAME_TBL + " "
+                        + "FROM " + TBL_TABLES + " WHERE 1", null)
         ) {
             List<VList> list = new ArrayList<>();
             while (cursor.moveToNext()) {
@@ -188,11 +189,11 @@ public class Database {
      * @param tbl
      * @return true on succuess
      */
-    public boolean upsertTable(VList tbl) {
+    public boolean upsertTable(@NonNull final VList tbl) {
         if (tbl.isExisting()) {
             try (
-                    SQLiteStatement upd = db.compileStatement("UPDATE `" + TBL_TABLES + "` SET `" + KEY_NAME_A + "` = ?, `" + KEY_NAME_B + "` = ?, `" + KEY_NAME_TBL + "` = ? "
-                            + "WHERE `" + KEY_TABLE + "` = ? ")) {
+                    SQLiteStatement upd = db.compileStatement("UPDATE " + TBL_TABLES + " SET " + KEY_NAME_A + " = ?, " + KEY_NAME_B + " = ?, " + KEY_NAME_TBL + " = ? "
+                            + "WHERE " + KEY_TABLE + " = ? ")) {
                 upd.clearBindings();
                 upd.bindString(1, tbl.getNameA());
                 upd.bindString(2, tbl.getNameB());
@@ -206,8 +207,8 @@ public class Database {
             }
         } else {
             try (
-                    SQLiteStatement ins = db.compileStatement("INSERT INTO `" + TBL_TABLES + "` (`" + KEY_NAME_TBL + "`,`" + KEY_NAME_A + "`,`" + KEY_NAME_B + "`,`"
-                            + KEY_TABLE + "`) VALUES (?,?,?,?)")) {
+                    SQLiteStatement ins = db.compileStatement("INSERT INTO " + TBL_TABLES + " (" + KEY_NAME_TBL + "," + KEY_NAME_A + "," + KEY_NAME_B + ","
+                            + KEY_TABLE + ") VALUES (?,?,?,?)")) {
                 int tbl_id = getHighestTableID(db) + 1;
                 Log.d(TAG, "highest TBL ID: " + tbl_id);
                 ins.bindString(1, tbl.getName());
@@ -240,8 +241,8 @@ public class Database {
 
         try (
                 Cursor cursor = db.rawQuery("SELECT 1 "
-                        + "FROM `" + TBL_TABLES + "`"
-                        + "WHERE `" + KEY_TABLE + "` = ?", new String[]{String.valueOf(tbl.getId())})) {
+                        + "FROM " + TBL_TABLES
+                        + " WHERE " + KEY_TABLE + " = ?", new String[]{String.valueOf(tbl.getId())})) {
             return cursor.moveToNext();
         } catch (Exception e) {
             Log.e(TAG, "", e);
@@ -256,14 +257,14 @@ public class Database {
      * @param lst
      * @return
      */
-    public boolean upsertEntries(final List<VEntry> lst) {
+    public boolean upsertEntries(@NonNull final List<VEntry> lst) {
         try (
-                SQLiteStatement delStm = db.compileStatement("DELETE FROM `" + TBL_VOCABLE + "` WHERE `" + KEY_VOC + "` = ? AND `" + KEY_TABLE + "` = ?");
-                SQLiteStatement updStm = db.compileStatement("UPDATE `" + TBL_VOCABLE + "` SET `" + KEY_WORD_A + "` = ?, `" + KEY_WORD_B + "` = ?, `" + KEY_TIP + "` = ?, `"
-                        + KEY_LAST_USED + "` = ? "
-                        + "WHERE `" + KEY_TABLE + "`= ? AND `" + KEY_VOC + "` = ?");
-                SQLiteStatement insStm = db.compileStatement("INSERT INTO `" + TBL_VOCABLE + "` (`" + KEY_WORD_A + "`,`" + KEY_WORD_B + "`,`" + KEY_TIP + "`,`"
-                        + KEY_LAST_USED + "`,`" + KEY_TABLE + "`,`" + KEY_VOC + "`) VALUES (?,?,?,?,?,?)")
+                SQLiteStatement delStm = db.compileStatement("DELETE FROM " + TBL_VOCABLE + " WHERE " + KEY_VOC + " = ? AND " + KEY_TABLE + " = ?");
+                SQLiteStatement updStm = db.compileStatement("UPDATE " + TBL_VOCABLE + " SET " + KEY_WORD_A + " = ?, " + KEY_WORD_B + " = ?, " + KEY_TIP + " = ?, "
+                        + KEY_LAST_USED + " = ? "
+                        + "WHERE " + KEY_TABLE + "= ? AND " + KEY_VOC + " = ?");
+                SQLiteStatement insStm = db.compileStatement("INSERT INTO " + TBL_VOCABLE + " (" + KEY_WORD_A + "," + KEY_WORD_B + "," + KEY_TIP + ","
+                        + KEY_LAST_USED + "," + KEY_TABLE + "," + KEY_VOC + ") VALUES (?,?,?,?,?,?)")
 
         ) {
 
@@ -329,17 +330,17 @@ public class Database {
      * @param tbl VList to be used a search source
      * @return ID or  -1 if not found, -2 if an error occurred
      */
-    public int getTableID(final VList tbl) {
+    public int getTableID(@NonNull final VList tbl) {
         if (tbl.getId() > -1) {
             return tbl.getId();
         }
         String[] args = new String[]{tbl.getName(), tbl.getNameA(), tbl.getNameB()};
         try (
-                Cursor cursor = db.rawQuery("SELECT `" + KEY_TABLE + "` "
-                        + "FROM `" + TBL_TABLES + "` "
-                        + "WHERE `" + KEY_NAME_TBL + "` = ? "
-                        + "AND `" + KEY_NAME_A + "` = ? "
-                        + "AND `" + KEY_NAME_B + "`  = ? "
+                Cursor cursor = db.rawQuery("SELECT " + KEY_TABLE + " "
+                        + "FROM " + TBL_TABLES + " "
+                        + "WHERE " + KEY_NAME_TBL + " = ? "
+                        + "AND " + KEY_NAME_A + " = ? "
+                        + "AND " + KEY_NAME_B + "  = ? "
                         + "LIMIT 1", args)
         ) {
             int id = -1;
@@ -368,9 +369,9 @@ public class Database {
      */
     private int getHighestVocID(final SQLiteDatabase db, final int table) throws Exception {
         if (VList.isIDValid(table)) {
-            try (Cursor cursor = db.rawQuery("SELECT MAX(`" + KEY_VOC + "`) "
-                    + "FROM `" + TBL_VOCABLE + "` "
-                    + "WHERE `" + KEY_TABLE + "` = ? ", new String[]{String.valueOf(table)})) {
+            try (Cursor cursor = db.rawQuery("SELECT MAX(" + KEY_VOC + ") "
+                    + "FROM " + TBL_VOCABLE + " "
+                    + "WHERE " + KEY_TABLE + " = ? ", new String[]{String.valueOf(table)})) {
                 if (cursor.moveToNext()) {
                     return cursor.getInt(0);
                 } else {
@@ -394,8 +395,8 @@ public class Database {
         if (db == null)
             throw new IllegalArgumentException("invalid DB");
 
-        try (Cursor cursor = db.rawQuery("SELECT MAX(`" + KEY_TABLE + "`) "
-                + "FROM `" + TBL_TABLES + "` ", new String[]{})) {
+        try (Cursor cursor = db.rawQuery("SELECT MAX(" + KEY_TABLE + ") "
+                + "FROM " + TBL_TABLES, new String[]{})) {
             if (cursor.moveToNext()) {
                 Log.d(TAG, Arrays.toString(cursor.getColumnNames()));
                 return cursor.getInt(0);
@@ -413,13 +414,13 @@ public class Database {
      * @param tbl VList to delete
      * @return true on success
      */
-    public boolean deleteTable(final VList tbl) {
+    public boolean deleteTable(@NonNull final VList tbl) {
         try {
             db.beginTransaction();
 
             String[] arg = new String[]{String.valueOf(tbl.getId())};
             emptyList_(arg);
-            db.delete("`" + TBL_TABLES + "`", "`" + KEY_TABLE + "` = ?", arg);
+            db.delete(TBL_TABLES, KEY_TABLE + " = ?", arg);
             db.setTransactionSuccessful();
             return true;
         } catch (Exception e) {
@@ -439,9 +440,9 @@ public class Database {
      * @param arg String array containing the tbl ID at [0]
      */
     private void emptyList_(String[] arg) {
-        db.delete("`" + TBL_SESSION + "`", "`" + KEY_TABLE + "` = ?", arg);
-        db.delete("`" + TBL_SESSION_TABLES + "`", "`" + KEY_TABLE + "` = ?", arg);
-        db.delete("`" + TBL_VOCABLE + "`", "`" + KEY_TABLE + "` = ?", arg);
+        db.delete(TBL_SESSION, KEY_TABLE + " = ?", arg);
+        db.delete(TBL_SESSION_TABLES, KEY_TABLE + " = ?", arg);
+        db.delete(TBL_VOCABLE, KEY_TABLE + " = ?", arg);
     }
 
     /**
@@ -450,7 +451,7 @@ public class Database {
      * @param tbl
      * @return
      */
-    public boolean emptyList(final VList tbl) {
+    public boolean emptyList(@NonNull final VList tbl) {
         try {
             db.beginTransaction();
 
@@ -497,9 +498,9 @@ public class Database {
      * @param entry VEntry to update
      * @return true on success
      */
-    public boolean updateEntryProgress(VEntry entry) {
+    public boolean updateEntryProgress(@NonNull VEntry entry) {
         try (
-                SQLiteStatement updStm = db.compileStatement("INSERT OR REPLACE INTO `" + TBL_SESSION + "` ( `" + KEY_TABLE + "`,`" + KEY_VOC + "`,`" + KEY_POINTS + "` )"
+                SQLiteStatement updStm = db.compileStatement("INSERT OR REPLACE INTO " + TBL_SESSION + " ( " + KEY_TABLE + "," + KEY_VOC + "," + KEY_POINTS + " )"
                         + "VALUES (?,?,?)")
         ) {
             Log.d(TAG, entry.toString());
@@ -527,12 +528,12 @@ public class Database {
      * @param lists The VList to use for this sessions
      * @return true on success
      */
-    public boolean createSession(Collection<VList> lists) {
+    public boolean createSession(@NonNull Collection<VList> lists) {
         Log.d(TAG, "entry createSession");
 
         db.beginTransaction();
 
-        try (SQLiteStatement insStm = db.compileStatement("INSERT INTO `" + TBL_SESSION_TABLES + "` (`" + KEY_TABLE + "`) VALUES (?)")) {
+        try (SQLiteStatement insStm = db.compileStatement("INSERT INTO " + TBL_SESSION_TABLES + " (" + KEY_TABLE + ") VALUES (?)")) {
             //TODO: update last_used
             for (VList tbl : lists) {
                 insStm.clearBindings();
@@ -560,8 +561,9 @@ public class Database {
      */
     public ArrayList<VList> getSessionTables() {
         ArrayList<VList> lst = new ArrayList<>(10);
-        try (Cursor cursor = db.rawQuery("SELECT ses.`" + KEY_TABLE + "` tbl,`" + KEY_NAME_A + "`,`" + KEY_NAME_B + "`,`" + KEY_NAME_TBL + "` FROM `" + TBL_SESSION_TABLES + "` ses "
-                + "JOIN `" + TBL_TABLES + "` tbls ON tbls.`" + KEY_TABLE + "` == ses.`" + KEY_TABLE + "`", null)) {
+        try (Cursor cursor = db.rawQuery("SELECT ses." + KEY_TABLE + " tbl," + KEY_NAME_A + "," + KEY_NAME_B + "," + KEY_NAME_TBL
+                + " FROM " + TBL_SESSION_TABLES + " ses "
+                + "JOIN " + TBL_TABLES + " tbls ON tbls." + KEY_TABLE + " == ses." + KEY_TABLE, null)) {
             while (cursor.moveToNext()) {
                 lst.add(new VList(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3)));
             }
@@ -573,7 +575,7 @@ public class Database {
 
     public boolean isSessionStored() {
         Log.d(TAG, "entry isSessionStored");
-        try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM `" + TBL_SESSION_TABLES + "` WHERE 1", null)) {
+        try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + TBL_SESSION_TABLES + " WHERE 1", null)) {
             cursor.moveToNext();
             if (cursor.getInt(0) > 0) {
                 Log.d(TAG, "found session");
@@ -593,15 +595,15 @@ public class Database {
      * @param settings         TrainerSettings, used for points treshold etc
      * @return true on success
      */
-    public boolean getSessionTableData(final List<VList> lists, final List<VList> unfinishedLists, TrainerSettings settings) {
+    public boolean getSessionTableData(@NonNull final List<VList> lists,@NonNull final List<VList> unfinishedLists,@NonNull final TrainerSettings settings) {
         if (lists == null || unfinishedLists == null || lists.size() == 0) {
             throw new IllegalArgumentException();
         }
         unfinishedLists.clear();
         for (VList list : lists) {
             try (
-                    Cursor curLeng = db.rawQuery("SELECT COUNT(*) FROM `" + TBL_VOCABLE + "` WHERE `" + KEY_TABLE + "`  = ?", new String[]{String.valueOf(list.getId())});
-                    Cursor curFinished = db.rawQuery("SELECT COUNT(*) FROM `" + TBL_SESSION + "` WHERE `" + KEY_TABLE + "`  = ? AND `" + KEY_POINTS + "` >= ?", new String[]{String.valueOf(list.getId()), String.valueOf(settings.timesToSolve)});
+                    Cursor curLeng = db.rawQuery("SELECT COUNT(*) FROM " + TBL_VOCABLE + " WHERE " + KEY_TABLE + "  = ?", new String[]{String.valueOf(list.getId())});
+                    Cursor curFinished = db.rawQuery("SELECT COUNT(*) FROM " + TBL_SESSION + " WHERE " + KEY_TABLE + "  = ? AND " + KEY_POINTS + " >= ?", new String[]{String.valueOf(list.getId()), String.valueOf(settings.timesToSolve)});
             ) {
                 if (!curLeng.moveToNext())
                     return false;
@@ -642,12 +644,13 @@ public class Database {
         String[] arg = new String[]{String.valueOf(tbl.getId()), String.valueOf(lastID), String.valueOf(ts.timesToSolve)};
         Log.d(TAG, Arrays.toString(arg));
         try (
-                Cursor cursor = db.rawQuery("SELECT tbl.`" + KEY_VOC + "`, tbl.`" + KEY_TABLE + "`,`" + KEY_WORD_A + "`, `" + KEY_WORD_B + "`, `" + KEY_TIP + "`, `" + KEY_POINTS + "`, `" + KEY_LAST_USED + "` "
-                        + "FROM `" + TBL_VOCABLE + "` tbl LEFT JOIN  `" + TBL_SESSION + "` ses"
-                        + " ON tbl.`" + KEY_VOC + "` = ses.`" + KEY_VOC + "` AND tbl.`" + KEY_TABLE + "` = ses.`" + KEY_TABLE + "` "
-                        + " WHERE tbl.`" + KEY_TABLE + "` = ?"
-                        + " AND tbl.`" + KEY_VOC + "` != ?"
-                        + " AND ( `" + KEY_POINTS + "` IS NULL OR `" + KEY_POINTS + "` < ? ) "
+                Cursor cursor = db.rawQuery("SELECT tbl." + KEY_VOC + ", tbl." + KEY_TABLE + "," + KEY_WORD_A + ", "
+                            + KEY_WORD_B + ", " + KEY_TIP + ", " + KEY_POINTS + ", " + KEY_LAST_USED
+                        + "FROM " + TBL_VOCABLE + " tbl LEFT JOIN  " + TBL_SESSION + " ses"
+                        + " ON tbl." + KEY_VOC + " = ses." + KEY_VOC + " AND tbl." + KEY_TABLE + " = ses." + KEY_TABLE + " "
+                        + " WHERE tbl." + KEY_TABLE + " = ?"
+                        + " AND tbl." + KEY_VOC + " != ?"
+                        + " AND ( " + KEY_POINTS + " IS NULL OR " + KEY_POINTS + " < ? ) "
                         + " ORDER BY RANDOM() LIMIT 1", arg);
         ) {
             if (cursor.moveToNext()) {
@@ -680,7 +683,7 @@ public class Database {
         }
 
         try (
-                Cursor cursor = db.rawQuery("SELECT `" + KEY_MVALUE + "` FROM `" + TBL_SESSION_META + "` WHERE `" + KEY_MKEY + "` = ?"
+                Cursor cursor = db.rawQuery("SELECT " + KEY_MVALUE + " FROM " + TBL_SESSION_META + " WHERE " + KEY_MKEY + " = ?"
                         , new String[]{String.valueOf(key)})
         ) {
             if (cursor.moveToNext()) {
@@ -691,7 +694,7 @@ public class Database {
             }
 
         } catch (Exception e) {
-            Log.e(TAG, "", e);
+            Log.e(TAG, "error on session meta retrieval", e);
             return null;
         }
     }
@@ -705,7 +708,7 @@ public class Database {
      */
     public boolean setSessionMetaValue(final String key, final String value) {
         try (
-                SQLiteStatement updStm = db.compileStatement("INSERT OR REPLACE INTO `" + TBL_SESSION_META + "` ( `" + KEY_MKEY + "`,`" + KEY_MVALUE + "` )"
+                SQLiteStatement updStm = db.compileStatement("INSERT OR REPLACE INTO " + TBL_SESSION_META + " ( " + KEY_MKEY + "," + KEY_MVALUE + " )"
                         + "(?,?)")
         ) {
             updStm.bindString(1, key);
@@ -729,7 +732,7 @@ public class Database {
      */
     public SQLiteStatement getSessionInsertStm() {
         db.beginTransaction();
-        return db.compileStatement("INSERT OR REPLACE INTO " + TBL_SESSION_META + " (`" + KEY_MKEY + "`,`" + KEY_MVALUE + "`) VALUES (?,?)");
+        return db.compileStatement("INSERT OR REPLACE INTO " + TBL_SESSION_META + " (" + KEY_MKEY + "," + KEY_MVALUE + ") VALUES (?,?)");
     }
 
     /**
@@ -753,7 +756,7 @@ public class Database {
     public HashMap<String, String> getSessionData() {
         Log.d(TAG, "entry getSessionData");
         HashMap<String, String> map = new HashMap<>(10);
-        try (Cursor cursor = db.rawQuery("SELECT `" + KEY_MKEY + "`, `" + KEY_MVALUE + "` FROM `" + TBL_SESSION_META + "` WHERE 1", null)) {
+        try (Cursor cursor = db.rawQuery("SELECT " + KEY_MKEY + ", " + KEY_MVALUE + " FROM " + TBL_SESSION_META + " WHERE 1", null)) {
             while (cursor.moveToNext()) {
                 map.put(cursor.getString(0), cursor.getString(1));
             }
@@ -784,41 +787,49 @@ public class Database {
         @Override
         public void onCreate(SQLiteDatabase db) {
             try {
-                final String sql_a = "CREATE TABLE `" + TBL_VOCABLE + "` (`" + KEY_TABLE + "` INTEGER NOT NULL, "
-                        + "`" + KEY_VOC + "` INTEGER NOT NULL,"
-                        + "`" + KEY_WORD_A + "` TEXT NOT NULL, `" + KEY_WORD_B + "` TEXT NOT NULL, `" + KEY_TIP + "` TEXT, "
-                        + "`" + KEY_LAST_USED + "` INTEGER, PRIMARY KEY (`" + KEY_TABLE + "`,`" + KEY_VOC + "`) )";
-                final String sql_b = "CREATE TABLE `" + TBL_TABLES + "` ("
-                        + "`" + KEY_NAME_TBL + "` TEXT NOT NULL, `" + KEY_TABLE + "` INTEGER PRIMARY KEY,"
-                        + "`" + KEY_NAME_A + "` TEXT NOT NULL, `" + KEY_NAME_B + "` TEXT NOT NULL )";
-                final String sql_c = "CREATE TABLE `" + TBL_SESSION + "` ("
-                        + "`" + KEY_TABLE + "` INTEGER NOT NULL,"
-                        + "`" + KEY_VOC + "` INTEGER NOT NULL,"
-                        + "`" + KEY_POINTS + "` INTEGER NOT NULL,"
-                        + "PRIMARY KEY (`" + KEY_TABLE + "`,`" + KEY_VOC + "`))";
-                final String sql_d = "CREATE TABLE `" + TBL_SESSION_META + "` (`" + KEY_MKEY + "` TEXT NOT NULL,"
-                        + "`" + KEY_MVALUE + "` TEXT NOT NULL,"
-                        + "PRIMARY KEY (`" + KEY_MKEY + "`,`" + KEY_MVALUE + "`))";
-                final String sql_e = "CREATE TABLE `" + TBL_SESSION_TABLES + "` (`" + KEY_TABLE + "` INTEGER PRIMARY KEY)";
-                Log.d(TAG, sql_a);
-                Log.d(TAG, sql_b);
-                Log.d(TAG, sql_c);
-                Log.d(TAG, sql_d);
-                Log.d(TAG, sql_e);
+                final String sql_a = "CREATE TABLE " + TBL_VOCABLE + " ("
+                        + KEY_TABLE + " INTEGER NOT NULL, "
+                        + KEY_VOC + " INTEGER NOT NULL,"
+                        + KEY_WORD_A + " TEXT NOT NULL,"
+                        + KEY_WORD_B + " TEXT NOT NULL,"
+                        + KEY_TIP + " TEXT,"
+                        + KEY_LAST_USED + " INTEGER,"
+                        + "PRIMARY KEY (" + KEY_TABLE + "," + KEY_VOC + ") )";
+                final String sql_b = "CREATE TABLE " + TBL_TABLES + " ("
+                        + KEY_NAME_TBL + " TEXT NOT NULL,"
+                        + KEY_TABLE + " INTEGER PRIMARY KEY,"
+                        + KEY_NAME_A + " TEXT NOT NULL,"
+                        + KEY_NAME_B + " TEXT NOT NULL )";
+                final String sql_c = "CREATE TABLE " + TBL_SESSION + " ("
+                        + KEY_TABLE + " INTEGER NOT NULL,"
+                        + KEY_VOC + " INTEGER NOT NULL,"
+                        + KEY_POINTS + " INTEGER NOT NULL,"
+                        + "PRIMARY KEY (" + KEY_TABLE + "," + KEY_VOC + "))";
+                final String sql_d = "CREATE TABLE " + TBL_SESSION_META + " ("
+                        + KEY_MKEY + " TEXT NOT NULL,"
+                        + KEY_MVALUE + " TEXT NOT NULL,"
+                        + "PRIMARY KEY (" + KEY_MKEY + "," + KEY_MVALUE + "))";
+                final String sql_e = "CREATE TABLE " + TBL_SESSION_TABLES + " ("
+                        + KEY_TABLE + " INTEGER PRIMARY KEY )";
+                Log.v(TAG, sql_a);
+                Log.v(TAG, sql_b);
+                Log.v(TAG, sql_c);
+                Log.v(TAG, sql_d);
+                Log.v(TAG, sql_e);
                 db.execSQL(sql_a);
                 db.execSQL(sql_b);
                 db.execSQL(sql_c);
                 db.execSQL(sql_d);
                 db.execSQL(sql_e);
             } catch (Exception e) {
-                Log.e(TAG, "", e);
+                Log.e(TAG, "Database creation error", e);
                 throw e;
             }
         }
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+            Log.d(TAG,"db upgrade triggered old:"+oldVersion+" new:"+newVersion);
         }
 
 

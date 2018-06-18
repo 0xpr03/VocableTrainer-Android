@@ -19,7 +19,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer.Trainer;
 
 import static org.junit.Assert.*;
 
@@ -76,7 +76,7 @@ public class DBTest {
         Database db = new Database(InstrumentationRegistry.getTargetContext(),true);
 
         VList tbl = getTable();
-        assertTrue("UpsertTable",db.upsertTable(tbl));
+        assertTrue("UpsertTable",db.upsertVList(tbl));
         List<VList> tbls = db.getTables();
         assertEquals("Invalid amount of entries",1,tbls.size());
         assertTrue("Unequal table after insert",tbl.equals( tbls.get(0)));
@@ -86,7 +86,7 @@ public class DBTest {
     public void testDBInsertEntries(){
         Database db = new Database(InstrumentationRegistry.getTargetContext(),true);
         VList tbl = getTable();
-        assertTrue("UpsertTable",db.upsertTable(tbl));
+        assertTrue("UpsertTable",db.upsertVList(tbl));
 
         List<VEntry> entries = getEntries(tbl);
 
@@ -99,7 +99,7 @@ public class DBTest {
     public void testDBEditEntries(){
         Database db = new Database(InstrumentationRegistry.getTargetContext(),true);
         VList tbl = getTable();
-        assertTrue("UpsertTable",db.upsertTable(tbl));
+        assertTrue("UpsertTable",db.upsertVList(tbl));
 
         List<VEntry> entries = getEntries(tbl);
 
@@ -107,7 +107,7 @@ public class DBTest {
         List<VEntry> result = db.getVocablesOfTable(tbl);
         assertEquals("invalid amount of entries",entries.size(),result.size());
 
-        result.get(20).setAWord("New Word");
+        result.get(20).setAMeanings("New Word");
         result.get(30).setDelete(true);
         assertTrue("UpsertEntries",db.upsertEntries(result));
 
@@ -122,7 +122,7 @@ public class DBTest {
     public void testDBDelete(){
         Database db = new Database(InstrumentationRegistry.getTargetContext(), true);
         VList tbl = getTable();
-        assertTrue("upserttable",db.upsertTable(tbl));
+        assertTrue("upserttable",db.upsertVList(tbl));
         List<VEntry> entries = getEntries(tbl);
         assertTrue("UpsertEntries", db.upsertEntries(entries));
 
@@ -137,7 +137,7 @@ public class DBTest {
     public void testDBRandomSelect(){
         Database db = new Database(InstrumentationRegistry.getTargetContext(),true);
         VList tbl = getTable();
-        assertTrue("UpsertTable",db.upsertTable(tbl));
+        assertTrue("UpsertTable",db.upsertVList(tbl));
 
         List<VEntry> entries = getEntries(tbl);
 
@@ -149,7 +149,7 @@ public class DBTest {
     public void testDBEntryPointsInsert(){
         Database db = new Database(InstrumentationRegistry.getTargetContext(),true);
         VList tbl = getTable();
-        assertTrue("UpsertTable",db.upsertTable(tbl));
+        assertTrue("UpsertTable",db.upsertVList(tbl));
 
         List<VEntry> entries = getEntries(tbl);
 
@@ -175,7 +175,7 @@ public class DBTest {
         final int points = 1;
         Database db = new Database(InstrumentationRegistry.getTargetContext(),true);
         VList tbl = getTable();
-        assertTrue("UpsertTable",db.upsertTable(tbl));
+        assertTrue("UpsertTable",db.upsertVList(tbl));
 
         List<VEntry> entries = getEntries(tbl);
         entries = entries.subList(0,2);

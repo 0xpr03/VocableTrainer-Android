@@ -1,6 +1,10 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage;
 
 import java.io.Serializable;
+import java.sql.Date;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TRESHOLD;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList.isIDValid;
@@ -10,96 +14,159 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList.isID
  */
 public class VEntry implements Serializable {
     private final VList list;
-    private String AWord;
-    private String BWord;
     private String tip;
+    private String addition;
     private int id;
     private int points;
-    private long date;
+    private Date last_used;
+    private Date created;
+    private int correct;
+    private int wrong;
+    private List<String> meaningA;
+    private List<String> meaningB;
     private boolean changed = false;
     private boolean delete = false;
+    private static final String CONCAT = "/";
+
+
+    /**
+     * Creates a new VEntry with invalid ID & empty fields
+     * @param list
+     */
+    public VEntry(@NonNull final VList list) {
+        this(new LinkedList<>(),new LinkedList<>(),"","",list);
+    }
 
     /**
      * Creates a new VEntry
      *
-     * @param AWord
-     * @param BWord
+     * @param meaningA
+     * @param meaningB
      * @param tip
-     * @param id     ID, list unique
-     * @param list  List ID
-     * @param points (training session break)
-     * @param date   (last used)
+     * @param addition
+     * @param id
+     * @param list
+     * @param points
+     * @param last_used
+     * @param created
+     * @param correct
+     * @param wrong
      */
-    public VEntry(String AWord, String BWord, String tip, int id, VList list, int points, long date) {
-        this.AWord = AWord;
-        this.BWord = BWord;
+    public VEntry(@NonNull List<String> meaningA,@NonNull List<String> meaningB,@Nullable String tip,@Nullable String addition,
+                  int id, @NonNull VList list, int points, @Nullable Date last_used,@NonNull Date created, int correct, int wrong) {
+        this.meaningA = meaningA;
+        this.meaningB = meaningB;
         this.tip = tip;
         this.list = list;
         this.points = points;
-        this.date = date;
+        this.created = created;
+        this.last_used = last_used;
+        this.correct = correct;
+        this.wrong = wrong;
+        this.addition = addition;
         this.id = id;
     }
 
     /**
      * Creates a new VEntry with 0 points
      *
-     * @param AWord
-     * @param BWord
+     * @param meaningA
+     * @param meaningB
      * @param tip
+     * @param addition
      * @param id
      * @param list
+     * @param last_used
+     * @param created
+     * @param correct
+     * @param wrong
      */
-    public VEntry(String AWord, String BWord, String tip, int id, VList list, long date) {
-        this(AWord, BWord, tip, id, list, 0, date);
+    public VEntry(@NonNull List<String> meaningA,@NonNull List<String> meaningB,@Nullable String tip,@Nullable String addition,
+            int id,@NonNull VList list,@Nullable Date last_used,@NonNull Date created, int correct, int wrong) {
+        this(meaningA,meaningB,tip,addition,id,list,0,last_used,created,correct,wrong);
     }
 
     /**
-     * Creates a new VEntry with 0 points, -1 ID
-     *
-     * @param AWord
-     * @param BWord
+     * Creates a 1:1 entry for spacers etc
+     *  throw an IllegalArgumentException if ID should be valid
+     * @param A meaning A entry
+     * @param B meaning B entry
+     * @param fID fake ID, has to be invalid
      * @param tip
+     */
+    public VEntry(String A, String B,String tip, int fID){
+        this(new ArrayList<>(1),new ArrayList<>(1),tip,"",fID,null,0,null,new Date(0),0,0);
+        if(isIDValid(fID)){
+            throw new IllegalArgumentException("no valid ID allowed!");
+        }
+        meaningA.add(A);
+        meaningB.add(B);
+    }
+
+    /**
+     * Creates a 1:1 VEntry for Importing with an invalid ID
+     *
+     * @param A
+     * @param B
+     * @param tip
+     * @param addition
      * @param list
      */
-    public VEntry(String AWord, String BWord, String tip, VList list, long date) {
-        this(AWord, BWord, tip, MIN_ID_TRESHOLD - 1, list, 0, date);
+    public VEntry(String A, String B, String tip, String addition, VList list) {
+        this(new ArrayList<>(1),new ArrayList<>(1),tip,addition,list);
+        meaningA.add(A);
+        meaningB.add(B);
     }
 
     /**
-     * Returns the A-Word
+     * Creates a new VEntry with 0 points, ID < MIN_ID_TRESHOLD & current Date & 0 correct, wrong
+     *
+     * @param meaningA
+     * @param meaningB
+     * @param tip
+     * @param addition
+     * @param list
+     */
+    public VEntry(@NonNull List<String> meaningA,@NonNull List<String> meaningB,@Nullable String tip,@Nullable String addition,@NonNull VList list) {
+        this(meaningA,meaningB,tip,addition,MIN_ID_TRESHOLD-1,list,0,null,new Date(System.currentTimeMillis()),0,0);
+    }
+
+
+    /**
+     * Returns meanings for A Column
      *
      * @return
      */
-    public String getAWord() {
-        return AWord;
+    public List<String> getAMeanings() {
+        return meaningA;
     }
 
     /**
-     * Set A-Word
+     * Set A-Meanings
      *
-     * @param AWord
+     * @param AMeanings
      */
-    public void setAWord(String AWord) {
-        this.AWord = AWord;
+    public void setAMeanings(List<String> AMeanings) {
+        this.meaningA = AMeanings;
         this.changed = true;
     }
 
     /**
-     * Returns the B word
+     * Returns meanings for B Column
      *
      * @return
      */
-    public String getBWord() {
-        return BWord;
+    public List<String> getBMeanings() {
+        return meaningB;
     }
 
     /**
-     * Set B-Word
+     * Set B-Meanings
      *
-     * @param BWord
+     * @param BMeanings
      */
-    public void setBWord(String BWord) {
-        this.BWord = BWord;
+    public void setBMeanings(List<String> BMeanings) {
+        this.meaningB = BMeanings;
         this.changed = true;
     }
 
@@ -108,8 +175,17 @@ public class VEntry implements Serializable {
      *
      * @return
      */
-    public String getTip() {
+    public @Nullable String getTip() {
         return tip;
+    }
+
+    /**
+     * Get addition
+     *
+     * @return
+     */
+    public @Nullable String getAddition() {
+        return addition;
     }
 
     /**
@@ -117,14 +193,14 @@ public class VEntry implements Serializable {
      *
      * @param tip
      */
-    public void setTip(String tip) {
+    public void setTip(@Nullable String tip) {
         this.tip = tip;
         this.changed = true;
     }
 
     @Override
     public String toString() {
-        return AWord + " " + BWord + " ID:" + id + " P:" + points;
+        return getAString() + " " + getBString() + " ID:" + id + " P:" + points;
     }
 
     /**
@@ -135,6 +211,13 @@ public class VEntry implements Serializable {
      */
     public boolean equals(VEntry entry) {
         return this.getId() == entry.getId() && this.getList() == entry.getList();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof VEntry)
+            return equals((VEntry) obj);
+        return super.equals(obj);
     }
 
     /**
@@ -167,14 +250,6 @@ public class VEntry implements Serializable {
         this.points = points;
     }
 
-    public long getDate() {
-        return date;
-    }
-
-    public void setDate(long date) {
-        this.date = date;
-    }
-
     public int getId() {
         return id;
     }
@@ -183,6 +258,45 @@ public class VEntry implements Serializable {
         this.id = id;
     }
 
+    public void setAddition(String addition) {
+        this.addition = addition;
+    }
+
+    public Date getLast_used() {
+        return last_used;
+    }
+
+    public void setLast_used(Date last_used) {
+        this.last_used = last_used;
+    }
+
+    public Date getCreated() {
+        return created;
+    }
+
+    public void setCreated(Date created) {
+        this.created = created;
+    }
+
+    public int getCorrect() {
+        return correct;
+    }
+
+    public void setCorrect(int correct) {
+        this.correct = correct;
+    }
+
+    public void incrCorrect() { this.correct++; }
+
+    public int getWrong() {
+        return wrong;
+    }
+
+    public void setWrong(int wrong) {
+        this.wrong = wrong;
+    }
+
+    public void incrWrong() { this.wrong++; }
 
     public boolean isDelete() {
         return delete;
@@ -191,4 +305,13 @@ public class VEntry implements Serializable {
     public void setDelete(boolean delete) {
         this.delete = delete;
     }
+
+    public String getAString() {
+        return TextUtils.join(CONCAT,meaningA);
+    }
+
+    public String getBString() {
+        return TextUtils.join(CONCAT,meaningB);
+    }
+
 }

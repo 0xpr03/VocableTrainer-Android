@@ -1,7 +1,7 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -22,7 +22,7 @@ public abstract class FragmentActivity extends AppCompatActivity{
     /**
      * Interface to implement by fragments that want to be notifified
      */
-    public interface BackButtonListner {
+    public interface BackButtonListener {
         /**
          * Called when back button is pressed<br>
          *     Used to communicate between activity & fragment
@@ -31,12 +31,12 @@ public abstract class FragmentActivity extends AppCompatActivity{
         boolean onBackPressed();
     }
 
-    BackButtonListner backButtonListner;
+    BackButtonListener backButtonListener;
 
     /**
      * Returns the action bar<br>
      *     used by fragments
-     * @return
+     * @return ActionBar or Null if none exists
      */
     public ActionBar getSupportActionBar(){
         return super.getSupportActionBar();
@@ -44,8 +44,8 @@ public abstract class FragmentActivity extends AppCompatActivity{
 
     @Override
     public void onBackPressed() {
-        if(backButtonListner != null) {
-            if (backButtonListner.onBackPressed()) {
+        if(backButtonListener != null) {
+            if (backButtonListener.onBackPressed()) {
                 super.onBackPressed();
             }
         } else if(!handleFragmentBack()){
@@ -54,7 +54,7 @@ public abstract class FragmentActivity extends AppCompatActivity{
     }
 
     /**
-     * Goes back one stack
+     * Pops the stack & handles fragment back
      * @return false when it's impossible to go back
      */
     protected boolean handleFragmentBack(){
@@ -81,7 +81,7 @@ public abstract class FragmentActivity extends AppCompatActivity{
      * @return
      */
     private Fragment getCurrentFragment(){
-        FragmentManager fragmentManager = getFragmentManager();
+        FragmentManager fragmentManager = getSupportFragmentManager();
         int amount;
         Log.d(TAG,"fragment stack:" + (amount = fragmentManager.getBackStackEntryCount()));
         Fragment fr = fragmentManager.findFragmentById(R.id.frame);
@@ -100,7 +100,7 @@ public abstract class FragmentActivity extends AppCompatActivity{
     public void setFragment(final Fragment fragment){
         Log.w(TAG,(fragment instanceof BaseFragment)+""+fragment);
         checkBackButtonListener(fragment);
-        getFragmentManager().beginTransaction()
+        getSupportFragmentManager().beginTransaction()
                 .replace(R.id.frame, fragment).commit();
         currentFragment = fragment;
         rootFragment = fragment;
@@ -111,10 +111,10 @@ public abstract class FragmentActivity extends AppCompatActivity{
      * @param fragment
      */
     private void checkBackButtonListener(final Fragment fragment){
-        if(fragment instanceof BackButtonListner) {
-            backButtonListner = (BackButtonListner) fragment;
+        if(fragment instanceof BackButtonListener) {
+            backButtonListener = (BackButtonListener) fragment;
         }else{
-            backButtonListner = null;
+            backButtonListener = null;
         }
     }
 
@@ -124,7 +124,7 @@ public abstract class FragmentActivity extends AppCompatActivity{
      */
     public void addFragment(final Fragment caller, final Fragment fragment){
         checkBackButtonListener(fragment);
-        getFragmentManager().beginTransaction()
+        getSupportFragmentManager().beginTransaction()
                 .add(R.id.frame,fragment).addToBackStack(null).remove(caller).commit();
         currentFragment = fragment;
     }

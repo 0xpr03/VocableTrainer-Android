@@ -1,7 +1,7 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.Import;
 
-import android.app.Fragment;
 import android.os.AsyncTask;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.ProgressBar;

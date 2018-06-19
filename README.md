@@ -1,17 +1,17 @@
-# VocableTrainer-Android
+# VocableTrainer-Android [![Build Status](https://travis-ci.com/0xpr03/VocableTrainer-Android.svg?branch=master)](https://travis-ci.com/0xpr03/VocableTrainer-Android)
 VocableTrainer-Android is a vocable training software for the android platform.
 It provides traning with different modes, sessions and multiple lists.
 
 Available for free on [f-droid store](https://f-droid.org/packages/vocabletrainer.heinecke.aron.vocabletrainer/)  
   
-There's also a [PC version](https://github.com/0xpr03/VocableTrainer) (less active developed)
+~~There's also a [PC version](https://github.com/0xpr03/VocableTrainer) (less active developed)~~
 
 ## Features
-- [ ] N:N vocable support
+- [ ] N:N vocable support (multiple meanings)
 - [X] A<->B Random training over multiple lists
 - [X] Stop/Continue training sessions at any time
 - [X] Classic mode, type in & verify
-- [X] Quick Mode, no typing in
+- [X] Quick Mode, no typing
 - [X] Set repeat-amount of vocables in training
 - [X] Export/Import of lists to/from CSV files
 - [X] configurable CSV format

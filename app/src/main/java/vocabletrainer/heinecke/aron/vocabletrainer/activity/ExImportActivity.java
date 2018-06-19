@@ -24,6 +24,7 @@ import java.io.ObjectOutputStream;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ExportFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ImportFragment;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVCustomFormat;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
@@ -43,7 +44,7 @@ public class ExImportActivity extends FragmentActivity {
      * Pass this as false to show export options
      */
     public static final String PARAM_IMPORT = "show_import";
-    private static CSVFormat CUSTOM_FORMAT;
+    private static CSVCustomFormat CUSTOM_FORMAT;
     private boolean showImport;
     private boolean isCustomFormatUpdated = false;
 
@@ -96,23 +97,23 @@ public class ExImportActivity extends FragmentActivity {
      * @param settings required to load preferences
      * @return
      */
-    public static CSVFormat getCustomFormat(SharedPreferences settings) {
+    public static CSVCustomFormat getCustomFormat(SharedPreferences settings) {
         if (CUSTOM_FORMAT == null) {
             String serialized = settings.getString(P_KEY_S_CSV_FORMAT, null);
             if (serialized == null) {
-                CUSTOM_FORMAT = CSVFormat.DEFAULT;
+                CUSTOM_FORMAT = CSVCustomFormat.DEFAULT;
             } else {
                 try {
                     byte b[] = Base64.decode(serialized.getBytes(),Base64.DEFAULT);
                     ByteArrayInputStream bi = new ByteArrayInputStream(b);
                     ObjectInputStream si = new ObjectInputStream(bi);
-                    CUSTOM_FORMAT = (CSVFormat) si.readObject();
+                    CUSTOM_FORMAT = (CSVCustomFormat) si.readObject();
                     si.close();
                     bi.close();
                     Log.d(TAG,"decoded format");
                 } catch (Exception e) {
-                    Log.e(TAG, "unable to decode custom format ", e);
-                    CUSTOM_FORMAT = CSVFormat.DEFAULT;
+                    Log.e(TAG, "unable to load custom format ", e);
+                    CUSTOM_FORMAT = CSVCustomFormat.DEFAULT;
                 }
             }
         }
@@ -123,7 +124,7 @@ public class ExImportActivity extends FragmentActivity {
      * Update format to new one
      * @param newFormat
      */
-    public static void updateCustomFormat(final CSVFormat newFormat){
+    public static void updateCustomFormat(final CSVCustomFormat newFormat){
         CUSTOM_FORMAT = newFormat;
     }
 
@@ -143,7 +144,7 @@ public class ExImportActivity extends FragmentActivity {
             bo.close();
             Log.d(TAG,"saved custom format");
         } catch (IOException e) {
-            Log.e("Formatter", "unable to save format ", e);
+            Log.e(TAG, "unable to save format ", e);
         }
 
     }
@@ -172,15 +173,15 @@ public class ExImportActivity extends FragmentActivity {
      * @param adapter Adapter to populate
      * @param context Context for string resolve
      */
-    public static void populateFormatSpinnerAdapter(ArrayAdapter<GenericSpinnerEntry<CSVFormat>> adapter, Context context, SharedPreferences settings) {
+    public static void populateFormatSpinnerAdapter(ArrayAdapter<GenericSpinnerEntry<CSVCustomFormat>> adapter, Context context, SharedPreferences settings) {
         adapter.clear();
-        adapter.add(new GenericSpinnerEntry<>(CSVFormat.DEFAULT, context.getString(R.string.CSV_Format_Default)));
-        adapter.add(new GenericSpinnerEntry<>(CSVFormat.EXCEL, context.getString(R.string.CSV_Format_EXCEL)));
-        adapter.add(new GenericSpinnerEntry<>(CSVFormat.RFC4180, context.getString(R.string.CSV_Format_RFC4180)));
-        adapter.add(new GenericSpinnerEntry<>(CSVFormat.TDF, context.getString(R.string.CSV_Format_Tabs)));
-        adapter.add(new GenericSpinnerEntry<>(CSVFormat.MYSQL, context.getString(R.string.CSV_Format_Mysql)));
-        adapter.add(new GenericSpinnerEntry<>(CSVFormat.INFORMIX_UNLOAD, context.getString(R.string.CSV_Format_INFORMIX_UNLOAD)));
-        adapter.add(new GenericSpinnerEntry<>(CSVFormat.INFORMIX_UNLOAD_CSV, context.getString(R.string.CSV_Format_INFORMIX_UNLOAD_CSV)));
+        adapter.add(new GenericSpinnerEntry<>(CSVCustomFormat.DEFAULT, context.getString(R.string.CSV_Format_Default)));
+        adapter.add(new GenericSpinnerEntry<>(new CSVCustomFormat(CSVFormat.EXCEL), context.getString(R.string.CSV_Format_EXCEL)));
+        adapter.add(new GenericSpinnerEntry<>(new CSVCustomFormat(CSVFormat.RFC4180), context.getString(R.string.CSV_Format_RFC4180)));
+        adapter.add(new GenericSpinnerEntry<>(new CSVCustomFormat(CSVFormat.TDF), context.getString(R.string.CSV_Format_Tabs)));
+        adapter.add(new GenericSpinnerEntry<>(new CSVCustomFormat(CSVFormat.MYSQL), context.getString(R.string.CSV_Format_Mysql)));
+        adapter.add(new GenericSpinnerEntry<>(new CSVCustomFormat(CSVFormat.INFORMIX_UNLOAD), context.getString(R.string.CSV_Format_INFORMIX_UNLOAD)));
+        adapter.add(new GenericSpinnerEntry<>(new CSVCustomFormat(CSVFormat.INFORMIX_UNLOAD_CSV), context.getString(R.string.CSV_Format_INFORMIX_UNLOAD_CSV)));
         adapter.add(new GenericSpinnerEntry<>(getCustomFormat(settings), context.getString(R.string.CSV_Format_Custom_Format)));
         adapter.notifyDataSetChanged();
     }

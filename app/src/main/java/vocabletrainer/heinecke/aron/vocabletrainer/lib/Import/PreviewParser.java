@@ -25,17 +25,18 @@ public class PreviewParser implements ImportHandler {
 
     @Override
     public void newTable(String name, String columnA, String columnB) {
-        list.add(new VEntry(columnA, columnB, name, ID_RESERVED_SKIP, tbl, -2L));
+        list.add(new VEntry(columnA, columnB, name, ID_RESERVED_SKIP));
         parsed_limiter = 0;
         tblCount++;
         rows++;
     }
 
     @Override
-    public void newEntry(String A, String B, String Tipp) {
+    public void newEntry(List<String> A, List<String> B, String Tip, String addition) {
         rows++;
         if (parsed_limiter < PARSE_LIMIT) {
-            list.add(new VEntry(A, B, Tipp, null, -2L));
+            list.add(new VEntry(A, B, Tip, "", null));
+            //TODO: allow addition column
             parsed_limiter++;
         }
     }

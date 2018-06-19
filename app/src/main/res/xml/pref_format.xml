@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory
-        android:persistent="true"
+        android:persistent="false"
         android:title="@string/Pref_General" >
     </PreferenceCategory>
-    <EditTextPreference
+    <vocabletrainer.heinecke.aron.vocabletrainer.lib.CustomEditTextPreference
         android:key="@string/k_pref_delimiter"
         android:summary="@string/Pref_Delimiter_Desc"
         android:title="@string/Pref_Delimiter" />
@@ -24,11 +24,34 @@
             android:key="@string/k_pref_escape"
             android:title="@string/Pref_Escape"
             android:summary="@string/Pref_Escape_Desc"/>
-        <EditTextPreference
+        <vocabletrainer.heinecke.aron.vocabletrainer.lib.CustomEditTextPreference
             android:dependency="@string/k_pref_escape"
             android:key="@string/k_pref_escape_char"
             android:title="@string/Pref_Quote_Char"
             android:summary="@string/Pref_Quote_Char_Desc" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:persistent="false"
+        android:title="@string/Pref_Multi_Transl">
+        <SwitchPreference
+            android:key="@string/k_pref_multi_transl"
+            android:title="@string/Pref_Multi_Transl"
+            android:summary="@string/Pref_Multi_Transl_Desc"/>
+        <vocabletrainer.heinecke.aron.vocabletrainer.lib.CustomEditTextPreference
+            android:dependency="@string/k_pref_multi_transl"
+            android:key="@string/k_pref_multi_transl_char"
+            android:title="@string/Pref_Multi_Transl_Char"
+            android:summary="@string/Pref_Multi_Transl_Char_Desc"/>
+        <SwitchPreference
+            android:key="@string/k_pref_multi_transl_escape"
+            android:dependency="@string/k_pref_multi_transl"
+            android:title="@string/Pref_Multi_Transl_Escape"
+            android:summary="@string/Pref_Multi_Transl_Escape_Desc"/>
+        <vocabletrainer.heinecke.aron.vocabletrainer.lib.CustomEditTextPreference
+            android:dependency="@string/k_pref_multi_transl_escape"
+            android:key="@string/k_pref_multi_transl_escape_char"
+            android:title="@string/Pref_Multi_Transl_Escape_Char"
+            android:summary="@string/Pref_Multi_Transl_Escape_Char_Desc"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:persistent="false"
@@ -37,7 +60,7 @@
             android:key="@string/k_pref_comment"
             android:title="@string/Pref_Comment"
             android:summary="@string/Pref_Comment_Desc"/>
-        <EditTextPreference
+        <vocabletrainer.heinecke.aron.vocabletrainer.lib.CustomEditTextPreference
             android:dependency="@string/k_pref_comment"
             android:key="@string/k_pref_comment_char"
             android:title="@string/Pref_Comment_Char"
@@ -50,7 +73,7 @@
             android:key="@string/k_pref_quote"
             android:title="@string/Pref_Quote"
             android:summary="@string/Pref_Quote_Desc"/>
-        <EditTextPreference
+        <vocabletrainer.heinecke.aron.vocabletrainer.lib.CustomEditTextPreference
             android:dependency="@string/k_pref_quote"
             android:key="@string/k_pref_quote_char"
             android:title="@string/Pref_Quote_Char"

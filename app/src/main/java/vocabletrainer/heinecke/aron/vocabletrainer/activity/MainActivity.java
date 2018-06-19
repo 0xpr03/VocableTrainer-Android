@@ -45,17 +45,9 @@ public class MainActivity extends AppCompatActivity {
             finishedDiag.setTitle("Info");
             finishedDiag.setMessage("This software is currently in beta state. This includes, but not limited to, data loss, destroying your phone, eating your children and burning your dog! You have been warned.");
 
-            finishedDiag.setPositiveButton("TLDR", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    showedDialog = true;
-                }
-            });
+            finishedDiag.setPositiveButton("TLDR", (dialog, whichButton) -> showedDialog = true);
 
-            finishedDiag.setNegativeButton("Get me outta here", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    System.exit(0);
-                }
-            });
+            finishedDiag.setNegativeButton("Get me outta here", (dialog, whichButton) -> System.exit(0));
 
             finishedDiag.show();
         }
@@ -83,18 +75,14 @@ public class MainActivity extends AppCompatActivity {
             textView.setMovementMethod(LinkMovementMethod.getInstance());
             dbDialog.setView(textView);
 
-            dbDialog.setPositiveButton(R.string.tDB_Update_Close_Dismissed, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    SharedPreferences.Editor editor = settings.edit();
-                    editor.putBoolean(P_KEY_DB_CHANGE_N_N,true);
-                    editor.apply();
-                }
+            dbDialog.setPositiveButton(R.string.tDB_Update_Close_Dismissed, (dialog, whichButton) -> {
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putBoolean(P_KEY_DB_CHANGE_N_N,true);
+                editor.apply();
             });
 
-            dbDialog.setNegativeButton(R.string.tDB_Update_Close, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    // do nothing
-                }
+            dbDialog.setNegativeButton(R.string.tDB_Update_Close, (dialog, whichButton) -> {
+                // do nothing
             });
 
             dbDialog.show();
@@ -139,7 +127,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        btnContinue.setEnabled(new Database(getBaseContext()).isSessionStored());
+        btnContinue.setEnabled(false);
+
+        new Thread(() -> {
+            final boolean openSession = new Database(getBaseContext()).isSessionStored();
+
+            runOnUiThread(() -> btnContinue.setEnabled(openSession));
+
+        }).start();
     }
 
     /**

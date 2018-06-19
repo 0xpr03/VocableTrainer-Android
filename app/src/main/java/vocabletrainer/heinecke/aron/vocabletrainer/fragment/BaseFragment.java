@@ -17,4 +17,12 @@ public abstract class BaseFragment extends Fragment {
     protected FragmentActivity getFragmentActivity(){
         return (FragmentActivity) getActivity();
     }
+
+    /**
+     * Returns the current AppCompatActivity casted via getActivity
+     * @return AppCompatActivity
+     */
+    public AppCompatActivity getACActivity(){
+        return (AppCompatActivity) getActivity();
+    }
 }

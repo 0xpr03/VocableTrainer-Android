@@ -15,10 +15,10 @@
     <string name="Trainer_btn_Solution">Lösung anzeigen</string>
     <string name="Main_btn_About">Über</string>
     <string name="About_btn_Close">Schließen</string>
-    <string name="Editor_Default_Column_A">Spalte A</string>
-    <string name="Editor_Default_Column_B">Spalte B</string>
-    <string name="Editor_Default_List_Name">Listenname</string>
-    <string name="Editor_Default_Tip">Hinweis</string>
+    <string name="Editor_Hint_Column_A">Spalte A</string>
+    <string name="Editor_Hint_Column_B">Spalte B</string>
+    <string name="Editor_Hint_List_Name">Listenname</string>
+    <string name="Editor_Hint_Tip">Hinweis</string>
     <string name="Editor_Diag_delete_MSG_part">Wollen Sie diesen Eintrag löschen ?</string>
     <string name="Editor_Diag_delete_Title">Eintrag Löschen</string>
     <string name="Editor_Diag_delete_btn_CANCEL">Abbrechen</string>

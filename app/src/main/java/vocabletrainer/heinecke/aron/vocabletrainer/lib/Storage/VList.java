@@ -1,5 +1,8 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.io.Serializable;
 import java.sql.Date;
 
@@ -8,7 +11,7 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TR
 /**
  * DB Vocable List entry
  */
-public class VList implements Serializable {
+public class VList implements Parcelable {
     private String nameA;
     private String nameB;
     private String name;
@@ -156,10 +159,10 @@ public class VList implements Serializable {
      * @throws IllegalAccessException if a valid ID is already set
      */
     public void setId(int id) {
-        if (this.id < MIN_ID_TRESHOLD)
-            this.id = id;
-        else
+        if (isIDValid(this.id))
             throw new IllegalAccessError("Can't override existing VList ID");
+        else
+            this.id = id;
     }
 
     public String getName() {
@@ -174,4 +177,45 @@ public class VList implements Serializable {
         return created;
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(nameA);
+        parcel.writeString(nameB);
+        parcel.writeString(name);
+        parcel.writeInt(totalVocs);
+        parcel.writeInt(unfinishedVocs);
+        parcel.writeInt(id);
+        parcel.writeLong(created != null ? created.getTime() : 0);
+    }
+
+    /**
+     * Parcel constructor
+     * @param in
+     */
+    protected VList(Parcel in) {
+        nameA = in.readString();
+        nameB = in.readString();
+        name = in.readString();
+        totalVocs = in.readInt();
+        unfinishedVocs = in.readInt();
+        id = in.readInt();
+        created = new Date(in.readLong());
+    }
+
+    public static final Creator<VList> CREATOR = new Creator<VList>() {
+        @Override
+        public VList createFromParcel(Parcel in) {
+            return new VList(in);
+        }
+
+        @Override
+        public VList[] newArray(int size) {
+            return new VList[size];
+        }
+    };
 }

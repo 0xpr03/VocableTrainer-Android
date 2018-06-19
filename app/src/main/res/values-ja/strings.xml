@@ -18,10 +18,10 @@
     <string name="ListSelector_Title_Edit">編集するリストを選択</string>
     <string name="ListSelector_Title_Delete">選択した表を削除</string>
     <string name="ListSelector_Title_Training">トレーニングのリストを選択</string>
-    <string name="Editor_Default_Column_A">項目 A</string>
-    <string name="Editor_Default_Column_B">項目 B</string>
-    <string name="Editor_Default_List_Name">リスト名</string>
-    <string name="Editor_Default_Tip">ヒント</string>
+    <string name="Editor_Hint_Column_A">項目 A</string>
+    <string name="Editor_Hint_Column_B">項目 B</string>
+    <string name="Editor_Hint_List_Name">リスト名</string>
+    <string name="Editor_Hint_Tip">ヒント</string>
     <string name="Editor_Undo">元に戻す</string>
     <!-- Dialogs -->
     <string name="Trainer_Diag_finished_Title">完了しました</string>

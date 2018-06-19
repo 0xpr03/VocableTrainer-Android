@@ -40,10 +40,10 @@ public class EntryListAdapter extends BaseAdapter {
     public EntryListAdapter(Activity activity,List<VEntry> items) {
         super();
         this.dataItems = items;
-        header = new VEntry(activity.getString(R.string.Editor_Default_Column_A),
-                activity.getString(R.string.Editor_Default_Column_B),
-                activity.getString(R.string.Editor_Default_Tip),
-                ID_RESERVED_SKIP, new VList(ID_RESERVED_SKIP), -2L);
+        header = new VEntry(activity.getString(R.string.Editor_Hint_Column_A),
+                activity.getString(R.string.Editor_Hint_Column_B),
+                activity.getString(R.string.Editor_Hint_Tip),
+                ID_RESERVED_SKIP);
         dataItems.add(0, header);
         deleted = new ArrayList<>();
         inflater = activity.getLayoutInflater();

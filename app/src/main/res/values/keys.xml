@@ -10,4 +10,8 @@
     <string name="k_pref_comment_char" translatable="false">pref_format_comment_char</string>
     <string name="k_pref_quote" translatable="false">pref_format_quote</string>
     <string name="k_pref_quote_char" translatable="false">pref_format_quote_char</string>
+    <string name="k_pref_multi_transl" translatable="false">pref_format_multi_tranl</string>
+    <string name="k_pref_multi_transl_char" translatable="false">pref_format_multi_transl_char</string>
+    <string name="k_pref_multi_transl_escape" translatable="false">pref_format_multi_transl_esc</string>
+    <string name="k_pref_multi_transl_escape_char" translatable="false">pref_format_multi_transl_esc_char</string>
 </resources>

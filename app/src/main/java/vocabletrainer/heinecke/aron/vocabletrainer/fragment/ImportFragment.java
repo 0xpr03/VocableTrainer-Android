@@ -451,7 +451,7 @@ public class ImportFragment extends BaseFragment {
             Intent myIntent = new Intent(getActivity(), ListActivity.class);
             myIntent.putExtra(ListActivity.PARAM_MULTI_SELECT, false);
             myIntent.putExtra(ListActivity.PARAM_DELETE_FLAG, false);
-            myIntent.putExtra(ListActivity.PARAM_SELECTED, targetList);
+            myIntent.putExtra(ListActivity.PARAM_SELECTED, (Parcelable) targetList);
             startActivityForResult(myIntent, REQUEST_LIST_SELECT_CODE);
         }
     }

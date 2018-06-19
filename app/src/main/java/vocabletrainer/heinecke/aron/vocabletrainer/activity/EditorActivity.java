@@ -40,7 +40,6 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERV
  * List editor activity
  */
 public class EditorActivity extends AppCompatActivity {
-    private final static int LIST_SELECT_REQUEST_CODE = 10;
     /**
      * Param key for new list, default is false
      */
@@ -114,11 +113,11 @@ public class EditorActivity extends AppCompatActivity {
         // handle passed params
         boolean newTable = intent.getBooleanExtra(PARAM_NEW_TABLE, false);
         if (newTable) {
-            list = new VList(getString(R.string.Editor_Default_Column_A), getString(R.string.Editor_Default_Column_B), getString(R.string.Editor_Default_List_Name));
+            list = new VList(getString(R.string.Editor_Hint_Column_A), getString(R.string.Editor_Hint_Column_B), getString(R.string.Editor_Hint_List_Name));
             Log.d(TAG, "new list mode");
             showTableInfoDialog(true);
         } else {
-            VList tbl = (VList) intent.getSerializableExtra(PARAM_TABLE);
+            VList tbl = intent.getParcelableExtra(PARAM_TABLE);
             if (tbl != null) {
                 this.list = tbl;
                 // do not call updateColumnNames as we've to wait for onCreateOptionsMenu, calling it
@@ -209,7 +208,7 @@ public class EditorActivity extends AppCompatActivity {
             return;
         }
         Log.d(TAG, "list: " + list);
-        if (db.upsertTable(list)) {
+        if (db.upsertVList(list)) {
             Log.d(TAG, "list: " + list);
             if (db.upsertEntries(adapter.getAllEntries())) {
                 adapter.clearDeleted();
@@ -263,7 +262,7 @@ public class EditorActivity extends AppCompatActivity {
      * Add an entry
      */
     public void addEntry() {
-        VEntry entry = new VEntry("", "", "", list, -1);
+        VEntry entry = new VEntry(list);
         adapter.addEntryUnrendered(entry);
         showEntryEditDialog(entry, true);
     }

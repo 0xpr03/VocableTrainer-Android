@@ -1,5 +1,11 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.text.TextUtils;
+
 import java.io.Serializable;
 import java.sql.Date;
 import java.util.ArrayList;
@@ -7,12 +13,16 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TRESHOLD;
+import static vocabletrainer.heinecke.aron.vocabletrainer.lib.ParcableTools.readParcableBool;
+import static vocabletrainer.heinecke.aron.vocabletrainer.lib.ParcableTools.readParcableDate;
+import static vocabletrainer.heinecke.aron.vocabletrainer.lib.ParcableTools.writeParcableBool;
+import static vocabletrainer.heinecke.aron.vocabletrainer.lib.ParcableTools.writeParcableDate;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList.isIDValid;
 
 /**
  * DB Vocable Entry
  */
-public class VEntry implements Serializable {
+public class VEntry implements Serializable, Parcelable {
     private final VList list;
     private String tip;
     private String addition;
@@ -131,6 +141,17 @@ public class VEntry implements Serializable {
         this(meaningA,meaningB,tip,addition,MIN_ID_TRESHOLD-1,list,0,null,new Date(System.currentTimeMillis()),0,0);
     }
 
+    public static final Creator<VEntry> CREATOR = new Creator<VEntry>() {
+        @Override
+        public VEntry createFromParcel(Parcel in) {
+            return new VEntry(in);
+        }
+
+        @Override
+        public VEntry[] newArray(int size) {
+            return new VEntry[size];
+        }
+    };
 
     /**
      * Returns meanings for A Column
@@ -314,4 +335,45 @@ public class VEntry implements Serializable {
         return TextUtils.join(CONCAT,meaningB);
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    /**
+     * Parcel constructor
+     * @param in
+     */
+    protected VEntry(Parcel in) {
+        meaningA = in.createStringArrayList();
+        meaningB = in.createStringArrayList();
+        tip = in.readString();
+        list = in.readParcelable(VList.class.getClassLoader());
+        points = in.readInt();
+        changed = readParcableBool(in);
+        delete = readParcableBool(in);
+        created = readParcableDate(in);
+        last_used = readParcableDate(in);
+        correct = in.readInt();
+        wrong = in.readInt();
+        addition = in.readString();
+        id = in.readInt();
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeStringList(meaningA);
+        parcel.writeStringList(meaningB);
+        parcel.writeString(tip);
+        parcel.writeParcelable(list,list.describeContents());
+        parcel.writeInt(points);
+        writeParcableBool(parcel, changed);
+        writeParcableBool(parcel, delete);
+        writeParcableDate(parcel, created);
+        writeParcableDate(parcel, last_used);
+        parcel.writeInt(correct);
+        parcel.writeInt(wrong);
+        parcel.writeString(addition);
+        parcel.writeInt(id);
+    }
 }

@@ -5,16 +5,19 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 
 /**
  * Main activity
@@ -22,7 +25,6 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 public class MainActivity extends AppCompatActivity {
     public static final String PREFS_NAME = "voc_prefs";
     private final static int REQUEST_EDITOR_LIST = 10;
-    private final static int REQUEST_TRAINER_LIST = 20;
     private final static int REQUEST_PERM_EXPORT = 30;
     private final static int REQUEST_PERM_IMPORT = 35;
     private static final String P_KEY_ALPHA_DIALOG = "showedAlphaDialog";
@@ -107,13 +109,8 @@ public class MainActivity extends AppCompatActivity {
                 case REQUEST_EDITOR_LIST: {
                     Intent myIntent = new Intent(this, EditorActivity.class);
                     myIntent.putExtra(EditorActivity.PARAM_NEW_TABLE, false);
-                    myIntent.putExtra(EditorActivity.PARAM_TABLE, data.getSerializableExtra(ListActivity.RETURN_LISTS));
-                    this.startActivity(myIntent);
-                }
-                break;
-                case REQUEST_TRAINER_LIST: {
-                    Intent myIntent = new Intent(this, TrainerSettingsActivity.class);
-                    myIntent.putExtra(ListActivity.RETURN_LISTS, data.getSerializableExtra(ListActivity.RETURN_LISTS));
+                    VList lst = data.getParcelableExtra(ListActivity.RETURN_LISTS);
+                    myIntent.putExtra(EditorActivity.PARAM_TABLE, (Parcelable) lst);
                     this.startActivity(myIntent);
                 }
                 break;

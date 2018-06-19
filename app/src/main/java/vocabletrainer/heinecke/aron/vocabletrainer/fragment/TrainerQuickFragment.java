@@ -16,7 +16,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.R;
  */
 public class TrainerQuickFragment extends TrainerModeFragment {
 
-    private static final String TAG = "TrainerQuickFragment";
+    private static final String TAG = "TQuickFragment";
     private View view;
     private Button bRevolse;
     private Button bCorrect;
@@ -45,9 +45,12 @@ public class TrainerQuickFragment extends TrainerModeFragment {
         bRevolse.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                StringBuilder builder = new StringBuilder();
+                builder.append(trainer.getSolutionUncounted());
+                builder.append("\n\n");
+                builder.append(trainer.getCurrentAddition());
                 tSolution.setText(trainer.getSolutionUncounted());
                 changeView(guiStateSolution);
-
             }
         });
 

@@ -10,6 +10,7 @@ import java.util.HashMap;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer.Trainer;
 
 /**
  * Manager for sessions, loading saving of settings
@@ -24,6 +25,7 @@ public class SessionStorageManager {
     private final static String KEY_VOCABLE_ID = "t_last_voc_id";
     private final static String KEY_VOCABLE_LST_ID = "t_last_lst_id";
     private final static String KEY_TRIM_SPACES = "t_trim_spaces";
+    private final static String KEY_ADDITION_AUTO = "t_addition_auto";
 
     private final static int BIND_KEY = 1;
     private final static int BIND_VAL = 2;
@@ -122,6 +124,7 @@ public class SessionStorageManager {
             boolean allowTips = getBoolean(KEY_TIPS_ALLOWED);
             boolean caseSensitive = getBoolean(KEY_CASE_SENSITIVE);
             boolean trimSpaces = getBoolean(KEY_TRIM_SPACES);
+            boolean additionAuto = getBoolean(KEY_ADDITION_AUTO);
             VEntry entry = null;
             if(map.containsKey(KEY_VOCABLE_ID) && map.containsKey(KEY_VOCABLE_LST_ID)){
                 int vocID = getInt(KEY_VOCABLE_ID);
@@ -129,7 +132,7 @@ public class SessionStorageManager {
                 entry = db.getVocable(vocID,lstID);
             }
 
-            return new TrainerSettings(timesToSolve, mode, allowTips,tips,failed,caseSensitive,entry,trimSpaces);
+            return new TrainerSettings(timesToSolve, mode, allowTips,tips,failed,caseSensitive,entry,trimSpaces, additionAuto);
         }
 
         /**
@@ -209,6 +212,7 @@ public class SessionStorageManager {
             if (exec(KEY_TIPS_ALLOWED,settings.allowTips)) return false;
             if (exec(KEY_CASE_SENSITIVE,settings.caseSensitive)) return false;
             if (exec(KEY_TRIM_SPACES,settings.trimSpaces)) return false;
+            if (exec(KEY_ADDITION_AUTO,settings.additionAuto)) return false;
             if (!writeVocable_(settings.questioning)) return false;
 
             stm.close();

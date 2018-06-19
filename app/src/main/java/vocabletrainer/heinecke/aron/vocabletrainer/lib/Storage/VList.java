@@ -1,16 +1,21 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.io.Serializable;
+import java.sql.Date;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TRESHOLD;
 
 /**
  * DB Vocable List entry
  */
-public class VList implements Serializable {
+public class VList implements Parcelable {
     private String nameA;
     private String nameB;
     private String name;
+    private Date created;
     private int totalVocs;
     private int unfinishedVocs;
     private int id;
@@ -22,11 +27,12 @@ public class VList implements Serializable {
      * @param nameA Name for A Column
      * @param nameB Name for B Column
      */
-    public VList(final int id, final String nameA, final String nameB, final String name) {
+    public VList(final int id, final String nameA, final String nameB, final String name, final Date created) {
         this.id = id;
         this.nameA = nameA;
         this.nameB = nameB;
         this.name = name;
+        this.created = created;
         this.totalVocs = MIN_ID_TRESHOLD - 1;
         this.unfinishedVocs = MIN_ID_TRESHOLD - 1;
     }
@@ -50,23 +56,24 @@ public class VList implements Serializable {
     }
 
     /**
-     * Create a new VList with none-ID -1
+     * Create a new VList with none-ID -1 & current Date
      *
      * @param nameA Name for A Column
      * @param nameB Name for B Column
+     * @param name List Name
      */
     public VList(final String nameA, final String nameB, final String name) {
-        this(MIN_ID_TRESHOLD - 1, nameA, nameB, name);
+        this(MIN_ID_TRESHOLD - 1, nameA, nameB, name, new Date(System.currentTimeMillis()));
     }
 
     /**
-     * Creates a new table data object<br>
-     * All fields except ID will be empty thens
+     * Creates a new table data object, ID only<br>
+     * All fields except ID will be empty
      *
      * @param id
      */
     public VList(final int id) {
-        this(id, null, null, null);
+        this(id, null, null, null,null);
     }
 
     @Override
@@ -152,10 +159,10 @@ public class VList implements Serializable {
      * @throws IllegalAccessException if a valid ID is already set
      */
     public void setId(int id) {
-        if (this.id < MIN_ID_TRESHOLD)
-            this.id = id;
-        else
+        if (isIDValid(this.id))
             throw new IllegalAccessError("Can't override existing VList ID");
+        else
+            this.id = id;
     }
 
     public String getName() {
@@ -165,4 +172,50 @@ public class VList implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
+
+    public Date getCreated() {
+        return created;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(nameA);
+        parcel.writeString(nameB);
+        parcel.writeString(name);
+        parcel.writeInt(totalVocs);
+        parcel.writeInt(unfinishedVocs);
+        parcel.writeInt(id);
+        parcel.writeLong(created != null ? created.getTime() : 0);
+    }
+
+    /**
+     * Parcel constructor
+     * @param in
+     */
+    protected VList(Parcel in) {
+        nameA = in.readString();
+        nameB = in.readString();
+        name = in.readString();
+        totalVocs = in.readInt();
+        unfinishedVocs = in.readInt();
+        id = in.readInt();
+        created = new Date(in.readLong());
+    }
+
+    public static final Creator<VList> CREATOR = new Creator<VList>() {
+        @Override
+        public VList createFromParcel(Parcel in) {
+            return new VList(in);
+        }
+
+        @Override
+        public VList[] newArray(int size) {
+            return new VList[size];
+        }
+    };
 }

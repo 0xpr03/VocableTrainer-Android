@@ -1,5 +1,7 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.Import;
 
+import java.util.List;
+
 /**
  * Interface for import handlers
  */
@@ -17,11 +19,12 @@ public interface ImportHandler {
     /**
      * Called for a new VEntry, for last "newTable" called
      *
-     * @param A
-     * @param B
-     * @param Tipp
+     * @param A list of A meanings
+     * @param B list of B meanings
+     * @param Tip tip
+     * @param addition addition for vocable
      */
-    void newEntry(String A, String B, String Tipp);
+    void newEntry(List<String> A, List<String> B, String Tip, String addition);
 
     /**
      * Called when all entries where read

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.TextInputLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tTrainerInput_wrapper"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentTop="true"
+    android:layout_marginEnd="8dp"
+    android:layout_marginStart="8dp"
+    android:layout_marginBottom="10dp"
+    android:orientation="vertical">
+
+    <vocabletrainer.heinecke.aron.vocabletrainer.lib.CEditText
+        android:id="@+id/tTrainerInput"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="text|textNoSuggestions"
+        android:layout_width="match_parent"
+        android:ems="10"
+        android:hint="@string/Trainer_hint_solution"
+        android:layout_height="wrap_content" />
+</android.support.design.widget.TextInputLayout>

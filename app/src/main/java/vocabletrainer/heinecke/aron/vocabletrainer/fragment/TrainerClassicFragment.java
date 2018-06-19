@@ -1,6 +1,7 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,49 +14,44 @@ import android.widget.TextView;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.SessionStorageManager;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
+
+import static vocabletrainer.heinecke.aron.vocabletrainer.activity.TrainerActivity.MAX;
+import static vocabletrainer.heinecke.aron.vocabletrainer.activity.TrainerActivity.MS_SEC;
 
 /**
- * Trainer activity
+ * Trainer classic mode fragment
  */
 public class TrainerClassicFragment extends TrainerModeFragment {
-    public static final String PARAM_RESUME_SESSION_FLAG = "resume_session";
-    public static final String PARAM_TRAINER_SETTINGS = "trainer_settings";
-    public static final String PARAM_TABLES = "lists";
-    private static final String TAG = "TrainerActivity";
+    private static final String TAG = "TClassicFragment";
 
     private TextView tHint;
     private EditText tInput;
     private Button bSolve;
-    private TrainerSettings settings;
+    private Button bShowNext;
     private TextView tColumnAnswer;
     private MenuItem tTip;
     private SessionStorageManager ssm;
     private View view;
+    private Button bCheckInput;
+    private CountDownTimer timer;
+    private String strShowNext;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_trainer_classic, container, false);
-
+        strShowNext = getString(R.string.Trainer_btn_Show_Next);
         tHint = (TextView) view.findViewById(R.id.tTrainerQOut);
         tColumnAnswer = (TextView) view.findViewById(R.id.tTrainerInputColumn);
         tInput = (EditText) view.findViewById(R.id.tTrainerInput);
         bSolve = (Button) view.findViewById(R.id.bTrainerSolve);
-        Button bCheckInput = (Button) view.findViewById(R.id.bTrainerEnter);
+        bCheckInput = (Button) view.findViewById(R.id.bTrainerEnter);
+        bShowNext = (Button) view.findViewById(R.id.bTrainerShowNext);
 
-        bCheckInput.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                checkInput();
-            }
-        });
+        bCheckInput.setOnClickListener(v -> checkInput());
 
-        bSolve.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                solve();
-            }
-        });
+        bSolve.setOnClickListener(v -> solve());
+
+        bShowNext.setOnClickListener(v -> showNextVocable());
 
         return view;
     }
@@ -65,10 +61,14 @@ public class TrainerClassicFragment extends TrainerModeFragment {
      */
     private void showNextVocable() {
         Log.d(TAG,"showNextVocable()");
+        if(timer != null)
+            timer.cancel();
         if(trainer.isFinished()){
             trainerActivity.showResultDialog();
         }else {
+            showAdditionView(false);
             trainerActivity.updateQuestion();
+            tInput.setError(null);
             tHint.setText("");
             tInput.setText("");
             tInput.requestFocus();
@@ -79,13 +79,53 @@ public class TrainerClassicFragment extends TrainerModeFragment {
     }
 
     /**
+     * Show vocable addition field view
+     * @param show
+     */
+    private void showAdditionView(boolean show){
+        bSolve.setVisibility(show ? View.GONE : View.VISIBLE);
+        bCheckInput.setVisibility(show ? View.GONE : View.VISIBLE);
+        bShowNext.setVisibility(show ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * Display addition view with timeout
+     */
+    private void displayAdditionTimed() {
+        showAdditionView(true);
+        timer = new CountDownTimer(MAX * 1000, MS_SEC) {
+            @Override
+            public void onTick(long l) {
+                bShowNext.setText(getString(R.string.Trainer_btn_Show_Next_Auto,l/MS_SEC));
+            }
+
+            @Override
+            public void onFinish() {
+                showNextVocable();
+            }
+        };
+        timer.start();
+    }
+
+    /**
      * Verify input against solution
      */
     private void checkInput() {
         if (trainer.checkSolution(tInput.getText().toString())) {
-            showNextVocable();
+            if(trainer.hasLastAddition()) {
+                if(settings.additionAuto){
+                    displayAdditionTimed();
+                } else {
+                    showAdditionView(true);
+                    bShowNext.setText(R.string.Trainer_btn_Show_Next);
+                }
+                tHint.setText(trainer.getLastAddition());
+            } else {
+                showNextVocable();
+            }
         } else {
             tInput.setSelectAllOnFocus(true);
+            tInput.setError(INPUT_INVALID);
             tInput.requestFocus();
         }
     }

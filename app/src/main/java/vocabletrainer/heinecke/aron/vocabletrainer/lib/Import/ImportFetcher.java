@@ -1,21 +1,23 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.Import;
 
-import android.app.Fragment;
 import android.os.AsyncTask;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.ProgressBar;
 
-import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVCustomFormat;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Function;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.MultiMeaningHandler;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVHeaders.CSV_METADATA_START;
 
@@ -25,17 +27,19 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVHeaders.CSV_MET
  */
 public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
     private final static String TAG = "ImportFetcher";
-    private final static int MAX_RECORD_SIZE = 3;
-    private final static int MIN_RECORD_SIZE = MAX_RECORD_SIZE - 1;
-    private final static int REC_V1 = 0;
-    private final static int REC_V2 = 1;
-    private final static int REC_V3 = 2;
+    private final static int MAX_RECORD_SIZE = 4;
+    private final static int ADDITION_RECORD_SIZE = 4;
+    private final static int MIN_RECORD_SIZE = 2;
+    private final static int REC_V1 = 0; // meanings A / name
+    private final static int REC_V2 = 1; // meanings B / colA
+    private final static int REC_V3 = 2; // tip / colB
+    private final static int REC_V4 = 3; // addition (voc only)
     private final File source;
-    private final CSVFormat format;
+    private final CSVCustomFormat cformat;
     private final ImportHandler handler;
     private final int maxEntries;
     private final AlertDialog dialog;
-    private final ProgressBar progressBar;
+    private final ProgressBar progressBar; // theoretical field leak, can only be solved by inlining this in the fragment
     private final MessageProvider messageProvider;
     private final Function<Void,String> importCallback;
     private final boolean logErrors;
@@ -47,7 +51,7 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
      *     It takes a dialog with a progressbar as input to display progress.
      *     Alternative you can use
      *
-     * @param format      Format to use
+     * @param cformat      Format to use
      * @param source      Source for parsing
      * @param handler     Data handler
      * @param maxEntries  max amount of entries in this file<br>
@@ -59,12 +63,12 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
      * @param importCallback callback after successful import, given import log as param, return ignored
      * @param logErrors   disable error logging on false
      */
-    ImportFetcher(final CSVFormat format, final File source, final ImportHandler handler,
+    ImportFetcher(final CSVCustomFormat cformat, final File source, final ImportHandler handler,
                   final int maxEntries, final AlertDialog dialog, final ProgressBar progressBar,
                   final MessageProvider messageProvider, final Function<Void,String> importCallback,
                   final boolean logErrors) {
         this.source = source;
-        this.format = format;
+        this.cformat = cformat;
         this.handler = handler;
         this.maxEntries = maxEntries;
         this.progressBar = progressBar;
@@ -114,15 +118,16 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
         try (
                 FileReader reader = new FileReader(source);
                 BufferedReader bufferedReader = new BufferedReader(reader);
-                CSVParser parser = new CSVParser(bufferedReader, format)
+                CSVParser parser = new CSVParser(bufferedReader, cformat.getFormat())
         ) {
             handler.start();
+            MultiMeaningHandler multiMeaningHandler = new MultiMeaningHandler(cformat);
             boolean tbl_start = false;
-            final String empty_v3 = "";
-            int i = 1;
+            final String empty_v = "";
+            int vocableAmount = 0;
             for (CSVRecord record : parser) {
                 if (System.currentTimeMillis() - lastUpdate > 250) { // don't spam the UI thread
-                    publishProgress(i);
+                    publishProgress(vocableAmount);
                     lastUpdate = System.currentTimeMillis();
                 }
 
@@ -142,19 +147,22 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
                 }
                 String v1 = record.get(REC_V1);
                 String v2 = record.get(REC_V2);
-                String v3 = record.size() < MAX_RECORD_SIZE ? empty_v3 : record.get(REC_V3);
+                String v3 = record.size() == MIN_RECORD_SIZE ? empty_v : record.get(REC_V3);
                 if (tbl_start) {
                     handler.newTable(v1, v2, v3);
                     tbl_start = false;
                 } else if (tbl_start = (v1.equals(CSV_METADATA_START[0]) && v2.equals(CSV_METADATA_START[1]) && v3.equals(CSV_METADATA_START[2]))) {
                     //do nothing
                 } else {
-                    handler.newEntry(v1, v2, v3);
+                    vocableAmount++;
+                    List<String> mA = multiMeaningHandler.parseMultiMeaning(v1);
+                    List<String> mB = multiMeaningHandler.parseMultiMeaning(v2);
+                    String addition = record.size() < ADDITION_RECORD_SIZE ? empty_v : record.get(REC_V4);
+                    handler.newEntry(mA, mB, v3,addition);
                 }
-                i++;
             }
             //prepend to start
-            log.insert(0,messageProvider.formatIMPORTED_AMOUNT(i));
+            log.insert(0,messageProvider.formatIMPORTED_AMOUNT(vocableAmount));
             parser.close();
             bufferedReader.close();
             reader.close();
@@ -185,9 +193,9 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
         }
 
         /**
-         * Returns formated IMPORT_AMOUNT with param
+         * Returns formatted IMPORT_AMOUNT with param
          * @param amount
-         * @return formated String
+         * @return formatted String
          */
         public String formatIMPORTED_AMOUNT(final int amount){
             return I_IMPORTED_AMOUNT.replace("%d",String.valueOf(amount)) + '\n';

@@ -1,7 +1,7 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage;
 
 /**
- * Generic spinner entry holder
+ * Generic spinner entry
  *
  * @param <T> Object type for value of element
  */

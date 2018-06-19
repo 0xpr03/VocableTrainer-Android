@@ -3,17 +3,20 @@ package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.EditTextPreference;
-import android.preference.PreferenceFragment;
-import android.preference.SwitchPreference;
-import android.support.annotation.Nullable;
+import android.support.v14.preference.SwitchPreference;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.preference.EditTextPreference;
+import android.support.v7.preference.EditTextPreferenceDialogFragmentCompat;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
 import android.text.InputFilter;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 
 import org.apache.commons.csv.CSVFormat;
@@ -21,29 +24,38 @@ import org.apache.commons.csv.CSVFormat;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.ExImportActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.FragmentActivity;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVCustomFormat;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CustomEditTextPreference;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
 
 /**
- * Fragment for custom format preferences
+ * Fragment for custom cFormat preferences
  */
-public class FormatFragment extends PreferenceFragment implements FragmentActivity.BackButtonListner{
+public class FormatFragment extends PreferenceFragmentCompat implements FragmentActivity.BackButtonListener {
     private static final String TAG = "FormatFragment";
-    private static final int CHAR_POS = 0;
+    private static final String C_DIALOG_TAG = "android.support.v7.preference.PreferenceFragment.DIALOG";
+    private static final int CHAR_POS = 0; // char pos for first char
     SwitchPreference swEscaping;
     SwitchPreference swComment;
     SwitchPreference swQuote;
     SwitchPreference swHeaderLine;
     SwitchPreference swIgnoreSpaces;
     SwitchPreference swIgnEmptyLines;
+    SwitchPreference swMultimeaning;
+    SwitchPreference swMMEscape;
     EditTextPreference tEscaping;
     EditTextPreference tComment;
     EditTextPreference tQuote;
-    EditTextPreference tDelimtier;
+    EditTextPreference tDelimiter;
+    EditTextPreference tMultimeaning;
+    EditTextPreference tMMEscape;
+    private InputFilter[] lengthFilter = new InputFilter[] {new InputFilter.LengthFilter(1)};
+
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+        addPreferencesFromResource(R.xml.pref_format);
 
         ActionBar ab = ((FragmentActivity) getActivity()).getSupportActionBar();
 
@@ -54,26 +66,21 @@ public class FormatFragment extends PreferenceFragment implements FragmentActivi
 
         setHasOptionsMenu(true);
 
-        addPreferencesFromResource(R.xml.pref_format);
-
-        InputFilter[] filters = new InputFilter[]{new InputFilter.LengthFilter(1)};
-
-        addTextFilter(R.string.k_pref_comment_char, filters);
-        addTextFilter(R.string.k_pref_escape_char, filters);
-        addTextFilter(R.string.k_pref_quote_char, filters);
-        addTextFilter(R.string.k_pref_delimiter, filters);
-
         swEscaping = (SwitchPreference) findPreference(getString(R.string.k_pref_escape));
         swComment = (SwitchPreference) findPreference(getString(R.string.k_pref_comment));
         swQuote = (SwitchPreference) findPreference(getString(R.string.k_pref_quote));
         swHeaderLine = (SwitchPreference) findPreference(getString(R.string.k_pref_first_line_header));
         swIgnEmptyLines = (SwitchPreference) findPreference(getString(R.string.k_pref_ignore_empty_lines));
         swIgnoreSpaces = (SwitchPreference) findPreference(getString(R.string.k_pref_ignore_spaces));
+        swMultimeaning = (SwitchPreference) findPreference(getString(R.string.k_pref_multi_transl));
+        swMMEscape = (SwitchPreference) findPreference(getString(R.string.k_pref_multi_transl_escape));
 
         tEscaping = (EditTextPreference) findPreference(getString(R.string.k_pref_escape_char));
         tQuote = (EditTextPreference) findPreference(getString(R.string.k_pref_quote_char));
-        tDelimtier = (EditTextPreference) findPreference(getString(R.string.k_pref_delimiter));
+        tDelimiter = (EditTextPreference) findPreference(getString(R.string.k_pref_delimiter));
         tComment = (EditTextPreference) findPreference(getString(R.string.k_pref_comment_char));
+        tMultimeaning = (EditTextPreference) findPreference(getString(R.string.k_pref_multi_transl_char));
+        tMMEscape = (EditTextPreference) findPreference(getString(R.string.k_pref_multi_transl_escape_char));
     }
 
     @Override
@@ -81,8 +88,6 @@ public class FormatFragment extends PreferenceFragment implements FragmentActivi
         super.onStart();
         loadPrefs();
     }
-
-
 
     @Override
     public void onStop() {
@@ -100,22 +105,27 @@ public class FormatFragment extends PreferenceFragment implements FragmentActivi
     }
 
     /**
-     * Load preferences from CSV format
+     * Load preferences from CSV cFormat
      *
-     * @param format CSVFormat to use
+     * @param cformat CSVCustomFormat to load
      */
-    private void loadPrefsFromCSVFormat(final CSVFormat format) {
+    private void loadPrefsFromCSVFormat(final CSVCustomFormat cformat) {
+        CSVFormat format = cformat.getFormat();
         swEscaping.setChecked(format.isEscapeCharacterSet());
         swQuote.setChecked(format.isQuoteCharacterSet());
         swComment.setChecked(format.isCommentMarkerSet());
         swHeaderLine.setChecked(format.getSkipHeaderRecord());
         swIgnEmptyLines.setChecked(format.getIgnoreEmptyLines());
         swIgnoreSpaces.setChecked(format.getIgnoreSurroundingSpaces());
+        swMultimeaning.setChecked(cformat.isMultiValueEnabled());
+        swMMEscape.setChecked(cformat.isMVEscapeEnabled());
 
         tEscaping.setText(String.valueOf(format.getEscapeCharacter()));
         tComment.setText(String.valueOf(format.getCommentMarker()));
-        tDelimtier.setText(String.valueOf(format.getDelimiter()));
+        tDelimiter.setText(String.valueOf(format.getDelimiter()));
         tQuote.setText(String.valueOf(format.getQuoteCharacter()));
+        tMultimeaning.setText(String.valueOf(cformat.getMultiValueChar()));
+        tMMEscape.setText(String.valueOf(cformat.getEscapeMVChar()));
     }
 
     /**
@@ -129,7 +139,7 @@ public class FormatFragment extends PreferenceFragment implements FragmentActivi
 
         boolean passed = true;
 
-        char delimiter = tDelimtier.getText().charAt(CHAR_POS);
+        char delimiter = tDelimiter.getText().charAt(CHAR_POS);
 
         if (swQuote.isChecked() && delimiter == tQuote.getText().charAt(CHAR_POS)) {
             partA = R.string.Pref_Quote;
@@ -143,6 +153,11 @@ public class FormatFragment extends PreferenceFragment implements FragmentActivi
 
         if (swComment.isChecked() && delimiter == tComment.getText().charAt(CHAR_POS)) {
             partA = R.string.Pref_Comment;
+            passed = false;
+        }
+
+        if (swMultimeaning.isChecked() && delimiter == tMultimeaning.getText().charAt(CHAR_POS)) {
+            partA = R.string.Pref_Multi_Transl;
             passed = false;
         }
 
@@ -185,8 +200,8 @@ public class FormatFragment extends PreferenceFragment implements FragmentActivi
      *
      * @return
      */
-    private CSVFormat savePrefsToCSVFormat() {
-        CSVFormat format = CSVFormat.newFormat(tDelimtier.getText().charAt(CHAR_POS));
+    private CSVCustomFormat savePrefsToCSVFormat() {
+        CSVFormat format = CSVFormat.newFormat(tDelimiter.getText().charAt(CHAR_POS));
         if (swEscaping.isChecked())
             format = format.withEscape(tEscaping.getText().charAt(CHAR_POS));
         if (swComment.isChecked())
@@ -200,7 +215,14 @@ public class FormatFragment extends PreferenceFragment implements FragmentActivi
         if (swIgnoreSpaces.isChecked())
             format = format.withIgnoreSurroundingSpaces();
 
-        return format.withAllowMissingColumnNames();
+        Character multiMeaningChar = null;
+        Character multiMeaningEscapeChar = null;
+        if (swMultimeaning.isChecked())
+            multiMeaningChar = tMultimeaning.getText().charAt(CHAR_POS);
+        if (swMMEscape.isChecked())
+            multiMeaningEscapeChar = tMMEscape.getText().charAt(CHAR_POS);
+
+        return new CSVCustomFormat(format.withAllowMissingColumnNames(),multiMeaningChar,multiMeaningEscapeChar);
     }
 
     @Override
@@ -220,7 +242,7 @@ public class FormatFragment extends PreferenceFragment implements FragmentActivi
         switch (item.getItemId()) {
             case R.id.fResetDefault:
                 Log.d(TAG,"reset to default");
-                loadPrefsFromCSVFormat(CSVFormat.DEFAULT);
+                loadPrefsFromCSVFormat(CSVCustomFormat.DEFAULT);
                 return true;
             case R.id.fResetPrev:
                 Log.d(TAG,"reset to previous");
@@ -230,20 +252,53 @@ public class FormatFragment extends PreferenceFragment implements FragmentActivi
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * Adds text filters to specified settings
-     *
-     * @param key     resource key by which to get the setting
-     * @param filters Filters to apply
-     */
-    private void addTextFilter(final int key, InputFilter[] filters) {
-        EditText editText1 = ((EditTextPreference) findPreference(getString(key)))
-                .getEditText();
-        editText1.setFilters(filters);
-    }
-
     @Override
     public boolean onBackPressed() {
         return verifyFormat();
+    }
+
+    @Override
+    public void onDisplayPreferenceDialog(Preference preference) {
+        // hack for custom dialog to allow for edittext filters
+
+        // dialog shown
+        if (getFragmentManager().findFragmentByTag(C_DIALOG_TAG) != null) {
+            return;
+        }
+
+        DialogFragment f = null;
+        if (preference instanceof CustomEditTextPreference) {
+            f = EditTextPreferenceDialog.newInstance(preference.getKey(),lengthFilter);
+        } else {
+            super.onDisplayPreferenceDialog(preference);
+        }
+        if (f != null) {
+            f.setTargetFragment(this, 0);
+            f.show(getFragmentManager(), C_DIALOG_TAG);
+        }
+    }
+
+    /**
+     * Custom EditText preference dialog to allow for Filters
+     * Because correct Android is hard.
+     */
+    public static class EditTextPreferenceDialog extends EditTextPreferenceDialogFragmentCompat {
+        private InputFilter[] filters;
+
+        public static EditTextPreferenceDialog newInstance(String key, InputFilter[] filters) {
+            final EditTextPreferenceDialog
+                    fragment = new EditTextPreferenceDialog();
+            final Bundle b = new Bundle(1);
+            b.putString(ARG_KEY, key);
+            fragment.setArguments(b);
+            fragment.filters = filters;
+            return fragment;
+        }
+
+        @Override
+        protected void onBindDialogView(View view) {
+            super.onBindDialogView(view);
+            ((EditText)view.findViewById(android.R.id.edit)).setFilters(filters);
+        }
     }
 }

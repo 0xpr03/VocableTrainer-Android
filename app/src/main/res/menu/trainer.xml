@@ -7,12 +7,17 @@
         support:showAsAction="always"/>
     <item
         android:id="@+id/tMenu_Classic"
-        android:title="Classic Mode"
+        android:title="@string/Trainer_Mode_Classic"
+        support:showAsAction="never"
+        />
+    <item
+        android:id="@+id/tMenu_ClassicMM"
+        android:title="@string/Trainer_Mode_Classic_MM"
         support:showAsAction="never"
         />
     <item
         android:id="@+id/tMenu_Quick"
-        android:title="Quick Mode"
+        android:title="@string/Trainer_Mode_Quick"
         support:showAsAction="never"
         />
 </menu>

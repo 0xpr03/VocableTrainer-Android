@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.widget.Space;
@@ -40,6 +41,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.activity.ListActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.EntryListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ImportLogDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.VListEditorDialog;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVCustomFormat;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Function;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.ImportFetcher;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.ImportFetcherBuilder;
@@ -69,7 +71,7 @@ public class ImportFragment extends BaseFragment {
     List<VEntry> lst;
     EntryListAdapter adapter;
     VList targetList;
-    ArrayAdapter<GenericSpinnerEntry<CSVFormat>> spAdapterFormat;
+    ArrayAdapter<GenericSpinnerEntry<CSVCustomFormat>> spAdapterFormat;
     ArrayAdapter<GenericSpinnerEntry<Importer.IMPORT_LIST_MODE>> spAdapterMultilist;
     ArrayAdapter<GenericSpinnerEntry<Importer.IMPORT_LIST_MODE>> spAdapterSinglelist;
     ArrayAdapter<GenericSpinnerEntry<Importer.IMPORT_LIST_MODE>> spAdapterRawlist;
@@ -270,11 +272,11 @@ public class ImportFragment extends BaseFragment {
     }
 
     /**
-     * Returns the selected CSVFormat
+     * Returns the selected CSVCustomFormat
      *
-     * @return CSVFormat to be used to parsing
+     * @return CSVCustomFormat to be used to parsing
      */
-    private CSVFormat getFormatSelected() {
+    private CSVCustomFormat getFormatSelected() {
         return spAdapterFormat.getItem(spFormat.getSelectedItemPosition()).getObject();
     }
 
@@ -283,7 +285,7 @@ public class ImportFragment extends BaseFragment {
      */
     private void refreshParsing() {
         if (impFile != null && impFile.exists()) {
-            CSVFormat format = getFormatSelected();
+            CSVCustomFormat format = getFormatSelected();
             final PreviewParser dataHandler = new PreviewParser(lst);
             final AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
             alert.setCancelable(false);
@@ -347,10 +349,10 @@ public class ImportFragment extends BaseFragment {
     }
 
     /**
-     * Called when import was clickeds
+     * Called when import was clicked
      */
     public void onImport() {
-        CSVFormat format = getFormatSelected();
+        CSVCustomFormat format = getFormatSelected();
         final Importer dataHandler = new Importer(getActivity().getApplicationContext(), previewParser, getListMode(), targetList);
         final AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
         alert.setCancelable(false);
@@ -451,7 +453,7 @@ public class ImportFragment extends BaseFragment {
             Intent myIntent = new Intent(getActivity(), ListActivity.class);
             myIntent.putExtra(ListActivity.PARAM_MULTI_SELECT, false);
             myIntent.putExtra(ListActivity.PARAM_DELETE_FLAG, false);
-            myIntent.putExtra(ListActivity.PARAM_SELECTED, targetList);
+            myIntent.putExtra(ListActivity.PARAM_SELECTED, (Parcelable) targetList);
             startActivityForResult(myIntent, REQUEST_LIST_SELECT_CODE);
         }
     }

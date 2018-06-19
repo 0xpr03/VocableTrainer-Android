@@ -30,7 +30,6 @@ import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
-import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
 import java.io.BufferedWriter;
@@ -43,9 +42,11 @@ import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.FileActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.ListActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.TableListAdapter;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVCustomFormat;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenTableComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.MultiMeaningHandler;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
@@ -79,10 +80,11 @@ public class ExportFragment extends BaseFragment {
     private CheckBox chkExportMultiple;
     private ExportOperation exportTask;
     private Spinner spFormat;
-    private ArrayAdapter<GenericSpinnerEntry<CSVFormat>> spAdapterFormat;
+    private ArrayAdapter<GenericSpinnerEntry<CSVCustomFormat>> spAdapterFormat;
     private TextView tMsg;
     private GenericComparator compTables;
     private View view;
+    private boolean formatWarnDialog = false; // prevent dialog double trigger, due to spFormat logic
 
     private boolean showedCustomFormatFragment = false;
 
@@ -90,7 +92,7 @@ public class ExportFragment extends BaseFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_export, container, false);
-
+        formatWarnDialog = false;
         setHasOptionsMenu(true);
         getActivity().setTitle(R.string.Export_Title);
 
@@ -110,7 +112,6 @@ public class ExportFragment extends BaseFragment {
         compTables = new GenTableComparator(retrievers, ID_RESERVED_SKIP);
 
         initView();
-
         return view;
     }
 
@@ -133,11 +134,11 @@ public class ExportFragment extends BaseFragment {
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
 
-        Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
-        Log.d(TAG, "tool bar is null " + String.valueOf(toolbar == null));
         ActionBar ab = getFragmentActivity().getSupportActionBar();
         if (ab != null) {
             ab.setDisplayHomeAsUpEnabled(true);
+        } else {
+            Log.w(TAG, "actionbar doesn't exist");
         }
     }
 
@@ -214,6 +215,18 @@ public class ExportFragment extends BaseFragment {
         chkExportTalbeInfo.setChecked(settings.getBoolean(P_KEY_B_EXP_TBL_META, true));
         chkExportMultiple.setChecked(settings.getBoolean(P_KEY_B_EXP_TBL_MULTI, true));
         spFormat.setSelection(settings.getInt(P_KEY_I_EXP_FORMAT, 0));
+        spFormat.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                Log.d(TAG,"selected something");
+                checkInputOk();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                Log.d(TAG,"nothing selected");
+            }
+        });
     }
 
     @Override
@@ -267,10 +280,18 @@ public class ExportFragment extends BaseFragment {
             }
         });*/
         final AlertDialog dialog = alert.show();
-        CSVFormat format = spAdapterFormat.getItem(spFormat.getSelectedItemPosition()).getObject();
+        CSVCustomFormat format = getCFormat();
         ExportStorage es = new ExportStorage(format, lists, chkExportTalbeInfo.isChecked(), chkExportMultiple.isChecked(), expFile, dialog, pg);
         exportTask = new ExportOperation(es);
         exportTask.execute();
+    }
+
+    /**
+     * Helper to return the currently selected CSVCustomFormat
+     * @return selected CSVCustomFormat
+     */
+    private CSVCustomFormat getCFormat() {
+        return spAdapterFormat.getItem(spFormat.getSelectedItemPosition()).getObject();
     }
 
     @Override
@@ -294,7 +315,7 @@ public class ExportFragment extends BaseFragment {
                     checkInputOk();
                     break;
                 case REQUEST_TABLES_RESULT_CODE:
-                    adapter.setAllUpdated((ArrayList<VList>) data.getSerializableExtra(ListActivity.RETURN_LISTS), compTables);
+                    adapter.setAllUpdated(data.getParcelableArrayListExtra(ListActivity.RETURN_LISTS), compTables);
                     checkInputOk();
                     break;
             }
@@ -305,7 +326,19 @@ public class ExportFragment extends BaseFragment {
      * Validate input & set export button accordingly
      */
     private void checkInputOk() {
-        btnExport.setEnabled(lists.size() > 1 && expFile != null && (chkExportMultiple.isChecked() || (!chkExportMultiple.isChecked() && lists.size() == 2)));
+        boolean exportFormatOk = getCFormat().isMultiValueEnabled();
+        btnExport.setEnabled(exportFormatOk && lists.size() > 1 && expFile != null && (chkExportMultiple.isChecked() || (!chkExportMultiple.isChecked() && lists.size() == 2)));
+        if(!exportFormatOk && !formatWarnDialog) {
+            AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+            alert.setCancelable(true);
+            alert.setTitle(R.string.Export_Error_Format_Multivalue_Title);
+            alert.setMessage(R.string.Export_Error_Format_Multivalue_Text);
+            alert.setNeutralButton(R.string.GEN_Ok, (dialogInterface, i) -> {
+                formatWarnDialog = false; // clear state
+            });
+            alert.show();
+            formatWarnDialog = true;
+        }
     }
 
     /**
@@ -314,6 +347,8 @@ public class ExportFragment extends BaseFragment {
     private class ExportOperation extends AsyncTask<Integer, Integer, String> {
         private final ExportStorage es;
         private final Database db;
+        String multiMeaningDelimiter;
+        String escapedChar;
 
         /**
          * Creates a new ExportOperation
@@ -323,16 +358,18 @@ public class ExportFragment extends BaseFragment {
         public ExportOperation(ExportStorage es) {
             this.es = es;
             db = new Database(getActivity().getApplicationContext());
+            multiMeaningDelimiter = String.valueOf(es.cFormat.getMultiValueChar());
+            escapedChar = multiMeaningDelimiter + multiMeaningDelimiter;
         }
 
         @Override
         protected String doInBackground(Integer... params) {
             Log.d(TAG, "Starting background task");
             try (FileWriter fw = new FileWriter(es.file);
-                 //TODO: enforce UTF-8
                  BufferedWriter writer = new BufferedWriter(fw);
-                 CSVPrinter printer = new CSVPrinter(writer, es.format)
+                 CSVPrinter printer = new CSVPrinter(writer, es.cFormat.getFormat())
             ) {
+                MultiMeaningHandler handler = new MultiMeaningHandler(es.cFormat);
                 int i = 0;
                 for (VList tbl : es.lists) {
                     if (tbl.getId() == ID_RESERVED_SKIP) {
@@ -340,7 +377,7 @@ public class ExportFragment extends BaseFragment {
                     }
                     Log.d(TAG, "exporting tbl " + tbl.toString());
                     if (es.exportTableInfo) {
-                        printer.printRecord(CSV_METADATA_START);
+                        printer.printRecord((Object[]) CSV_METADATA_START);
                         printer.printComment(CSV_METADATA_COMMENT);
                         printer.print(tbl.getName());
                         printer.print(tbl.getNameA());
@@ -350,9 +387,12 @@ public class ExportFragment extends BaseFragment {
                     List<VEntry> vocables = db.getVocablesOfTable(tbl);
 
                     for (VEntry ent : vocables) {
-                        printer.print(ent.getAWord());
-                        printer.print(ent.getBWord());
+                        List<String> mA = ent.getAMeanings();
+                        List<String> mB = ent.getBMeanings();
+                        printer.print(handler.formatMultiMeaning(mA));
+                        printer.print(handler.formatMultiMeaning(mB));
                         printer.print(ent.getTip());
+                        printer.print(ent.getAddition());
                         printer.println();
                     }
                     i++;
@@ -396,13 +436,13 @@ public class ExportFragment extends BaseFragment {
         final boolean exportMultiple;
         final File file;
         final AlertDialog dialog;
-        final CSVFormat format;
+        final CSVCustomFormat cFormat;
         final ProgressBar progressBar;
 
         /**
          * New export storage
          *
-         * @param format          CSV format to use
+         * @param cFormat          CSV cFormat to use
          * @param lists          table to export
          * @param exportTableInfo setting
          * @param exportMultiple  setting
@@ -410,9 +450,9 @@ public class ExportFragment extends BaseFragment {
          * @param dialog          dialog for progress, closed on end
          * @param progressBar     progress bar that is updated
          */
-        ExportStorage(CSVFormat format, ArrayList<VList> lists, boolean exportTableInfo,
+        ExportStorage(CSVCustomFormat cFormat, ArrayList<VList> lists, boolean exportTableInfo,
                       boolean exportMultiple, File file, AlertDialog dialog, ProgressBar progressBar) {
-            this.format = format;
+            this.cFormat = cFormat;
             this.lists = lists;
             this.exportTableInfo = exportTableInfo;
             this.exportMultiple = exportMultiple;

@@ -7,6 +7,7 @@ import org.apache.commons.csv.CSVFormat;
 
 import java.io.File;
 
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVCustomFormat;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Function;
 
 /**
@@ -14,7 +15,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Function;
  *     because ImportFetcher requires too many parameters
  */
 public class ImportFetcherBuilder {
-    private CSVFormat format;
+    private CSVCustomFormat format;
     private File source;
     private ImportHandler handler;
     private int maxEntries;
@@ -24,7 +25,7 @@ public class ImportFetcherBuilder {
     private Function<Void,String> importCallback;
     private boolean logErrors = true;
 
-    public ImportFetcherBuilder setFormat(CSVFormat format) {
+    public ImportFetcherBuilder setFormat(CSVCustomFormat format) {
         this.format = format;
         return this;
     }

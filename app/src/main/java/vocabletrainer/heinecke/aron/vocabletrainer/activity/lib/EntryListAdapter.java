@@ -55,8 +55,8 @@ public class EntryListAdapter extends BaseAdapter {
      * @param tbl
      */
     public void setTableData(VList tbl) {
-        header.setAWord(tbl.getNameA());
-        header.setBWord(tbl.getNameB());
+        header.getAMeanings().set(0,tbl.getNameA());
+        header.getBMeanings().set(0,tbl.getNameB());
         this.notifyDataSetChanged();
         Log.d("EntryListAdapter", "setTableData");
     }
@@ -118,8 +118,8 @@ public class EntryListAdapter extends BaseAdapter {
             holder.colTipp.setTypeface(null, bold ? Typeface.BOLD : holder.originTypeface);
         }
 
-        holder.colA.setText(item.getAWord());
-        holder.colB.setText(item.getBWord());
+        holder.colA.setText(item.getAString());
+        holder.colB.setText(item.getBString());
         holder.colTipp.setText(item.getTip());
 
         return convertView;

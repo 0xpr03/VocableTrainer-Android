@@ -240,21 +240,11 @@ public class EditorActivity extends AppCompatActivity {
 
         listView.setAdapter(adapter);
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, final View view, int pos, long id) {
-                showEntryEditDialog((VEntry) adapter.getItem(pos), false);
-            }
+        listView.setOnItemClickListener((parent, view, pos, id) -> showEntryEditDialog((VEntry) adapter.getItem(pos), false));
 
-        });
-
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
-                                           int pos, long id) {
-                showEntryDeleteDialog((VEntry) adapter.getItem(pos), pos);
-                return true;
-            }
+        listView.setOnItemLongClickListener((arg0, arg1, pos, id) -> {
+            showEntryDeleteDialog((VEntry) adapter.getItem(pos), pos);
+            return true;
         });
     }
 
@@ -279,23 +269,17 @@ public class EditorActivity extends AppCompatActivity {
         AlertDialog.Builder delDiag = new AlertDialog.Builder(this);
 
         delDiag.setTitle(R.string.Editor_Diag_delete_Title);
-        delDiag.setMessage(String.format(getString(R.string.Editor_Diag_delete_MSG_part) + "\n %s %s %s", entry.getAWord(), entry.getBWord(), entry.getTip()));
+        delDiag.setMessage(String.format(getString(R.string.Editor_Diag_delete_MSG_part) + "\n %s %s %s", entry.getAString(), entry.getBString(), entry.getTip()));
 
-        delDiag.setPositiveButton(R.string.Editor_Diag_delete_btn_OK, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                lastDeleted = entry;
-                deletedPosition = position;
-                adapter.setDeleted(entry);
-                showUndo();
-                Log.d(TAG, "deleted");
-            }
+        delDiag.setPositiveButton(R.string.Editor_Diag_delete_btn_OK, (dialog, whichButton) -> {
+            lastDeleted = entry;
+            deletedPosition = position;
+            adapter.setDeleted(entry);
+            showUndo();
+            Log.d(TAG, "deleted");
         });
 
-        delDiag.setNegativeButton(R.string.Editor_Diag_delete_btn_CANCEL, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                Log.d(TAG, "canceled");
-            }
-        });
+        delDiag.setNegativeButton(R.string.Editor_Diag_delete_btn_CANCEL, (dialog, whichButton) -> Log.d(TAG, "canceled"));
 
         delDiag.show();
     }
@@ -342,28 +326,22 @@ public class EditorActivity extends AppCompatActivity {
      * @param newTbl set to true if this is a new list
      */
     private void showTableInfoDialog(final boolean newTbl) {
-        Callable<Void> callableOk = new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                setTitle(list.getName());
-                updateColumnNames();
-                return null;
-            }
+        Callable<Void> callableOk = () -> {
+            setTitle(list.getName());
+            updateColumnNames();
+            return null;
         };
-        Callable<Void> callableCancel = new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                if(newTbl) {
-                    noDataSave = true;
-                    finish();
-                }
-                return null;
+        Callable<Void> callableCancel = () -> {
+            if(newTbl) {
+                noDataSave = true;
+                finish();
             }
+            return null;
         };
         VListEditorDialog dialog = VListEditorDialog.newInstance(newTbl, list);
         dialog.setCancelAction(callableCancel);
         dialog.setOkAction(callableOk);
-        dialog.show(getFragmentManager(), VListEditorDialog.TAG);
+        dialog.show(getSupportFragmentManager(), VListEditorDialog.TAG);
     }
 
     /**

@@ -17,25 +17,29 @@ import java.util.concurrent.Callable;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.TrainerResultDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.TrainerClassicFragment;
+import vocabletrainer.heinecke.aron.vocabletrainer.fragment.TrainerClassicMMFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.TrainerModeFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.TrainerQuickFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.SessionStorageManager;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer.Trainer;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
 
 /**
  * Trainer activity
  */
-public class TrainerActivity extends FragmentActivity {
+public class TrainerActivity extends FragmentActivity implements TrainerModeFragment.TrainingFragmentHolder {
     public static final String PARAM_RESUME_SESSION_FLAG = "resume_session";
     public static final String PARAM_TRAINER_SETTINGS = "trainer_settings";
     private static final String KEY_TRAINER_MODE = "trainer_mode";
     public static final String PARAM_TABLES = "lists";
     private static final String TAG = "TrainerActivity";
+
+    public static final int MAX = 4;
+    public static final int MS_SEC = 1000;
 
     private TextView tColumnQuestion;
     private TextView tExercise;
@@ -43,13 +47,13 @@ public class TrainerActivity extends FragmentActivity {
     private Trainer trainer;
     private MenuItem tTip;
     private SessionStorageManager ssm;
-    private TrainerClassicFragment classicFragment;
     private TrainerModeFragment cTrainingFragment;
     private int trainingMode = -1;
-    private TrainerModeFragment[] modeStorage = new TrainerModeFragment[2];
+    private TrainerModeFragment[] modeStorage = new TrainerModeFragment[3];
 
     private static final int modeClassicID = 0;
     private static final int modeQuickID = 1;
+    private static final int modeClassicMMID = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,9 +117,13 @@ public class TrainerActivity extends FragmentActivity {
                 }
                 cTrainingFragment = modeStorage[modeQuickID];
                 break;
+            case modeClassicMMID:
+                if(modeStorage[modeClassicMMID] == null) {
+                    modeStorage[modeClassicMMID] = new TrainerClassicMMFragment();
+                }
+                cTrainingFragment = modeStorage[modeClassicMMID];
+                break;
         }
-        cTrainingFragment.setTrainer(trainer);
-        cTrainingFragment.setTrainerActivity(this);
         setFragment(cTrainingFragment);
         trainingMode = mode;
     }
@@ -125,14 +133,11 @@ public class TrainerActivity extends FragmentActivity {
      */
     public void showResultDialog(){
         if(trainer.isFinished()){
-            Callable callable = new Callable() {
-                @Override
-                public Object call() throws Exception {
-                    Intent myIntent = new Intent(TrainerActivity.this, MainActivity.class);
-                    myIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(myIntent);
-                    return null;
-                }
+            Callable callable = () -> {
+                Intent myIntent = new Intent(TrainerActivity.this, MainActivity.class);
+                myIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(myIntent);
+                return null;
             };
             TrainerResultDialog resultDialog = TrainerResultDialog.newInstance(trainer,callable);
             resultDialog.show(getFragmentManager(),TAG);
@@ -163,18 +168,18 @@ public class TrainerActivity extends FragmentActivity {
         ssm = new SessionStorageManager(db);
         Intent intent = getIntent();
         boolean resume = intent.getBooleanExtra(PARAM_RESUME_SESSION_FLAG, false);
-        ArrayList<VList> lists;
+        ArrayList<VList> list;
         if (resume) {
             Log.d(TAG, "resuming");
             settings = ssm.loadSession();
-            lists = ssm.loadSessionTbls();
+            list = ssm.loadSessionTbls();
         } else {
             Log.d(TAG, "not resuming");
-            lists = (ArrayList<VList>) intent.getSerializableExtra(PARAM_TABLES);
-            if (lists == null) {
-                Log.wtf(TAG, "Flag for lists passed but no lists received!");
+            list = intent.getParcelableArrayListExtra(PARAM_TABLES);
+            if (list == null) {
+                Log.wtf(TAG, "Flag for list passed but no list received!");
             } else {
-                settings = (TrainerSettings) intent.getSerializableExtra(PARAM_TRAINER_SETTINGS);
+                settings = (TrainerSettings) intent.getParcelableExtra(PARAM_TRAINER_SETTINGS);
                 if (settings == null) {
                     Log.wtf(TAG, "No trainer settings passed!");
                 } else {
@@ -183,7 +188,7 @@ public class TrainerActivity extends FragmentActivity {
                         Log.wtf(TAG, "unable to delete past session");
                     } else if (!ssm.saveSession(settings)) {
                         Log.wtf(TAG, "unable to save session meta");
-                    } else if (!ssm.saveSessionTbls(lists)) {
+                    } else if (!ssm.saveSessionTbls(list)) {
                         Log.wtf(TAG, "unable to save session lists");
                     } else {
                         Log.d(TAG, "saved session");
@@ -192,7 +197,7 @@ public class TrainerActivity extends FragmentActivity {
 
             }
         }
-        trainer = new Trainer(lists, settings, getBaseContext(), !resume,ssm);
+        trainer = new Trainer(list, settings, getBaseContext(), !resume,ssm);
     }
 
     @Override
@@ -224,6 +229,9 @@ public class TrainerActivity extends FragmentActivity {
             case R.id.tMenu_Quick:
                 setTrainingMode(modeQuickID);
                 break;
+            case R.id.tMenu_ClassicMM:
+                setTrainingMode(modeClassicMMID);
+                break;
         }
 
         return super.onOptionsItemSelected(item);
@@ -248,5 +256,15 @@ public class TrainerActivity extends FragmentActivity {
             tTip.getIcon().setAlpha(settings.allowTips ? 255 : 155);
             tTip.setEnabled(settings.allowTips);
         }
+    }
+
+    @Override
+    public Trainer getTrainer() {
+        return trainer;
+    }
+
+    @Override
+    public TrainerSettings getTrainerSettings() {
+        return settings;
     }
 }

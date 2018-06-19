@@ -184,9 +184,8 @@ public class MainActivity extends AppCompatActivity {
      * @param view
      */
     public void showTrainer(View view) {
-        Intent myIntent = new Intent(this, ListActivity.class);
-        myIntent.putExtra(ListActivity.PARAM_MULTI_SELECT, true);
-        this.startActivityForResult(myIntent, REQUEST_TRAINER_LIST);
+        Intent myIntent = new Intent(this, TrainerSettingsActivity.class);
+        this.startActivity(myIntent);
     }
 
     /**

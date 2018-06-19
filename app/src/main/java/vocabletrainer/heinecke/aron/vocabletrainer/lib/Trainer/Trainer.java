@@ -1,20 +1,29 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.lib;
+package vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer;
 
 import android.content.Context;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.SessionStorageManager;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 
+import static vocabletrainer.heinecke.aron.vocabletrainer.lib.ParcableTools.readParcableBool;
+import static vocabletrainer.heinecke.aron.vocabletrainer.lib.ParcableTools.writeParcableBool;
+
 /**
  * Trainer class
  */
-public class Trainer {
+public class Trainer implements Parcelable {
     private final static String TAG = "Trainer";
     private Random rng;
     private AB_MODE order;
@@ -32,6 +41,7 @@ public class Trainer {
     private TrainerSettings settings;
     private SessionStorageManager ssm;
     private boolean firstTimeVocLoad;
+    private String lastAddition;
 
     /**
      * Creates a new Trainer
@@ -48,6 +58,7 @@ public class Trainer {
         this.tips = settings.tipsGiven;
         this.failed = settings.timesFailed;
         this.lists = lists;
+        this.lastAddition = "";
         this.timesToSolve = settings.timesToSolve;
         this.unsolvedLists = new ArrayList<>();
         this.ssm = ssm;
@@ -64,6 +75,18 @@ public class Trainer {
         prepareData();
         this.getNext();
     }
+
+    public static final Creator<Trainer> CREATOR = new Creator<Trainer>() {
+        @Override
+        public Trainer createFromParcel(Parcel in) {
+            return new Trainer(in);
+        }
+
+        @Override
+        public Trainer[] newArray(int size) {
+            return new Trainer[size];
+        }
+    };
 
     /**
      * Save vocable state<br>
@@ -97,7 +120,7 @@ public class Trainer {
     }
 
     /**
-     * Retreive information from DB
+     * Retrieve information from DB
      */
     private void getTableData() {
         db.getSessionTableData(lists, unsolvedLists, settings);
@@ -111,7 +134,37 @@ public class Trainer {
     public String getSolution() {
         Log.d(TAG,"getSolution");
         timesShowedSolution++;
+        showedSolution = true;
         return getSolutionUnchecked();
+    }
+
+    public void getSolutions(TrainerInput input){
+        timesShowedSolution++;
+        showedSolution = true;
+        List<String> solutions = getSolutionsUnchecked();
+        for(int i = 0; i < solutions.size(); i++){
+            input.setInputValue(i, solutions.get(i));
+        }
+    }
+
+    /**
+     * Get addition for current vocable
+     * @return
+     */
+    public String getCurrentAddition() {
+        return cVocable.getAddition();
+    }
+
+    public String getLastAddition() {
+        return lastAddition;
+    }
+
+    /**
+     * Get whether the vocable has an addition or not
+     * @return true if addition != ''
+     */
+    public boolean hasLastAddition() {
+        return !getLastAddition().equals("");
     }
 
     /**
@@ -128,21 +181,31 @@ public class Trainer {
             Log.e(TAG, "Null vocable!");
             return "";
         }
-        showedSolution = true;
         return getSolutionUnchecked();
     }
 
     /**
-     * Returns the solution<br>
+     * Returns all possible solutions<br>
      * No null checks are done or failed counter changes are made
      *
      * @return Solution
      */
     private String getSolutionUnchecked() {
         if (order == AB_MODE.A)
-            return cVocable.getAWord();
+            return cVocable.getAString();
         else
-            return cVocable.getBWord();
+            return cVocable.getBString();
+    }
+
+    /**
+     * Returns possible solutions
+     * @return
+     */
+    private List<String> getSolutionsUnchecked() {
+        if (order == AB_MODE.A)
+            return cVocable.getAMeanings();
+        else
+            return cVocable.getBMeanings();
     }
 
     /**
@@ -164,6 +227,82 @@ public class Trainer {
     }
 
     /**
+     * Check is candidate is one of the possible solutions
+     *
+     * @param candidate
+     * @return solution if candidate is a correct, null otherwise
+     * TODO: use an java.util.Optional when api min version is >= 24
+     */
+    @Nullable
+    private String isSolution(String candidate) {
+        List<String> solutions = getSolutionsUnchecked();
+        if(settings.trimSpaces)
+            candidate = candidate.trim();
+
+        for(String solution : solutions){
+            if(settings.trimSpaces)
+                solution = solution.trim();
+            if(this.settings.caseSensitive && solution.equalsIgnoreCase(candidate))
+                return solution;
+            else if(solution.equals(candidate))
+                return solution;
+        }
+        return null;
+    }
+
+    /**
+     * Check a multi-meaning input for correctness
+     * @param tInput
+     * @return true if all is valid
+     */
+    public boolean checkSolutions(final TrainerInput tInput) {
+        Log.d(TAG,"checkSolutions");
+        boolean bSolved = true;
+
+        List<String> solutions = tInput.getData();
+        HashSet<String> correct = new HashSet<>();
+        String solution;
+        for(int i = 0; i < solutions.size(); i++) {
+            solution = solutions.get(i);
+            String result = isSolution(solution);
+            if(result != null){
+                if(correct.contains(result)){
+                    tInput.setInputState(i, TrainerInput.INPUT_STATE.DUPLICATE);
+                } else {
+                    correct.add(result);
+                    tInput.setInputState(i, TrainerInput.INPUT_STATE.VALID);
+                }
+            } else {
+                bSolved = false;
+                tInput.setInputState(i, TrainerInput.INPUT_STATE.INVALID);
+            }
+        }
+
+        if(bSolved){
+            bSolved = correct.size() == getSolutionsUnchecked().size();
+        }
+
+        if(bSolved) {
+            if(!showedSolution) { // do not count retrieved solution as correct
+                cVocable.incrCorrect();
+            }
+            accountVocable(bSolved && !showedSolution);
+        } else {
+            this.failed++;
+            cVocable.incrWrong();
+        }
+        return bSolved;
+    }
+
+    /**
+     * Returns the amount of solution meanings
+     * @return
+     */
+    public int getAmountSolutionMeanings(){
+        return getSolutionsUnchecked().size();
+    }
+
+    /**
      * Checks for correct solution <br>
      *     Retrieves next vocable if correct
      *
@@ -172,11 +311,15 @@ public class Trainer {
      */
     public boolean checkSolution(final String tSolution) {
         Log.d(TAG,"checkSolution");
-        boolean bSolved = equals(getSolutionUnchecked(),tSolution);
+        boolean bSolved = isSolution(tSolution) != null;
         if(bSolved) {
-            accountVocable(bSolved);
+            if(!showedSolution) { // do not count retrieved solution as correct
+                cVocable.incrCorrect();
+            }
+            accountVocable(bSolved && !showedSolution);
         }else {
             this.failed++;
+            cVocable.incrWrong();
         }
         return bSolved;
     }
@@ -211,13 +354,16 @@ public class Trainer {
 
     /**
      * function for modes where checkSolution doesn't apply<br>
-     *     reads next vocabe & accounts passed=false as solution showed & failed
-     * @param passed
+     *     reads next vocable & accounts passed=false as solution showed & failed
+     * @param passed vocable answered correctly
      */
     public void updateVocable(final boolean passed){
         if(!passed){
             this.failed++;
             timesShowedSolution++;
+            cVocable.incrWrong();
+        } else {
+            cVocable.incrCorrect();
         }
         accountVocable(passed);
     }
@@ -249,6 +395,7 @@ public class Trainer {
                 Log.e(TAG, "unable to update vocable!");
                 return;
             }
+            lastAddition = cVocable.getAddition();
         }
         showedSolution = false;
 
@@ -257,13 +404,13 @@ public class Trainer {
         } else {
             int selected = rng.nextInt(unsolvedLists.size());
             VList tbl = unsolvedLists.get(selected);
-
+            Log.d(TAG,"Tbl: "+tbl);
             boolean allowRepetition = false;
             if (cVocable != null) {
                 if (allowRepetition = unsolvedLists.size() == 1 && unsolvedLists.get(0).getUnfinishedVocs() == 1) {
                     Log.d(TAG, "one left");
                 } else if (tbl.getUnfinishedVocs() == 1 && tbl.getId() == cVocable.getList().getId()) {
-                    // handle table has only one entry left
+                    // selected table has only one entry left
                     // prevent repeating last vocable of table
                     if (selected + 1 >= unsolvedLists.size())
                         selected--;
@@ -281,7 +428,7 @@ public class Trainer {
                 cVocable = db.getRandomTrainerEntry(tbl, cVocable, settings, allowRepetition);
             }
             if (cVocable == null) {
-                Log.e(TAG, "New vocable is null!");
+                Log.wtf(TAG, "New vocable is null!");
             }
             boolean mode = settings.mode == TEST_MODE.A;
             if (settings.mode == TEST_MODE.RANDOM) {
@@ -305,7 +452,7 @@ public class Trainer {
         if (cVocable == null)
             return "";
 
-        return order == AB_MODE.A ? cVocable.getBWord() : cVocable.getAWord();
+        return order == AB_MODE.A ? cVocable.getBString() : cVocable.getAString();
     }
 
     /**
@@ -330,7 +477,7 @@ public class Trainer {
      */
     public String getColumnNameExercise() {
         if (this.cVocable == null)
-            return "";
+            return "ERROR: No Column Name!";
 
         return order == AB_MODE.A ? cVocable.getList().getNameB() : cVocable.getList().getNameA();
     }
@@ -343,7 +490,7 @@ public class Trainer {
      */
     public String getColumnNameSolution() {
         if (this.cVocable == null)
-            return "";
+            return "ERROR: No Column Name!";
 
         return order == AB_MODE.B ? cVocable.getList().getNameB() : cVocable.getList().getNameA();
     }
@@ -360,6 +507,53 @@ public class Trainer {
      */
     public int solved() {
         return total - unsolved;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    /**
+     * Parcel constructor
+     * @param in
+     */
+    protected Trainer(Parcel in) {
+        order = in.readInt() == 1 ? AB_MODE.A : AB_MODE.B;
+        lists = in.createTypedArrayList(VList.CREATOR);
+        unsolvedLists = in.createTypedArrayList(VList.CREATOR);
+        cVocable = in.readParcelable(VEntry.class.getClassLoader());
+        tips = in.readInt();
+        total = in.readInt();
+        unsolved = in.readInt();
+        failed = in.readInt();
+        timesToSolve = in.readInt();
+        timesShowedSolution = in.readInt();
+        showedSolution = readParcableBool(in);
+        settings = in.readParcelable(TrainerSettings.class.getClassLoader());
+        firstTimeVocLoad = readParcableBool(in);
+        lastAddition = in.readString();
+    }
+
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeInt(order == AB_MODE.A ? 1 : 0);
+        parcel.writeTypedList(lists);
+        parcel.writeTypedList(unsolvedLists);
+        parcel.writeParcelable(cVocable,0);
+        parcel.writeInt(tips);
+        parcel.writeInt(total);
+        parcel.writeInt(unsolved);
+        parcel.writeInt(failed);
+        parcel.writeInt(timesToSolve);
+        parcel.writeInt(timesShowedSolution);
+        writeParcableBool(parcel,showedSolution);
+        parcel.writeParcelable(settings,0);
+        // ssm
+        // db
+        writeParcableBool(parcel, firstTimeVocLoad);
+        parcel.writeString(lastAddition);
     }
 
     /**

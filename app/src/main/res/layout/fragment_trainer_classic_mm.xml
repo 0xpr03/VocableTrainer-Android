@@ -2,78 +2,56 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="vocabletrainer.heinecke.aron.vocabletrainer.activity.TrainerActivity"
+    android:id="@+id/tTrainerModeScroller"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:scrollbarStyle="insideOverlay"
+    tools:context="vocabletrainer.heinecke.aron.vocabletrainer.activity.TrainerActivity">
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:orientation="vertical"
-        android:weightSum="1"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio=""
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0">
-
-        <vocabletrainer.heinecke.aron.vocabletrainer.lib.CEditText
-            android:id="@+id/tTrainerInput"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginStart="8dp"
-            android:inputType="text|textNoSuggestions"
-            android:layout_marginTop="0dp"
-            android:ems="10"
-            android:hint="@string/Trainer_hint_solution"
-            android:text="tTrainerInput"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        android:layout_height="wrap_content">
 
         <TextView
             android:id="@+id/tTrainerInputColumn"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="tTraienrInputColumn"
+            android:text="tTrainerInputColumn"
             android:textAppearance="@style/TextAppearance.AppCompat.Caption"
             android:textSize="14sp"
-            app:layout_constraintLeft_toLeftOf="@+id/tTrainerInput"
-            app:layout_constraintTop_toBottomOf="@+id/tTrainerInput" />
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/tInputLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/tTrainerInputColumn"
+            app:layout_constraintTop_toBottomOf="@+id/tTrainerInputColumn">
+
+        </LinearLayout>
 
         <Button
             android:id="@+id/bTrainerEnter"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
-            android:layout_marginStart="8dp"
             android:layout_marginTop="5dp"
             android:text="@string/Trainer_btn_ok"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tTrainerInputColumn" />
+            app:layout_constraintTop_toBottomOf="@+id/tInputLayout" />
 
         <TextView
             android:id="@+id/tTrainerQOut"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:paddingStart="24dp"
             android:layout_marginLeft="8dp"
+            android:paddingStart="24dp"
             android:layout_marginRight="8dp"
             android:layout_marginTop="8dp"
             android:text="tTrainerHint"
@@ -88,8 +66,8 @@
             android:id="@+id/tTrainerQOutInfo"
             android:layout_width="0dp"
             android:layout_height="18dp"
-            android:layout_marginBottom="8dp"
             android:layout_marginStart="8dp"
+            android:layout_marginBottom="8dp"
             android:text="@string/Editor_Hint_Addition"
             android:textAppearance="@style/TextAppearance.AppCompat.Caption"
             android:textSize="14sp"

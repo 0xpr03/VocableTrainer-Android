@@ -9,7 +9,7 @@ import android.support.v7.app.AlertDialog;
 import java.util.concurrent.Callable;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer.Trainer;
 
 /**
  * Trainer result dialog fragment<br>

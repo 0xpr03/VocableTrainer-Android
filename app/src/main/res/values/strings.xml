@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name" translatable="false">VocableTrainer Beta</string>
     <string name="Trainer_hint_solution">Answer</string>
+    <string name="Trainer_btn_Show_Next">Show Next</string>
+    <string name="Trainer_btn_Show_Next_Auto">Show Next (in %d)</string>
     <string name="Trainer_btn_ok">Ok</string>
     <string name="Trainer_Quick_btn_Correct">Correct</string>
     <string name="Trainer_Quick_btn_Wrong">Wrong</string>
@@ -14,10 +16,16 @@
     <string name="Main_btn_Resume_Session">Resume Session</string>
     <string name="Main_btn_Import">Import</string>
     <string name="Main_btn_Export">Export</string>
+    <string name="Trainer_Mode_Classic">Classic Mode</string>
+    <string name="Trainer_Mode_Classic_MM">Classic Multimeaning Mode</string>
+    <string name="Trainer_Mode_Quick">Quick Mode</string>
     <string name="Trainer_Title">Training</string>
     <string name="Trainer_btn_Hint">Show Hint</string>
     <string name="Trainer_btn_Solution">Show Solution</string>
-    <string name="TSettings_Title">Training settings</string>
+    <string name="Trainer_Input_Invalid">Wrong input</string>
+    <string name="Trainer_Input_Double">Duplicate input</string>
+    <string name="Trainer_Input_Correct">Correct</string>
+    <string name="TSettings_chkbx_AdditionAuto">Auto mode for additions</string>
     <string name="TSettings_Time_Solve">Times to solve</string>
     <string name="TSettings_chkbx_Tips">Allow Hints</string>
     <string name="TSettings_btn_Start">Start Session</string>
@@ -26,9 +34,11 @@
     <string name="TSettings_rb_Random">Ask random column</string>
     <string name="TSettings_chkbx_CaseSensitive">check case sensitive</string>
     <string name="TSettings_chkbx_TrimSpaces">Ignore surrounding spaces</string>
+    <string name="TSettings_Tab_Settings">Settings</string>
+    <string name="TSettings_Tab_List">Lists</string>
+    <string name="TSettings_Info_missing_lists">You have to select at least one list.</string>
     <string name="ListSelector_Title_Edit">Select list to edit</string>
     <string name="ListSelector_Title_Delete">Delete selected Table</string>
-    <string name="ListSelector_Title_Training">Select lists for training</string>
     <string name="Sort_Col_Name">Name</string>
     <string name="Sort_Col_A">Column A</string>
     <string name="Sort_Col_B">Column B</string>

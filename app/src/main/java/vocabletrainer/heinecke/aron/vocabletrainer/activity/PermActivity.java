@@ -69,10 +69,15 @@ public class PermActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_perm);
 
-        Intent intent = getIntent();
-        // handle passed params
-        permission = intent.getStringExtra(PARAM_PERMISSION);
-        message = intent.getStringExtra(PARAM_MESSAGE);
+        if(savedInstanceState == null) {
+            Intent intent = getIntent();
+            // handle passed params
+            permission = intent.getStringExtra(PARAM_PERMISSION);
+            message = intent.getStringExtra(PARAM_MESSAGE);
+        } else {
+            permission = savedInstanceState.getString(PARAM_PERMISSION);
+            message = savedInstanceState.getString(PARAM_MESSAGE);
+        }
 
         if (permission == null || message == null) {
             Log.wtf(TAG, "missing parameters");
@@ -86,6 +91,14 @@ public class PermActivity extends AppCompatActivity {
         //TODO: allow resource IDs as message
 
         requestPerm();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putString(PARAM_MESSAGE, message);
+        outState.putString(PARAM_PERMISSION,permission);
     }
 
     /**

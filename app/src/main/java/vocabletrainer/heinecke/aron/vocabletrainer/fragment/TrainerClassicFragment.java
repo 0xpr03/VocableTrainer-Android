@@ -23,6 +23,7 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.activity.TrainerActivi
  */
 public class TrainerClassicFragment extends TrainerModeFragment {
     private static final String TAG = "TClassicFragment";
+    private static final String KEY_INPUT = "input";
 
     private TextView tHint;
     private EditText tInput;
@@ -53,6 +54,9 @@ public class TrainerClassicFragment extends TrainerModeFragment {
 
         bShowNext.setOnClickListener(v -> showNextVocable());
 
+        if(savedInstanceState != null)
+            tInput.setText(savedInstanceState.getString(KEY_INPUT));
+
         return view;
     }
 
@@ -63,6 +67,7 @@ public class TrainerClassicFragment extends TrainerModeFragment {
         Log.d(TAG,"showNextVocable()");
         if(timer != null)
             timer.cancel();
+            timer = null;
         if(trainer.isFinished()){
             trainerActivity.showResultDialog();
         }else {
@@ -76,6 +81,13 @@ public class TrainerClassicFragment extends TrainerModeFragment {
             updateTip();
             tColumnAnswer.setText(trainer.getColumnNameSolution());
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putString(KEY_INPUT,tInput.getText().toString());
     }
 
     /**
@@ -93,10 +105,14 @@ public class TrainerClassicFragment extends TrainerModeFragment {
      */
     private void displayAdditionTimed() {
         showAdditionView(true);
+
         timer = new CountDownTimer(MAX * 1000, MS_SEC) {
             @Override
             public void onTick(long l) {
-                bShowNext.setText(getString(R.string.Trainer_btn_Show_Next_Auto,l/MS_SEC));
+                if(bShowNext != null && isAdded()) // rotation during countdown
+                    bShowNext.setText(getString(R.string.Trainer_btn_Show_Next_Auto,l/MS_SEC));
+                else
+                    this.cancel();
             }
 
             @Override

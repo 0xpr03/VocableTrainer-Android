@@ -37,6 +37,9 @@ public class TrainerActivity extends FragmentActivity implements TrainerModeFrag
     private static final String KEY_TRAINER_MODE = "trainer_mode";
     public static final String PARAM_TABLES = "lists";
     private static final String TAG = "TrainerActivity";
+    private static final String KEY_TRAINER = "trainer";
+    private static final String KEY_FRAGMENT = "fragment";
+    private static final String KEY_FRAGMENT_NR = "fragment_nr";
 
     public static final int MAX = 4;
     public static final int MS_SEC = 1000;
@@ -76,7 +79,7 @@ public class TrainerActivity extends FragmentActivity implements TrainerModeFrag
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         trainingMode = -1;
 
-        initTrainer();
+        initTrainer(savedInstanceState);
 
         // do not show vocable now, onPostCreate has to handle this
         setTrainingMode(settings.getInt(KEY_TRAINER_MODE, modeClassicID));
@@ -93,7 +96,7 @@ public class TrainerActivity extends FragmentActivity implements TrainerModeFrag
     /**
      * Set training mode to specified value<br>
      *     also sets trainingMode<br>
-     * @param mode Mode to dispaly
+     * @param mode Mode to display
      */
     private void setTrainingMode(final int mode){
         Log.d(TAG,"init fragments");
@@ -163,41 +166,57 @@ public class TrainerActivity extends FragmentActivity implements TrainerModeFrag
     /**
      * Initialize trainer
      */
-    private void initTrainer() {
-        final Database db = new Database(getBaseContext());
-        ssm = new SessionStorageManager(db);
-        Intent intent = getIntent();
-        boolean resume = intent.getBooleanExtra(PARAM_RESUME_SESSION_FLAG, false);
-        ArrayList<VList> list;
-        if (resume) {
-            Log.d(TAG, "resuming");
-            settings = ssm.loadSession();
-            list = ssm.loadSessionTbls();
+    private void initTrainer(@Nullable Bundle savedInstanceState) {
+        if (savedInstanceState != null){
+            trainer = savedInstanceState.getParcelable(KEY_TRAINER);
+            settings = trainer.getSettings();
+            int fragmentNr = savedInstanceState.getInt(KEY_FRAGMENT_NR);
+            modeStorage[fragmentNr] = (TrainerModeFragment) getSupportFragmentManager().getFragment(savedInstanceState,KEY_FRAGMENT);
         } else {
-            Log.d(TAG, "not resuming");
-            list = intent.getParcelableArrayListExtra(PARAM_TABLES);
-            if (list == null) {
-                Log.wtf(TAG, "Flag for list passed but no list received!");
+            final Database db = new Database(getBaseContext());
+            ssm = new SessionStorageManager(db);
+            Intent intent = getIntent();
+            boolean resume = intent.getBooleanExtra(PARAM_RESUME_SESSION_FLAG, false);
+            ArrayList<VList> list;
+            if (resume) {
+                Log.d(TAG, "resuming");
+                settings = ssm.loadSession();
+                list = ssm.loadSessionTbls();
             } else {
-                settings = (TrainerSettings) intent.getParcelableExtra(PARAM_TRAINER_SETTINGS);
-                if (settings == null) {
-                    Log.wtf(TAG, "No trainer settings passed!");
+                Log.d(TAG, "not resuming");
+                list = intent.getParcelableArrayListExtra(PARAM_TABLES);
+                if (list == null) {
+                    Log.wtf(TAG, "Flag for list passed but no list received!");
                 } else {
-                    Log.d(TAG, "saving new session..");
-                    if (!db.deleteSession()) {
-                        Log.wtf(TAG, "unable to delete past session");
-                    } else if (!ssm.saveSession(settings)) {
-                        Log.wtf(TAG, "unable to save session meta");
-                    } else if (!ssm.saveSessionTbls(list)) {
-                        Log.wtf(TAG, "unable to save session lists");
+                    settings = intent.getParcelableExtra(PARAM_TRAINER_SETTINGS);
+                    if (settings == null) {
+                        Log.wtf(TAG, "No trainer settings passed!");
                     } else {
-                        Log.d(TAG, "saved session");
+                        Log.d(TAG, "saving new session..");
+                        if (!db.deleteSession()) {
+                            Log.wtf(TAG, "unable to delete past session");
+                        } else if (!ssm.saveSession(settings)) {
+                            Log.wtf(TAG, "unable to save session meta");
+                        } else if (!ssm.saveSessionTbls(list)) {
+                            Log.wtf(TAG, "unable to save session lists");
+                        } else {
+                            Log.d(TAG, "saved session");
+                        }
                     }
-                }
 
+                }
             }
+            trainer = new Trainer(list, settings, getBaseContext(), !resume, ssm);
         }
-        trainer = new Trainer(list, settings, getBaseContext(), !resume,ssm);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putParcelable(KEY_TRAINER,trainer);
+        outState.putInt(KEY_FRAGMENT_NR,trainingMode);
+        getSupportFragmentManager().putFragment(outState,KEY_FRAGMENT,cTrainingFragment);
     }
 
     @Override

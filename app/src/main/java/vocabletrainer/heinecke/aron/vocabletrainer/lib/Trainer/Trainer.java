@@ -535,6 +535,9 @@ public class Trainer implements Parcelable {
         lastAddition = in.readString();
     }
 
+    public TrainerSettings getSettings() {
+        return settings;
+    }
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {

@@ -31,6 +31,7 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.activity.TrainerActivi
  */
 public class TrainerClassicMMFragment extends TrainerModeFragment implements TrainerInput{
     private static final String TAG = "TClassicMMFragment";
+    private static final String KEY_INPUT = "input";
 
     private TextView tHint;
     private LinearLayout inputLayout;
@@ -75,9 +76,34 @@ public class TrainerClassicMMFragment extends TrainerModeFragment implements Tra
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putStringArrayList(KEY_INPUT,getData());
+    }
+
+    @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         initInputs();
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        // happens after onActivityCreated
+        // has to wait for inputs being created in the view
+        if(savedInstanceState != null){
+            ArrayList<String> savedInput = savedInstanceState.getStringArrayList(KEY_INPUT);
+            int i = 0;
+            while(i < inputList.length && i < savedInput.size()) {
+                setInputValue(i,savedInput.get(i));
+                i++;
+            }
+            Log.d(TAG,"inputs:"+inputList.length+" saved:"+savedInput.size()+" i:"+i);
+        }else{
+            Log.d(TAG,"no saved instance state");
+        }
     }
 
     @Override
@@ -103,7 +129,10 @@ public class TrainerClassicMMFragment extends TrainerModeFragment implements Tra
         timer = new CountDownTimer(MAX * 1000, MS_SEC) {
             @Override
             public void onTick(long l) {
-                bShowNext.setText(getString(R.string.Trainer_btn_Show_Next_Auto,l/MS_SEC));
+                if(bShowNext != null && isAdded()) // rotation during countdown
+                    bShowNext.setText(getString(R.string.Trainer_btn_Show_Next_Auto,l/MS_SEC));
+                else
+                    this.cancel();
             }
 
             @Override
@@ -146,6 +175,7 @@ public class TrainerClassicMMFragment extends TrainerModeFragment implements Tra
         Log.d(TAG,"showNextVocable()");
         if(timer != null)
             timer.cancel();
+            timer = null;
         if(trainer.isFinished()){
             trainerActivity.showResultDialog();
         }else {
@@ -214,8 +244,8 @@ public class TrainerClassicMMFragment extends TrainerModeFragment implements Tra
     }
 
     @Override
-    public List<String> getData() {
-        List<String> lst = new ArrayList<>(inputList.length);
+    public ArrayList<String> getData() {
+        ArrayList<String> lst = new ArrayList<>(inputList.length);
         for(TextInputLayout input : inputList){
             lst.add(input.getEditText().getText().toString());
         }

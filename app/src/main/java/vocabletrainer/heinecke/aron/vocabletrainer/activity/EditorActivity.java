@@ -192,6 +192,7 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
                 sortSetting = R.id.eMenu_sort_A;
                 break;
         }
+        adapter.updateSorting(cComp);
     }
 
     @Override

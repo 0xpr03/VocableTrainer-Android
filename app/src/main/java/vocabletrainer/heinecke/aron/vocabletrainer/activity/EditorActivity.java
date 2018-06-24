@@ -141,16 +141,18 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
             }
         }
 
-        if(savedInstanceState != null) {
+        if(savedInstanceState != null ) {
             editorDialog = (VEntryEditorDialog) getSupportFragmentManager().getFragment(savedInstanceState, VEntryEditorDialog.TAG);
-            // DialogFragment re-adds itself
-            deleteOnCancel = savedInstanceState.getBoolean(KEY_DELETE_ON_CANCEL);
-            editPosition = savedInstanceState.getInt(KEY_EDITOR_POSITION);
-            if(isIDValid(editPosition))
-                editorEntry = (VEntry) adapter.getItem(editPosition);
-            else
-                editorEntry = savedInstanceState.getParcelable(KEY_EDITOR_ENTRY);
-            setEditorDialogActions();
+            if(editorDialog != null) {
+                // DialogFragment re-adds itself
+                deleteOnCancel = savedInstanceState.getBoolean(KEY_DELETE_ON_CANCEL);
+                editPosition = savedInstanceState.getInt(KEY_EDITOR_POSITION);
+                if (isIDValid(editPosition))
+                    editorEntry = (VEntry) adapter.getItem(editPosition);
+                else
+                    editorEntry = savedInstanceState.getParcelable(KEY_EDITOR_ENTRY);
+                setEditorDialogActions();
+            }
         }
 
         this.setTitle(list.getName());

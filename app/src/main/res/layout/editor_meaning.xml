@@ -4,16 +4,19 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+    <!-- saveEnabled=false REQUIRED, because ALL instances will get the same value otherwise! -->
     <android.support.design.widget.TextInputLayout
         android:id="@+id/wrapper_meaning"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_toStartOf="@+id/btnMeaning"
+        android:saveEnabled="false"
         android:orientation="vertical">
 
         <android.support.design.widget.TextInputEditText
             android:id="@+id/meaning"
+            android:saveEnabled="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </android.support.design.widget.TextInputLayout>

@@ -1,6 +1,5 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -17,7 +16,6 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.ScaleAnimation;
-import android.widget.AdapterView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -35,11 +33,13 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
+import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TRESHOLD;
+import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList.isIDValid;
 
 /**
  * List editor activity
  */
-public class EditorActivity extends AppCompatActivity {
+public class EditorActivity extends AppCompatActivity implements VEntryEditorDialog.EditorDialogDataProvider {
     /**
      * Param key for new list, default is false
      */
@@ -48,8 +48,11 @@ public class EditorActivity extends AppCompatActivity {
      * Param key for list to load upon new_table false
      */
     public static final String PARAM_TABLE = "list";
-    private static final String TAG = "EditorActivity";
+    public static final String TAG = "EditorActivity";
     private static final String P_KEY_EA_SORT = "EA_sorting";
+    private static final String KEY_DELETE_ON_CANCEL = "deleteOnCancel";
+    private static final String KEY_EDITOR_POSITION = "editorPosition";
+    private static final String KEY_EDITOR_ENTRY = "editorEntry";
     private VList list;
     private ArrayList<VEntry> entries;
     private EntryListAdapter adapter;
@@ -65,6 +68,12 @@ public class EditorActivity extends AppCompatActivity {
     private GenEntryComparator compTip;
     private MenuItem mSort_ColA;
     private MenuItem mSort_ColB;
+    private boolean deleteOnCancel;
+    VEntryEditorDialog editorDialog;
+
+    // current edit
+    private int editPosition = MIN_ID_TRESHOLD -1; // store position for viewport change, shared object
+    private VEntry editorEntry = null;
 
     /**
      * data save will be ignored when set
@@ -73,10 +82,12 @@ public class EditorActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        entries = new ArrayList<>();
         super.onCreate(savedInstanceState);
+        entries = new ArrayList<>();
         setContentView(R.layout.activity_editor);
         db = new Database(getBaseContext());
+
+        clearEdit();
 
         compA = new GenEntryComparator(new GenericComparator.ValueRetriever[] {
                 GenEntryComparator.retA,GenEntryComparator.retB,
@@ -106,6 +117,7 @@ public class EditorActivity extends AppCompatActivity {
         // setup listview
         initListView();
 
+
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         sortSetting = settings.getInt(P_KEY_EA_SORT, R.id.eMenu_sort_A);
         updateComp();
@@ -128,7 +140,28 @@ public class EditorActivity extends AppCompatActivity {
                 Log.e(TAG, "Edit VList Flag set without passing a list");
             }
         }
+
+        if(savedInstanceState != null) {
+            editorDialog = (VEntryEditorDialog) getSupportFragmentManager().getFragment(savedInstanceState, VEntryEditorDialog.TAG);
+            // DialogFragment re-adds itself
+            deleteOnCancel = savedInstanceState.getBoolean(KEY_DELETE_ON_CANCEL);
+            editPosition = savedInstanceState.getInt(KEY_EDITOR_POSITION);
+            if(isIDValid(editPosition))
+                editorEntry = (VEntry) adapter.getItem(editPosition);
+            else
+                editorEntry = savedInstanceState.getParcelable(KEY_EDITOR_ENTRY);
+            setEditorDialogActions();
+        }
+
         this.setTitle(list.getName());
+    }
+
+    /**
+     * Clear current edit state
+     */
+    private void clearEdit() {
+        editPosition = MIN_ID_TRESHOLD -1; // clear
+        editorEntry = null;
     }
 
     /**
@@ -171,12 +204,6 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onPause() {
-        saveTable();
-        super.onPause();
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.tEditorListEdit:
@@ -194,10 +221,17 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     /**
-     * Called upon click on save changes
+     * Save editorEntry to DB & update listview
      */
-    public void onSaveChangesClicked(View view) {
-        saveTable();
+    private void saveEdit() {
+        ArrayList<VEntry> lst = new ArrayList<>(1);
+        lst.add(editorEntry);
+
+        if (!editorEntry.isExisting()) {
+            adapter.addEntryUnrendered(editorEntry);
+        }
+        db.upsertEntries(lst);
+        adapter.notifyDataSetChanged();
     }
 
     /**
@@ -240,7 +274,7 @@ public class EditorActivity extends AppCompatActivity {
 
         listView.setAdapter(adapter);
 
-        listView.setOnItemClickListener((parent, view, pos, id) -> showEntryEditDialog((VEntry) adapter.getItem(pos), false));
+        listView.setOnItemClickListener((parent, view, pos, id) -> showEntryEditDialog((VEntry) adapter.getItem(pos), pos));
 
         listView.setOnItemLongClickListener((arg0, arg1, pos, id) -> {
             showEntryDeleteDialog((VEntry) adapter.getItem(pos), pos);
@@ -249,12 +283,11 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     /**
-     * Add an entry
+     * Add new VEntry
      */
     public void addEntry() {
-        VEntry entry = new VEntry(list);
-        adapter.addEntryUnrendered(entry);
-        showEntryEditDialog(entry, true);
+        editorEntry = new VEntry(list);
+        showEntryEditDialog(editorEntry);
     }
 
     /**
@@ -285,38 +318,47 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     /**
+     * Show entry edit dialog for new vocable
+     * @param entry
+     */
+    private void showEntryEditDialog(final VEntry entry) {
+        showEntryEditDialog(entry,MIN_ID_TRESHOLD-1);
+    }
+
+    /**
      * Show entry edit dialog
      *
-     * @param entry          VEntry to edit
-     * @param deleteOnCancel True if entry should be deleted on cancel
+     * @param entry VEntry to edit/create
+     * @param position edit position in list, if existing
      */
-    private void showEntryEditDialog(final VEntry entry, final boolean deleteOnCancel) {
+    private void showEntryEditDialog(final VEntry entry, final int position) {
         if (entry.getId() == ID_RESERVED_SKIP) {
             showTableInfoDialog(false);
             return;
         }
-        VEntryEditorDialog dialog = VEntryEditorDialog.newInstance(entry);
-        dialog.setOkAction(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                adapter.notifyDataSetChanged();
-                Log.d(TAG,"edited");
-                return null;
-            }
-        });
-        dialog.setCancelAction(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                if(deleteOnCancel){
-                    adapter.setDeleted(entry);
-                    adapter.notifyDataSetChanged();
-                }
-                Log.d(TAG,"canceled");
-                return null;
-            }
-        });
 
-        dialog.show(getFragmentManager(), VEntryEditorDialog.TAG);
+        this.editPosition = position;
+        this.deleteOnCancel = deleteOnCancel;
+        this.editorEntry = entry;
+        editorDialog = VEntryEditorDialog.newInstance();
+        setEditorDialogActions();
+
+        editorDialog.show(getSupportFragmentManager(), VEntryEditorDialog.TAG);
+    }
+
+    /**
+     * Setup editor dialog action
+     */
+    private void setEditorDialogActions(){
+        editorDialog.setOkAction(e -> {
+            saveEdit();
+            Log.d(TAG,"edited");
+            return null;
+        });
+        editorDialog.setCancelAction(e -> {
+            Log.d(TAG,"canceled");
+            return null;
+        });
     }
 
     /**
@@ -329,6 +371,7 @@ public class EditorActivity extends AppCompatActivity {
         Callable<Void> callableOk = () -> {
             setTitle(list.getName());
             updateColumnNames();
+            clearEdit();
             return null;
         };
         Callable<Void> callableCancel = () -> {
@@ -336,6 +379,7 @@ public class EditorActivity extends AppCompatActivity {
                 noDataSave = true;
                 finish();
             }
+            clearEdit();
             return null;
         };
         VListEditorDialog dialog = VListEditorDialog.newInstance(newTbl, list);
@@ -418,6 +462,16 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        getSupportFragmentManager().putFragment(outState, VEntryEditorDialog.TAG,editorDialog);
+        outState.putBoolean(KEY_DELETE_ON_CANCEL,deleteOnCancel);
+        outState.putInt(KEY_EDITOR_POSITION,editPosition);
+        if(editorEntry != null && !editorEntry.isExisting())
+            outState.putParcelable(KEY_EDITOR_ENTRY,editorEntry);
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
@@ -426,4 +480,8 @@ public class EditorActivity extends AppCompatActivity {
         editor.apply();
     }
 
+    @Override
+    public VEntry getEditVEntry() {
+        return editorEntry;
+    }
 }

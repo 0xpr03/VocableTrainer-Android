@@ -1,23 +1,26 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.dialog;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.app.DialogFragment;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Function;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
 
 /**
@@ -29,8 +32,15 @@ public class VEntryEditorDialog extends DialogFragment {
     private final static int IMG_REMOVE = R.drawable.ic_remove_black_24dp;
     public static final String TAG = "VEntryEditorDialog";
     private final static String PARAM_ENTRY = "entry";
-    private Callable<Void> okAction;
-    private Callable<Void> cancelAction;
+    private final static String KEY_INPUT_A = "inputA";
+    private final static String KEY_INPUT_A_COUNT = "inputACount";
+    private final static String KEY_INPUT_B = "inputB";
+    private final static String KEY_INPUT_B_COUNT = "inputBCount";
+    private final static String KEY_INPUT_HINT = "inputH";
+    private final static String KEY_INPUT_ADDITION = "inputAd";
+    private final static String KEY_ENTRY = "entry";
+    private Function<Void,VEntry> okAction;
+    private Function<Void,VEntry> cancelAction;
     private VEntry entry;
 
     private LinearLayout meaningsA;
@@ -41,28 +51,19 @@ public class VEntryEditorDialog extends DialogFragment {
     private TextInputEditText tAddition;
     private int tagCounter = 0;
 
-
     /**
      * Creates a new instance
-     * @param entry VEntry to edit
      * @return VListEditorDialog
      */
-    public static VEntryEditorDialog newInstance(final VEntry entry){
-        VEntryEditorDialog dialog = new VEntryEditorDialog();
-
-        Bundle bundle = new Bundle();
-
-        bundle.putSerializable(PARAM_ENTRY, entry);
-        dialog.setArguments(bundle);
-
-        return dialog;
+    public static VEntryEditorDialog newInstance(){
+        return new VEntryEditorDialog();
     }
 
     /**
      * Set ok action to run afterwards
      * @param okAction
      */
-    public void setOkAction(Callable<Void> okAction) {
+    public void setOkAction(Function<Void,VEntry> okAction) {
         this.okAction = okAction;
     }
 
@@ -70,23 +71,40 @@ public class VEntryEditorDialog extends DialogFragment {
      * Set cancel action to run afterwards
      * @param cancelAction
      */
-    public void setCancelAction(Callable<Void> cancelAction) {
+    public void setCancelAction(Function<Void,VEntry> cancelAction) {
         this.cancelAction = cancelAction;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(getArguments() != null){
-            entry = (VEntry) getArguments().getSerializable(PARAM_ENTRY);
-        }
+
     }
 
     @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
 
-        View view = View.inflate(getActivity(), R.layout.dialog_entry, null);
+        ArrayList<String> meaning = getMeanings(meaningsA);
+        outState.putStringArrayList(KEY_INPUT_A,meaning);
+        outState.putInt(KEY_INPUT_A_COUNT,meaning.size());
+        meaning = getMeanings(meaningsB);
+        outState.putStringArrayList(KEY_INPUT_B,meaning);
+        outState.putInt(KEY_INPUT_B_COUNT,meaning.size());
+        outState.putString(KEY_INPUT_HINT,tHint.getText().toString());
+        outState.putString(KEY_INPUT_ADDITION,tAddition.getText().toString());
+    }
+
+
+
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+        final View view = View.inflate(getActivity(), R.layout.dialog_entry, null);
+        builder.setTitle(R.string.Editor_Diag_edit_Title);
+        builder.setView(view);
 
         meaningsA = (LinearLayout) view.findViewById(R.id.meaningsA);
         meaningsB = (LinearLayout) view.findViewById(R.id.meaningsB);
@@ -95,19 +113,35 @@ public class VEntryEditorDialog extends DialogFragment {
         tHint = (TextInputEditText) view.findViewById(R.id.tHint);
         tAddition = (TextInputEditText) view.findViewById(R.id.tAddition);
 
-        alertDialog.setTitle(R.string.Editor_Diag_edit_Title);
-        alertDialog.setView(view);
+        List<String> mLstA;
+        List<String> mLstB;
+        String tip;
+        String addition;
+        EditorDialogDataProvider provider = (EditorDialogDataProvider) getActivity();
+        entry = provider.getEditVEntry();
+        if(savedInstanceState == null){
+            mLstA = entry.getAMeanings();
+            mLstB = entry.getBMeanings();
+            tip = entry.getTip();
+            addition = entry.getAddition();
+        } else {
+            mLstA = savedInstanceState.getStringArrayList(KEY_INPUT_A);
+            mLstB = savedInstanceState.getStringArrayList(KEY_INPUT_B);
+            tip = savedInstanceState.getString(KEY_INPUT_HINT);
+            addition = savedInstanceState.getString(KEY_INPUT_ADDITION);
+        }
 
-        generateMeanings(entry.getAMeanings(), entry.getList().getNameA(),meaningsA);
-        generateMeanings(entry.getBMeanings(), entry.getList().getNameB(),meaningsB);
-
+        assert mLstA != null;
+        assert mLstB != null;
+        generateMeanings(mLstA, entry.getList().getNameA(),meaningsA, true);
+        generateMeanings(mLstB, entry.getList().getNameB(),meaningsB, false);
         tHint.setSingleLine();
-        tHint.setText(entry.getTip());
+        tHint.setText(tip);
 
         tAddition.setSingleLine();
-        tAddition.setText(entry.getAddition());
+        tAddition.setText(addition);
 
-        alertDialog.setPositiveButton(R.string.Editor_Diag_edit_btn_OK, (dialog, whichButton) -> {
+        builder.setPositiveButton(R.string.Editor_Diag_edit_btn_OK, (dialog, whichButton) -> {
             List<String> mA = getMeanings(meaningsA);
             List<String> mB = getMeanings(meaningsB);
 
@@ -121,23 +155,23 @@ public class VEntryEditorDialog extends DialogFragment {
             entry.setAddition(tAddition.getText().toString());
             if(okAction != null){
                 try {
-                    okAction.call();
+                    okAction.function(entry);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
-        alertDialog.setNegativeButton(R.string.Editor_Diag_edit_btn_CANCEL, (dialog, which) -> callCancelAction());
-        return alertDialog.create();
+        builder.setNegativeButton(R.string.Editor_Diag_edit_btn_CANCEL, (dialog, which) -> callCancelAction());
+        return builder.create();
     }
 
     /**
      * Retrieves meanings from layout input
      * @param layout Layout to traverse
-     * @return
+     * @return List of meanings found in layout
      */
-    private List<String> getMeanings(LinearLayout layout) {
-        List<String> lst = new ArrayList<>(3);
+    private ArrayList<String> getMeanings(LinearLayout layout) {
+        ArrayList<String> lst = new ArrayList<>(layout.getChildCount());
 
         for(int i = 0; i < layout.getChildCount(); i++) {
             View child = layout.getChildAt(i);
@@ -155,7 +189,7 @@ public class VEntryEditorDialog extends DialogFragment {
      * @param hint Hint for input
      * @param layout Layout to add views into
      */
-    private void generateMeanings(List<String> meanings, String hint, LinearLayout layout) {
+    private void generateMeanings(List<String> meanings, String hint, LinearLayout layout, final boolean allowFocus) {
         final String descAdd = getString(R.string.Editor_Meaning_Btn_Desc_Add);
         final String descRemove = getString(R.string.Editor_Meaning_Btn_Desc_Remove);
         final View.OnClickListener addListener = new View.OnClickListener() {
@@ -178,7 +212,7 @@ public class VEntryEditorDialog extends DialogFragment {
             }
             layout.addView(generateMeaning(meanings.get(meanings.size() - 1), hint, IMG_ADD, descAdd, addListener,false));
         }else{
-            layout.addView(generateMeaning("", hint, IMG_ADD, descAdd, addListener,true));
+            layout.addView(generateMeaning("", hint, IMG_ADD, descAdd, addListener,allowFocus));
         }
     }
 
@@ -216,13 +250,13 @@ public class VEntryEditorDialog extends DialogFragment {
      */
     private View generateMeaning(final String meaning, final String hint,int image, String description, View.OnClickListener listener,
                                  boolean focus){
-        View view = View.inflate(getActivity(),R.layout.editor_meaning,null);
+        final RelativeLayout container = (RelativeLayout) View.inflate(getActivity(),R.layout.editor_meaning,null);
 
-        view.setTag(tagCounter);
+        container.setTag(tagCounter);
         tagCounter++;
-        TextInputLayout layout = (TextInputLayout) view.findViewById(R.id.wrapper_meaning);
-        TextInputEditText text = (TextInputEditText) view.findViewById(R.id.meaning);
-        ImageButton btn = (ImageButton) view.findViewById(R.id.btnMeaning);
+        final TextInputLayout layout = (TextInputLayout) container.findViewById(R.id.wrapper_meaning);
+        final TextInputEditText text = (TextInputEditText) container.findViewById(R.id.meaning);
+        ImageButton btn = (ImageButton) container.findViewById(R.id.btnMeaning);
         text.setSingleLine();
 
         if(focus)
@@ -235,7 +269,15 @@ public class VEntryEditorDialog extends DialogFragment {
         btn.setContentDescription(description);
         btn.setOnClickListener(listener);
 
-        return view;
+        return container;
+    }
+
+    /**
+     * Get editor VEntry
+     * @return
+     */
+    public VEntry getEntry() {
+        return entry;
     }
 
     @Override
@@ -250,10 +292,17 @@ public class VEntryEditorDialog extends DialogFragment {
     private void callCancelAction(){
         if(cancelAction != null){
             try {
-                cancelAction.call();
+                cancelAction.function(entry);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * Required interface for parent
+     */
+    public interface EditorDialogDataProvider {
+        VEntry getEditVEntry();
     }
 }

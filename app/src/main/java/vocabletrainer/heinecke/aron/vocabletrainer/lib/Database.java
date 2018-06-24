@@ -366,7 +366,7 @@ public class Database {
      *     <u>Does not update vocable metadata such as last used etc on changed flag.</u>
      *
      * @param lst
-     * @return
+     * @return true on success
      */
     public boolean upsertEntries(@NonNull final List<VEntry> lst) {
         try (

@@ -24,7 +24,6 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
  */
 public class MainActivity extends AppCompatActivity {
     public static final String PREFS_NAME = "voc_prefs";
-    private final static int REQUEST_EDITOR_LIST = 10;
     private final static int REQUEST_PERM_EXPORT = 30;
     private final static int REQUEST_PERM_IMPORT = 35;
     private static final String P_KEY_ALPHA_DIALOG = "showedAlphaDialog";
@@ -61,15 +60,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
             switch (requestCode) {
-                //Todo: rewrite both activities to use the returning list selector directly
-                case REQUEST_EDITOR_LIST: {
-                    Intent myIntent = new Intent(this, EditorActivity.class);
-                    myIntent.putExtra(EditorActivity.PARAM_NEW_TABLE, false);
-                    VList lst = data.getParcelableExtra(ListActivity.RETURN_LISTS);
-                    myIntent.putExtra(EditorActivity.PARAM_TABLE, (Parcelable) lst);
-                    this.startActivity(myIntent);
-                }
-                break;
                 case REQUEST_PERM_EXPORT: {
                     startExportActivityUnchecked();
                 }
@@ -134,8 +124,8 @@ public class MainActivity extends AppCompatActivity {
      */
     public void showEditTable(View view) {
         Intent myIntent = new Intent(this, ListActivity.class);
-        myIntent.putExtra(ListActivity.PARAM_MULTI_SELECT, false);
-        this.startActivityForResult(myIntent, REQUEST_EDITOR_LIST);
+        myIntent.putExtra(ListActivity.PARAM_RUN_EDITOR, true);
+        this.startActivity(myIntent);
     }
 
     /**

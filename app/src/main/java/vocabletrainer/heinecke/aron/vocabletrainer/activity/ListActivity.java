@@ -59,9 +59,14 @@ public class ListActivity extends FragmentActivity implements ListPickerFragment
      *     This can be null, if nothing is selected
      */
     public static final String PARAM_SELECTED = "selected";
+    /**
+     * Param, if set runs in editor mode, calling EditorActivity & not returning
+     */
+    public static final String PARAM_RUN_EDITOR = "editorMode";
     private boolean multiselect;
     ListPickerFragment listPickerFragment;
     private boolean delete;
+    private boolean editorMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +84,11 @@ public class ListActivity extends FragmentActivity implements ListPickerFragment
         // handle passed params
         multiselect = intent.getBooleanExtra(PARAM_MULTI_SELECT, false);
         delete = intent.getBooleanExtra(PARAM_DELETE_FLAG, false);
+        editorMode = intent.getBooleanExtra(PARAM_RUN_EDITOR,false);
+        if(editorMode){
+            multiselect = false;
+            delete = false;
+        }
 
         ArrayList<VList> preselected;
         if (intent.hasExtra(PARAM_SELECTED)) {
@@ -112,20 +122,33 @@ public class ListActivity extends FragmentActivity implements ListPickerFragment
 
     @Override
     public void onBackPressed() {
-        Intent returnIntent = new Intent();
-        setResult(Activity.RESULT_CANCELED, returnIntent);
-        finish();
+        if(editorMode) {
+            super.onBackPressed();
+        } else {
+            Intent returnIntent = new Intent();
+            setResult(Activity.RESULT_CANCELED, returnIntent);
+            finish();
+        }
+
     }
 
     @Override
     public void selectionFinished(ArrayList<VList> selected) {
-        Intent returnIntent = new Intent();
-        if(multiselect)
-            returnIntent.putExtra(RETURN_LISTS, selected);
-        else
-            returnIntent.putExtra(RETURN_LISTS, (Parcelable) selected.get(0));
-        setResult(Activity.RESULT_OK, returnIntent);
-        finish();
+        if(editorMode) {
+            Intent myIntent = new Intent(this, EditorActivity.class);
+            myIntent.putExtra(EditorActivity.PARAM_NEW_TABLE, false);
+            VList lst = selected.get(0);
+            myIntent.putExtra(EditorActivity.PARAM_TABLE, lst);
+            this.startActivity(myIntent);
+        } else {
+            Intent returnIntent = new Intent();
+            if (multiselect)
+                returnIntent.putExtra(RETURN_LISTS, selected);
+            else
+                returnIntent.putExtra(RETURN_LISTS, selected.get(0));
+            setResult(Activity.RESULT_OK, returnIntent);
+            finish();
+        }
     }
 
     @Override

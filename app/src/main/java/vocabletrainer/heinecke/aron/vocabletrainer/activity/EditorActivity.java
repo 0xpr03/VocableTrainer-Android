@@ -87,6 +87,11 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
         setContentView(R.layout.activity_editor);
         db = new Database(getBaseContext());
 
+        ActionBar ab = getSupportActionBar();
+        if (ab != null) {
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
+
         clearEdit();
 
         compA = new GenEntryComparator(new GenericComparator.ValueRetriever[] {
@@ -220,6 +225,9 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
             case R.id.tEditorListEdit:
                 showTableInfoDialog();
                 return true;

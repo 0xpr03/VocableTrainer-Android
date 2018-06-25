@@ -17,7 +17,6 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activity.EditorActivity"
-            android:parentActivityName=".activity.MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".activity.MainActivity">
             <intent-filter>

@@ -8,7 +8,8 @@ It provides traning with different modes, sessions and multiple lists.
 ~~There's also a [PC version](https://github.com/0xpr03/VocableTrainer) (less active developed)~~
 
 ## Features
-- [ ] N:N vocable support (multiple meanings)
+- [X] N:N vocable support (multiple meanings)
+- [X] "Additional" Column shown after solving (irregular verbs etc)
 - [X] A<->B Random training over multiple lists
 - [X] Stop/Continue training sessions at any time
 - [X] Classic mode, type in & verify

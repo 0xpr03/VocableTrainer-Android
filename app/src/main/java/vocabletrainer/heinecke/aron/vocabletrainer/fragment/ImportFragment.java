@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.widget.Space;
@@ -58,7 +59,7 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.DPIHelper.DPIToPix
 /*
  * Import Activity
  */
-public class ImportFragment extends BaseFragment {
+public class ImportFragment extends BaseFragment implements VListEditorDialog.ListEditorDataProvider {
 
     private static final String P_KEY_I_IMP_MULTI = "import_sp_multi";
     private static final String P_KEY_I_IMP_SINGLE = "import_sp_single";
@@ -67,6 +68,7 @@ public class ImportFragment extends BaseFragment {
     private static final int REQUEST_FILE_RESULT_CODE = 1;
     private static final int REQUEST_LIST_SELECT_CODE = 2;
     private static final String TAG = "ImportFragment";
+    private static final String KEY_LIST_TARGET = "targetList";
     File impFile;
     List<VEntry> lst;
     EntryListAdapter adapter;
@@ -149,6 +151,11 @@ public class ImportFragment extends BaseFragment {
         initSpinner();
 
         mp = new ImportFetcher.MessageProvider(this);
+
+        if(savedInstanceState != null) {
+            targetList = savedInstanceState.getParcelable(KEY_LIST_TARGET);
+            updateTargetListUI();
+        }
 
         return view;
     }
@@ -432,6 +439,13 @@ public class ImportFragment extends BaseFragment {
     }
 
     /**
+     * Update ui with current targetList
+     */
+    private void updateTargetListUI() {
+        etList.setText(targetList.getName());
+    }
+
+    /**
      * Called on list select click
      */
     public void selectList() {
@@ -440,12 +454,13 @@ public class ImportFragment extends BaseFragment {
             Callable<Void> callable = new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
-                    etList.setText(targetList.getName());
+                    updateTargetListUI();
                     checkInput();
                     return null;
                 }
             };
-            VListEditorDialog dialog = VListEditorDialog.newInstance(true, targetList);
+            VListEditorDialog dialog = VListEditorDialog.newInstance(true);
+            dialog.setTargetFragment(this,0);
             dialog.setOkAction(callable);
             dialog.show(getFragmentManager(),VListEditorDialog.TAG);
         } else {
@@ -499,6 +514,12 @@ public class ImportFragment extends BaseFragment {
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(KEY_LIST_TARGET,targetList);
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
             switch (requestCode) {
@@ -517,5 +538,11 @@ public class ImportFragment extends BaseFragment {
                     break;
             }
         }
+    }
+
+    @NonNull
+    @Override
+    public VList getList() {
+        return targetList;
     }
 }

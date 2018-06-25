@@ -303,6 +303,6 @@ public class VEntryEditorDialog extends DialogFragment {
      * Required interface for parent
      */
     public interface EditorDialogDataProvider {
-        VEntry getEditVEntry();
+        @NonNull VEntry getEditVEntry();
     }
 }

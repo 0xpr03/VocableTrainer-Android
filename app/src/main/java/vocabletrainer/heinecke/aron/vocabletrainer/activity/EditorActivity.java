@@ -1,8 +1,10 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -17,6 +19,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.ScaleAnimation;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
@@ -39,7 +42,7 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList.isID
 /**
  * List editor activity
  */
-public class EditorActivity extends AppCompatActivity implements VEntryEditorDialog.EditorDialogDataProvider {
+public class EditorActivity extends AppCompatActivity implements VEntryEditorDialog.EditorDialogDataProvider, VListEditorDialog.ListEditorDataProvider {
     /**
      * Param key for new list, default is false
      */
@@ -70,19 +73,16 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
     private MenuItem mSort_ColB;
     private boolean deleteOnCancel;
     VEntryEditorDialog editorDialog;
+    VListEditorDialog listEditorDialog;
 
     // current edit
     private int editPosition = MIN_ID_TRESHOLD -1; // store position for viewport change, shared object
     private VEntry editorEntry = null;
 
-    /**
-     * data save will be ignored when set
-     */
-    private boolean noDataSave = false;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG,"onCreate");
         entries = new ArrayList<>();
         setContentView(R.layout.activity_editor);
         db = new Database(getBaseContext());
@@ -124,10 +124,18 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
 
         // handle passed params
         boolean newTable = intent.getBooleanExtra(PARAM_NEW_TABLE, false);
+        if(savedInstanceState != null) {
+            newTable = savedInstanceState.getBoolean(PARAM_NEW_TABLE,false);
+            listEditorDialog = (VListEditorDialog) getSupportFragmentManager().getFragment(savedInstanceState, VListEditorDialog.TAG);
+        }
         if (newTable) {
-            list = new VList(getString(R.string.Editor_Hint_Column_A), getString(R.string.Editor_Hint_Column_B), getString(R.string.Editor_Hint_List_Name));
+            if(savedInstanceState != null) // viewport changed during creation phase
+                list = savedInstanceState.getParcelable(PARAM_TABLE);
+            else
+                list = new VList(getString(R.string.Editor_Hint_Column_A), getString(R.string.Editor_Hint_Column_B), getString(R.string.Editor_Hint_List_Name));
             Log.d(TAG, "new list mode");
-            showTableInfoDialog(true);
+            if(savedInstanceState == null)
+                showTableInfoDialog();
         } else {
             VList tbl = intent.getParcelableExtra(PARAM_TABLE);
             if (tbl != null) {
@@ -140,6 +148,9 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
                 Log.e(TAG, "Edit VList Flag set without passing a list");
             }
         }
+
+        if(listEditorDialog != null)
+            setListEditorActions();
 
         if(savedInstanceState != null ) {
             editorDialog = (VEntryEditorDialog) getSupportFragmentManager().getFragment(savedInstanceState, VEntryEditorDialog.TAG);
@@ -210,7 +221,7 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.tEditorListEdit:
-                showTableInfoDialog(false);
+                showTableInfoDialog();
                 return true;
             case R.id.eMenu_sort_A:
             case R.id.eMenu_sort_B:
@@ -235,26 +246,6 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
         }
         db.upsertEntries(lst);
         adapter.notifyDataSetChanged();
-    }
-
-    /**
-     * Save the list to disk
-     */
-    private void saveTable() {
-        if(noDataSave){
-            return;
-        }
-        Log.d(TAG, "list: " + list);
-        if (db.upsertVList(list)) {
-            Log.d(TAG, "list: " + list);
-            if (db.upsertEntries(adapter.getAllEntries())) {
-                adapter.clearDeleted();
-            } else {
-                Log.e(TAG, "unable to upsert entries! aborting");
-            }
-        } else {
-            Log.e(TAG, "unable to upsert list! aborting");
-        }
     }
 
     /**
@@ -310,7 +301,7 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
         delDiag.setPositiveButton(R.string.Editor_Diag_delete_btn_OK, (dialog, whichButton) -> {
             lastDeleted = entry;
             deletedPosition = position;
-            adapter.setDeleted(entry);
+            adapter.remove(entry);
             showUndo();
             Log.d(TAG, "deleted");
         });
@@ -336,7 +327,7 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
      */
     private void showEntryEditDialog(final VEntry entry, final int position) {
         if (entry.getId() == ID_RESERVED_SKIP) {
-            showTableInfoDialog(false);
+            showTableInfoDialog();
             return;
         }
 
@@ -350,7 +341,7 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
     }
 
     /**
-     * Setup editor dialog action
+     * Setup editor dialog actions
      */
     private void setEditorDialogActions(){
         editorDialog.setOkAction(e -> {
@@ -365,34 +356,41 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
     }
 
     /**
-     * Show list title editor dialog<br>
-     *     Exit editor when newTbl is set and user cancels the dialog
-     *
-     * @param newTbl set to true if this is a new list
+     * Setup list editor actions
      */
-    private void showTableInfoDialog(final boolean newTbl) {
-        Callable<Void> callableOk = () -> {
-            setTitle(list.getName());
-            updateColumnNames();
-            clearEdit();
-            return null;
-        };
-        Callable<Void> callableCancel = () -> {
-            if(newTbl) {
-                noDataSave = true;
+    private void setListEditorActions() {
+        listEditorDialog.setCancelAction(() -> {
+            if(!list.isExisting()) {
                 finish();
             }
-            clearEdit();
             return null;
-        };
-        VListEditorDialog dialog = VListEditorDialog.newInstance(newTbl, list);
-        dialog.setCancelAction(callableCancel);
-        dialog.setOkAction(callableOk);
-        dialog.show(getSupportFragmentManager(), VListEditorDialog.TAG);
+        });
+        listEditorDialog.setOkAction(() -> {
+            if(db.upsertVList(list)) {
+                setTitle(list.getName());
+                updateColumnNames();
+            } else {
+                Toast.makeText(this, "Unable to save list!",
+                        Toast.LENGTH_LONG).show();
+                finish();
+            }
+            return null;
+        });
     }
 
     /**
-     * Show undo view
+     * Show list title editor dialog<br>
+     *     Exit editor when newTbl is set and user cancels the dialog
+     */
+    private void showTableInfoDialog() {
+        listEditorDialog = VListEditorDialog.newInstance(!list.isExisting());
+        setListEditorActions();
+        listEditorDialog.show(getSupportFragmentManager(), VListEditorDialog.TAG);
+    }
+
+    /**
+     * Show undo view<br>
+     * On viewchange during the animation we're not deleting the vocable
      */
     private void showUndo() {
         undoContainer.setVisibility(View.VISIBLE);
@@ -437,6 +435,10 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
                     @Override
                     public void onAnimationEnd(Animation animation) {
                         undoContainer.setVisibility(View.GONE);
+                        lastDeleted.setDelete(true);
+                        ArrayList<VEntry> lst = new ArrayList<>(1);
+                        lst.add(lastDeleted);
+                        db.upsertEntries(lst);
                     }
 
                     @Override
@@ -455,7 +457,6 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "undoing");
-                lastDeleted.setDelete(false);
                 undoContainer.clearAnimation();
                 adapter.addEntryRendered(lastDeleted, deletedPosition);
                 undoContainer.setVisibility(View.GONE);
@@ -467,11 +468,18 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        getSupportFragmentManager().putFragment(outState, VEntryEditorDialog.TAG,editorDialog);
+        if(editorDialog != null && editorDialog.isAdded())
+            getSupportFragmentManager().putFragment(outState, VEntryEditorDialog.TAG,editorDialog);
+        if(listEditorDialog != null && listEditorDialog.isAdded())
+            getSupportFragmentManager().putFragment(outState, VListEditorDialog.TAG,listEditorDialog);
         outState.putBoolean(KEY_DELETE_ON_CANCEL,deleteOnCancel);
         outState.putInt(KEY_EDITOR_POSITION,editPosition);
-        if(editorEntry != null && !editorEntry.isExisting())
+        if(editorEntry != null && !editorEntry.isExisting()) // unsaved new entry (empty entry as filled by editor)
             outState.putParcelable(KEY_EDITOR_ENTRY,editorEntry);
+        if(!list.isExisting()) { // unsaved new table, still in creation dialog
+            outState.putBoolean(PARAM_NEW_TABLE,true);
+            outState.putParcelable(PARAM_TABLE,list);
+        }
     }
 
     @Override
@@ -483,8 +491,15 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
         editor.apply();
     }
 
+    @NonNull
     @Override
     public VEntry getEditVEntry() {
         return editorEntry;
+    }
+
+    @NonNull
+    @Override
+    public VList getList() {
+        return list;
     }
 }

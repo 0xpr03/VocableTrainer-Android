@@ -28,7 +28,6 @@ public class EntryListAdapter extends BaseAdapter {
     private static final int ANDROID_WORKAROUND_STYLE = -1;
     private static final String TAG = "EntryListAdapter";
     private List<VEntry> dataItems = null;
-    private List<VEntry> deleted;
     private LayoutInflater inflater;
     private VEntry header;
 
@@ -45,7 +44,6 @@ public class EntryListAdapter extends BaseAdapter {
                 activity.getString(R.string.Editor_Hint_Tip),
                 ID_RESERVED_SKIP);
         dataItems.add(0, header);
-        deleted = new ArrayList<>();
         inflater = activity.getLayoutInflater();
     }
 
@@ -139,19 +137,9 @@ public class EntryListAdapter extends BaseAdapter {
      *
      * @param entry
      */
-    public void setDeleted(VEntry entry) {
-        entry.setDelete(true);
+    public void remove(VEntry entry) {
         dataItems.remove(entry);
-        deleted.add(entry);
         notifyDataSetChanged();
-    }
-
-    /**
-     * Clear the deleted list<br>
-     * To be called after all changes are written to the DB
-     */
-    public void clearDeleted() {
-        this.deleted.clear();
     }
 
     /**
@@ -173,9 +161,6 @@ public class EntryListAdapter extends BaseAdapter {
      */
     public void addEntryRendered(VEntry entry, int position) {
         dataItems.add(position, entry);
-        if (deleted.contains(entry)) {
-            deleted.remove(entry);
-        }
         this.notifyDataSetChanged();
     }
 
@@ -186,7 +171,6 @@ public class EntryListAdapter extends BaseAdapter {
      */
     public List<VEntry> getAllEntries() {
         ArrayList<VEntry> entries = new ArrayList<>(this.dataItems);
-        entries.addAll(deleted);
         return entries;
     }
 

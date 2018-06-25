@@ -4,12 +4,14 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
@@ -20,25 +22,28 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
  */
 public class VListEditorDialog extends DialogFragment {
     public static final String TAG = "VListEditorDialog";
-    private final static String PARAM_LIST = "list";
     private final static String PARAM_NEW = "is_new";
+    private final static String KEY_COL_A = "colA";
+    private final static String KEY_COL_B = "colB";
+    private final static String KEY_Name = "name";
     private Callable<Void> okAction;
     private Callable<Void> cancelAction;
     private boolean newList;
     private VList list;
+    private EditText iName;
+    private EditText iColA;
+    private EditText iColB;
 
     /**
-     * Creates a new instance
+     * Creates a new instance<br>
+     *     see {@link #getListProvider()} for VList provider requirements
      * @param isNew true if a new list is created
-     * @param list List to edit
      * @return VListEditorDialog
      */
-    public static VListEditorDialog newInstance(final boolean isNew, final VList list){
+    public static VListEditorDialog newInstance(final boolean isNew){
         VListEditorDialog dialog = new VListEditorDialog();
 
         Bundle bundle = new Bundle();
-
-        bundle.putParcelable(PARAM_LIST, list);
         bundle.putBoolean(PARAM_NEW, isNew);
         dialog.setArguments(bundle);
 
@@ -64,20 +69,52 @@ public class VListEditorDialog extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(getArguments() != null){
-            list = getArguments().getParcelable(PARAM_LIST);
+        Log.d(TAG,"onCreate");
+        if(savedInstanceState != null) {
+            newList = getArguments().getBoolean(PARAM_NEW);
+        } else if(getArguments() != null){
             newList = getArguments().getBoolean(PARAM_NEW);
         }
     }
 
     @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.d(TAG,"saving..");
+        outState.putBoolean(PARAM_NEW,newList);
+        outState.putString(KEY_COL_A,iColA.getText().toString());
+        outState.putString(KEY_COL_B,iColB.getText().toString());
+        outState.putString(KEY_Name,iName.getText().toString());
+    }
 
+    /**
+     * Get ListEditorDataProvider<br>
+     *     Allows provider to be a targetFragment, parentFragment or the activity
+     * @return
+     */
+    private ListEditorDataProvider getListProvider() {
+        if(getTargetFragment() instanceof  ListEditorDataProvider){
+            return (ListEditorDataProvider) getTargetFragment();
+        }else if(getParentFragment() instanceof ListEditorDataProvider){
+            return (ListEditorDataProvider) getParentFragment();
+        } else if (getActivity() instanceof ListEditorDataProvider) {
+            return (ListEditorDataProvider) getActivity();
+        } else {
+            throw new IllegalStateException("No VList provider found!");
+        }
+    }
+
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Log.d(TAG,"onCreateDialog");
+        list = getListProvider().getList();
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
         alertDialog.setMessage(newList ? R.string.Editor_Diag_table_Title_New : R.string.Editor_Diag_table_Title_Edit );
-        final EditText iName = new EditText(getActivity());
-        final EditText iColA = new EditText(getActivity());
-        final EditText iColB = new EditText(getActivity());
+        iName = new EditText(getActivity());
+        iColA = new EditText(getActivity());
+        iColB = new EditText(getActivity());
+
         iName.setText(list.getName());
         iName.setSingleLine();
         iName.setHint(R.string.Editor_Hint_List_Name);
@@ -91,6 +128,12 @@ public class VListEditorDialog extends DialogFragment {
             iName.setSelectAllOnFocus(true);
             iColA.setSelectAllOnFocus(true);
             iColB.setSelectAllOnFocus(true);
+        }
+
+        if(savedInstanceState != null){
+            iName.setText(savedInstanceState.getString(KEY_Name));
+            iColA.setText(savedInstanceState.getString(KEY_COL_A));
+            iColB.setText(savedInstanceState.getString(KEY_COL_B));
         }
 
         LinearLayout rl = new TableLayout(getActivity());
@@ -143,5 +186,13 @@ public class VListEditorDialog extends DialogFragment {
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * Interface for dialog caller
+     */
+
+    public interface ListEditorDataProvider {
+        @NonNull VList getList();
     }
 }

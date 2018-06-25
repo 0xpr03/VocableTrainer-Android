@@ -6,8 +6,8 @@ package vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage;
  * @param <T> Object type for value of element
  */
 public class GenericSpinnerEntry<T> {
-    T object;
-    String displayText;
+    private T object;
+    private String displayText;
 
     /**
      * Create a new GenericSpinnerEntry
@@ -25,7 +25,7 @@ public class GenericSpinnerEntry<T> {
      *
      * @return
      */
-    public String getDisplayText() {
+    private String getDisplayText() {
         return displayText;
     }
 

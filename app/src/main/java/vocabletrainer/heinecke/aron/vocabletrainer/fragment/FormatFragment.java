@@ -1,6 +1,5 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v14.preference.SwitchPreference;
@@ -183,9 +182,7 @@ public class FormatFragment extends PreferenceFragmentCompat implements Fragment
 
             errorDiag.setTitle(R.string.Format_Diag_error_Title);
             errorDiag.setMessage(msg);
-            errorDiag.setPositiveButton(R.string.GEN_Ok, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                }
+            errorDiag.setPositiveButton(R.string.GEN_Ok, (dialog, whichButton) -> {
             });
 
             errorDiag.show();

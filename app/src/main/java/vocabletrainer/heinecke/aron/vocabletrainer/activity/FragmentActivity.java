@@ -82,8 +82,7 @@ public abstract class FragmentActivity extends AppCompatActivity{
      */
     private Fragment getCurrentFragment(){
         FragmentManager fragmentManager = getSupportFragmentManager();
-        int amount;
-        Log.d(TAG,"fragment stack:" + (amount = fragmentManager.getBackStackEntryCount()));
+        Log.d(TAG,"fragment stack:" + fragmentManager.getBackStackEntryCount());
         Fragment fr = fragmentManager.findFragmentById(R.id.frame);
         if(fr == null) {
             fr = rootFragment;

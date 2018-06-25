@@ -33,11 +33,7 @@ public class ImportLogDialog extends DialogFragment {
         alertDialog.setTitle(R.string.Import_Finished_Title);
         alertDialog.setMessage(getArguments().getString(LOG));
 
-        alertDialog.setPositiveButton(R.string.GEN_Ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                getActivity().finish();
-            }
-        });
+        alertDialog.setPositiveButton(R.string.GEN_Ok, (dialog, whichButton) -> getActivity().finish());
         return alertDialog.create();
     }
 

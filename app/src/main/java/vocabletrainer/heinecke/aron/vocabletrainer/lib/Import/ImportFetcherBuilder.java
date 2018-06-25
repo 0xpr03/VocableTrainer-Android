@@ -3,8 +3,6 @@ package vocabletrainer.heinecke.aron.vocabletrainer.lib.Import;
 import android.support.v7.app.AlertDialog;
 import android.widget.ProgressBar;
 
-import org.apache.commons.csv.CSVFormat;
-
 import java.io.File;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVCustomFormat;

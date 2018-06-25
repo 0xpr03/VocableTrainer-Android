@@ -7,14 +7,13 @@ public class BasicFileEntry {
     // type integer ids, to be used by constructor callers
     public static final int TYPE_FILE = 1;
     public static final int TYPE_DIR = 2;
-    public static final int TYPE_VIRTUAL = -1;
     public static final int TYPE_UP = -2;
 
-    final long iSize;
-    final String size;
-    final String name;
-    final int typeID;
-    final boolean underline;
+    private final long iSize;
+    private final String size;
+    private final String name;
+    private final int typeID;
+    private final boolean underline;
 
     /**
      * New Basic FileEntry

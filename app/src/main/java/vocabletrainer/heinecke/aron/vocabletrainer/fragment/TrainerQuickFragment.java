@@ -17,12 +17,10 @@ import vocabletrainer.heinecke.aron.vocabletrainer.R;
 public class TrainerQuickFragment extends TrainerModeFragment {
 
     private static final String TAG = "TQuickFragment";
-    private View view;
     private Button bRevolse;
     private Button bCorrect;
     private Button bWrong;
     private TextView tSolution;
-    private TextView tColumnQuestion;
     private TextView tColumnAnswer;
     private int guiState = guiStateInit;
     private static final int guiStateSolution = 1;
@@ -33,40 +31,25 @@ public class TrainerQuickFragment extends TrainerModeFragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_trainer_quick, container, false);
+        View view = inflater.inflate(R.layout.fragment_trainer_quick, container, false);
 
         bRevolse = (Button) view.findViewById(R.id.bTrainerQResolve);
         bCorrect = (Button) view.findViewById(R.id.bTrainerQCorrect);
         bWrong = (Button) view.findViewById(R.id.bTrainerQWrong);
         tSolution = (TextView) view.findViewById(R.id.tTrainerQOut);
-        tColumnQuestion = (TextView) view.findViewById(R.id.tTrainerExColumn);
         tColumnAnswer = (TextView) view.findViewById(R.id.tTrainerInputColumn);
 
-        bRevolse.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                StringBuilder builder = new StringBuilder();
-                builder.append(trainer.getSolutionUncounted());
-                builder.append("\n\n");
-                builder.append(trainer.getCurrentAddition());
-                tSolution.setText(builder.toString());
-                changeView(guiStateSolution);
-            }
+        bRevolse.setOnClickListener(v -> {
+            String builder = trainer.getSolutionUncounted() +
+                    "\n\n" +
+                    trainer.getCurrentAddition();
+            tSolution.setText(builder);
+            changeView(guiStateSolution);
         });
 
-        bCorrect.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showNextVocable(true);
-            }
-        });
+        bCorrect.setOnClickListener(v -> showNextVocable(true));
 
-        bWrong.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showNextVocable(false);
-            }
-        });
+        bWrong.setOnClickListener(v -> showNextVocable(false));
 
         return view;
 

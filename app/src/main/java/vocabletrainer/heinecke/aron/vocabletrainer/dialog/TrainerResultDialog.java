@@ -57,11 +57,7 @@ public class TrainerResultDialog extends DialogFragment {
         alertDialog.setTitle(R.string.Trainer_Diag_finished_Title);
         alertDialog.setMessage(R.string.Trainer_Diag_finished_MSG);
 
-        alertDialog.setPositiveButton(R.string.Trainer_btn_ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                callFinishAction();
-            }
-        });
+        alertDialog.setPositiveButton(R.string.Trainer_btn_ok, (dialog, whichButton) -> callFinishAction());
         return alertDialog.create();
     }
 

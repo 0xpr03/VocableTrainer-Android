@@ -22,6 +22,7 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList.isID
 /**
  * DB Vocable Entry
  */
+@SuppressWarnings("JavaDoc")
 public class VEntry implements Serializable, Parcelable {
     private final VList list;
     private String tip;

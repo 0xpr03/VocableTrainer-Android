@@ -17,7 +17,7 @@ public class GenericComparator<T, V extends Comparable> implements Comparator<T>
      * @param retrievers retrievers to use for comparision<br>
      *                   passed array order defines the comparision priority
      */
-    public GenericComparator(ValueRetriever[] retrievers) {
+    GenericComparator(ValueRetriever[] retrievers) {
         this.retrievers = retrievers;
     }
 

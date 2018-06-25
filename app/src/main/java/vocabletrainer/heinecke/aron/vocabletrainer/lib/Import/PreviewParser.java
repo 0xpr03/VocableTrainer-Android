@@ -3,7 +3,6 @@ package vocabletrainer.heinecke.aron.vocabletrainer.lib.Import;
 import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
 
@@ -14,7 +13,6 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERV
 public class PreviewParser implements ImportHandler {
     private final static int PARSE_LIMIT = 5;
     private final List<VEntry> list;
-    private final VList tbl = null;
     private int parsed_limiter = 0;
     private int tblCount = 0;
     private int rows = 0;

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
@@ -28,8 +27,6 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TextView;
-
-import org.apache.commons.csv.CSVFormat;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -85,20 +82,17 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
     private EditText etList;
     private EditText etFile;
     private Button bImportOk;
-    private ListView list;
     private ConstraintLayout singleLayout;
     private TextView tInfo;
     private boolean isRawData = false;
     private boolean isMultilist = true;
     private PreviewParser previewParser;
-    private TextView tMsg;
-    private View view;
     private ImportFetcher.MessageProvider mp;
 
     private boolean showedCustomFormatFragment = false;
 
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_import, container, false);
+        View view = inflater.inflate(R.layout.fragment_import, container, false);
 
         setHasOptionsMenu(true);
         getActivity().setTitle(R.string.Import_Title);
@@ -115,31 +109,16 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
         bSelectList = (Button) view.findViewById(R.id.bImportSelectList);
         etFile = (EditText) view.findViewById(R.id.tImportPath);
         bImportOk = (Button) view.findViewById(R.id.bImportOk);
-        list = (ListView) view.findViewById(R.id.lstImportPreview);
+        ListView list = (ListView) view.findViewById(R.id.lstImportPreview);
         spFormat = (Spinner) view.findViewById(R.id.spImportFormat);
-        tMsg = (TextView) view.findViewById(R.id.tImportMsg);
+        TextView tMsg = (TextView) view.findViewById(R.id.tImportMsg);
 
-        bSelectList.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                selectList();
-            }
-        });
+        bSelectList.setOnClickListener(v -> selectList());
 
-        bImportOk.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onImport();
-            }
-        });
+        bImportOk.setOnClickListener(v -> onImport());
 
         Button bSelectFile = (Button) view.findViewById(R.id.bImportFile);
-        bSelectFile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                selectFile();
-            }
-        });
+        bSelectFile.setOnClickListener(v -> selectFile());
 
         tMsg.setMovementMethod(LinkMovementMethod.getInstance());
         list.setAdapter(adapter);
@@ -312,16 +291,13 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
                 }
             });*/
             final AlertDialog dialog = alert.show();
-            Function<Void,String> callback = new Function<Void, String>() {
-                @Override
-                public Void function(String param) {
-                    isMultilist = dataHandler.isMultiList();
-                    isRawData = dataHandler.isRawData();
-                    refreshView();
-                    adapter.notifyDataSetChanged();
-                    previewParser = dataHandler;
-                    return null;
-                }
+            Function<Void,String> callback = param -> {
+                isMultilist = dataHandler.isMultiList();
+                isRawData = dataHandler.isRawData();
+                refreshView();
+                adapter.notifyDataSetChanged();
+                previewParser = dataHandler;
+                return null;
             };
             ImportFetcher imp = new ImportFetcherBuilder()
                     .setFormat(format)
@@ -375,13 +351,10 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
             }
         });*/
         final AlertDialog dialog = alert.show();
-        Function<Void,String> callback = new Function<Void, String>() {
-            @Override
-            public Void function(String param) {
-                ImportLogDialog dialog = ImportLogDialog.newInstance(param);
-                dialog.show(getFragmentManager(),ImportLogDialog.TAG);
-                return null;
-            }
+        Function<Void,String> callback = param -> {
+            ImportLogDialog dialog1 = ImportLogDialog.newInstance(param);
+            dialog1.show(getFragmentManager(),ImportLogDialog.TAG);
+            return null;
         };
         Log.d(TAG, "amount: " + previewParser.getAmountRows());
 
@@ -451,13 +424,10 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
     public void selectList() {
         if (getListMode() == Importer.IMPORT_LIST_MODE.CREATE) {
             targetList = new VList("", "", "");
-            Callable<Void> callable = new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                    updateTargetListUI();
-                    checkInput();
-                    return null;
-                }
+            Callable<Void> callable = () -> {
+                updateTargetListUI();
+                checkInput();
+                return null;
             };
             VListEditorDialog dialog = VListEditorDialog.newInstance(true);
             dialog.setTargetFragment(this,0);
@@ -468,7 +438,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
             Intent myIntent = new Intent(getActivity(), ListActivity.class);
             myIntent.putExtra(ListActivity.PARAM_MULTI_SELECT, false);
             myIntent.putExtra(ListActivity.PARAM_DELETE_FLAG, false);
-            myIntent.putExtra(ListActivity.PARAM_SELECTED, (Parcelable) targetList);
+            myIntent.putExtra(ListActivity.PARAM_SELECTED, targetList);
             startActivityForResult(myIntent, REQUEST_LIST_SELECT_CODE);
         }
     }

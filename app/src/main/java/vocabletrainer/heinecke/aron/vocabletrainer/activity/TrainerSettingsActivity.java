@@ -10,8 +10,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -35,9 +33,7 @@ public class TrainerSettingsActivity extends FragmentActivity implements Trainer
 
     ViewPagerAdapter viewPagerAdapter;
     private ViewPager viewPager;
-    private TabLayout tabLayout;
     private ListPickerFragment listPicker;
-    private TrainerSettingsFragment settingsFragment;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -52,7 +48,7 @@ public class TrainerSettingsActivity extends FragmentActivity implements Trainer
         viewPager = (ViewPager) findViewById(R.id.pager);
         initViewPager(savedInstanceState);
 
-        tabLayout = (TabLayout) findViewById(R.id.tabs);
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
     }
 
@@ -67,7 +63,7 @@ public class TrainerSettingsActivity extends FragmentActivity implements Trainer
             listPicker = ListPickerFragment.newInstance(true, false, null, false);
         }
         viewPagerAdapter.addFragment(listPicker,R.string.TSettings_Tab_List);
-        settingsFragment = TrainerSettingsFragment.newInstance();
+        TrainerSettingsFragment settingsFragment = TrainerSettingsFragment.newInstance();
         viewPagerAdapter.addFragment(settingsFragment,R.string.TSettings_Tab_Settings);
 
         viewPager.setAdapter(viewPagerAdapter);

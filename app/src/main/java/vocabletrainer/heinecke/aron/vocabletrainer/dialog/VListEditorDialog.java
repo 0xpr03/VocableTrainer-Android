@@ -11,7 +11,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 
-import java.util.List;
 import java.util.concurrent.Callable;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
@@ -142,30 +141,23 @@ public class VListEditorDialog extends DialogFragment {
         rl.addView(iColB);
         alertDialog.setView(rl);
 
-        alertDialog.setPositiveButton(R.string.Editor_Diag_table_btn_Ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                if (iColA.getText().length() == 0 || iColB.length() == 0 || iName.getText().length() == 0) {
-                    Log.d(TAG, "empty insert");
-                }
+        alertDialog.setPositiveButton(R.string.Editor_Diag_table_btn_Ok, (dialog, whichButton) -> {
+            if (iColA.getText().length() == 0 || iColB.length() == 0 || iName.getText().length() == 0) {
+                Log.d(TAG, "empty insert");
+            }
 
-                list.setNameA(iColA.getText().toString());
-                list.setNameB(iColB.getText().toString());
-                list.setName(iName.getText().toString());
-                if(okAction != null){
-                    try {
-                        okAction.call();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+            list.setNameA(iColA.getText().toString());
+            list.setNameB(iColB.getText().toString());
+            list.setName(iName.getText().toString());
+            if(okAction != null){
+                try {
+                    okAction.call();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         });
-        alertDialog.setNegativeButton(R.string.Editor_Diag_table_btn_Canel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                callCancelAction();
-            }
-        });
+        alertDialog.setNegativeButton(R.string.Editor_Diag_table_btn_Canel, (dialog, which) -> callCancelAction());
         return alertDialog.create();
     }
 

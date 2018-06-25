@@ -3,7 +3,6 @@ package vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.io.Serializable;
 import java.sql.Date;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.MIN_ID_TRESHOLD;
@@ -156,7 +155,7 @@ public class VList implements Parcelable {
      * Set a new ID
      *
      * @param id new ID
-     * @throws IllegalAccessException if a valid ID is already set
+     * @throws IllegalAccessError if a valid ID is already set
      */
     public void setId(int id) {
         if (isIDValid(this.id))

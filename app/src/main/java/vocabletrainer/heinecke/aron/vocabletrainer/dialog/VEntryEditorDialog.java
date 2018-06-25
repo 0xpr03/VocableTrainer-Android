@@ -17,7 +17,6 @@ import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Function;
@@ -31,22 +30,18 @@ public class VEntryEditorDialog extends DialogFragment {
     private final static int IMG_ADD = R.drawable.ic_add_black_24dp;
     private final static int IMG_REMOVE = R.drawable.ic_remove_black_24dp;
     public static final String TAG = "VEntryEditorDialog";
-    private final static String PARAM_ENTRY = "entry";
     private final static String KEY_INPUT_A = "inputA";
     private final static String KEY_INPUT_A_COUNT = "inputACount";
     private final static String KEY_INPUT_B = "inputB";
     private final static String KEY_INPUT_B_COUNT = "inputBCount";
     private final static String KEY_INPUT_HINT = "inputH";
     private final static String KEY_INPUT_ADDITION = "inputAd";
-    private final static String KEY_ENTRY = "entry";
     private Function<Void,VEntry> okAction;
     private Function<Void,VEntry> cancelAction;
     private VEntry entry;
 
     private LinearLayout meaningsA;
     private LinearLayout meaningsB;
-    private TextInputLayout wrapperHint;
-    private TextInputLayout wrapperAddition;
     private TextInputEditText tHint;
     private TextInputEditText tAddition;
     private int tagCounter = 0;
@@ -108,8 +103,6 @@ public class VEntryEditorDialog extends DialogFragment {
 
         meaningsA = (LinearLayout) view.findViewById(R.id.meaningsA);
         meaningsB = (LinearLayout) view.findViewById(R.id.meaningsB);
-        wrapperHint = (TextInputLayout) view.findViewById(R.id.wrapper_Hint);
-        wrapperAddition = (TextInputLayout) view.findViewById(R.id.wrapper_Addition);
         tHint = (TextInputEditText) view.findViewById(R.id.tHint);
         tAddition = (TextInputEditText) view.findViewById(R.id.tAddition);
 
@@ -228,7 +221,7 @@ public class VEntryEditorDialog extends DialogFragment {
          * @param tag Tag of view to delete on click
          * @param group parent in which to delete
          */
-        public DeleteAction(Object tag, ViewGroup group){
+        DeleteAction(Object tag, ViewGroup group){
             this.tag = tag;
             this.group = group;
         }

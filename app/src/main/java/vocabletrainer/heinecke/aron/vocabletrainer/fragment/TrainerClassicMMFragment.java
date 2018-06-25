@@ -17,10 +17,8 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.SessionStorageManager;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer.TrainerInput;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.TrainerActivity.MAX;
@@ -40,15 +38,13 @@ public class TrainerClassicMMFragment extends TrainerModeFragment implements Tra
     private TextView tColumnAnswer;
     private CountDownTimer timer;
     private MenuItem tTip;
-    private SessionStorageManager ssm;
-    private View view;
     private ScrollView mainContainer;
     private TextInputLayout[] inputList;
     private Button bCheckInput;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_trainer_classic_mm, container, false);
+        View view = inflater.inflate(R.layout.fragment_trainer_classic_mm, container, false);
 
         tHint = (TextView) view.findViewById(R.id.tTrainerQOut);
         tColumnAnswer = (TextView) view.findViewById(R.id.tTrainerInputColumn);
@@ -166,8 +162,7 @@ public class TrainerClassicMMFragment extends TrainerModeFragment implements Tra
      * @return View with input element
      */
     private View generateInput(){
-        View tView = View.inflate(getActivity(),R.layout.trainer_input_elem,null);
-        return tView;
+        return View.inflate(getActivity(),R.layout.trainer_input_elem,null);
     }
 
     /**
@@ -270,12 +265,6 @@ public class TrainerClassicMMFragment extends TrainerModeFragment implements Tra
                 input.setError(INPUT_DOUBLED);
                 input.getEditText().setError(INPUT_DOUBLED);
                 break;
-        }
-    }
-
-    private void clearInput(){
-        for(TextInputLayout input : inputList){
-            input.getEditText().setText("");
         }
     }
 

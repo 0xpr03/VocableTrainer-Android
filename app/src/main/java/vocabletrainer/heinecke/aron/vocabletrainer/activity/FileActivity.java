@@ -1,7 +1,6 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -15,7 +14,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -165,27 +163,23 @@ public class FileActivity extends AppCompatActivity {
 
         listView.setAdapter(adapter);
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, final View view, int pos, long id) {
-                BasicFileEntry entry = entries.get(pos);
-                if (entry.getTypeID() == BasicFileEntry.TYPE_FILE) {
-                    Log.d(TAG, "selected: " + entry.getName() + " " + view.toString());
-                    view.setSelected(true);
-                    view.setActivated(true);
-                    selectedEntry = entry;
-                    bOk.setEnabled(true);
-                    if (write) {
-                        tFileName.setText(entry.getName());
-                    }
-                } else if (entry.getTypeID() == BasicFileEntry.TYPE_DIR) {
-                    currentDir = ((FileEntry) entry).getFile();
-                    changeDir();
-                } else if (entry.getTypeID() == BasicFileEntry.TYPE_UP) {
-                    goUp();
+        listView.setOnItemClickListener((parent, view, pos, id) -> {
+            BasicFileEntry entry = entries.get(pos);
+            if (entry.getTypeID() == BasicFileEntry.TYPE_FILE) {
+                Log.d(TAG, "selected: " + entry.getName() + " " + view.toString());
+                view.setSelected(true);
+                view.setActivated(true);
+                selectedEntry = entry;
+                bOk.setEnabled(true);
+                if (write) {
+                    tFileName.setText(entry.getName());
                 }
+            } else if (entry.getTypeID() == BasicFileEntry.TYPE_DIR) {
+                currentDir = ((FileEntry) entry).getFile();
+                changeDir();
+            } else if (entry.getTypeID() == BasicFileEntry.TYPE_UP) {
+                goUp();
             }
-
         });
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         sorting_name = settings.getBoolean(P_KEY_FA_SORT, true);
@@ -268,17 +262,9 @@ public class FileActivity extends AppCompatActivity {
                     alert.setTitle(R.string.File_Diag_exists_Title);
                     alert.setMessage(getString(R.string.File_Diag_MSG_part).replace("%f", selectedFile.getName()));
 
-                    alert.setPositiveButton(R.string.File_Diag_btn_OK, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            useFile();
-                        }
-                    });
+                    alert.setPositiveButton(R.string.File_Diag_btn_OK, (dialog, whichButton) -> useFile());
 
-                    alert.setNegativeButton(R.string.File_Diag_btn_CANCEL, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            selectedFile = null;
-                        }
-                    });
+                    alert.setNegativeButton(R.string.File_Diag_btn_CANCEL, (dialog, whichButton) -> selectedFile = null);
                     alert.show();
                 } else {
                     useFile();

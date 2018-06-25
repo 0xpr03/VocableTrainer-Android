@@ -1,7 +1,6 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -17,7 +16,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
@@ -46,14 +44,11 @@ public class ListPickerFragment extends BaseFragment {
     private static final String K_SHOWOK = "showok";
     private static final String K_PRESELECT = "preselect";
     private static final String K_DELETE = "delete";
-    private static final String K_ = "delete";
 
     private View view;
     private Database db;
-    private List<VList> lists;
     private boolean multiselect;
     private boolean showOkButton;
-    private List<VList> preselected;
     private ListView listView;
     private TableListAdapter adapter;
     private boolean delete;
@@ -135,7 +130,7 @@ public class ListPickerFragment extends BaseFragment {
         multiselect = bundle.getBoolean(K_MULTISELECT);
         showOkButton = bundle.getBoolean(K_SHOWOK);
         delete = bundle.getBoolean(K_DELETE);
-        preselected = bundle.getParcelableArrayList(K_PRESELECT);
+        List<VList> preselected = bundle.getParcelableArrayList(K_PRESELECT);
 
         ActionBar ab = getACActivity().getSupportActionBar();
         if (ab != null) {
@@ -243,7 +238,7 @@ public class ListPickerFragment extends BaseFragment {
      * @param tickedLists already selected lists, can be null
      */
     private void loadTables(List<VList> tickedLists) {
-        lists = db.getTables();
+        List<VList> lists = db.getTables();
         adapter.setAllUpdated(lists, cComp);
         if (tickedLists != null) {
             for (int i = 0; i < adapter.getCount(); i++) {
@@ -270,44 +265,30 @@ public class ListPickerFragment extends BaseFragment {
             // TODO: title; setTitle(R.string.ListSelector_Title_Training);
             listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
             listView.setItemsCanFocus(false);
-            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                    if (adapter.getItem(position).getId() != ID_RESERVED_SKIP) {
-                        updateOkButton();
-                    }
+            listView.setOnItemClickListener((adapterView, view, position, id) -> {
+                if (adapter.getItem(position).getId() != ID_RESERVED_SKIP) {
+                    updateOkButton();
                 }
             });
             Log.d(TAG,"visible button!");
-            bOk.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listener.selectionFinished(getSelectedItems());
-                }
-            });
+            bOk.setOnClickListener(v -> listener.selectionFinished(getSelectedItems()));
         } else {
             if (delete) {
 //                setTitle(R.string.ListSelector_Title_Delete);
-                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-                        VList list = adapter.getItem(position);
-                        if (list.getId() != ID_RESERVED_SKIP) {
-                            showDeleteDialog(list);
-                        }
+                listView.setOnItemClickListener((parent, view, position, id) -> {
+                    VList list = adapter.getItem(position);
+                    if (list.getId() != ID_RESERVED_SKIP) {
+                        showDeleteDialog(list);
                     }
                 });
             } else {
 //                setTitle(R.string.ListSelector_Title_Edit);
-                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-                        VList list = adapter.getItem(position);
-                        if (list.getId() != ID_RESERVED_SKIP) {
-                            ArrayList<VList> result = new ArrayList<>(1);
-                            result.add(list);
-                            listener.selectionFinished(result);
-                        }
+                listView.setOnItemClickListener((parent, view, position, id) -> {
+                    VList list = adapter.getItem(position);
+                    if (list.getId() != ID_RESERVED_SKIP) {
+                        ArrayList<VList> result = new ArrayList<>(1);
+                        result.add(list);
+                        listener.selectionFinished(result);
                     }
                 });
             }
@@ -356,17 +337,13 @@ public class ListPickerFragment extends BaseFragment {
         finishedDiag.setMessage(String.format(getText(R.string.ListSelector_Diag_delete_Msg).toString(),
                 listToDelete.getName(), listToDelete.getNameA(), listToDelete.getNameB()));
 
-        finishedDiag.setPositiveButton(R.string.ListSelector_Diag_delete_btn_Delete, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                db.deleteTable(listToDelete);
-                adapter.removeEntryUpdated(listToDelete);
-            }
+        finishedDiag.setPositiveButton(R.string.ListSelector_Diag_delete_btn_Delete, (dialog, whichButton) -> {
+            db.deleteTable(listToDelete);
+            adapter.removeEntryUpdated(listToDelete);
         });
 
-        finishedDiag.setNegativeButton(R.string.ListSelector_Diag_delete_btn_Cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                // do nothing
-            }
+        finishedDiag.setNegativeButton(R.string.ListSelector_Diag_delete_btn_Cancel, (dialog, whichButton) -> {
+            // do nothing
         });
 
         finishedDiag.show();

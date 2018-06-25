@@ -1,6 +1,5 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -22,7 +21,6 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.concurrent.Callable;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.EntryListAdapter;
@@ -53,7 +51,6 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
     public static final String PARAM_TABLE = "list";
     public static final String TAG = "EditorActivity";
     private static final String P_KEY_EA_SORT = "EA_sorting";
-    private static final String KEY_DELETE_ON_CANCEL = "deleteOnCancel";
     private static final String KEY_EDITOR_POSITION = "editorPosition";
     private static final String KEY_EDITOR_ENTRY = "editorEntry";
     private VList list;
@@ -71,7 +68,6 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
     private GenEntryComparator compTip;
     private MenuItem mSort_ColA;
     private MenuItem mSort_ColB;
-    private boolean deleteOnCancel;
     VEntryEditorDialog editorDialog;
     VListEditorDialog listEditorDialog;
 
@@ -112,12 +108,7 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
         undoContainer.setVisibility(View.GONE);
 
         FloatingActionButton bNewEntry = (FloatingActionButton) findViewById(R.id.bEditorNewEntry);
-        bNewEntry.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addEntry();
-            }
-        });
+        bNewEntry.setOnClickListener(v -> addEntry());
 
         // setup listview
         initListView();
@@ -161,7 +152,6 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
             editorDialog = (VEntryEditorDialog) getSupportFragmentManager().getFragment(savedInstanceState, VEntryEditorDialog.TAG);
             if(editorDialog != null) {
                 // DialogFragment re-adds itself
-                deleteOnCancel = savedInstanceState.getBoolean(KEY_DELETE_ON_CANCEL);
                 editPosition = savedInstanceState.getInt(KEY_EDITOR_POSITION);
                 if (isIDValid(editPosition))
                     editorEntry = (VEntry) adapter.getItem(editPosition);
@@ -340,7 +330,6 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
         }
 
         this.editPosition = position;
-        this.deleteOnCancel = deleteOnCancel;
         this.editorEntry = entry;
         editorDialog = VEntryEditorDialog.newInstance();
         setEditorDialogActions();
@@ -461,15 +450,12 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
         undoContainer.clearAnimation();
         undoContainer.setAnimation(animationSet);
 
-        undoContainer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "undoing");
-                undoContainer.clearAnimation();
-                adapter.addEntryRendered(lastDeleted, deletedPosition);
-                undoContainer.setVisibility(View.GONE);
-                listView.setFocusable(true);
-            }
+        undoContainer.setOnClickListener(v -> {
+            Log.d(TAG, "undoing");
+            undoContainer.clearAnimation();
+            adapter.addEntryRendered(lastDeleted, deletedPosition);
+            undoContainer.setVisibility(View.GONE);
+            listView.setFocusable(true);
         });
     }
 
@@ -480,7 +466,6 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
             getSupportFragmentManager().putFragment(outState, VEntryEditorDialog.TAG,editorDialog);
         if(listEditorDialog != null && listEditorDialog.isAdded())
             getSupportFragmentManager().putFragment(outState, VListEditorDialog.TAG,listEditorDialog);
-        outState.putBoolean(KEY_DELETE_ON_CANCEL,deleteOnCancel);
         outState.putInt(KEY_EDITOR_POSITION,editPosition);
         if(editorEntry != null && !editorEntry.isExisting()) // unsaved new entry (empty entry as filled by editor)
             outState.putParcelable(KEY_EDITOR_ENTRY,editorEntry);

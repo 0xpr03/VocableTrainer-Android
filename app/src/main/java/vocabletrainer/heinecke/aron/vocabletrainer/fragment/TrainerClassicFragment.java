@@ -13,7 +13,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.SessionStorageManager;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.TrainerActivity.MAX;
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.TrainerActivity.MS_SEC;
@@ -31,16 +30,12 @@ public class TrainerClassicFragment extends TrainerModeFragment {
     private Button bShowNext;
     private TextView tColumnAnswer;
     private MenuItem tTip;
-    private SessionStorageManager ssm;
-    private View view;
     private Button bCheckInput;
     private CountDownTimer timer;
-    private String strShowNext;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_trainer_classic, container, false);
-        strShowNext = getString(R.string.Trainer_btn_Show_Next);
+        View view = inflater.inflate(R.layout.fragment_trainer_classic, container, false);
         tHint = (TextView) view.findViewById(R.id.tTrainerQOut);
         tColumnAnswer = (TextView) view.findViewById(R.id.tTrainerInputColumn);
         tInput = (EditText) view.findViewById(R.id.tTrainerInput);

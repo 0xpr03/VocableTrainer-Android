@@ -9,7 +9,6 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.Toolbar;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -165,44 +164,19 @@ public class ExportFragment extends BaseFragment {
         tExportFile.setKeyListener(null);
         btnExport.setEnabled(false);
         lists = new ArrayList<>();
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                runSelectTables();
-            }
-        });
-        chkExportMultiple.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                checkInputOk();
-            }
-        });
+        addButton.setOnClickListener(v -> runSelectTables());
+        chkExportMultiple.setOnClickListener(v -> checkInputOk());
 
         Button btnOk = (Button) view.findViewById(R.id.bExportStart);
-        btnOk.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onOk();
-            }
-        });
+        btnOk.setOnClickListener(v -> onOk());
 
         Button btnFileDialog = (Button) view.findViewById(R.id.bExportSelFile);
-        btnFileDialog.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                selectFile();
-            }
-        });
+        btnFileDialog.setOnClickListener(v -> selectFile());
 
         adapter = new TableListAdapter(getActivity(), R.layout.table_list_view, lists, false);
         listView.setAdapter(adapter);
         listView.setLongClickable(false);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                runSelectTables();
-            }
-        });
+        listView.setOnItemClickListener((parent, view, position, id) -> runSelectTables());
 
         spAdapterFormat = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item);
 
@@ -355,7 +329,7 @@ public class ExportFragment extends BaseFragment {
          *
          * @param es
          */
-        public ExportOperation(ExportStorage es) {
+        ExportOperation(ExportStorage es) {
             this.es = es;
             db = new Database(getActivity().getApplicationContext());
             multiMeaningDelimiter = String.valueOf(es.cFormat.getMultiValueChar());

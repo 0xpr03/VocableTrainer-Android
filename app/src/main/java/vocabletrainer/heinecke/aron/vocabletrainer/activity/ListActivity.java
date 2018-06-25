@@ -1,38 +1,17 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.util.SparseBooleanArray;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.ListView;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.TableListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ListPickerFragment;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenTableComparator;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
-
-import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
-import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
 
 /**
  * List selector activity
@@ -65,7 +44,6 @@ public class ListActivity extends FragmentActivity implements ListPickerFragment
     public static final String PARAM_RUN_EDITOR = "editorMode";
     private boolean multiselect;
     ListPickerFragment listPickerFragment;
-    private boolean delete;
     private boolean editorMode;
 
     @Override
@@ -83,7 +61,7 @@ public class ListActivity extends FragmentActivity implements ListPickerFragment
         Intent intent = getIntent();
         // handle passed params
         multiselect = intent.getBooleanExtra(PARAM_MULTI_SELECT, false);
-        delete = intent.getBooleanExtra(PARAM_DELETE_FLAG, false);
+        boolean delete = intent.getBooleanExtra(PARAM_DELETE_FLAG, false);
         editorMode = intent.getBooleanExtra(PARAM_RUN_EDITOR,false);
         if(editorMode){
             multiselect = false;
@@ -101,7 +79,7 @@ public class ListActivity extends FragmentActivity implements ListPickerFragment
             //Restore the fragment's instance
             listPickerFragment = (ListPickerFragment) getSupportFragmentManager().getFragment(savedInstanceState, ListPickerFragment.TAG);
         } else {
-            listPickerFragment = ListPickerFragment.newInstance(multiselect,delete,preselected,true);
+            listPickerFragment = ListPickerFragment.newInstance(multiselect, delete,preselected,true);
         }
 
         setFragment(listPickerFragment);

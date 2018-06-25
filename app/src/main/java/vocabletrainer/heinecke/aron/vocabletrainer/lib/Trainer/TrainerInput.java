@@ -1,6 +1,5 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer;
 
-import java.util.Collection;
 import java.util.List;
 
 /**

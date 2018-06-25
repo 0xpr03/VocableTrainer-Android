@@ -150,24 +150,6 @@ public class ExImportActivity extends FragmentActivity {
     }
 
     /**
-     * Set flag for custom format update
-     */
-    public void setUpdatedCustomFormat() {
-        isCustomFormatUpdated = true;
-    }
-
-    /**
-     * Returns true if the custom format was updated<br>
-     *     this also resets the value on true
-     * @return
-     */
-    public boolean getIsCustomFormatUpdated(){
-        boolean val = isCustomFormatUpdated;
-        isCustomFormatUpdated = false;
-        return val;
-    }
-
-    /**
      * Static method to populate format spinner adapter
      *
      * @param adapter Adapter to populate

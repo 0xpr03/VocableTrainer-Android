@@ -113,6 +113,7 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
         dialog.cancel();
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     protected String doInBackground(Integer... params) {
         try (
@@ -151,7 +152,8 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
                 if (tbl_start) {
                     handler.newTable(v1, v2, v3);
                     tbl_start = false;
-                } else if (tbl_start = (v1.equals(CSV_METADATA_START[0]) && v2.equals(CSV_METADATA_START[1]) && v3.equals(CSV_METADATA_START[2]))) {
+                } else //noinspection StatementWithEmptyBody
+                    if (tbl_start = (v1.equals(CSV_METADATA_START[0]) && v2.equals(CSV_METADATA_START[1]) && v3.equals(CSV_METADATA_START[2]))) {
                     //do nothing
                 } else {
                     vocableAmount++;
@@ -178,9 +180,9 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
      * Message provider for the import log
      */
     public static class MessageProvider {
-        public final String E_NOT_ENOUGH_VALUES;
-        public final String W_TOO_MANY_VALUES;
-        public final String I_IMPORTED_AMOUNT;
+        final String E_NOT_ENOUGH_VALUES;
+        final String W_TOO_MANY_VALUES;
+        final String I_IMPORTED_AMOUNT;
 
         /**
          * Creates a new MessageProvider
@@ -197,7 +199,7 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
          * @param amount
          * @return formatted String
          */
-        public String formatIMPORTED_AMOUNT(final int amount){
+        String formatIMPORTED_AMOUNT(final int amount){
             return I_IMPORTED_AMOUNT.replace("%d",String.valueOf(amount)) + '\n';
         }
     }

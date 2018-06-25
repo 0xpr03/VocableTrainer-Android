@@ -64,8 +64,7 @@ public class TrainerSettingsFragment extends BaseFragment {
      * @return
      */
     public static TrainerSettingsFragment newInstance(){
-        TrainerSettingsFragment trainerSettingsFragment = new TrainerSettingsFragment();
-        return trainerSettingsFragment;
+        return new TrainerSettingsFragment();
     }
 
     @Override
@@ -87,23 +86,20 @@ public class TrainerSettingsFragment extends BaseFragment {
         RadioButton rbR = (RadioButton) view.findViewById(R.id.rTSettingsAB);
         rButtons = new RadioButton[]{rbA,rbB,rbR};
         Button bStart = (Button) view.findViewById(R.id.tSettingsOkBtn);
-        bStart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int timesToSolve = 0;
-                try {
-                    timesToSolve = Integer.valueOf(tTimesVocable.getText().toString());
-                } catch (NumberFormatException e) {
-                    return;
-                }
-                boolean showHints = bHints.isChecked();
-                boolean caseSensitive = bCaseSensitive.isChecked();
-                boolean trimSpaces = bTrimSpaces.isChecked();
-                boolean additionAuto = bAdditionAuto.isChecked();
-                TrainerSettings settings = new TrainerSettings(timesToSolve, testMode,
-                        showHints, caseSensitive,trimSpaces, additionAuto);
-                handler.handleFinish(settings);
+        bStart.setOnClickListener(v -> {
+            int timesToSolve;
+            try {
+                timesToSolve = Integer.valueOf(tTimesVocable.getText().toString());
+            } catch (NumberFormatException e) {
+                return;
             }
+            boolean showHints = bHints.isChecked();
+            boolean caseSensitive = bCaseSensitive.isChecked();
+            boolean trimSpaces = bTrimSpaces.isChecked();
+            boolean additionAuto = bAdditionAuto.isChecked();
+            TrainerSettings settings = new TrainerSettings(timesToSolve, testMode,
+                    showHints, caseSensitive,trimSpaces, additionAuto);
+            handler.handleFinish(settings);
         });
 
         init();

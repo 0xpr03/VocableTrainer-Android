@@ -72,6 +72,8 @@ public class TrainerClassicMMFragment extends TrainerModeFragment implements Tra
 
         bSolve.setOnClickListener(v -> solve());
 
+        bShowNext.setOnClickListener(v -> showNextVocable());
+
         return view;
     }
 

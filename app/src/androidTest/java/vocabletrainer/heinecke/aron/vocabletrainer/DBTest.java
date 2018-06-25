@@ -1,6 +1,7 @@
 package vocabletrainer.heinecke.aron.vocabletrainer;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
@@ -35,6 +36,12 @@ public class DBTest {
 
     private static final Lock _mutex = new ReentrantLock(true);
 
+    private List<String> string2List(@NonNull final String input){
+        ArrayList<String> lst = new ArrayList<>(1);
+        lst.add(input);
+        return lst;
+    }
+
     @Test
     public void useAppContext() throws Exception {
         // Context of the app under test.
@@ -49,7 +56,7 @@ public class DBTest {
     private List<VEntry> getEntries(VList tbl){
         List<VEntry> entries = new ArrayList<>(100);
         for(int i = 0; i < 100; i++){
-            entries.add(new VEntry("A"+i,"B"+i,"C"+i,tbl,0));
+            entries.add(new VEntry("A"+i,"B"+i,"C"+i, "D"+i,tbl));
         }
         return entries;
     }
@@ -107,14 +114,14 @@ public class DBTest {
         List<VEntry> result = db.getVocablesOfTable(tbl);
         assertEquals("invalid amount of entries",entries.size(),result.size());
 
-        result.get(20).setAMeanings("New Word");
+        result.get(20).setAMeanings(string2List("New Word"));
         result.get(30).setDelete(true);
         assertTrue("UpsertEntries",db.upsertEntries(result));
 
         List<VEntry> edited = db.getVocablesOfTable(tbl);
         assertEquals("invalid amount of entries",entries.size()-1,edited.size());
-        assertEquals("invalid entry data", result.get(20).getAWord(),edited.get(20).getAWord());
-        assertEquals("invalid entry data", result.get(20).getBWord(),edited.get(20).getBWord());
+        assertEquals("invalid entry data", result.get(20).getAString(),edited.get(20).getAString());
+        assertEquals("invalid entry data", result.get(20).getBString(),edited.get(20).getBString());
         assertEquals("invalid entry data", result.get(20).getTip(),edited.get(20).getTip());
     }
 
@@ -142,7 +149,7 @@ public class DBTest {
         List<VEntry> entries = getEntries(tbl);
 
         assertTrue("UpsertEntries",db.upsertEntries(entries));
-        assertNotNull(db.getRandomTrainerEntry(tbl,null,new TrainerSettings(2, Trainer.TEST_MODE.RANDOM,true, true),true));
+        assertNotNull(db.getRandomTrainerEntry(tbl,null,new TrainerSettings(2, Trainer.TEST_MODE.RANDOM,true, true,true,false),true));
     }
 
     @Test
@@ -183,7 +190,7 @@ public class DBTest {
 
         assertTrue("UpsertEntries",db.upsertEntries(entries));
 
-        TrainerSettings settings = new TrainerSettings(points, Trainer.TEST_MODE.RANDOM,true,true);
+        TrainerSettings settings = new TrainerSettings(points, Trainer.TEST_MODE.RANDOM,true,true,true,false);
 
         VEntry chosen = db.getRandomTrainerEntry(tbl,null,settings,false);
         assertNotNull(chosen);

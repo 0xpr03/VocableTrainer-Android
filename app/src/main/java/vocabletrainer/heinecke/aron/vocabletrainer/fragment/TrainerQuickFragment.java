@@ -49,7 +49,7 @@ public class TrainerQuickFragment extends TrainerModeFragment {
                 builder.append(trainer.getSolutionUncounted());
                 builder.append("\n\n");
                 builder.append(trainer.getCurrentAddition());
-                tSolution.setText(trainer.getSolutionUncounted());
+                tSolution.setText(builder.toString());
                 changeView(guiStateSolution);
             }
         });

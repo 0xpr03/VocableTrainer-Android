@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private final static int REQUEST_PERM_EXPORT = 30;
     private final static int REQUEST_PERM_IMPORT = 35;
     private static final String P_KEY_ALPHA_DIALOG = "showedAlphaDialog";
+    @Deprecated
     private static final String P_KEY_DB_CHANGE_N_N = "showedDBDialogN_N";
     private static boolean showedDialog = false;
     Button btnContinue;
@@ -54,39 +55,6 @@ public class MainActivity extends AppCompatActivity {
 
 
         btnContinue = (Button) findViewById(R.id.bLastSession);
-
-        dbUpdateDialog(settings);
-    }
-
-    /**
-     * Show database upgrade to N:N notification
-     * @param settings
-     */
-    private void dbUpdateDialog(@NonNull final SharedPreferences settings) {
-        if(!settings.getBoolean(P_KEY_DB_CHANGE_N_N,false)) {
-            final AlertDialog.Builder dbDialog = new AlertDialog.Builder(this);
-
-            dbDialog.setTitle("Information");
-
-            final TextView textView = new TextView(this);
-            textView.setPadding(50,5,50,50);
-            textView.setTextColor(getResources().getColor(android.R.color.primary_text_light));
-            textView.setText(R.string.tDB_Update_Text);
-            textView.setMovementMethod(LinkMovementMethod.getInstance());
-            dbDialog.setView(textView);
-
-            dbDialog.setPositiveButton(R.string.tDB_Update_Close_Dismissed, (dialog, whichButton) -> {
-                SharedPreferences.Editor editor = settings.edit();
-                editor.putBoolean(P_KEY_DB_CHANGE_N_N,true);
-                editor.apply();
-            });
-
-            dbDialog.setNegativeButton(R.string.tDB_Update_Close, (dialog, whichButton) -> {
-                // do nothing
-            });
-
-            dbDialog.show();
-        }
     }
 
     @Override

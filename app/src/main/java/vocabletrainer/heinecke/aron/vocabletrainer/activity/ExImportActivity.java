@@ -22,6 +22,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.fragment.BaseFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ExportFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ImportFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVCustomFormat;
@@ -44,13 +45,15 @@ public class ExImportActivity extends FragmentActivity {
      * Pass this as false to show export options
      */
     public static final String PARAM_IMPORT = "show_import";
+    private static final String KEY_FORMAT = "customFormat";
+    private static final String KEY_FRAGMENT = "fragmentExIm";
     private static CSVCustomFormat CUSTOM_FORMAT;
-    private boolean showImport;
-    private boolean isCustomFormatUpdated = false;
+    private BaseFragment fragment;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG,"onCreate");
 
         setContentView(R.layout.fragment_activity);
 
@@ -60,15 +63,19 @@ public class ExImportActivity extends FragmentActivity {
         if (ab != null) {
             ab.setDisplayHomeAsUpEnabled(true);
         }
+        fragment = null;
+        if(savedInstanceState == null){ // init
+            Intent intent = getIntent();
+            boolean showImport = intent.getBooleanExtra(PARAM_IMPORT, true);
+            Log.d(TAG,"import mode:"+showImport);
 
-        Intent intent = getIntent();
-        showImport  = intent.getBooleanExtra(PARAM_IMPORT, true);
-
-        if(showImport) {
-            setFragment(new ImportFragment());
-        }else{
-            setFragment(new ExportFragment());
-        }
+            if (showImport) {
+                fragment = new ImportFragment();
+            } else {
+                fragment = new ExportFragment();
+            }
+            setFragment(fragment);
+        } // otherwise let android handle the restore
     }
 
     @Override
@@ -84,6 +91,7 @@ public class ExImportActivity extends FragmentActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()){
             case android.R.id.home:
+                Log.d(TAG,"onOptionsItemSelected:home");
                 this.onBackPressed();
                 return true;
         }
@@ -147,6 +155,14 @@ public class ExImportActivity extends FragmentActivity {
             Log.e(TAG, "unable to save format ", e);
         }
 
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        Log.d(TAG,"onSaveInstanceState");
+        super.onSaveInstanceState(outState);
+
+        outState.putParcelable(KEY_FORMAT,CUSTOM_FORMAT);
     }
 
     /**

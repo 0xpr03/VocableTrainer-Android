@@ -30,7 +30,6 @@ import android.widget.TextView;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Callable;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
@@ -66,8 +65,10 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
     private static final int REQUEST_LIST_SELECT_CODE = 2;
     private static final String TAG = "ImportFragment";
     private static final String KEY_LIST_TARGET = "targetList";
+    private static final String KEY_FILE_PATH = "filePath";
+    private static final String KEY_VENTRY_LIST = "vEntryList";
     File impFile;
-    List<VEntry> lst;
+    ArrayList<VEntry> lst;
     EntryListAdapter adapter;
     VList targetList;
     ArrayAdapter<GenericSpinnerEntry<CSVCustomFormat>> spAdapterFormat;
@@ -88,16 +89,22 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
     private boolean isMultilist = true;
     private PreviewParser previewParser;
     private ImportFetcher.MessageProvider mp;
+    private FormatFragment formatFragment;
 
     private boolean showedCustomFormatFragment = false;
 
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView");
         View view = inflater.inflate(R.layout.fragment_import, container, false);
 
         setHasOptionsMenu(true);
         getActivity().setTitle(R.string.Import_Title);
 
-        lst = new ArrayList<>();
+        if (savedInstanceState != null) {
+            lst = savedInstanceState.getParcelableArrayList(KEY_VENTRY_LIST);
+        } else {
+            lst = new ArrayList<>();
+        }
         adapter = new EntryListAdapter(getActivity(), lst);
 
         spSingelRaw = (Spinner) view.findViewById(R.id.spImportSingleRaw);
@@ -130,10 +137,15 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
         initSpinner();
 
         mp = new ImportFetcher.MessageProvider(this);
-
-        if(savedInstanceState != null) {
+        if (savedInstanceState != null) {
+            String path = savedInstanceState.getString(KEY_FILE_PATH, null);
+            if (path != null && !path.equals(""))
+                impFile = new File(path);
+            else
+                impFile = null;
             targetList = savedInstanceState.getParcelable(KEY_LIST_TARGET);
-            updateTargetListUI();
+            if (targetList != null)
+                updateTargetListUI();
         }
 
         return view;
@@ -150,11 +162,12 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
+                Log.d(TAG,"onOptionsItemSelected:home");
                 getFragmentActivity().finish();
                 return true;
             case R.id.tCustomFormat:
                 showedCustomFormatFragment = true;
-                FormatFragment formatFragment = new FormatFragment();
+                formatFragment = new FormatFragment();
                 getFragmentActivity().addFragment(this,formatFragment);
                 return true;
         }
@@ -486,7 +499,10 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        Log.d(TAG,"onSaveInstanceState");
         outState.putParcelable(KEY_LIST_TARGET,targetList);
+        outState.putString(KEY_FILE_PATH,impFile != null ? impFile.getAbsolutePath() : "");
+        outState.putParcelableArrayList(KEY_VENTRY_LIST,lst);
     }
 
     @Override

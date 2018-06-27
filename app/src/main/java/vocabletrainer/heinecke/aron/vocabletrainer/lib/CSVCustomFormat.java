@@ -1,5 +1,7 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -11,7 +13,7 @@ import java.io.Serializable;
  * CSV Custom Format
  * Ads multi-value per cell to the format
  */
-public class CSVCustomFormat implements Serializable {
+public class CSVCustomFormat implements Serializable, Parcelable {
     private final CSVFormat format;
     private final Character multiValueChar;
     private final Character escapeMVChar;
@@ -48,6 +50,28 @@ public class CSVCustomFormat implements Serializable {
         this.multiValueCharString = multiValueChar == null ? null : String.valueOf(multiValueChar);
         this.escapeMVCharString = escapeMVChar == null ? null : String.valueOf(escapeMVChar);
     }
+
+    protected CSVCustomFormat(Parcel in) {
+        format = (CSVFormat) in.readSerializable();
+        int tmpMultiValueChar = in.readInt();
+        multiValueChar = tmpMultiValueChar != Integer.MAX_VALUE ? (char) tmpMultiValueChar : null;
+        int tmpEscapeMVChar = in.readInt();
+        escapeMVChar = tmpEscapeMVChar != Integer.MAX_VALUE ? (char) tmpEscapeMVChar : null;
+        this.multiValueCharString = multiValueChar == null ? null : String.valueOf(multiValueChar);
+        this.escapeMVCharString = escapeMVChar == null ? null : String.valueOf(escapeMVChar);
+    }
+
+    public static final Creator<CSVCustomFormat> CREATOR = new Creator<CSVCustomFormat>() {
+        @Override
+        public CSVCustomFormat createFromParcel(Parcel in) {
+            return new CSVCustomFormat(in);
+        }
+
+        @Override
+        public CSVCustomFormat[] newArray(int size) {
+            return new CSVCustomFormat[size];
+        }
+    };
 
     public CSVFormat getFormat() {
         return format;
@@ -93,4 +117,18 @@ public class CSVCustomFormat implements Serializable {
      * @return state
      */
     public boolean trim() { return format.getIgnoreSurroundingSpaces(); }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeSerializable(format);
+        parcel.writeSerializable(multiValueChar);
+        parcel.writeSerializable(escapeMVChar);
+        parcel.writeString(multiValueCharString);
+        parcel.writeString(escapeMVCharString);
+    }
 }

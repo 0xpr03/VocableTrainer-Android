@@ -66,6 +66,8 @@ public class ExportFragment extends BaseFragment {
     private static final String P_KEY_I_EXP_FORMAT = "export_format";
     private static final int REQUEST_FILE_RESULT_CODE = 10;
     private static final int REQUEST_TABLES_RESULT_CODE = 20;
+    private static final String KEY_FILE_PATH = "filePath";
+    private static final String KEY_LIST_EXP = "list";
     private static final String TAG = "ExportFragment";
     private static final int MAX_PROGRESS = 100;
     private EditText tExportFile;
@@ -110,7 +112,7 @@ public class ExportFragment extends BaseFragment {
 
         compTables = new GenTableComparator(retrievers, ID_RESERVED_SKIP);
 
-        initView();
+        initView(savedInstanceState);
         return view;
     }
 
@@ -158,12 +160,22 @@ public class ExportFragment extends BaseFragment {
 
     /**
      * Init list view
+     * @param savedInstanceState
      */
-    private void initView() {
+    private void initView(@Nullable Bundle savedInstanceState) {
         tMsg.setMovementMethod(LinkMovementMethod.getInstance());
         tExportFile.setKeyListener(null);
         btnExport.setEnabled(false);
-        lists = new ArrayList<>();
+        if(savedInstanceState != null) {
+            lists = savedInstanceState.getParcelableArrayList(KEY_LIST_EXP);
+            String path = savedInstanceState.getString(KEY_FILE_PATH, null);
+            if (path != null && !path.equals(""))
+                expFile = new File(path);
+            else
+                expFile = null;
+        } else {
+            lists = new ArrayList<>();
+        }
         addButton.setOnClickListener(v -> runSelectTables());
         chkExportMultiple.setOnClickListener(v -> checkInputOk());
 
@@ -266,6 +278,13 @@ public class ExportFragment extends BaseFragment {
      */
     private CSVCustomFormat getCFormat() {
         return spAdapterFormat.getItem(spFormat.getSelectedItemPosition()).getObject();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(KEY_FILE_PATH,expFile != null ? expFile.getAbsolutePath() : "");
+        outState.putParcelableArrayList(KEY_LIST_EXP,lists);
     }
 
     @Override

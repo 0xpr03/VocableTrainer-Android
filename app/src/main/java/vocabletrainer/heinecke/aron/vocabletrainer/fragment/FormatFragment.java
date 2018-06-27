@@ -32,7 +32,7 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.
  * Fragment for custom cFormat preferences
  */
 public class FormatFragment extends PreferenceFragmentCompat implements FragmentActivity.BackButtonListener {
-    private static final String TAG = "FormatFragment";
+    public static final String TAG = "FormatFragment";
     private static final String C_DIALOG_TAG = "android.support.v7.preference.PreferenceFragment.DIALOG";
     private static final int CHAR_POS = 0; // char pos for first char
     SwitchPreference swEscaping;

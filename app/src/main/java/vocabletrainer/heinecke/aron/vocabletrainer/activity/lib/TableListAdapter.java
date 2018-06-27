@@ -48,7 +48,9 @@ public class TableListAdapter extends ArrayAdapter<VList> {
         super(context, textViewResourceId, lists);
         this.dataItem = lists;
         header = new VList(ID_RESERVED_SKIP,context.getString(R.string.Editor_Hint_Column_A), context.getString(R.string.Editor_Hint_Column_B), context.getString(R.string.Editor_Hint_List_Name),null);
-        dataItem.add(STARTING_ITEM - 1, header);
+        // don't re-add header on restore
+        if(dataItem.size() == 0 || !dataItem.get(0).equals(header))
+            dataItem.add(STARTING_ITEM - 1, header);
         resLayout = textViewResourceId;
         this.context = context;
         this.displayCheckbox = displayCheckbox;

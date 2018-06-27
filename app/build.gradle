@@ -43,7 +43,7 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:25.4.0'
     compile 'com.android.support:preference-v14:25.4.0'
-    compile 'com.android.support.constraint:constraint-layout:1.1.0'
+    compile 'com.android.support.constraint:constraint-layout:1.1.2'
     compile 'com.android.support:design:25.4.0'
     testCompile 'junit:junit:4.12'
 }

@@ -59,6 +59,7 @@ public class ListPickerFragment extends BaseFragment {
     private GenTableComparator compB;
     private GenTableComparator cComp;
     private FinishListener listener;
+    private AlertDialog dialog;
 
     /**
      * Interface for list picker finish
@@ -346,7 +347,14 @@ public class ListPickerFragment extends BaseFragment {
             // do nothing
         });
 
-        finishedDiag.show();
+        dialog = finishedDiag.show();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if(dialog != null && dialog.isShowing())
+            dialog.dismiss();
     }
 
     @Override

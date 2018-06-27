@@ -227,12 +227,21 @@ public class VEntry implements Serializable, Parcelable {
 
     /**
      * Test for equality based on entry & list ID
-     *
+     * If both have no List, it is ignored.
+     * If one has no list, they are not seen as equal.
      * @param entry
      * @return
      */
     public boolean equals(VEntry entry) {
-        return this.getId() == entry.getId() && this.getList() == entry.getList();
+        if(this == entry)
+            return true;
+        if(this.getList() == null){
+            if(entry.getList() == null)
+                return this.getId() == entry.getId();
+            else
+                return false;
+        }
+        return this.getId() == entry.getId() && this.getList().equals(entry.getList());
     }
 
     @Override
@@ -349,7 +358,7 @@ public class VEntry implements Serializable, Parcelable {
         meaningA = in.createStringArrayList();
         meaningB = in.createStringArrayList();
         tip = in.readString();
-        list = in.readParcelable(VList.class.getClassLoader());
+        list = (VList) in.readValue(VList.class.getClassLoader());
         points = in.readInt();
         changed = readParcableBool(in);
         delete = readParcableBool(in);
@@ -366,7 +375,7 @@ public class VEntry implements Serializable, Parcelable {
         parcel.writeStringList(meaningA);
         parcel.writeStringList(meaningB);
         parcel.writeString(tip);
-        parcel.writeParcelable(list,list.describeContents());
+        parcel.writeValue(list);
         parcel.writeInt(points);
         writeParcableBool(parcel, changed);
         writeParcableBool(parcel, delete);

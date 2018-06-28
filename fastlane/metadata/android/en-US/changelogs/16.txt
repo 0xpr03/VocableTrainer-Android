@@ -1,0 +1,5 @@
+- Fix crash in import/export on viewport change.
+- Add images for fdroid
+- Upgrade build tools
+- Fix resource leak on viewport change
+- Fix for button alignment in classic modes

@@ -1,0 +1,2 @@
+Vocabulary Trainer with multiple training modes and import/export from/to spreadsheet CSV Files.
+Supports multi meaning vocables. Training progress is based on correct/incorrect answers.

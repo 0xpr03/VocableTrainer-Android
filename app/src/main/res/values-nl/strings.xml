@@ -1,0 +1,178 @@
+<resources>
+    <string name="app_name" translatable="false">VocableTrainer (bèta)</string>
+    <string name="Trainer_hint_solution">Antwoord</string>
+    <string name="Trainer_btn_Show_Next"> Volgende tonen</string>
+    <string name="Trainer_btn_Show_Next_Auto">Volgende tonen (in %d)</string>
+    <string name="Trainer_btn_ok">Oké</string>
+    <string name="Trainer_Quick_btn_Correct">Juist</string>
+    <string name="Trainer_Quick_btn_Wrong">Onjuist</string>
+    <string name="Trainer_Quick_btn_Resolve">Oplossen</string>
+    <string name="Trainer_Quick_Asked">Gevraagd</string>
+    <string name="Main_btn_About">Over</string>
+    <string name="Main_btn_Delete_List">Lijst verwijderen</string>
+    <string name="Main_btn_Edit_List">Lijst bewerken</string>
+    <string name="Main_btn_New_List">Lijst creëren</string>
+    <string name="Main_btn_New_Session">Nieuwe sessie starten</string>
+    <string name="Main_btn_Resume_Session">Sessie hervatten</string>
+    <string name="Main_btn_Import">Importeren</string>
+    <string name="Main_btn_Export">Exporteren</string>
+    <string name="Trainer_Mode_Classic">Klassieke modus</string>
+    <string name="Trainer_Mode_Classic_MM">Klassieke modus met meerdere betekenissen</string>
+    <string name="Trainer_Mode_Quick">Snelle modus</string>
+    <string name="Trainer_Title">Training</string>
+    <string name="Trainer_btn_Hint">Hint tonen</string>
+    <string name="Trainer_btn_Solution">Oplossing tonen</string>
+    <string name="Trainer_Input_Invalid">Onjuiste invoer</string>
+    <string name="Trainer_Input_Double">Duplicaat</string>
+    <string name="Trainer_Input_Correct">Juist</string>
+    <string name="TSettings_chkbx_AdditionAuto">Automatische modus met extra\'s</string>
+    <string name="TSettings_Time_Solve">Oplostijd</string>
+    <string name="TSettings_chkbx_Tips">Hints toestaan</string>
+    <string name="TSettings_btn_Start">Sessie starten</string>
+    <string name="TSettings_rb_A">Vraagkolom A</string>
+    <string name="TSettings_rb_B">Vraagkolom B</string>
+    <string name="TSettings_rb_Random">Willekeurige vraagkolom</string>
+    <string name="TSettings_chkbx_CaseSensitive">hoofdlettergevoeligheid controleren</string>
+    <string name="TSettings_chkbx_TrimSpaces">Extra spaties negeren</string>
+    <string name="TSettings_Tab_Settings">Instellingen</string>
+    <string name="TSettings_Tab_List">Lijsten</string>
+    <string name="TSettings_Info_missing_lists">Je moet minimaal één lijst selecteren.</string>
+    <string name="ListSelector_Title_Edit">Selecteer een te bewerken lijst</string>
+    <string name="ListSelector_Title_Delete">Geselecteerde tabel verwijderen</string>
+    <string name="Sort_Col_Name">Naam</string>
+    <string name="Sort_Col_A">Kolom A</string>
+    <string name="Sort_Col_B">Kolom B</string>
+    <string name="Sort_Col_Tip">Tipkolom</string>
+    <string name="Editor_Meaning_Btn_Desc_Add">Betekenis toevoegen</string>
+    <string name="Editor_Meaning_Btn_Desc_Remove">Betekenis verwijderen</string>
+    <string name="Editor_Hint_Column_A">Kolom A</string>
+    <string name="Editor_Hint_Column_B">Kolom B</string>
+    <string name="Editor_Hint_List_Name">Lijstnaam</string>
+    <string name="Editor_Hint_Tip">Hint</string>
+    <string name="Editor_Hint_Addition">Extra</string>
+    <string name="Editor_Undo">Ongedaan maken</string>
+    <string name="Editor_ListSettings">Lijstinstellingen</string>
+    <string name="CSV_Format">CSV-format</string>
+    <string name="Select_File_btn">Bestand selecteren</string>
+    <string name="ExImport_Edit_CustomFormat">Aangepast formaat bewerken</string>
+    <string name="Import_Title">Importeren</string>
+    <string name="Import_Ok">Importeren</string>
+    <string name="Import_file_placeholder">Bestand importeren</string>
+    <string name="Import_preview_text">Voorbeeld</string>
+    <string name="Import_list_hint">Te gebruiken lijst</string>
+    <string name="Import_btn_List_Select">Lijst selecteren</string>
+    <string name="Import_Info_multilist">Meerdere lijsten gedetecteerd</string>
+    <string name="Import_Info_singlelist">Eén lijst gedetecteerd</string>
+    <string name="Import_Info_rawlist">Kale lijst gedetecteerd</string>
+    <string name="Import_File_select_Info">Bronbestand selecteren</string>
+    <string name="Import_Preview_Update_Title">Bezig met bijwerken...</string>
+    <string name="Import_Importing_Title">Bezig met importeren...</string>
+    <string name="Import_Finished_Title">Importeren voltooid</string>
+    <string name="Export_Title">Exporteren</string>
+    <string name="Export_Ok">Exporteren</string>
+    <string name="Export_file_placeholder">Exportbestand</string>
+    <string name="Export_chk_Table_Meta">Lijst-metagegevens exporteren</string>
+    <string name="Export_chk_Multilist">Meerdere lijsten exporteren</string>
+    <string name="Export_File_select_Info">Exportbestand selecteren</string>
+    <string name="Export_Exporting_Title">Bezig met exporteren...</string>
+    <string name="Export_Error_Format_Multivalue_Title">Ongeldig CSV-formaat</string>
+    <string name="Export_Error_Format_Multivalue_Text">De exportering vereist een geldig CSV-formaat met ondersteuning voor meerdere waardes om gegevensverlies te voorkomen.</string>
+    <string name="File_btn_OK">Oké</string>
+    <string name="File_btn_Cancel">Annuleren</string>
+    <string name="File_t_hint">Bestandsnaam.xyz</string>
+    <string name="File_Menu_Sort_Name">naam</string>
+    <string name="File_Menu_Sort_Size">grootte</string>
+    <!-- General -->
+    <string name="GEN_Sort">Sortering</string>
+    <string name="GEN_Ok">Oké</string>
+    <!-- Dialogs -->
+    <string name="Trainer_Diag_finished_Title">Afgerond</string>
+    <string name="Trainer_Diag_finished_MSG">Je hebt deze trainingssessie afgerond.</string>
+    <string name="Editor_Diag_delete_Title">Item verwijderen</string>
+    <string name="Editor_Diag_delete_MSG_part" formatted="false">Weet je zeker dat je dit item wilt verwijderen?</string>
+    <string name="Editor_Diag_delete_btn_OK">Verwijderen</string>
+    <string name="Editor_Diag_delete_btn_CANCEL">Annuleren</string>
+    <string name="Editor_Diag_edit_Title">Item bewerken</string>
+    <string name="Editor_Diag_edit_btn_OK">Oké</string>
+    <string name="Editor_Diag_edit_btn_CANCEL">Annuleren</string>
+    <string name="Editor_Diag_table_Title_New">Nieuwe lijst</string>
+    <string name="Editor_Diag_table_Title_Edit">Lijst bewerken</string>
+    <string name="Editor_Diag_table_btn_Ok">Oké</string>
+    <string name="Editor_Diag_table_btn_Canel">Annuleren</string>
+    <string name="Format_Diag_error_Title">Ongeldige invoer</string>
+    <string name="tDB_Update_Text" formatted="true" translatable="false">VA ondergaat een grote DB-upgrade, welke N:N toestaat voor vocable-lijsten.\nGa voor meer informatie naar <a href="https://github.com/0xpr03/VocableTrainer-Android/issues/22"></a>\nBack-up je voor de zekerheid je lijsten via exportering.</string>
+    <string name="tDB_Update_Close" translatable="false">Sluiten</string>
+    <string name="tDB_Update_Close_Dismissed" translatable="false">Niet meer tonen</string>
+
+    <string name="About_Title">Over</string>
+    <!-- Special escape because of replacement & re-parsing as HTML \n = <br>-->
+    <string name="About_Msg" formatted="false" translatable="false">Over: VocableTrainer %v\nAuteursrecht 2017 Aron Heinecke\nUitgebracht onder de &lt;a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache License 2.0&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/wiki">Documentatie&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/issues">Bugrapportages &amp; Ideeënbus&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/releases">Wijzigingslog&lt;/a>\n\nGebruikmakend van &lt;a href="https://commons.apache.org/csv/">Apache Commons CSV&lt;/a></string>
+    <string name="About_btn_Close">Sluiten</string>
+    <string name="ListSelector_Diag_delete_Title">Lijst verwijderen</string>
+    <string name="ListSelector_Diag_delete_Msg" formatted="false">Weet je zeker dat je de volgende lijst wilt verwijderen: %s: %s, %s</string>
+    <string name="ListSelector_Diag_delete_btn_Delete">Verwijderen</string>
+    <string name="ListSelector_Diag_delete_btn_Cancel">Annuleren</string>
+    <string name="File_Diag_exists_Title">Bestand bestaat al</string>
+    <string name="File_Diag_MSG_part" formatted="false">Weet je zeker dat je het bestand '%f' wilt overschrijven?</string>
+    <string name="File_Diag_btn_OK">Overschrijven</string>
+    <string name="File_Diag_btn_CANCEL">Annuleren</string>
+    <!-- Messages -->
+    <string name="Perm_CSV">Machtiging benodigd om CSV-bestanden te mogen lezen/schrijven voor importering/exportering.</string>
+    <string name="File_Error_Mediastate">Geen (beschrijfbare) opslag gevonden! Er kan niet worden doorgegaan.</string>
+    <string name="File_Error_Nullpointer">Kan bestanden niet tonen. Nullpointer</string>
+    <string name="Import_Message" formatted="true">Importeer een CSV-bestand met UTF-8 die (meerdere) vocable-lijsten bevat.\nBekijk de <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Import">wiki-pagina</a> voor meer informatie.</string>
+    <string name="Export_Message" formatted="true">Exporteer naar een CSV-bestand met UTF-8 (met lijstinformatie)\nBekijk de <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Export">wiki-pagina</a> voor meer informatie.</string>
+    <string name="Format_Error_Input_equals">De waarden van de volgende opties mogen niet gelijk zijn: $A : $B</string>
+    <string name="Import_Error_MIN_RECORD_SIZE">Ongeldig item; onvoldoende waarden:</string>
+    <string name="Import_Warn_MAX_RECORD_SIZE">Item bevat teveel waarden: </string>
+    <string name="Import_Info_Import">%d vocables geïmporteerd</string>
+    <!-- Spinner -->
+    <string name="Import_Multilist_REPLACE">Bestaande lijsten vervangen</string>
+    <string name="Import_Multilist_IGNORE">Bestaande lijsten negeren</string>
+    <string name="Import_Multilist_ADD">Toevoegen aan bestaande lijst</string>
+
+    <string name="Import_Singlelist_REPLACE">Bestaande lijst vervangen</string>
+    <string name="Import_Singlelist_ADD">Toevoegen aan bestaande lijst</string>
+    <string name="Import_Singlelist_CREATE">Nieuwe lijst creëren</string>
+
+    <string name="Import_Rawlist_CREATE">Nieuwe lijst creëren</string>
+    <string name="Import_Rawlist_MERGE">Toevoegen aan lijst</string>
+
+    <string name="CSV_Format_EXCEL">Excel</string>
+    <string name="CSV_Format_RFC4180" translatable="false">RFC 4180</string>
+    <string name="CSV_Format_Default">Standaard</string>
+    <string name="CSV_Format_Tabs">Tabs</string>
+    <string name="CSV_Format_Mysql" translatable="false">Mysql</string>
+    <string name="CSV_Format_INFORMIX_UNLOAD" translatable="false">Informix UNLOAD</string>
+    <string name="CSV_Format_INFORMIX_UNLOAD_CSV" translatable="false">Informix UNLOAD CSV</string>
+    <string name="CSV_Format_Custom_Format">Aangepast formaat</string>
+    <string name="title_activity_format">FormatActivity</string>
+
+    <!--format preferences -->
+    <string name="Pref_Multi_Transl">Meerdere vertalingen</string>
+    <string name="Pref_Multi_Transl_Desc">Meerdere vertalingen verwerken</string>
+    <string name="Pref_Multi_Transl_Char">Multi-Translation Delimiter-teken</string>
+    <string name="Pref_Multi_Transl_Char_Desc">Multi-Translation delimiter-teken</string>
+    <string name="Pref_Multi_Transl_Escape">Multi-Transl Escaping</string>
+    <string name="Pref_Multi_Transl_Escape_Desc">Multi-translation escaping toestaan</string>
+    <string name="Pref_Multi_Transl_Escape_Char">Multi-Transl Delimiter Escape</string>
+    <string name="Pref_Multi_Transl_Escape_Char_Desc">Teken om de multi-tranl delimiter te escapen</string>
+    <string name="Pref_Delimiter">Delimiter</string>
+    <string name="Pref_Delimiter_Desc">Te gebruiken delimiter-teken</string>
+    <string name="Pref_Comment">Commentaren</string>
+    <string name="Pref_Comment_Desc">Commentaren verwerken</string>
+    <string name="Pref_Comment_Char">Commentaar-karakter</string>
+    <string name="Pref_Comment_Char_Desc">Te verwerken commentaar-teken</string>
+    <string name="Pref_Escape">Escaping</string>
+    <string name="Pref_Escape_Desc">Escapes verwerken</string>
+    <string name="Pref_Quote">Citaat</string>
+    <string name="Pref_Quote_Desc">Citaten verwerken</string>
+    <string name="Pref_Quote_Char">Citaat-teken</string>
+    <string name="Pref_Quote_Char_Desc">Te verwerken citaat-teken</string>
+    <string name="Pref_Strip_Empty_Lines">Lege regels negeren</string>
+    <string name="Pref_Ignore_Spaces">Extra spaties negeren</string>
+    <string name="Pref_Ignore_First_Line">Eerste regel negeren als kop</string>
+    <string name="Pref_General">Algemeen</string>
+    <string name="Pref_Reset_Previous">Vorige instellingen terugzetten</string>
+    <string name="Pref_Reset_Default">Standaardwaarden</string>
+</resources>

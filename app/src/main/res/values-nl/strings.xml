@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name" translatable="false">VocableTrainer (bèta)</string>
     <string name="Trainer_hint_solution">Antwoord</string>
     <string name="Trainer_btn_Show_Next"> Volgende tonen</string>
     <string name="Trainer_btn_Show_Next_Auto">Volgende tonen (in %d)</string>
@@ -100,13 +99,10 @@
     <string name="Editor_Diag_table_btn_Ok">Oké</string>
     <string name="Editor_Diag_table_btn_Canel">Annuleren</string>
     <string name="Format_Diag_error_Title">Ongeldige invoer</string>
-    <string name="tDB_Update_Text" formatted="true" translatable="false">VA ondergaat een grote DB-upgrade, welke N:N toestaat voor vocable-lijsten.\nGa voor meer informatie naar <a href="https://github.com/0xpr03/VocableTrainer-Android/issues/22"></a>\nBack-up je voor de zekerheid je lijsten via exportering.</string>
-    <string name="tDB_Update_Close" translatable="false">Sluiten</string>
-    <string name="tDB_Update_Close_Dismissed" translatable="false">Niet meer tonen</string>
 
     <string name="About_Title">Over</string>
     <!-- Special escape because of replacement & re-parsing as HTML \n = <br>-->
-    <string name="About_Msg" formatted="false" translatable="false">Over: VocableTrainer %v\nAuteursrecht 2017 Aron Heinecke\nUitgebracht onder de &lt;a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache License 2.0&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/wiki">Documentatie&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/issues">Bugrapportages &amp; Ideeënbus&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/releases">Wijzigingslog&lt;/a>\n\nGebruikmakend van &lt;a href="https://commons.apache.org/csv/">Apache Commons CSV&lt;/a></string>
+    <string name="About_Msg" formatted="false">Over: VocableTrainer %v\nAuteursrecht 2017 Aron Heinecke\nUitgebracht onder de &lt;a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache License 2.0&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/wiki">Documentatie&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/issues">Bugrapportages &amp; Ideeënbus&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/releases">Wijzigingslog&lt;/a>\n\nGebruikmakend van &lt;a href="https://commons.apache.org/csv/">Apache Commons CSV&lt;/a></string>
     <string name="About_btn_Close">Sluiten</string>
     <string name="ListSelector_Diag_delete_Title">Lijst verwijderen</string>
     <string name="ListSelector_Diag_delete_Msg" formatted="false">Weet je zeker dat je de volgende lijst wilt verwijderen: %s: %s, %s</string>
@@ -139,12 +135,8 @@
     <string name="Import_Rawlist_MERGE">Toevoegen aan lijst</string>
 
     <string name="CSV_Format_EXCEL">Excel</string>
-    <string name="CSV_Format_RFC4180" translatable="false">RFC 4180</string>
     <string name="CSV_Format_Default">Standaard</string>
     <string name="CSV_Format_Tabs">Tabs</string>
-    <string name="CSV_Format_Mysql" translatable="false">Mysql</string>
-    <string name="CSV_Format_INFORMIX_UNLOAD" translatable="false">Informix UNLOAD</string>
-    <string name="CSV_Format_INFORMIX_UNLOAD_CSV" translatable="false">Informix UNLOAD CSV</string>
     <string name="CSV_Format_Custom_Format">Aangepast formaat</string>
     <string name="title_activity_format">FormatActivity</string>
 

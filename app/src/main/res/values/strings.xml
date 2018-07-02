@@ -106,7 +106,7 @@
 
     <string name="About_Title">About</string>
     <!-- Special escape because of replacement & re-parsing as HTML \n = <br>-->
-    <string name="About_Msg" formatted="false" translatable="false">About: VocableTrainer %v\nCopyright 2017 Aron Heinecke\nLicensed under &lt;a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache License 2.0&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/wiki">Documentation&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/issues">Bug Reports &amp; Feature requests&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/releases">Changelog&lt;/a>\n\nUsing &lt;a href="https://commons.apache.org/csv/">Apache Commons CSV&lt;/a></string>
+    <string name="About_Msg" formatted="false">About: VocableTrainer %v\nCopyright 2017 Aron Heinecke\nLicensed under &lt;a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache License 2.0&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/wiki">Documentation&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/issues">Bug Reports &amp; Feature requests&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/releases">Changelog&lt;/a>\n\nUsing &lt;a href="https://commons.apache.org/csv/">Apache Commons CSV&lt;/a></string>
     <string name="About_btn_Close">Close</string>
     <string name="ListSelector_Diag_delete_Title">Delete List</string>
     <string name="ListSelector_Diag_delete_Msg" formatted="false">Do you really want to delete the following list: %s: %s, %s</string>

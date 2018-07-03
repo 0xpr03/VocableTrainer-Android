@@ -24,7 +24,7 @@ public class CSVCustomFormat implements Serializable, Parcelable {
     /*
      * DEFAULT custom format using CSVFormat.DEFAULT and '/' for multi value (enabled)
      */
-    public static CSVCustomFormat DEFAULT = new CSVCustomFormat(CSVFormat.DEFAULT.withIgnoreSurroundingSpaces(true));
+    public static final CSVCustomFormat DEFAULT = new CSVCustomFormat(CSVFormat.DEFAULT.withIgnoreSurroundingSpaces(true));
 
     /**
      * Custom Format with default multi value settings<br>

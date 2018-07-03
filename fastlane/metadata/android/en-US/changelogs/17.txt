@@ -1,0 +1,2 @@
+- Added dutch locales, thanks to Vistaus
+- Fixed minify configuration making stacktraces useless

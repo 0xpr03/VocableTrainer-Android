@@ -470,6 +470,14 @@ public class Trainer implements Parcelable {
     }
 
     /**
+     * Returns whether the current vocable has a tip
+     * @return
+     */
+    public boolean hasTip() {
+        return cVocable != null && cVocable.getTip() != null;
+    }
+
+    /**
      * Returns the column name of the question<br>
      * returns an empty string when there is no current vocable
      *

@@ -273,7 +273,11 @@ public class TrainerActivity extends FragmentActivity implements TrainerModeFrag
     private void updateTip(){
         if(tTip != null){
             tTip.getIcon().setAlpha(settings.allowTips ? 255 : 155);
-            tTip.setEnabled(settings.allowTips);
+            if(settings.allowTips && trainer != null){
+                tTip.setEnabled(trainer.hasTip());
+            } else {
+                tTip.setEnabled(false);
+            }
         }
     }
 

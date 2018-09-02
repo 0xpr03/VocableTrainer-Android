@@ -175,4 +175,8 @@
     <string name="Pref_General">General</string>
     <string name="Pref_Reset_Previous">Reset to previous</string>
     <string name="Pref_Reset_Default">Reset to default</string>
+    <string name="Finished_Diag_Title">Info</string>
+    <string name="Finished_Diag_Msg">This software is currently in beta state. This includes, but not limited to, data loss, destroying your phone, eating your children and burning your dog! You have been warned.</string>
+    <string name="Finished_Diag_Btn_Pos">TLDR</string>
+    <string name="Finished_Diag_Btn_Neg">Get me outta here</string>
 </resources>

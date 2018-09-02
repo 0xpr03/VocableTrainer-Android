@@ -35,12 +35,12 @@ public class MainActivity extends AppCompatActivity {
         if (!showedDialog) {
             final AlertDialog.Builder finishedDiag = new AlertDialog.Builder(this);
 
-            finishedDiag.setTitle("Info");
-            finishedDiag.setMessage("This software is currently in beta state. This includes, but not limited to, data loss, destroying your phone, eating your children and burning your dog! You have been warned.");
+            finishedDiag.setTitle(R.string.Finished_Diag_Title);
+            finishedDiag.setMessage(R.string.Finished_Diag_Msg);
 
-            finishedDiag.setPositiveButton("TLDR", (dialog, whichButton) -> showedDialog = true);
+            finishedDiag.setPositiveButton(R.string.Finished_Diag_Btn_Pos, (dialog, whichButton) -> showedDialog = true);
 
-            finishedDiag.setNegativeButton("Get me outta here", (dialog, whichButton) -> System.exit(0));
+            finishedDiag.setNegativeButton(R.string.Finished_Diag_Btn_Neg, (dialog, whichButton) -> System.exit(0));
 
             finishedDiag.show();
         }

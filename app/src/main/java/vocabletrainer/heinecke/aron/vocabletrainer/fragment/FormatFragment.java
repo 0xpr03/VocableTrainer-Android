@@ -199,6 +199,7 @@ public class FormatFragment extends PreferenceFragmentCompat implements Fragment
      */
     private CSVCustomFormat savePrefsToCSVFormat() {
         CSVFormat format = CSVFormat.newFormat(tDelimiter.getText().charAt(CHAR_POS));
+        format = format.withRecordSeparator(Constants.CRLF);
         if (swEscaping.isChecked())
             format = format.withEscape(tEscaping.getText().charAt(CHAR_POS));
         if (swComment.isChecked())

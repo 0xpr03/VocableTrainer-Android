@@ -89,7 +89,7 @@ public class TrainerSettingsActivity extends FragmentActivity implements Trainer
     }
 
     @Override
-    public void selectionFinished(ArrayList<VList> selected) { }
+    public void selectionUpdate(ArrayList<VList> selected) { }
 
     @Override
     public void cancel() { }

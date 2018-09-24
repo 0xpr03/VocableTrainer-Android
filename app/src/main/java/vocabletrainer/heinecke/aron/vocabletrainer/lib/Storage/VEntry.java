@@ -222,7 +222,10 @@ public class VEntry implements Serializable, Parcelable {
 
     @Override
     public String toString() {
-        return getAString() + " " + getBString() + " ID:" + id + " P:" + points;
+        if (this.getList() != null)
+            return getAString() + " " + getBString() + " ID:" + id +" List:"+ getList().getId()+ " P:" + points;
+        else
+            return getAString() + " " + getBString() + " ID:" + id +" List:null P:" + points;
     }
 
     /**

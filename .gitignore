@@ -8,3 +8,7 @@
 .externalNativeBuild
 *.directory
 /live test data/
+/notes.txt
+/todo.txt
+/commit.txt
+/findbugs-android-exclude.xml

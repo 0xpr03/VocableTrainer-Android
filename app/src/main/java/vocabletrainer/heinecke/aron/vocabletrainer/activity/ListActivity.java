@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -111,7 +112,7 @@ public class ListActivity extends FragmentActivity implements ListPickerFragment
     }
 
     @Override
-    public void selectionFinished(ArrayList<VList> selected) {
+    public void selectionUpdate(ArrayList<VList> selected) {
         if(editorMode) {
             Intent myIntent = new Intent(this, EditorActivity.class);
             myIntent.putExtra(EditorActivity.PARAM_NEW_TABLE, false);
@@ -120,10 +121,11 @@ public class ListActivity extends FragmentActivity implements ListPickerFragment
             this.startActivity(myIntent);
         } else {
             Intent returnIntent = new Intent();
-            if (multiselect)
+            if (multiselect) {
                 returnIntent.putExtra(RETURN_LISTS, selected);
-            else
+            } else {
                 returnIntent.putExtra(RETURN_LISTS, selected.get(0));
+            }
             setResult(Activity.RESULT_OK, returnIntent);
             finish();
         }

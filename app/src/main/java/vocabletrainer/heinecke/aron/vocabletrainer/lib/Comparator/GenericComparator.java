@@ -17,11 +17,13 @@ public class GenericComparator<T, V extends Comparable> implements Comparator<T>
      * @param retrievers retrievers to use for comparision<br>
      *                   passed array order defines the comparision priority
      */
+    @SuppressWarnings("unchecked")
     GenericComparator(ValueRetriever[] retrievers) {
         this.retrievers = retrievers;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public int compare(T o1, T o2) {
         int v = 0;
         int i = 0;

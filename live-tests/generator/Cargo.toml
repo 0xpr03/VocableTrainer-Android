@@ -4,4 +4,5 @@ version = "0.1.0"
 authors = ["Aron Heinecke <aron.heinecke@t-online.de>"]
 
 [dependencies]
-clap = "~2.31"
+clap = "2"
+rand = "0.5"

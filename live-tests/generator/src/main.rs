@@ -13,12 +13,15 @@
  * limitations under the License.
  */
 extern crate clap;
+extern crate rand;
 
 use std::fs::metadata;
 use std::path::PathBuf;
 use std::fs::File;
 use std::io::Write;
-
+use std::io::BufWriter;
+use std::time::{Instant,Duration};
+use rand::prelude::*;
 use clap::{Arg,App};
 
 fn main() {
@@ -26,6 +29,14 @@ fn main() {
         .version("0.1.0")
         .author("Aron Heinecke <aron.heinecke@t-online.de>")
         .about("create VT-A test lists")
+        .arg(Arg::with_name("invalid")
+            .short("i")
+            .long("invalid")
+            .value_name("percentage")
+            .takes_value(true)
+            .validator(is_correct_percentage)
+            .help("Create a random amount of invalid entries which are too short or long.
+Specify amount in 1 - 100%."))
         .arg(Arg::with_name("file")
             .short("f")
             .long("file")
@@ -35,7 +46,6 @@ fn main() {
             .default_value("list.csv")
             .help("output file or full path"))
         .arg(Arg::with_name("rawlist")
-            .short("raw")
             .long("rawlist")
             .takes_value(false)
             .help("create a raw data list"))
@@ -57,43 +67,82 @@ fn main() {
             .short("e")
             .long("elements")
             .value_name("amount")
-            .conflicts_with("rngelem")
+            .conflicts_with("random")
             .takes_value(true)
             .validator(is_uint)
-            .default_value("10")
             .help("amount of elements per list, 10 per default"))
-        .arg(Arg::with_name("rngelem")
-            //.short("rng")
+        .arg(Arg::with_name("random")
+            .short("r")
             .long("random")
-            .takes_value(false)
-            .help("use random amount of elements"))
+            .value_name("max")
+            .takes_value(true)
+            .validator(is_uint)
+            .help("use random amount of elements per list"))
         .get_matches();
     
     let file = matches.value_of("file").unwrap();
     let rawlist = matches.is_present("rawlist");
     let lists_amount = matches.value_of("lists").unwrap().parse::<u32>().unwrap();
-    let elements = matches.value_of("elements").unwrap().parse::<u32>().unwrap();
-    let rngelem = matches.is_present("rngelem");
+    let mut elements = if matches.is_present("elements") {
+        matches.value_of("elements").unwrap().parse::<u32>().unwrap()
+    } else {
+        10
+    };
+    
+    let random = matches.is_present("random");
+    let max = if random {
+        matches.value_of("random").unwrap().parse::<u32>().unwrap()
+    } else {
+        20
+    };
+    
+    let create_invalid = matches.is_present("invalid");
+    let invalid_percent = if create_invalid {
+        matches.value_of("invalid").unwrap().parse::<f64>().unwrap()
+    } else {
+        0.0
+    };
     
     let path = get_path(file).unwrap();
     println!("Using file {:?}",path);
-    let mut file = match File::create(path) {
+    let file = match File::create(path) {
         Ok(f) => f,
         Err(e) => return println!("Can't create or truncate file: {}",e)
     };
+    let mut buffer = BufWriter::new(file);
+    
+    let mut rng = thread_rng();
+    
+    let mut invalid_type_flip = false;
+    let start = Instant::now();
     for i in 0..lists_amount {
         if !rawlist {
-            writeln!(&mut file, "TABLE\\,//INFO,//START//,").unwrap();
-            writeln!(&mut file, "T Multi{0:04},MColA{0:04},MColB{0:04},",i).unwrap();
+            writeln!(&mut buffer, "TABLE\\,//INFO,//START//,").unwrap();
+            writeln!(&mut buffer, "T Multi{0:04},MColA{0:04},MColB{0:04},",i).unwrap();
+        }
+        if random {
+            elements = rng.gen_range(0, max);
         }
         for j in 0..elements {
-            writeln!(&mut file, 
-            "A{l:04}-{r:04},B{l:04}-{r:04},Tip{l:04}-{r:04},Addition{l:04}-{r:04},",
-            l = i,r=j).unwrap();
+            if create_invalid && rng.gen_bool(invalid_percent / 100.0) {
+                if invalid_type_flip {
+                    writeln!(&mut buffer, "A{l:04}-{r:04}",l = i,r=j).unwrap();
+                } else {
+                    writeln!(&mut buffer, 
+                    "A{l:04}-{r:04},B{l:04}-{r:04},Tip{l:04}-{r:04},Addition{l:04}-{r:04},Noise{l:04}-{r:04}",
+                    l = i,r=j).unwrap();
+                }
+                invalid_type_flip = !invalid_type_flip;
+            } else {
+                writeln!(&mut buffer, 
+                "A{l:04}-{r:04},B{l:04}-{r:04},Tip{l:04}-{r:04},Addition{l:04}-{r:04}",
+                l = i,r=j).unwrap();
+            }
         }
     }
-    file.flush();
-    println!("Finished");
+    buffer.flush().unwrap();
+    let elapsed = start.elapsed();
+    println!("Finished in {}{:04}ms",elapsed.as_secs(),elapsed.subsec_millis());
 }
 
 fn verify_path(input: String) -> Result<(),String> {
@@ -105,7 +154,7 @@ fn verify_path(input: String) -> Result<(),String> {
 
 /// Get path for input if possible
 fn get_path(input: &str) -> Result<PathBuf,String> {
-    let mut path_o = PathBuf::from(input);
+    let path_o = PathBuf::from(input);
     let path;
     if path_o.parent().is_some() && path_o.parent().unwrap().is_dir() {
         path = path_o;
@@ -131,6 +180,21 @@ fn get_path(input: &str) -> Result<PathBuf,String> {
     }
     
     Ok(path)
+}
+
+/// verify function for u8 1-100 percentage input
+fn is_correct_percentage(v: String) -> Result<(), String> {
+    if let Ok(percentage) = v.parse::<u8>() {
+        if percentage <= 100 && percentage > 0 {
+            Ok(())
+        } else if percentage == 0 {
+            Err(String::from("Levave out this option if you don't want it to activate"))
+        } else {
+            Err(String::from("Percentage not between 1 and 100"))
+        }
+    } else {
+        Err(String::from("Value is not a correct positive percentage value between 1 and 100"))
+    }
 }
 
 /// verify function for u32 input

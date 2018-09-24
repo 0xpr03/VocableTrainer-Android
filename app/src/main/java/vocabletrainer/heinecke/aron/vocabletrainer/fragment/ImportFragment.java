@@ -518,7 +518,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
                     break;
                 case REQUEST_LIST_SELECT_CODE:
                     Log.d(TAG, "got list");
-                    targetList = (VList) data.getSerializableExtra(ListActivity.RETURN_LISTS);
+                    targetList = data.getParcelableExtra(ListActivity.RETURN_LISTS);
                     etList.setText(targetList.getName());
                     checkInput();
                     break;

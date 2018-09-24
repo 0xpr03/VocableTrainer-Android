@@ -1,5 +1,6 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
+import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
@@ -18,6 +19,7 @@ public abstract class FragmentActivity extends AppCompatActivity{
     private static final String TAG = "FragmentActivity";
     private Fragment currentFragment;
     private Fragment rootFragment;
+    private @IdRes int fragmentContainer = R.id.frame;
 
     /**
      * Interface to implement by fragments that want to be notifified
@@ -77,13 +79,21 @@ public abstract class FragmentActivity extends AppCompatActivity{
     }
 
     /**
+     * Set container id to use for fragment changes
+     * @param container
+     */
+    protected void setFragmentContainer(@IdRes int container){
+        this.fragmentContainer = container;
+    }
+
+    /**
      * Returns the current fragment
      * @return
      */
     private Fragment getCurrentFragment(){
         FragmentManager fragmentManager = getSupportFragmentManager();
         Log.d(TAG,"fragment stack:" + fragmentManager.getBackStackEntryCount());
-        Fragment fr = fragmentManager.findFragmentById(R.id.frame);
+        Fragment fr = fragmentManager.findFragmentById(fragmentContainer);
         if(fr == null) {
             fr = rootFragment;
         }
@@ -100,7 +110,7 @@ public abstract class FragmentActivity extends AppCompatActivity{
         Log.w(TAG,(fragment instanceof BaseFragment)+""+fragment);
         checkBackButtonListener(fragment);
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.frame, fragment).commit();
+                .replace(fragmentContainer, fragment).commit();
         currentFragment = fragment;
         rootFragment = fragment;
     }

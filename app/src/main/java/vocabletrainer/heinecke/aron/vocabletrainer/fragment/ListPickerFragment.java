@@ -2,6 +2,7 @@ package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -37,7 +38,7 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERV
  *     This can be used externally in other fragments<br>
  *     Requires a toolbar
  */
-public class ListPickerFragment extends BaseFragment {
+public class ListPickerFragment extends PagerFragment {
     public static final String TAG = "ListPickerFragment";
     private static final String P_KEY_LA_SORT = "LA_sorting";
     private static final String K_MULTISELECT = "multiselect";
@@ -61,16 +62,21 @@ public class ListPickerFragment extends BaseFragment {
     private FinishListener listener;
     private AlertDialog dialog;
 
+    @Override
+    protected void onFragmentInvisible() {
+        listener.selectionUpdate(getSelectedItems());
+    }
+
     /**
      * Interface for list picker finish
      */
     public interface FinishListener {
         /**
-         * Called when ok button is pressed
+         * Called when ok button is pressed or list picker goes invisible
          * @param selected Selected lists<br>
          *        Contains one element if multiselect is disabled
          */
-        void selectionFinished(ArrayList<VList> selected);
+        void selectionUpdate(ArrayList<VList> selected);
 
         /**
          * Called when list picker got canceled.
@@ -127,10 +133,13 @@ public class ListPickerFragment extends BaseFragment {
         Bundle bundle = getArguments();
         if(savedInstanceState != null){
             bundle = savedInstanceState;
+        } else if(bundle == null){
+            bundle = new Bundle();
         }
-        multiselect = bundle.getBoolean(K_MULTISELECT);
-        showOkButton = bundle.getBoolean(K_SHOWOK);
-        delete = bundle.getBoolean(K_DELETE);
+        // default values required for {@link ExImportActivity.ViewPagerAdapter.class} solution, using no arguments
+        multiselect = bundle.getBoolean(K_MULTISELECT,true);
+        showOkButton = bundle.getBoolean(K_SHOWOK,false);
+        delete = bundle.getBoolean(K_DELETE,false);
         List<VList> preselected = bundle.getParcelableArrayList(K_PRESELECT);
 
         ActionBar ab = getACActivity().getSupportActionBar();
@@ -229,7 +238,6 @@ public class ListPickerFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
-        Log.d(TAG,"onResume");
         loadTables(null);
     }
 
@@ -256,7 +264,11 @@ public class ListPickerFragment extends BaseFragment {
      */
     private void initListView() {
         listView = (ListView) view.findViewById(R.id.listVIewLstSel);
-
+        // fix bug with collapsing toolbar + scrollview
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            listView.setNestedScrollingEnabled(true);
+            listView.startNestedScroll(View.OVER_SCROLL_ALWAYS);
+        }
         ArrayList<VList> lists = new ArrayList<>();
         adapter = new TableListAdapter(getActivity(), R.layout.table_list_view, lists, multiselect);
 
@@ -264,15 +276,16 @@ public class ListPickerFragment extends BaseFragment {
 
         if (multiselect) {
             // TODO: title; setTitle(R.string.ListSelector_Title_Training);
-            listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
             listView.setItemsCanFocus(false);
-            listView.setOnItemClickListener((adapterView, view, position, id) -> {
-                if (adapter.getItem(position).getId() != ID_RESERVED_SKIP) {
-                    updateOkButton();
-                }
-            });
-            Log.d(TAG,"visible button!");
-            bOk.setOnClickListener(v -> listener.selectionFinished(getSelectedItems()));
+            listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+            if(showOkButton) {
+                listView.setOnItemClickListener((adapterView, view, position, id) -> {
+                    if (adapter.getItem(position).getId() != ID_RESERVED_SKIP) {
+                        updateOkButton();
+                    }
+                });
+                bOk.setOnClickListener(v -> listener.selectionUpdate(getSelectedItems()));
+            }
         } else {
             if (delete) {
 //                setTitle(R.string.ListSelector_Title_Delete);
@@ -289,7 +302,7 @@ public class ListPickerFragment extends BaseFragment {
                     if (list.getId() != ID_RESERVED_SKIP) {
                         ArrayList<VList> result = new ArrayList<>(1);
                         result.add(list);
-                        listener.selectionFinished(result);
+                        listener.selectionUpdate(result);
                     }
                 });
             }
@@ -303,19 +316,24 @@ public class ListPickerFragment extends BaseFragment {
      */
     public ArrayList<VList> getSelectedItems(){
         ArrayList<VList> selectedLists = new ArrayList<>(10);
-        Log.d(TAG,"listView: "+(listView!= null) + " mode: "+listView.getChoiceMode());
-        final SparseBooleanArray checkedItems = listView.getCheckedItemPositions();
-        int chkItemsCount = checkedItems.size();
+        if(listView != null) { // export calls validate before listpicker is finished with init
+            Log.d(TAG,listView.toString());
+            final SparseBooleanArray checkedItems = listView.getCheckedItemPositions();
+            int chkItemsCount = checkedItems.size();
 
-        for (int i = 0; i < chkItemsCount; ++i) {
-            if (checkedItems.valueAt(i)) {
-                VList item = adapter.getItem(checkedItems.keyAt(i));
-                if(item.isExisting())
-                    selectedLists.add(item);
-                else
-                    Log.d(TAG,"ignoring item");
+            for (int i = 0; i < chkItemsCount; ++i) {
+                if (checkedItems.valueAt(i)) {
+                    VList item = adapter.getItem(checkedItems.keyAt(i));
+                    if (item.isExisting())
+                        selectedLists.add(item);
+                    else
+                        Log.d(TAG, "ignoring item");
+                }
             }
+        } else {
+            Log.w(TAG,"listview is null!");
         }
+        Log.d(TAG,"found "+selectedLists.size()+" items");
         return selectedLists;
     }
 

@@ -245,7 +245,7 @@ public final class CSVRecord implements Serializable, Iterable<String> {
      *
      * @return a new List
      */
-    private List<String> toList() {
+    public List<String> toList() {
         return Arrays.asList(values);
     }
 

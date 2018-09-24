@@ -22,7 +22,7 @@ package org.apache.commons.csv;
  *
  * @version $Id: Constants.java 1742459 2016-05-05 19:43:57Z britter $
  */
-final class Constants {
+public final class Constants {
 
     static final char BACKSLASH = '\\';
 
@@ -38,7 +38,7 @@ final class Constants {
     static final char CR = '\r';
 
     /** RFC 4180 defines line breaks as CRLF */
-    static final String CRLF = "\r\n";
+    public static final String CRLF = "\r\n";
 
     static final Character DOUBLE_QUOTE_CHAR = Character.valueOf('"');
 

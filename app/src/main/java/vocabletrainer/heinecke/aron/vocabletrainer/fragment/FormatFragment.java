@@ -1,7 +1,9 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v14.preference.SwitchPreference;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBar;
@@ -19,19 +21,22 @@ import android.view.View;
 import android.widget.EditText;
 
 import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.Constants;
+
+import java.util.Objects;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.activity.ExImportActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.FragmentActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVCustomFormat;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.CustomEditTextPreference;
-
-import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.FormatViewModel;
 
 /**
- * Fragment for custom cFormat preferences
+ * Fragment for custom cFormat preferences<br>
+ *     Expects to be used inside a ViewModel & reacts getting visible/invisible
  */
-public class FormatFragment extends PreferenceFragmentCompat implements FragmentActivity.BackButtonListener {
+public class FormatFragment extends PreferenceFragmentCompat implements FragmentActivity.BackButtonListener,
+        SharedPreferences.OnSharedPreferenceChangeListener{
     public static final String TAG = "FormatFragment";
     private static final String C_DIALOG_TAG = "android.support.v7.preference.PreferenceFragment.DIALOG";
     private static final int CHAR_POS = 0; // char pos for first char
@@ -50,6 +55,15 @@ public class FormatFragment extends PreferenceFragmentCompat implements Fragment
     EditTextPreference tMultimeaning;
     EditTextPreference tMMEscape;
     private InputFilter[] lengthFilter = new InputFilter[] {new InputFilter.LengthFilter(1)};
+    FormatViewModel model;
+    CSVCustomFormat previousFormat;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        model = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(FormatViewModel.class);
+    }
+
 
 
     @Override
@@ -91,16 +105,36 @@ public class FormatFragment extends PreferenceFragmentCompat implements Fragment
     @Override
     public void onStop() {
         super.onStop();
-        if(verifyFormat())
-            ExImportActivity.updateCustomFormat(savePrefsToCSVFormat());
+        updateCustomFormat();
+    }
+
+    /**
+     * Save back the current format
+     */
+    private void updateCustomFormat() {
+        if(verifyFormat()) {
+            CSVCustomFormat newFormat = savePrefsToCSVFormat();
+            model.setCustomFormat(newFormat);
+        }
     }
 
     /**
      * Load CSVFormat to preferences
      */
     private void loadPrefs(){
-        SharedPreferences pref = getActivity().getSharedPreferences(PREFS_NAME, 0);
-        loadPrefsFromCSVFormat(ExImportActivity.getCustomFormat(pref));
+        loadPrefsFromCSVFormat(model.getCustomFormatData());
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
     }
 
     /**
@@ -108,7 +142,7 @@ public class FormatFragment extends PreferenceFragmentCompat implements Fragment
      *
      * @param cformat CSVCustomFormat to load
      */
-    private void loadPrefsFromCSVFormat(final CSVCustomFormat cformat) {
+    private void loadPrefsFromCSVFormat(@NonNull final CSVCustomFormat cformat) {
         CSVFormat format = cformat.getFormat();
         swEscaping.setChecked(format.isEscapeCharacterSet());
         swQuote.setChecked(format.isQuoteCharacterSet());
@@ -191,7 +225,6 @@ public class FormatFragment extends PreferenceFragmentCompat implements Fragment
         return passed;
     }
 
-
     /**
      * Creates a CSVFormat object out of the settings
      *
@@ -243,16 +276,11 @@ public class FormatFragment extends PreferenceFragmentCompat implements Fragment
                 loadPrefsFromCSVFormat(CSVCustomFormat.DEFAULT);
                 return true;
             case R.id.fResetPrev:
-                Log.d(TAG,"reset to previous");
-                loadPrefs();
+                Log.d(TAG,"reset to previous" + (previousFormat != null));
+                loadPrefsFromCSVFormat(previousFormat);
                 return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onBackPressed() {
-        return verifyFormat();
     }
 
     @Override
@@ -274,6 +302,29 @@ public class FormatFragment extends PreferenceFragmentCompat implements Fragment
             f.setTargetFragment(this, 0);
             f.show(getFragmentManager(), C_DIALOG_TAG);
         }
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if(this.isResumed()){
+            Log.d(TAG,"visible: "+isVisibleToUser);
+            if(isVisibleToUser)
+                previousFormat = model.getCustomFormatData();
+            else
+                updateCustomFormat();
+            model.setInFormatFragment(isVisibleToUser);
+        }
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        return true;
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        verifyFormat();
     }
 
     /**

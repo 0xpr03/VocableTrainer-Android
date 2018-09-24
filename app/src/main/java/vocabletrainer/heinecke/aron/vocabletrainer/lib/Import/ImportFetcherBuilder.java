@@ -1,7 +1,6 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.Import;
 
-import android.support.v7.app.AlertDialog;
-import android.widget.ProgressBar;
+import android.arch.lifecycle.MutableLiveData;
 
 import java.io.File;
 
@@ -16,11 +15,9 @@ public class ImportFetcherBuilder {
     private CSVCustomFormat format;
     private File source;
     private ImportHandler handler;
-    private int maxEntries;
-    private AlertDialog dialog;
-    private ProgressBar progressBar;
     private ImportFetcher.MessageProvider messageProvider;
     private Function<Void,String> importCallback;
+    private MutableLiveData<Integer> progressHandle;
     private boolean logErrors = true;
 
     public ImportFetcherBuilder setFormat(CSVCustomFormat format) {
@@ -38,18 +35,8 @@ public class ImportFetcherBuilder {
         return this;
     }
 
-    public ImportFetcherBuilder setMaxEntries(int maxEntries) {
-        this.maxEntries = maxEntries;
-        return this;
-    }
-
-    public ImportFetcherBuilder setDialog(AlertDialog dialog) {
-        this.dialog = dialog;
-        return this;
-    }
-
-    public ImportFetcherBuilder setProgressBar(ProgressBar progressBar) {
-        this.progressBar = progressBar;
+    public ImportFetcherBuilder setProgressHandle(MutableLiveData<Integer> progressHandle) {
+        this.progressHandle = progressHandle;
         return this;
     }
 
@@ -73,10 +60,10 @@ public class ImportFetcherBuilder {
      * @return ImportFetcher
      */
     public ImportFetcher createImportFetcher() {
-        if(format == null || source == null || handler == null || dialog == null
-                || progressBar == null || messageProvider == null || importCallback == null)
+        if(format == null || source == null || handler == null || progressHandle == null
+                || messageProvider == null || importCallback == null)
             throw new IllegalArgumentException();
-        return new ImportFetcher(format, source, handler, maxEntries, dialog, progressBar,
+        return new ImportFetcher(format, source, handler, progressHandle,
                 messageProvider,importCallback,logErrors);
     }
 }

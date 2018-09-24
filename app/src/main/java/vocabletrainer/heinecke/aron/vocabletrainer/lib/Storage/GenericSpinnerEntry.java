@@ -21,6 +21,14 @@ public class GenericSpinnerEntry<T> {
     }
 
     /**
+     * Update object value
+     * @param newValue
+     */
+    public void updateObject(T newValue) {
+        object = newValue;
+    }
+
+    /**
      * Returns text to display for element
      *
      * @return

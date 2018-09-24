@@ -54,8 +54,9 @@
     <string name="Editor_ListSettings">List Settings</string>
     <string name="CSV_Format">CSV Format</string>
     <string name="Select_File_btn">Select File</string>
-    <string name="ExImport_Edit_CustomFormat">Edit custom format</string>
-    <string name="Import_Title">Import</string>
+    <string name="Import_Title">Import Lists</string>
+    <string name="Import_Tab_Main">Settings</string>
+    <string name="Import_Tab_Preview">Preview</string>
     <string name="Import_Ok">Import</string>
     <string name="Import_file_placeholder">Import File</string>
     <string name="Import_preview_text">Preview</string>
@@ -68,7 +69,12 @@
     <string name="Import_Preview_Update_Title">Updating..</string>
     <string name="Import_Importing_Title">Importing..</string>
     <string name="Import_Finished_Title">Importing finished</string>
-    <string name="Export_Title">Export</string>
+    <string name="Import_Preview_Loading">Loading data..</string>
+    <string name="Import_Preview_No_data">No data to display..</string>
+    <string name="Export_Title">Export Lists</string>
+    <string name="Export_Tab_Main">Settings</string>
+    <string name="Export_Tab_List">List Selection</string>
+    <string name="ExImport_Tab_CustomFormat">Custom Format</string>
     <string name="Export_Ok">Export</string>
     <string name="Export_file_placeholder">Export File</string>
     <string name="Export_chk_Table_Meta">Export List Meta</string>
@@ -85,6 +91,7 @@
     <!-- General -->
     <string name="GEN_Sort">Sorting</string>
     <string name="GEN_Ok">Ok</string>
+    <string name="GEN_Cancel">Cancel</string>
     <!-- Dialogs -->
     <string name="Trainer_Diag_finished_Title">Finished</string>
     <string name="Trainer_Diag_finished_MSG">You\'ve finished this training session.</string>
@@ -175,4 +182,8 @@
     <string name="Pref_General">General</string>
     <string name="Pref_Reset_Previous">Reset to previous</string>
     <string name="Pref_Reset_Default">Reset to default</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="Placeholder"><![CDATA[<Placeholder>]]></string>
 </resources>

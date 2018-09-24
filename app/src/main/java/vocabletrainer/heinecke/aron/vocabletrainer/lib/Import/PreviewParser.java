@@ -1,5 +1,6 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.Import;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
@@ -12,12 +13,12 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERV
  */
 public class PreviewParser implements ImportHandler {
     private final static int PARSE_LIMIT = 5;
-    private final List<VEntry> list;
+    private final ArrayList<VEntry> list;
     private int parsed_limiter = 0;
     private int tblCount = 0;
     private int rows = 0;
 
-    public PreviewParser(List<VEntry> list) {
+    public PreviewParser(ArrayList<VEntry> list) {
         this.list = list;
     }
 
@@ -56,6 +57,14 @@ public class PreviewParser implements ImportHandler {
     @Override
     public void start() {
 
+    }
+
+    /**
+     * Returns preview data
+     * @return
+     */
+    public ArrayList<VEntry> getPreviewData(){
+        return list;
     }
 
     /**

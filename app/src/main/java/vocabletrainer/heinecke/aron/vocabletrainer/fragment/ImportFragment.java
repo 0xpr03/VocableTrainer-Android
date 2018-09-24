@@ -1,19 +1,18 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
 import android.app.Activity;
+import android.arch.lifecycle.ViewModelProviders;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
-import android.support.v4.widget.Space;
-import android.support.v7.app.AlertDialog;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,120 +20,192 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.ProgressBar;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
-import android.widget.TableLayout;
 import android.widget.TextView;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.activity.ExImportActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.FileActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.ListActivity;
-import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.EntryListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ImportLogDialog;
+import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ProgressDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.VListEditorDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVCustomFormat;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Function;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CustomItemSelectedListener;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.ImportFetcher;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.ImportFetcherBuilder;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.Importer;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.PreviewParser;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.FormatViewModel;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.ImportViewModel;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewCreation;
 
-import static vocabletrainer.heinecke.aron.vocabletrainer.activity.ExImportActivity.populateFormatSpinnerAdapter;
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
-import static vocabletrainer.heinecke.aron.vocabletrainer.lib.DPIHelper.DPIToPixels;
 
 /*
  * Import Activity
+ * @author Aron Heinecke
  */
 public class ImportFragment extends BaseFragment implements VListEditorDialog.ListEditorDataProvider {
-
+    private static final String TAG_PROGRESS_IMPORT = "progressImport";
+    private static final String TAG_PROGRESS_REPARSE = "progressReparse";
     private static final String P_KEY_I_IMP_MULTI = "import_sp_multi";
     private static final String P_KEY_I_IMP_SINGLE = "import_sp_single";
     private static final String P_KEY_I_IMP_RAW = "import_sp_raw";
     private static final String P_KEY_I_IMP_FORMAT = "import_sp_format";
     private static final int REQUEST_FILE_RESULT_CODE = 1;
     private static final int REQUEST_LIST_SELECT_CODE = 2;
-    private static final String TAG = "ImportFragment";
+    public static final String TAG = "ImportFragment";
     private static final String KEY_LIST_TARGET = "targetList";
+    private static final String KEY_PARSING_INVALIDATED = "parsing_invalidated";
     private static final String KEY_FILE_PATH = "filePath";
-    private static final String KEY_VENTRY_LIST = "vEntryList";
     File impFile;
-    ArrayList<VEntry> lst;
-    EntryListAdapter adapter;
     VList targetList;
     ArrayAdapter<GenericSpinnerEntry<CSVCustomFormat>> spAdapterFormat;
-    ArrayAdapter<GenericSpinnerEntry<Importer.IMPORT_LIST_MODE>> spAdapterMultilist;
-    ArrayAdapter<GenericSpinnerEntry<Importer.IMPORT_LIST_MODE>> spAdapterSinglelist;
-    ArrayAdapter<GenericSpinnerEntry<Importer.IMPORT_LIST_MODE>> spAdapterRawlist;
+    private RadioGroup rgSingle, rgRaw, rgMulti;
     private Spinner spFormat;
-    private Spinner spSingleList;
-    private Spinner spSingelRaw;
-    private Spinner spMultilist;
     private Button bSelectList;
     private EditText etList;
     private EditText etFile;
     private Button bImportOk;
     private ConstraintLayout singleLayout;
     private TextView tInfo;
-    private boolean isRawData = false;
-    private boolean isMultilist = true;
-    private PreviewParser previewParser;
     private ImportFetcher.MessageProvider mp;
-    private FormatFragment formatFragment;
+    private ImportViewModel importViewModel;
+    private ExImportActivity activity;
+    private GenericSpinnerEntry<CSVCustomFormat> customFormatEntry;
+    private Importer.IMPORT_LIST_MODE importListMode;
+    private boolean parsingInvalidated;
+    private ProgressDialog progressDialogImport;
+    private ProgressDialog progressDialogReparse;
+    private VListEditorDialog listEditorDialog;
 
-    private boolean showedCustomFormatFragment = false;
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.d(TAG,"onCreate");
+        // init viewmodel observers here, onCreateView can be re-called on tab change (memory free?)
+        if(savedInstanceState != null){
+            progressDialogImport = (ProgressDialog) getACActivity().getSupportFragmentManager().getFragment(savedInstanceState, TAG_PROGRESS_IMPORT);
+            progressDialogReparse = (ProgressDialog) getACActivity().getSupportFragmentManager().getFragment(savedInstanceState, TAG_PROGRESS_REPARSE);
+            listEditorDialog = (VListEditorDialog) getACActivity().getSupportFragmentManager().getFragment(savedInstanceState,VListEditorDialog.TAG);
+            if(listEditorDialog != null) {
+                Log.d(TAG, "re-init editor Dialog");
+                setListEditorAction();
+            }
+        }
+
+        importViewModel = ViewModelProviders.of(getActivity()).get(ImportViewModel.class);
+        FormatViewModel formatViewModel = ViewModelProviders.of(getActivity()).get(FormatViewModel.class);
+
+        importViewModel.getLogHandle().observe(this, log -> {
+            if(log != null && log.length() > 1) {
+                ImportLogDialog logDialog = ImportLogDialog.newInstance(log);
+                logDialog.show(getACActivity().getSupportFragmentManager(),ImportLogDialog.TAG);
+                importViewModel.resetLog();
+            }
+        });
+
+        // update on custom format change
+        formatViewModel.getCustomFormatLD().observe(this, obs -> {
+            if(obs == null)
+                return;
+            customFormatEntry.updateObject(obs);
+            if(getFormatSelected() == obs) {
+                Log.d(TAG,"new format is selected");
+                parsingInvalidated = true;
+            }
+        });
+        formatViewModel.getInFormatFragmentLD().observe(this, inFormatView -> {
+            Log.d(TAG,"invalidated: "+parsingInvalidated);
+            if(parsingInvalidated && inFormatView != null && !inFormatView) {
+                Log.d(TAG, "refreshParsing");
+                refreshParsing();
+            }
+        });
+
+        // preview parsing finished, update view
+        importViewModel.getPreviewData().observe(this, previewData -> {
+            if(previewData != null){
+                // reset import list mode, change of available modes
+                importListMode = null;
+                refreshView();
+            }
+        });
+
+        // importing progress dialog
+        importViewModel.getImportingHandle().observe(this,importing -> {
+            if(importing != null){
+                if(importing) {
+                    if (progressDialogImport == null) {
+                        progressDialogImport = ProgressDialog.newInstance();
+                    }
+                    progressDialogImport.setDisplayMode(false,importViewModel.getPreviewParser().getAmountRows(),R.string.Import_Importing_Title);
+
+                    progressDialogImport.setProgressHandle(importViewModel.getProgressData());
+                    if(!progressDialogImport.isAdded())
+                        progressDialogImport.show(getACActivity().getSupportFragmentManager(),ProgressDialog.TAG);
+                } else if(progressDialogImport != null && progressDialogImport.isAdded()){
+                    progressDialogImport.dismiss();
+                    progressDialogImport = null;
+                }
+            }
+        });
+
+        // preview-parsing progress dialog
+        importViewModel.getReparsingHandle().observe(this,reparsing -> {
+            if(reparsing != null){
+                if(reparsing) {
+                    if (progressDialogReparse == null) {
+                        progressDialogReparse = ProgressDialog.newInstance();
+                    }
+                    progressDialogReparse.setDisplayMode(true,0,R.string.Import_Preview_Update_Title);
+
+                    progressDialogReparse.setProgressHandle(importViewModel.getProgressData());
+                    if(!progressDialogReparse.isAdded())
+                        progressDialogReparse.show(getACActivity().getSupportFragmentManager(),ProgressDialog.TAG);
+                } else if(progressDialogReparse != null && progressDialogReparse.isAdded()){
+                    progressDialogReparse.dismiss();
+                    progressDialogReparse = null;
+                }
+            }
+        });
+    }
 
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        Log.d(TAG, "onCreateView");
+        Log.d(TAG, "onCreateView restore: "+(savedInstanceState != null));
         View view = inflater.inflate(R.layout.fragment_import, container, false);
-
         setHasOptionsMenu(true);
-        getActivity().setTitle(R.string.Import_Title);
+        //initDialogs(savedInstanceState);
 
-        if (savedInstanceState != null) {
-            lst = savedInstanceState.getParcelableArrayList(KEY_VENTRY_LIST);
-        } else {
-            lst = new ArrayList<>();
-        }
-        adapter = new EntryListAdapter(getActivity(), lst);
-
-        spSingelRaw = (Spinner) view.findViewById(R.id.spImportSingleRaw);
-        spSingleList = (Spinner) view.findViewById(R.id.spImportSingleMetadata);
-        spMultilist = (Spinner) view.findViewById(R.id.spImportMultiple);
         singleLayout = (ConstraintLayout) view.findViewById(R.id.cImportNonMultilist);
         tInfo = (TextView) view.findViewById(R.id.tImportInfo);
         etList = (EditText) view.findViewById(R.id.tImportList);
         bSelectList = (Button) view.findViewById(R.id.bImportSelectList);
         etFile = (EditText) view.findViewById(R.id.tImportPath);
         bImportOk = (Button) view.findViewById(R.id.bImportOk);
-        ListView list = (ListView) view.findViewById(R.id.lstImportPreview);
         spFormat = (Spinner) view.findViewById(R.id.spImportFormat);
         TextView tMsg = (TextView) view.findViewById(R.id.tImportMsg);
+        rgMulti = view.findViewById(R.id.rgImportMultiple);
+        rgRaw = view.findViewById(R.id.rgImportSingleRaw);
+        rgSingle = view.findViewById(R.id.rgImportSingleMetadata);
 
         bSelectList.setOnClickListener(v -> selectList());
-
-        bImportOk.setOnClickListener(v -> onImport());
 
         Button bSelectFile = (Button) view.findViewById(R.id.bImportFile);
         bSelectFile.setOnClickListener(v -> selectFile());
 
         tMsg.setMovementMethod(LinkMovementMethod.getInstance());
-        list.setAdapter(adapter);
-
-        bImportOk.setEnabled(false);
-        etList.setKeyListener(null);
-        etFile.setKeyListener(null);
 
         initSpinner();
+
+        bImportOk.setEnabled(false);
+        etList.setKeyListener(null); // disable input
+        etFile.setKeyListener(null);
 
         mp = new ImportFetcher.MessageProvider(this);
         if (savedInstanceState != null) {
@@ -146,32 +217,88 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
             targetList = savedInstanceState.getParcelable(KEY_LIST_TARGET);
             if (targetList != null)
                 updateTargetListUI();
+            parsingInvalidated = savedInstanceState.getBoolean(KEY_PARSING_INVALIDATED,false);
+            // viewmodel destroyed, reparsing required
+            if(importViewModel.getPreviewParser() == null && impFile != null){
+                Log.d(TAG,"reparsing, no previewparser in viewmodel");
+                refreshParsing();
+            }
+        } else {
+            parsingInvalidated = false;
         }
+        refreshView();
+
+        // init after initial set, triggers listener before world init otherwise
+        bImportOk.setOnClickListener(v -> onImport());
+        ViewCreation.initRadioGroup(rgMulti, element -> {
+            updateImportListModeByButtonID(element.getId());
+            refreshView();
+            return null;
+        });
+        ViewCreation.initRadioGroup(rgRaw, element -> {
+            updateImportListModeByButtonID(element.getId());
+            refreshView();
+            return null;
+        });
+        ViewCreation.initRadioGroup(rgSingle, element -> {
+            updateImportListModeByButtonID(element.getId());
+            refreshView();
+            return null;
+        });
 
         return view;
     }
 
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        menu.clear();
-        inflater.inflate(R.menu.exp_import, menu);
-        super.onCreateOptionsMenu(menu, inflater);
+    /**
+     * Set new import list mode based on RadioButton ID
+     * @param id RadioButton
+     */
+    private void updateImportListModeByButtonID(@IdRes int id){
+        switch (id) {
+            case R.id.radio_add_s:
+            case R.id.radio_add_m:
+            case R.id.radio_merge_r:
+                importListMode = Importer.IMPORT_LIST_MODE.ADD;
+                break;
+            case R.id.radio_create_s:
+            case R.id.radio_create_r:
+                importListMode = Importer.IMPORT_LIST_MODE.CREATE;
+                break;
+            case R.id.radio_replace_s:
+            case R.id.radio_replace_m:
+                importListMode = Importer.IMPORT_LIST_MODE.REPLACE;
+                break;
+            case R.id.radio_ignore_m:
+                importListMode = Importer.IMPORT_LIST_MODE.IGNORE;
+                break;
+            case -1: // nothing selected
+                importListMode = null;
+                break;
+            default:
+                Log.wtf(TAG,"invalid id: "+id);
+                break;
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                Log.d(TAG,"onOptionsItemSelected:home");
                 getFragmentActivity().finish();
-                return true;
-            case R.id.tCustomFormat:
-                showedCustomFormatFragment = true;
-                formatFragment = new FormatFragment();
-                getFragmentActivity().addFragment(this,formatFragment);
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        if(getActivity() instanceof ExImportActivity) {
+            activity = (ExImportActivity) getActivity();
+        } else {
+            throw new ClassCastException("parent Activity has to be ExImportActivity, is "+getActivity().getClass());
+        }
     }
 
     /**
@@ -179,80 +306,22 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
      */
     private void initSpinner() {
         spAdapterFormat = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item);
-        spAdapterMultilist = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item);
-        spAdapterSinglelist = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item);
-        spAdapterRawlist = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item);
-
-        spAdapterMultilist.add(new GenericSpinnerEntry<>(Importer.IMPORT_LIST_MODE.REPLACE, getString(R.string.Import_Multilist_REPLACE)));
-        spAdapterMultilist.add(new GenericSpinnerEntry<>(Importer.IMPORT_LIST_MODE.ADD, getString(R.string.Import_Multilist_ADD)));
-        spAdapterMultilist.add(new GenericSpinnerEntry<>(Importer.IMPORT_LIST_MODE.IGNORE, getString(R.string.Import_Multilist_IGNORE)));
-
-        spAdapterRawlist.add(new GenericSpinnerEntry<>(Importer.IMPORT_LIST_MODE.CREATE, getString(R.string.Import_Rawlist_CREATE)));
-        spAdapterRawlist.add(new GenericSpinnerEntry<>(Importer.IMPORT_LIST_MODE.ADD, getString(R.string.Import_Rawlist_MERGE)));
-
-        spAdapterSinglelist.add(new GenericSpinnerEntry<>(Importer.IMPORT_LIST_MODE.REPLACE, getString(R.string.Import_Singlelist_REPLACE)));
-        spAdapterSinglelist.add(new GenericSpinnerEntry<>(Importer.IMPORT_LIST_MODE.ADD, getString(R.string.Import_Singlelist_ADD)));
-        spAdapterSinglelist.add(new GenericSpinnerEntry<>(Importer.IMPORT_LIST_MODE.CREATE, getString(R.string.Import_Singlelist_CREATE)));
-
+        spAdapterFormat.setDropDownViewResource(android.R.layout.select_dialog_singlechoice);
         SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
+        customFormatEntry = activity.populateFormatSpinnerAdapter(spAdapterFormat);
 
-        populateFormatSpinnerAdapter(spAdapterFormat, getActivity(), settings);
+        rgMulti.check(settings.getInt(P_KEY_I_IMP_MULTI,-1));
+        rgRaw.check(settings.getInt(P_KEY_I_IMP_RAW,-1));
+        rgSingle.check(settings.getInt(P_KEY_I_IMP_SINGLE,-1));
 
         spFormat.setAdapter(spAdapterFormat);
-        spMultilist.setAdapter(spAdapterMultilist);
-        spSingleList.setAdapter(spAdapterSinglelist);
-        spSingelRaw.setAdapter(spAdapterRawlist);
 
         spFormat.setSelection(settings.getInt(P_KEY_I_IMP_FORMAT, 0));
-        spSingelRaw.setSelection(settings.getInt(P_KEY_I_IMP_RAW, 0));
-        spSingleList.setSelection(settings.getInt(P_KEY_I_IMP_SINGLE, 0));
-        spMultilist.setSelection(settings.getInt(P_KEY_I_IMP_MULTI, 0));
 
-        spFormat.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        spFormat.setOnItemSelectedListener(new CustomItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            public void itemSelected(AdapterView<?> parent, View view, int position, long id) {
                 refreshParsing();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-        spSingleList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                refreshView();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-        spMultilist.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                refreshView();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-        spSingelRaw.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                refreshView();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
             }
         });
     }
@@ -263,9 +332,9 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
 
         SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
-        editor.putInt(P_KEY_I_IMP_MULTI, spMultilist.getSelectedItemPosition());
-        editor.putInt(P_KEY_I_IMP_SINGLE, spSingleList.getSelectedItemPosition());
-        editor.putInt(P_KEY_I_IMP_RAW, spSingelRaw.getSelectedItemPosition());
+        editor.putInt(P_KEY_I_IMP_MULTI, rgMulti.getCheckedRadioButtonId());
+        editor.putInt(P_KEY_I_IMP_SINGLE, rgSingle.getCheckedRadioButtonId());
+        editor.putInt(P_KEY_I_IMP_RAW, rgRaw.getCheckedRadioButtonId());
         editor.putInt(P_KEY_I_IMP_FORMAT, spFormat.getSelectedItemPosition());
         editor.apply();
     }
@@ -283,64 +352,9 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
      * Refresh preview parsing, change view accordingly
      */
     private void refreshParsing() {
+        parsingInvalidated = false;
         if (impFile != null && impFile.exists()) {
-            CSVCustomFormat format = getFormatSelected();
-            final PreviewParser dataHandler = new PreviewParser(lst);
-            final AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
-            alert.setCancelable(false);
-            alert.setMessage("");
-            alert.setTitle(R.string.Import_Preview_Update_Title);
-            final ProgressBar tw = new ProgressBar(getActivity());
-            Space sp = new Space(getActivity());
-            sp.setMinimumHeight((int) DPIToPixels(getResources(), 10)); // little space downside
-            LinearLayout rl = new TableLayout(getActivity());
-            rl.addView(tw);
-            rl.addView(sp);
-            alert.setView(rl);
-
-            /*alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    //TODO: add cancel option
-                }
-            });*/
-            final AlertDialog dialog = alert.show();
-            Function<Void,String> callback = param -> {
-                isMultilist = dataHandler.isMultiList();
-                isRawData = dataHandler.isRawData();
-                refreshView();
-                adapter.notifyDataSetChanged();
-                previewParser = dataHandler;
-                return null;
-            };
-            ImportFetcher imp = new ImportFetcherBuilder()
-                    .setFormat(format)
-                    .setSource(impFile)
-                    .setHandler(dataHandler)
-                    .setMaxEntries(0)
-                    .setDialog(dialog)
-                    .setLogErrors(false)
-                    .setProgressBar(tw)
-                    .setMessageProvider(mp)
-                    .setImportCallback(callback)
-                    .createImportFetcher();
-            lst.clear();
-            Log.d(TAG, "Starting task");
-            imp.execute(0); // 0 is just to pass smth
-        }
-    }
-
-    /**
-     * Returns the {@link Importer.IMPORT_LIST_MODE} of the relevant adapter
-     *
-     * @return
-     */
-    private Importer.IMPORT_LIST_MODE getListMode() {
-        if (isMultilist) {
-            return spAdapterMultilist.getItem(spMultilist.getSelectedItemPosition()).getObject();
-        } else if (isRawData) {
-            return spAdapterRawlist.getItem(spSingelRaw.getSelectedItemPosition()).getObject();
-        } else {
-            return spAdapterSinglelist.getItem(spSingleList.getSelectedItemPosition()).getObject();
+            importViewModel.previewParse(getFormatSelected(),impFile,mp);
         }
     }
 
@@ -348,42 +362,9 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
      * Called when import was clicked
      */
     public void onImport() {
-        CSVCustomFormat format = getFormatSelected();
-        final Importer dataHandler = new Importer(getActivity().getApplicationContext(), previewParser, getListMode(), targetList);
-        final AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
-        alert.setCancelable(false);
-        alert.setTitle(R.string.Import_Importing_Title);
-        final ProgressBar pg = new ProgressBar(getActivity(), null, android.R.attr.progressBarStyleHorizontal);
-        pg.setIndeterminate(false);
-        LinearLayout rl = new TableLayout(getActivity());
-        rl.addView(pg);
-        alert.setView(rl);
-        /*alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                //TODO: add cancel option
-            }
-        });*/
-        final AlertDialog dialog = alert.show();
-        Function<Void,String> callback = param -> {
-            ImportLogDialog dialog1 = ImportLogDialog.newInstance(param);
-            dialog1.show(getFragmentManager(),ImportLogDialog.TAG);
-            return null;
-        };
-        Log.d(TAG, "amount: " + previewParser.getAmountRows());
-
-        ImportFetcher imp = new ImportFetcherBuilder()
-                .setFormat(format)
-                .setSource(impFile)
-                .setHandler(dataHandler)
-                .setMaxEntries(previewParser.getAmountRows())
-                .setDialog(dialog)
-                .setProgressBar(pg)
-                .setMessageProvider(mp)
-                .setImportCallback(callback)
-                .createImportFetcher();
-        lst.clear();
-        Log.d(TAG, "Starting task");
-        imp.execute(0); // 0 is just to pass smth
+        //TODO: add cancel option
+        Importer dataHandler = new Importer(getActivity().getApplicationContext(), importViewModel.getPreviewParser(), importListMode, targetList);
+        importViewModel.runImport(dataHandler,getFormatSelected(),impFile,mp);
     }
 
     /**
@@ -391,24 +372,43 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
      * also calls checkInput
      */
     private void refreshView() {
-        singleLayout.setVisibility(isMultilist ? View.GONE : View.VISIBLE);
-        spMultilist.setVisibility(isMultilist ? View.VISIBLE : View.GONE);
-        spSingelRaw.setVisibility(isRawData ? View.VISIBLE : View.GONE);
-        spSingleList.setVisibility(isRawData ? View.GONE : View.VISIBLE);
-        if (!isMultilist) {
-            boolean hideListSelect = !isRawData && getListMode() != Importer.IMPORT_LIST_MODE.CREATE;
+        Log.d(TAG,"refreshView");
+        Log.d(TAG,"importListMode: "+importListMode);
+        singleLayout.setVisibility(importViewModel.isMultiList() ? View.GONE : View.VISIBLE);
+        rgMulti.setVisibility(importViewModel.isMultiList() ? View.VISIBLE : View.GONE);
+        rgRaw.setVisibility(importViewModel.isRawData() ? View.VISIBLE : View.GONE);
+        rgSingle.setVisibility(importViewModel.isRawData() ? View.GONE : View.VISIBLE);
+        if(impFile != null && importListMode == null) {
+            if (rgMulti.getVisibility() == View.VISIBLE) {
+                updateImportListModeByButtonID(rgMulti.getCheckedRadioButtonId());
+            } else if (rgSingle.getVisibility() == View.VISIBLE) {
+                updateImportListModeByButtonID(rgSingle.getCheckedRadioButtonId());
+            } else if (rgRaw.getVisibility() == View.VISIBLE) {
+                updateImportListModeByButtonID(rgRaw.getCheckedRadioButtonId());
+            }
+        }
+        if (!importViewModel.isMultiList()) {
+            Log.d(TAG,"non multilist, isRawData: "+importViewModel.isRawData());
+            boolean hideListSelect = !importViewModel.isRawData() && importListMode != Importer.IMPORT_LIST_MODE.CREATE;
+            Log.d(TAG,"hide List select: "+hideListSelect);
             etList.setVisibility(hideListSelect ? View.GONE : View.VISIBLE);
             bSelectList.setVisibility(hideListSelect ? View.GONE : View.VISIBLE);
         }
 
         int text;
-        if (isRawData)
+        if (importViewModel.isRawData())
             text = R.string.Import_Info_rawlist;
-        else if (isMultilist)
+        else if (importViewModel.isMultiList())
             text = R.string.Import_Info_multilist;
         else
             text = R.string.Import_Info_singlelist;
         tInfo.setText(text);
+
+        // init, no import file
+        if(impFile == null) {
+            rgMulti.setVisibility(View.INVISIBLE);
+        }
+        tInfo.setVisibility(impFile == null ? View.INVISIBLE : View.VISIBLE);
 
         checkInput();
     }
@@ -432,25 +432,44 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
     }
 
     /**
+     * Set listEditorDialog actions, used by creation & on viewport restore
+     */
+    private void setListEditorAction() {
+        Callable<Void> callable = () -> {
+            updateTargetListUI();
+            checkInput();
+            listEditorDialog = null;
+            return null;
+        };
+        listEditorDialog.setOkAction(callable);
+        listEditorDialog.setCancelAction(() -> {
+            listEditorDialog = null; // cleanup
+            return null;
+        });
+    }
+
+    /**
      * Called on list select click
      */
     public void selectList() {
-        if (getListMode() == Importer.IMPORT_LIST_MODE.CREATE) {
-            targetList = new VList("", "", "");
-            Callable<Void> callable = () -> {
-                updateTargetListUI();
-                checkInput();
-                return null;
-            };
-            VListEditorDialog dialog = VListEditorDialog.newInstance(true);
-            dialog.setTargetFragment(this,0);
-            dialog.setOkAction(callable);
-            dialog.show(getFragmentManager(),VListEditorDialog.TAG);
+        if (importListMode == Importer.IMPORT_LIST_MODE.CREATE) {
+            if(targetList == null || targetList.isExisting()) { // could be existing list from "merge"
+                targetList = new VList("", "", "");
+                etList.setText("");
+            }
+            listEditorDialog = VListEditorDialog.newInstance(true);
+            setListEditorAction();
+            listEditorDialog.setTargetFragment(this,0);
+            listEditorDialog.show(getFragmentManager(),VListEditorDialog.TAG);
         } else {
-            targetList = null;
+            if(targetList != null && !targetList.isExisting()) { // could be new list from "create"
+                targetList = null;
+                etList.setText("");
+            }
             Intent myIntent = new Intent(getActivity(), ListActivity.class);
             myIntent.putExtra(ListActivity.PARAM_MULTI_SELECT, false);
             myIntent.putExtra(ListActivity.PARAM_DELETE_FLAG, false);
+            myIntent.putExtra(ListActivity.PARAM_RUN_EDITOR,false);
             myIntent.putExtra(ListActivity.PARAM_SELECTED, targetList);
             startActivityForResult(myIntent, REQUEST_LIST_SELECT_CODE);
         }
@@ -464,19 +483,18 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
         if (impFile == null) {
             is_ok = false;
         }
-        Importer.IMPORT_LIST_MODE mode = getListMode();
         //noinspection StatementWithEmptyBody
-        if (isMultilist) {
+        if (importViewModel.isMultiList()) {
             //don't check the rest
-        } else if (isRawData && targetList == null) {
+        } else if (importViewModel.isRawData() && targetList == null) {
             is_ok = false;
-        } else if (mode == Importer.IMPORT_LIST_MODE.CREATE) { // single list
+        } else if (importListMode == Importer.IMPORT_LIST_MODE.CREATE) { // single list
             if (targetList == null) {
                 is_ok = false;
             } else if (targetList.isExisting()) {
                 is_ok = false;
             }
-        } else if (isRawData && (mode == Importer.IMPORT_LIST_MODE.ADD || mode == Importer.IMPORT_LIST_MODE.REPLACE) && !targetList.isExisting()) {
+        } else if (importViewModel.isRawData() && (importListMode == Importer.IMPORT_LIST_MODE.ADD || importListMode == Importer.IMPORT_LIST_MODE.REPLACE) && !targetList.isExisting()) {
             if (!targetList.isExisting()) {
                 is_ok = false;
             }
@@ -486,23 +504,18 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        if (showedCustomFormatFragment) {
-            showedCustomFormatFragment = false;
-            SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
-            populateFormatSpinnerAdapter(spAdapterFormat, getActivity(), settings);
-            refreshParsing();
-        }
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         Log.d(TAG,"onSaveInstanceState");
         outState.putParcelable(KEY_LIST_TARGET,targetList);
         outState.putString(KEY_FILE_PATH,impFile != null ? impFile.getAbsolutePath() : "");
-        outState.putParcelableArrayList(KEY_VENTRY_LIST,lst);
+        outState.putBoolean(KEY_PARSING_INVALIDATED,parsingInvalidated);
+        if(progressDialogImport != null && progressDialogImport.isAdded())
+            getACActivity().getSupportFragmentManager().putFragment(outState, TAG_PROGRESS_IMPORT, progressDialogImport);
+        if(progressDialogReparse != null && progressDialogReparse.isAdded())
+            getACActivity().getSupportFragmentManager().putFragment(outState, TAG_PROGRESS_REPARSE, progressDialogReparse);
+        if(listEditorDialog != null && listEditorDialog.isAdded())
+            getACActivity().getSupportFragmentManager().putFragment(outState,VListEditorDialog.TAG, listEditorDialog);
     }
 
     @Override

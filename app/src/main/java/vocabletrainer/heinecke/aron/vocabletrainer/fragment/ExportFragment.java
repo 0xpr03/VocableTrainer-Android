@@ -1,19 +1,18 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
 import android.app.Activity;
+import android.arch.lifecycle.ViewModelProviders;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,71 +22,107 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
-import org.apache.commons.csv.CSVPrinter;
-
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.activity.ExImportActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.FileActivity;
-import vocabletrainer.heinecke.aron.vocabletrainer.activity.ListActivity;
-import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.TableListAdapter;
+import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ProgressDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVCustomFormat;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenTableComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.MultiMeaningHandler;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.ExportViewModel;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.FormatViewModel;
 
-import static vocabletrainer.heinecke.aron.vocabletrainer.activity.ExImportActivity.populateFormatSpinnerAdapter;
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
-import static vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVHeaders.CSV_METADATA_COMMENT;
-import static vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVHeaders.CSV_METADATA_START;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
 
 /**
- * Export fragment
+ * Exporter fragment
  */
-public class ExportFragment extends BaseFragment {
+public class ExportFragment extends PagerFragment {
 
     private static final String P_KEY_B_EXP_TBL_META = "export_tbl_meta";
     private static final String P_KEY_B_EXP_TBL_MULTI = "export_tbl_multi";
     private static final String P_KEY_I_EXP_FORMAT = "export_format";
     private static final int REQUEST_FILE_RESULT_CODE = 10;
-    private static final int REQUEST_TABLES_RESULT_CODE = 20;
     private static final String KEY_FILE_PATH = "filePath";
-    private static final String KEY_LIST_EXP = "list";
-    private static final String TAG = "ExportFragment";
-    private static final int MAX_PROGRESS = 100;
+    public static final String TAG = "ExportFragment";
     private EditText tExportFile;
     private Button btnExport;
     private File expFile;
-    private ListView listView;
-    private FloatingActionButton addButton;
-    private ArrayList<VList> lists;
-    private TableListAdapter adapter;
-    private CheckBox chkExportTalbeInfo;
+    private CheckBox chkExportTableInfo;
     private CheckBox chkExportMultiple;
-    private ExportOperation exportTask;
     private Spinner spFormat;
     private ArrayAdapter<GenericSpinnerEntry<CSVCustomFormat>> spAdapterFormat;
     private TextView tMsg;
-    private GenericComparator compTables;
     private View view;
     private boolean formatWarnDialog = false; // prevent dialog double trigger, due to spFormat logic
+    private static final ArrayList<VList> EMPTY_LISTS = new ArrayList<>(0);
+    private ExImportActivity activity;
+    private GenericSpinnerEntry<CSVCustomFormat> customFormatEntry;
+    private FormatViewModel formatViewModel;
+    private ProgressDialog progressDialog;
+    private ExportViewModel exportViewModel;
 
-    private boolean showedCustomFormatFragment = false;
+    /**
+     * Required interface for attachers of this class
+     */
+    public interface ExportListProvider {
+        /**
+         * Get list of VLists to export
+         * @return
+         */
+        ArrayList<VList> getExportLists();
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        formatViewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(FormatViewModel.class);
+        formatViewModel.getCustomFormatLD().observe(this, format -> {
+            customFormatEntry.updateObject(format);
+        });
+        formatViewModel.getInFormatFragmentLD().observe(this, inFragment -> {
+            //noinspection ConstantConditions
+            if(!inFragment) {
+                checkInputOk();
+            }
+        });
+
+        if(savedInstanceState != null){
+            progressDialog = (ProgressDialog) getACActivity().getSupportFragmentManager().getFragment(savedInstanceState, ProgressDialog.TAG);
+        }
+
+        exportViewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(ExportViewModel.class);
+        exportViewModel.getExportingHandles().observe(this, exporting -> {
+            if(exporting!= null){
+                if(exporting){
+                    if(progressDialog == null){
+                        progressDialog = ProgressDialog.newInstance();
+                    }
+                    progressDialog.setDisplayMode(false,exportViewModel.getExportSize(),R.string.Export_Exporting_Title);
+                    progressDialog.setProgressHandle(exportViewModel.getProgressExportHandle());
+
+                    if(!progressDialog.isAdded())
+                        progressDialog.show(getACActivity().getSupportFragmentManager(),ProgressDialog.TAG);
+                } else if(progressDialog != null && progressDialog.isAdded()) {
+                    progressDialog.dismiss();
+                    progressDialog = null;
+                }
+            }
+        });
+    }
 
     @Nullable
     @Override
@@ -99,10 +134,8 @@ public class ExportFragment extends BaseFragment {
 
         tExportFile = (EditText) view.findViewById(R.id.tExportFile);
         btnExport = (Button) view.findViewById(R.id.bExportStart);
-        listView = (ListView) view.findViewById(R.id.lExportListView);
-        addButton = (FloatingActionButton) view.findViewById(R.id.bExportAddTables);
         chkExportMultiple = (CheckBox) view.findViewById(R.id.chkExportMulti);
-        chkExportTalbeInfo = (CheckBox) view.findViewById(R.id.chkExportMeta);
+        chkExportTableInfo = (CheckBox) view.findViewById(R.id.chkExportMeta);
         spFormat = (Spinner) view.findViewById(R.id.spExpFormat);
         tMsg = (TextView) view.findViewById(R.id.tExportMsg);
 
@@ -110,25 +143,14 @@ public class ExportFragment extends BaseFragment {
                 GenTableComparator.retName, GenTableComparator.retA, GenTableComparator.retB
         };
 
-        compTables = new GenTableComparator(retrievers, ID_RESERVED_SKIP);
-
         initView(savedInstanceState);
         return view;
     }
 
     @Override
     public void onDestroyView() {
-        Log.d(TAG, "destroying view");
         super.onDestroyView();
         view = null;
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        Log.d(TAG, "inflating the menu");
-        menu.clear();
-        inflater.inflate(R.menu.exp_import, menu);
-        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
@@ -149,13 +171,19 @@ public class ExportFragment extends BaseFragment {
             case android.R.id.home:
                 getFragmentActivity().finish();
                 return true;
-            case R.id.tCustomFormat:
-                showedCustomFormatFragment = true;
-                FormatFragment formatFragment = new FormatFragment();
-                getFragmentActivity().addFragment(this,formatFragment);
-                return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        if(getActivity() instanceof ExImportActivity) {
+            activity = (ExImportActivity) getActivity();
+        } else {
+            throw new ClassCastException("parent Activity has to be ExImportActivity, is "+getActivity().getClass());
+        }
     }
 
     /**
@@ -167,40 +195,36 @@ public class ExportFragment extends BaseFragment {
         tExportFile.setKeyListener(null);
         btnExport.setEnabled(false);
         if(savedInstanceState != null) {
-            lists = savedInstanceState.getParcelableArrayList(KEY_LIST_EXP);
             String path = savedInstanceState.getString(KEY_FILE_PATH, null);
             if (path != null && !path.equals(""))
                 expFile = new File(path);
             else
                 expFile = null;
-        } else {
-            lists = new ArrayList<>();
         }
-        addButton.setOnClickListener(v -> runSelectTables());
-        chkExportMultiple.setOnClickListener(v -> checkInputOk());
-
-        Button btnOk = (Button) view.findViewById(R.id.bExportStart);
-        btnOk.setOnClickListener(v -> onOk());
+        Button btnExport = (Button) view.findViewById(R.id.bExportStart);
+        btnExport.setOnClickListener(v -> onExport());
 
         Button btnFileDialog = (Button) view.findViewById(R.id.bExportSelFile);
         btnFileDialog.setOnClickListener(v -> selectFile());
 
-        adapter = new TableListAdapter(getActivity(), R.layout.table_list_view, lists, false);
-        listView.setAdapter(adapter);
-        listView.setLongClickable(false);
-        listView.setOnItemClickListener((parent, view, position, id) -> runSelectTables());
-
         spAdapterFormat = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item);
+        spAdapterFormat.setDropDownViewResource(android.R.layout.select_dialog_singlechoice);
 
         SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
 
-        populateFormatSpinnerAdapter(spAdapterFormat, getActivity(), settings);
+        customFormatEntry = activity.populateFormatSpinnerAdapter(spAdapterFormat);
 
         spFormat.setAdapter(spAdapterFormat);
 
-        chkExportTalbeInfo.setChecked(settings.getBoolean(P_KEY_B_EXP_TBL_META, true));
+        chkExportTableInfo.setChecked(settings.getBoolean(P_KEY_B_EXP_TBL_META, true));
+        chkExportTableInfo.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            chkExportMultiple.setEnabled(isChecked);
+            checkInputOk();
+        });
         chkExportMultiple.setChecked(settings.getBoolean(P_KEY_B_EXP_TBL_MULTI, true));
+        chkExportMultiple.setOnCheckedChangeListener((buttonView, isChecked) -> checkInputOk());
         spFormat.setSelection(settings.getInt(P_KEY_I_EXP_FORMAT, 0));
+        chkExportMultiple.setEnabled(chkExportTableInfo.isChecked());
         spFormat.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -222,7 +246,7 @@ public class ExportFragment extends BaseFragment {
         SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
         editor.putBoolean(P_KEY_B_EXP_TBL_MULTI, chkExportMultiple.isChecked());
-        editor.putBoolean(P_KEY_B_EXP_TBL_META, chkExportTalbeInfo.isChecked());
+        editor.putBoolean(P_KEY_B_EXP_TBL_META, chkExportTableInfo.isChecked());
         editor.putInt(P_KEY_I_EXP_FORMAT, spFormat.getSelectedItemPosition());
         editor.apply();
     }
@@ -238,38 +262,24 @@ public class ExportFragment extends BaseFragment {
         startActivityForResult(myIntent, REQUEST_FILE_RESULT_CODE);
     }
 
-    /**
-     * Calls select lists activity
-     */
-    private void runSelectTables() {
-        Intent myIntent = new Intent(getActivity(), ListActivity.class);
-        myIntent.putExtra(ListActivity.PARAM_SELECTED, lists);
-        myIntent.putExtra(ListActivity.PARAM_MULTI_SELECT, true);
-        startActivityForResult(myIntent, REQUEST_TABLES_RESULT_CODE);
+    private ArrayList<VList> getLists(){
+        ArrayList<VList> list = EMPTY_LISTS;
+        if(activity != null) {
+            return activity.getExportLists();
+        } else {
+            Log.wtf(TAG,"No ListPickerFragment found!");
+        }
+        Log.d(TAG,"List size: "+list.size());
+        return list;
     }
 
     /**
      * Called upon ok press
      */
-    public void onOk() {
-        final AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
-        alert.setCancelable(false);
-        alert.setTitle(R.string.Export_Exporting_Title);
-        final ProgressBar pg = new ProgressBar(getActivity(), null, android.R.attr.progressBarStyleHorizontal);
-        pg.setIndeterminate(false);
-        LinearLayout rl = new TableLayout(getActivity());
-        rl.addView(pg);
-        alert.setView(rl);
-        /*alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                //TODO: add cancel option
-            }
-        });*/
-        final AlertDialog dialog = alert.show();
+    public void onExport() {
         CSVCustomFormat format = getCFormat();
-        ExportStorage es = new ExportStorage(format, lists, chkExportTalbeInfo.isChecked(), chkExportMultiple.isChecked(), expFile, dialog, pg);
-        exportTask = new ExportOperation(es);
-        exportTask.execute();
+        ExportStorage es = new ExportStorage(format, getLists(), chkExportTableInfo.isChecked(), chkExportMultiple.isChecked(), expFile);
+        exportViewModel.runImport(getContext(),es);
     }
 
     /**
@@ -284,17 +294,8 @@ public class ExportFragment extends BaseFragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString(KEY_FILE_PATH,expFile != null ? expFile.getAbsolutePath() : "");
-        outState.putParcelableArrayList(KEY_LIST_EXP,lists);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (showedCustomFormatFragment) {
-            showedCustomFormatFragment = false;
-            SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
-            populateFormatSpinnerAdapter(spAdapterFormat, getActivity(), settings);
-        }
+        if(progressDialog != null && progressDialog.isAdded())
+            getACActivity().getSupportFragmentManager().putFragment(outState, ProgressDialog.TAG, progressDialog);
     }
 
     @Override
@@ -307,10 +308,6 @@ public class ExportFragment extends BaseFragment {
                     tExportFile.setText(data.getStringExtra(FileActivity.RETURN_FILE_USER_NAME));
                     checkInputOk();
                     break;
-                case REQUEST_TABLES_RESULT_CODE:
-                    adapter.setAllUpdated(data.getParcelableArrayListExtra(ListActivity.RETURN_LISTS), compTables);
-                    checkInputOk();
-                    break;
             }
         }
     }
@@ -319,8 +316,14 @@ public class ExportFragment extends BaseFragment {
      * Validate input & set export button accordingly
      */
     private void checkInputOk() {
+        Log.d(TAG,"checking input");
         boolean exportFormatOk = getCFormat().isMultiValueEnabled();
-        btnExport.setEnabled(exportFormatOk && lists.size() > 1 && expFile != null && (chkExportMultiple.isChecked() || (!chkExportMultiple.isChecked() && lists.size() == 2)));
+        int listSize = getLists().size();
+        Log.d(TAG,"list size:"+listSize);
+        // disabled = (!export tableinfo || !export multilist) && listsize > 1
+        // enabled = !disabled <==> !(!export table info || !exprtmultilist) || list size > 1)
+        // <==> (export table info && exportmultulst) || list size == 1
+        btnExport.setEnabled(exportFormatOk && listSize > 0 && expFile != null && ((chkExportTableInfo.isChecked() && chkExportMultiple.isChecked()) || listSize == 1));
         if(!exportFormatOk && !formatWarnDialog) {
             AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
             alert.setCancelable(true);
@@ -334,103 +337,21 @@ public class ExportFragment extends BaseFragment {
         }
     }
 
-    /**
-     * Export async task class
-     */
-    private class ExportOperation extends AsyncTask<Integer, Integer, String> {
-        private final ExportStorage es;
-        private final Database db;
-        String multiMeaningDelimiter;
-        String escapedChar;
-
-        /**
-         * Creates a new ExportOperation
-         *
-         * @param es
-         */
-        ExportOperation(ExportStorage es) {
-            this.es = es;
-            db = new Database(getActivity().getApplicationContext());
-            multiMeaningDelimiter = String.valueOf(es.cFormat.getMultiValueChar());
-            escapedChar = multiMeaningDelimiter + multiMeaningDelimiter;
-        }
-
-        @Override
-        protected String doInBackground(Integer... params) {
-            Log.d(TAG, "Starting background task");
-            try (FileWriter fw = new FileWriter(es.file);
-                 BufferedWriter writer = new BufferedWriter(fw);
-                 CSVPrinter printer = new CSVPrinter(writer, es.cFormat.getFormat())
-            ) {
-                MultiMeaningHandler handler = new MultiMeaningHandler(es.cFormat);
-                int i = 0;
-                for (VList tbl : es.lists) {
-                    if (tbl.getId() == ID_RESERVED_SKIP) {
-                        continue;
-                    }
-                    Log.d(TAG, "exporting tbl " + tbl.toString());
-                    if (es.exportTableInfo) {
-                        printer.printRecord((Object[]) CSV_METADATA_START);
-                        printer.printComment(CSV_METADATA_COMMENT);
-                        printer.print(tbl.getName());
-                        printer.print(tbl.getNameA());
-                        printer.print(tbl.getNameB());
-                        printer.println();
-                    }
-                    List<VEntry> vocables = db.getVocablesOfTable(tbl);
-
-                    for (VEntry ent : vocables) {
-                        List<String> mA = ent.getAMeanings();
-                        List<String> mB = ent.getBMeanings();
-                        printer.print(handler.formatMultiMeaning(mA));
-                        printer.print(handler.formatMultiMeaning(mB));
-                        printer.print(ent.getTip());
-                        printer.print(ent.getAddition());
-                        printer.println();
-                    }
-                    i++;
-                    publishProgress((es.lists.size() / MAX_PROGRESS) * i);
-                }
-                Log.d(TAG, "closing all");
-                printer.close();
-                writer.close();
-                fw.close();
-            } catch (Exception e) {
-                Log.wtf(TAG, e);
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            Log.d(TAG, "updating progress");
-            es.progressBar.setProgress(values[0]);
-        }
-
-        @Override
-        protected void onPreExecute() {
-            es.progressBar.setMax(lists.size());
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            es.dialog.dismiss();
-            getActivity().finish();
-        }
+    @Override
+    protected void onFragmentVisible() {
+        super.onFragmentVisible();
+        onResume();
+        checkInputOk();
     }
-
     /**
-     * Export storage class
+     * Exporter storage class
      */
-    private class ExportStorage {
-        final ArrayList<VList> lists;
-        final boolean exportTableInfo;
-        final boolean exportMultiple;
-        final File file;
-        final AlertDialog dialog;
-        final CSVCustomFormat cFormat;
-        final ProgressBar progressBar;
+    public class ExportStorage {
+        public final ArrayList<VList> lists;
+        public final boolean exportTableInfo;
+        public final boolean exportMultiple;
+        public final File file;
+        public final CSVCustomFormat cFormat;
 
         /**
          * New export storage
@@ -440,18 +361,14 @@ public class ExportFragment extends BaseFragment {
          * @param exportTableInfo setting
          * @param exportMultiple  setting
          * @param file            file to read from
-         * @param dialog          dialog for progress, closed on end
-         * @param progressBar     progress bar that is updated
          */
         ExportStorage(CSVCustomFormat cFormat, ArrayList<VList> lists, boolean exportTableInfo,
-                      boolean exportMultiple, File file, AlertDialog dialog, ProgressBar progressBar) {
+                      boolean exportMultiple, File file) {
             this.cFormat = cFormat;
             this.lists = lists;
             this.exportTableInfo = exportTableInfo;
             this.exportMultiple = exportMultiple;
             this.file = file;
-            this.dialog = dialog;
-            this.progressBar = progressBar;
         }
     }
 }

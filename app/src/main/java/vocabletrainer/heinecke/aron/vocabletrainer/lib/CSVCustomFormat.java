@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import org.apache.commons.csv.CSVFormat;
 
@@ -14,6 +15,7 @@ import java.io.Serializable;
  * Ads multi-value per cell to the format
  */
 public class CSVCustomFormat implements Serializable, Parcelable {
+    private static CSVCustomFormat SAVE_FORMAT;
     private final CSVFormat format;
     private final Character multiValueChar;
     private final Character escapeMVChar;
@@ -59,6 +61,37 @@ public class CSVCustomFormat implements Serializable, Parcelable {
         escapeMVChar = tmpEscapeMVChar != Integer.MAX_VALUE ? (char) tmpEscapeMVChar : null;
         this.multiValueCharString = multiValueChar == null ? null : String.valueOf(multiValueChar);
         this.escapeMVCharString = escapeMVChar == null ? null : String.valueOf(escapeMVChar);
+    }
+
+    /**
+     * Helper method allowing for comparison of possible null objects
+     * @param objA
+     * @param objB
+     * @return
+     */
+    private boolean equalsNullInclusive(Object objA, Object objB){
+        if(objA == null){
+            return objB == null;
+        } else {
+            return objA.equals(objB);
+        }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == null){
+            return false;
+        }
+        if(obj instanceof CSVCustomFormat){
+            CSVCustomFormat secFormat = (CSVCustomFormat) obj;
+            boolean mvc = equalsNullInclusive(this.multiValueChar,secFormat.getMultiValueChar());
+            boolean emvc = equalsNullInclusive(this.escapeMVChar,secFormat.getEscapeMVChar());
+            boolean hash = this.format.hashCode() == secFormat.getFormat().hashCode();
+            Log.d("CSVCustomFormat","eq MVC: "+mvc+" eq escMVC: "+emvc
+                +" hash: "+ hash);
+            return mvc && emvc && hash;
+        }
+        return super.equals(obj);
     }
 
     public static final Creator<CSVCustomFormat> CREATOR = new Creator<CSVCustomFormat>() {

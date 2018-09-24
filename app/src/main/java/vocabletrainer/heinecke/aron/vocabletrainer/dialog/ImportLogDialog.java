@@ -1,10 +1,11 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.dialog;
 
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 
@@ -13,7 +14,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.R;
  * @author Aron Heinecke
  */
 public class ImportLogDialog extends DialogFragment {
-    public static final String TAG = "DialogFragment";
+    public static final String TAG = "LogFragment";
     private static final String LOG = "log";
     /**
      * Creates a new instance
@@ -27,19 +28,19 @@ public class ImportLogDialog extends DialogFragment {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setStyle(DialogFragment.STYLE_NORMAL, R.style.CustomDialog);
+    }
+
+    @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
         alertDialog.setTitle(R.string.Import_Finished_Title);
         alertDialog.setMessage(getArguments().getString(LOG));
 
-        alertDialog.setPositiveButton(R.string.GEN_Ok, (dialog, whichButton) -> getActivity().finish());
+        alertDialog.setPositiveButton(R.string.GEN_Ok, (dialog, whichButton) -> this.dismiss());
         return alertDialog.create();
-    }
-
-    @Override
-    public void onCancel(DialogInterface dialog) {
-        super.onCancel(dialog);
-        getActivity().finish();
     }
 }

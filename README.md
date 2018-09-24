@@ -1,6 +1,6 @@
 # VocableTrainer-Android [![Build Status](https://travis-ci.com/0xpr03/VocableTrainer-Android.svg?branch=master)](https://travis-ci.com/0xpr03/VocableTrainer-Android)
-VocableTrainer-Android is a vocable training software for the android platform.
-It provides traning with different modes, sessions and multiple lists.
+VocableTrainer-Android is a word/vocable training software for the android platform.
+It provides traning with different modes, sessions and multiple word lists.
 
 <a href="https://f-droid.org/repository/browse/?fdid=vocabletrainer.heinecke.aron.vocabletrainer" target="_blank">
 <img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80"/></a>
@@ -8,15 +8,16 @@ It provides traning with different modes, sessions and multiple lists.
 ~~There's also a [PC version](https://github.com/0xpr03/VocableTrainer) (less active developed)~~
 
 ## Features
-- [X] N:N vocable support (multiple meanings)
+- [X] N:N word support (multiple meanings)
 - [X] "Additional" Column shown after solving (irregular verbs etc)
 - [X] A<->B Random training over multiple lists
 - [X] Stop/Continue training sessions at any time
-- [X] Classic mode, type in & verify
+- [X] Classic Mode, type in & verify
 - [X] Quick Mode, no typing
-- [X] Set repeat-amount of vocables in training
+- [X] Set repeat-amount of words in training
 - [X] Export/Import of lists to/from CSV files
 - [X] configurable CSV format
+- [ ] Usage statistics
 
 ## Bugs, Contribution etc
 Feel free to open an Issue for ideas, bugs, localisation or feature requests. Or even better a PR.
@@ -33,6 +34,10 @@ Feel free to open an Issue for ideas, bugs, localisation or feature requests. Or
 - Playstore version  
   Google wants money for publishing a free app, as this project is done in my spare time I would have to pay for this by myself. (Side note: As I haven't started this project for myself & don't have a real use case I wouldn't even profit from a playstore version.)
 
+# Distribution
+
+You are not allowed to distribute this application on your own. (Repository, Hosting,..)  
+Please always link to the f-droid repository, I won't give any support for unofficial builds.
 
 ## License
 

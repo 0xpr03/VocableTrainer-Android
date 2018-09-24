@@ -87,7 +87,6 @@ public class EntryListAdapter extends BaseAdapter {
         if (convertView == null) {
             holder = new ViewHolder();
 
-
             convertView = inflater.inflate(R.layout.entry_list_view, null);
 
             holder.colA = (TextView) convertView.findViewById(R.id.entryFirstText);
@@ -109,16 +108,20 @@ public class EntryListAdapter extends BaseAdapter {
         }
 
         boolean bold = item.getId() == ID_RESERVED_SKIP;
-        //TODO: remove on drop of API 19 support
-        if(holder.originTypeface == ANDROID_WORKAROUND_STYLE){
-            holder.colA.setTypeface(null, bold ? Typeface.BOLD : Typeface.NORMAL);
-            holder.colB.setTypeface(null, bold ? Typeface.BOLD : Typeface.NORMAL);
-            holder.colTipp.setTypeface(null, bold ? Typeface.BOLD : Typeface.NORMAL);
-        }else {
-            holder.colA.setTypeface(null, bold ? Typeface.BOLD : holder.originTypeface);
-            holder.colB.setTypeface(null, bold ? Typeface.BOLD : holder.originTypeface);
-            holder.colTipp.setTypeface(null, bold ? Typeface.BOLD : holder.originTypeface);
+
+        int typeFace;
+        if(bold) {
+            typeFace = Typeface.BOLD;
+            //TODO: remove on drop of API 19 support
+        } else if(holder.originTypeface == ANDROID_WORKAROUND_STYLE){
+            typeFace = Typeface.NORMAL;
+        } else {
+            typeFace = holder.originTypeface;
         }
+
+        holder.colA.setTypeface(null, typeFace);
+        holder.colB.setTypeface(null, typeFace);
+        holder.colTipp.setTypeface(null, typeFace);
 
         holder.colA.setText(item.getAString());
         holder.colB.setText(item.getBString());

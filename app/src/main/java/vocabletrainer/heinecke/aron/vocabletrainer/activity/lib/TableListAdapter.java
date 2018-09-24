@@ -2,6 +2,7 @@ package vocabletrainer.heinecke.aron.vocabletrainer.activity.lib;
 
 import android.content.Context;
 import android.graphics.Typeface;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,15 +27,12 @@ public class TableListAdapter extends ArrayAdapter<VList> {
     /**
      * items >= starting item are real items and no header etc
      */
-    public final static int STARTING_ITEM = 1;
+    private final static int STARTING_ITEM = 1;
     private final boolean displayCheckbox;
-    ArrayList<VList> dataItem;
-    Context context;
-    int resLayout;
-    TextView colName;
-    TextView colA;
-    TextView colB;
-    VList header;
+    private ArrayList<VList> dataItem;
+    private Context context;
+    private int resLayout;
+    private VList header;
 
     /**
      * New lists list adapter
@@ -44,7 +42,7 @@ public class TableListAdapter extends ArrayAdapter<VList> {
      * @param lists
      * @param displayCheckbox set to true to show checkbox for multi select
      */
-    public TableListAdapter(Context context, int textViewResourceId, ArrayList<VList> lists, final boolean displayCheckbox) {
+    public TableListAdapter(Context context, int textViewResourceId, @NonNull ArrayList<VList> lists, final boolean displayCheckbox) {
         super(context, textViewResourceId, lists);
         this.dataItem = lists;
         header = new VList(ID_RESERVED_SKIP,context.getString(R.string.Editor_Hint_Column_A), context.getString(R.string.Editor_Hint_Column_B), context.getString(R.string.Editor_Hint_List_Name),null);
@@ -90,15 +88,17 @@ public class TableListAdapter extends ArrayAdapter<VList> {
         this.notifyDataSetChanged();
     }
 
+    @NonNull
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        convertView = inflater.inflate(resLayout, parent, false);
+        if(convertView == null)
+            convertView = inflater.inflate(resLayout, parent, false);
 
-        colName = (TextView) convertView.findViewById(R.id.tableFirstText);
-        colA = (TextView) convertView.findViewById(R.id.tableSecondText);
-        colB = (TextView) convertView.findViewById(R.id.tableThirdText);
+        TextView colName = (TextView) convertView.findViewById(R.id.tableFirstText);
+        TextView colA = (TextView) convertView.findViewById(R.id.tableSecondText);
+        TextView colB = (TextView) convertView.findViewById(R.id.tableThirdText);
 
         if (!displayCheckbox) {
             convertView.findViewById(R.id.tblCheckBox).setVisibility(View.GONE);
@@ -106,14 +106,18 @@ public class TableListAdapter extends ArrayAdapter<VList> {
 
 
         VList item = dataItem.get(position);
-        if (item.getId() == ID_RESERVED_SKIP) {
-            if (displayCheckbox)
-                convertView.findViewById(R.id.tblCheckBox).setVisibility(View.INVISIBLE);
-
-            colName.setTypeface(null, Typeface.BOLD);
-            colA.setTypeface(null, Typeface.BOLD);
-            colB.setTypeface(null, Typeface.BOLD);
+        int typeface = Typeface.NORMAL;
+        boolean reserved = item.getId() == ID_RESERVED_SKIP;
+        if (reserved) {
+            typeface = Typeface.BOLD;
         }
+
+        if (displayCheckbox)
+            convertView.findViewById(R.id.tblCheckBox).setVisibility(reserved ? View.INVISIBLE : View.VISIBLE);
+
+        colName.setTypeface(null, typeface);
+        colA.setTypeface(null, typeface);
+        colB.setTypeface(null, typeface);
 
         colName.setText(item.getName());
         colA.setText(item.getNameA());

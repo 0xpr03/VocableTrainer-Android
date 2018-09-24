@@ -107,7 +107,7 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
         undoContainer = findViewById(R.id.undobar);
         undoContainer.setVisibility(View.GONE);
 
-        FloatingActionButton bNewEntry = (FloatingActionButton) findViewById(R.id.bEditorNewEntry);
+        FloatingActionButton bNewEntry = findViewById(R.id.bEditorNewEntry);
         bNewEntry.setOnClickListener(v -> addEntry());
 
         // setup listview
@@ -250,14 +250,14 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
      * Setup listview
      */
     private void initListView() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
         if (ab != null) {
             ab.setDisplayHomeAsUpEnabled(true);
         }
 
-        listView = (ListView) findViewById(R.id.listviewEditor);
+        listView = findViewById(R.id.listviewEditor);
 
         listView.setLongClickable(true);
 

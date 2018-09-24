@@ -183,7 +183,7 @@
     <string name="Pref_Reset_Previous">Reset to previous</string>
     <string name="Pref_Reset_Default">Reset to default</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="Placeholder"><![CDATA[<Placeholder>]]></string>
+    <!-- Should not be visible, indicates a bug when visible in UI.-->
+    <!-- Also serves the purpose of making dynamic elements visible in designer. -->
+    <string name="Placeholder" translatable="false"><![CDATA[<Placeholder>]]></string>
 </resources>

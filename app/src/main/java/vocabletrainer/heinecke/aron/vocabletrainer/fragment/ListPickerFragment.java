@@ -163,7 +163,7 @@ public class ListPickerFragment extends PagerFragment {
                         GenTableComparator.retA, GenTableComparator.retName}
         ,ID_RESERVED_SKIP);
 
-        bOk = (Button) view.findViewById(R.id.btnOkSelect);
+        bOk = view.findViewById(R.id.btnOkSelect);
         bOk.setVisibility(showOkButton && multiselect ? View.VISIBLE : View.GONE);
 
         SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
@@ -263,7 +263,7 @@ public class ListPickerFragment extends PagerFragment {
      * Setup list view
      */
     private void initListView() {
-        listView = (ListView) view.findViewById(R.id.listVIewLstSel);
+        listView = view.findViewById(R.id.listVIewLstSel);
         // fix bug with collapsing toolbar + scrollview
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             listView.setNestedScrollingEnabled(true);

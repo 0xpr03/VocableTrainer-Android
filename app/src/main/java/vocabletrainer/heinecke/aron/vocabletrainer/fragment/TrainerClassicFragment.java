@@ -36,12 +36,12 @@ public class TrainerClassicFragment extends TrainerModeFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_trainer_classic, container, false);
-        tHint = (TextView) view.findViewById(R.id.tTrainerQOut);
-        tColumnAnswer = (TextView) view.findViewById(R.id.tTrainerInputColumn);
-        tInput = (EditText) view.findViewById(R.id.tTrainerInput);
-        bSolve = (Button) view.findViewById(R.id.bTrainerSolve);
-        bCheckInput = (Button) view.findViewById(R.id.bTrainerEnter);
-        bShowNext = (Button) view.findViewById(R.id.bTrainerShowNext);
+        tHint = view.findViewById(R.id.tTrainerQOut);
+        tColumnAnswer = view.findViewById(R.id.tTrainerInputColumn);
+        tInput = view.findViewById(R.id.tTrainerInput);
+        bSolve = view.findViewById(R.id.bTrainerSolve);
+        bCheckInput = view.findViewById(R.id.bTrainerEnter);
+        bShowNext = view.findViewById(R.id.bTrainerShowNext);
 
         bCheckInput.setOnClickListener(v -> checkInput());
 

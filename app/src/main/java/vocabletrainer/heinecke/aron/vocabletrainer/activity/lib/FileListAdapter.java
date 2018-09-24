@@ -65,8 +65,8 @@ public class FileListAdapter extends BaseAdapter {
 
             convertView = inflater.inflate(R.layout.file_list_view, parent, false);
 
-            holder.colA = (TextView) convertView.findViewById(R.id.entryFirstText);
-            holder.colB = (TextView) convertView.findViewById(R.id.entrySecondText);
+            holder.colA = convertView.findViewById(R.id.entryFirstText);
+            holder.colB = convertView.findViewById(R.id.entrySecondText);
             holder.originPaintFlags = holder.colA.getPaintFlags();
 
             convertView.setTag(holder);

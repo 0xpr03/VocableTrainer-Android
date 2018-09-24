@@ -34,10 +34,10 @@ Feel free to open an Issue for ideas, bugs, localisation or feature requests. Or
 - Playstore version  
   Google wants money for publishing a free app, as this project is done in my spare time I would have to pay for this by myself. (Side note: As I haven't started this project for myself & don't have a real use case I wouldn't even profit from a playstore version.)
 
-# Distribution
+## Distribution
 
-You are not allowed to distribute this application on your own. (Repository, Hosting,..)  
 Please always link to the f-droid repository, I won't give any support for unofficial builds.
+You are not allowed to distribute this application on your own. (Repository, Hosting,..)  
 
 ## License
 

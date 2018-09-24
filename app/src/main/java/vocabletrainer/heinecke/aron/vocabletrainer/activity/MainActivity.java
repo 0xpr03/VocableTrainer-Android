@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        btnContinue = (Button) findViewById(R.id.bLastSession);
+        btnContinue = findViewById(R.id.bLastSession);
     }
 
     @Override

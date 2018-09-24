@@ -52,7 +52,7 @@ public class ListActivity extends FragmentActivity implements ListPickerFragment
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_activity);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
         if (ab != null) {

@@ -101,10 +101,10 @@ public class VEntryEditorDialog extends DialogFragment {
         builder.setTitle(R.string.Editor_Diag_edit_Title);
         builder.setView(view);
 
-        meaningsA = (LinearLayout) view.findViewById(R.id.meaningsA);
-        meaningsB = (LinearLayout) view.findViewById(R.id.meaningsB);
-        tHint = (TextInputEditText) view.findViewById(R.id.tHint);
-        tAddition = (TextInputEditText) view.findViewById(R.id.tAddition);
+        meaningsA = view.findViewById(R.id.meaningsA);
+        meaningsB = view.findViewById(R.id.meaningsB);
+        tHint = view.findViewById(R.id.tHint);
+        tAddition = view.findViewById(R.id.tAddition);
 
         List<String> mLstA;
         List<String> mLstB;
@@ -168,7 +168,7 @@ public class VEntryEditorDialog extends DialogFragment {
 
         for(int i = 0; i < layout.getChildCount(); i++) {
             View child = layout.getChildAt(i);
-            TextInputEditText text = (TextInputEditText) child.findViewById(R.id.meaning);
+            TextInputEditText text = child.findViewById(R.id.meaning);
             if(text.getText().length() > 0)
                 lst.add(text.getText().toString());
         }
@@ -192,7 +192,7 @@ public class VEntryEditorDialog extends DialogFragment {
 
                 for(int i = 0; i < layout.getChildCount() -1; i++) {
                     View child = layout.getChildAt(i);
-                    ImageButton childBtn = (ImageButton) child.findViewById(R.id.btnMeaning);
+                    ImageButton childBtn = child.findViewById(R.id.btnMeaning);
                     childBtn.setImageResource(IMG_REMOVE);
                     childBtn.setOnClickListener(new DeleteAction(child.getTag(),layout));
                 }
@@ -247,9 +247,9 @@ public class VEntryEditorDialog extends DialogFragment {
 
         container.setTag(tagCounter);
         tagCounter++;
-        final TextInputLayout layout = (TextInputLayout) container.findViewById(R.id.wrapper_meaning);
-        final TextInputEditText text = (TextInputEditText) container.findViewById(R.id.meaning);
-        ImageButton btn = (ImageButton) container.findViewById(R.id.btnMeaning);
+        final TextInputLayout layout = container.findViewById(R.id.wrapper_meaning);
+        final TextInputEditText text = container.findViewById(R.id.meaning);
+        ImageButton btn = container.findViewById(R.id.btnMeaning);
         text.setSingleLine();
 
         if(focus)

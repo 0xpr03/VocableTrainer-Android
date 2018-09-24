@@ -96,9 +96,9 @@ public class TableListAdapter extends ArrayAdapter<VList> {
         if(convertView == null)
             convertView = inflater.inflate(resLayout, parent, false);
 
-        TextView colName = (TextView) convertView.findViewById(R.id.tableFirstText);
-        TextView colA = (TextView) convertView.findViewById(R.id.tableSecondText);
-        TextView colB = (TextView) convertView.findViewById(R.id.tableThirdText);
+        TextView colName = convertView.findViewById(R.id.tableFirstText);
+        TextView colA = convertView.findViewById(R.id.tableSecondText);
+        TextView colB = convertView.findViewById(R.id.tableThirdText);
 
         if (!displayCheckbox) {
             convertView.findViewById(R.id.tblCheckBox).setVisibility(View.GONE);

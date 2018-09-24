@@ -68,7 +68,7 @@ public class ExImportActivity extends FragmentActivity implements ListPickerFrag
 
         setContentView(R.layout.activity_expimp);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
         if (ab != null) {
@@ -77,14 +77,14 @@ public class ExImportActivity extends FragmentActivity implements ListPickerFrag
 
         formatViewModel = ViewModelProviders.of(this).get(FormatViewModel.class);
 
-        viewPager = (ViewPager) findViewById(R.id.pager);
+        viewPager = findViewById(R.id.pager);
 
         setFragmentContainer(R.id.pager);
 
         initViewPager();
         Log.d(TAG,"Amount: "+viewPagerAdapter.getCount());
 
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+        TabLayout tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
     }
 

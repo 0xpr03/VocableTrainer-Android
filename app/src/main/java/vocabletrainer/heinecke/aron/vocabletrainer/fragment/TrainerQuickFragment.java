@@ -33,11 +33,11 @@ public class TrainerQuickFragment extends TrainerModeFragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_trainer_quick, container, false);
 
-        bRevolse = (Button) view.findViewById(R.id.bTrainerQResolve);
-        bCorrect = (Button) view.findViewById(R.id.bTrainerQCorrect);
-        bWrong = (Button) view.findViewById(R.id.bTrainerQWrong);
-        tSolution = (TextView) view.findViewById(R.id.tTrainerQOut);
-        tColumnAnswer = (TextView) view.findViewById(R.id.tTrainerInputColumn);
+        bRevolse = view.findViewById(R.id.bTrainerQResolve);
+        bCorrect = view.findViewById(R.id.bTrainerQCorrect);
+        bWrong = view.findViewById(R.id.bTrainerQWrong);
+        tSolution = view.findViewById(R.id.tTrainerQOut);
+        tColumnAnswer = view.findViewById(R.id.tTrainerInputColumn);
 
         bRevolse.setOnClickListener(v -> {
             String builder = trainer.getSolutionUncounted() +

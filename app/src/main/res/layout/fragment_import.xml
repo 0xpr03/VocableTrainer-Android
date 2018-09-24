@@ -41,14 +41,15 @@
             app:layout_constraintTop_toBottomOf="@+id/tImportMsg"
             tools:focusable="false"
             tools:layout_constraintLeft_creator="1"
-            tools:layout_constraintRight_creator="1" />
+            tools:layout_constraintRight_creator="1"
+            android:importantForAutofill="no" />
 
         <Button
             android:id="@+id/bImportFile"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:layout_marginRight="8dp"
+            android:layout_marginEnd="8dp"
             android:layout_marginTop="8dp"
             android:text="@string/Select_File_btn"
             app:layout_constraintBottom_toBottomOf="@+id/tImportPath"
@@ -59,7 +60,7 @@
             android:id="@+id/spImportFormat"
             android:layout_width="0dp"
             android:layout_height="24dp"
-            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:spinnerMode="dialog"
             app:layout_constraintHorizontal_chainStyle="spread"
@@ -96,7 +97,7 @@
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginTop="8dp"
-            android:text="Placeholder"
+            android:text="@string/Placeholder"
             android:textAppearance="@style/TextAppearance.AppCompat"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -152,7 +153,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:layout_marginRight="8dp"
+                android:layout_marginEnd="8dp"
                 android:layout_marginTop="8dp"
                 android:text="@string/Import_btn_List_Select"
                 android:visibility="visible"
@@ -176,7 +177,8 @@
                 app:layout_constraintTop_toBottomOf="@+id/rgImportSingleRaw"
                 tools:focusable="false"
                 tools:layout_constraintLeft_creator="1"
-                tools:layout_constraintRight_creator="1" />
+                tools:layout_constraintRight_creator="1"
+                android:importantForAutofill="no" />
 
             <RadioGroup
                 android:id="@+id/rgImportSingleMetadata"

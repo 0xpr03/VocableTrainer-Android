@@ -83,9 +83,9 @@ public class PermActivity extends AppCompatActivity {
             Log.wtf(TAG, "missing parameters");
         }
 
-        TextView tMsg = (TextView) findViewById(R.id.tPermMsg);
+        TextView tMsg = findViewById(R.id.tPermMsg);
         tMsg.setText(message);
-        bRetry = (Button) findViewById(R.id.bPermReqAgain);
+        bRetry = findViewById(R.id.bPermReqAgain);
         bRetry.setVisibility(View.INVISIBLE);
 
         //TODO: allow resource IDs as message

@@ -110,7 +110,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
             }
         });
 
-        // update on custom format change
+        // update parsing on custom format change, if in use
         formatViewModel.getCustomFormatLD().observe(this, obs -> {
             if(obs == null)
                 return;
@@ -182,21 +182,21 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
         setHasOptionsMenu(true);
         //initDialogs(savedInstanceState);
 
-        singleLayout = (ConstraintLayout) view.findViewById(R.id.cImportNonMultilist);
-        tInfo = (TextView) view.findViewById(R.id.tImportInfo);
-        etList = (EditText) view.findViewById(R.id.tImportList);
-        bSelectList = (Button) view.findViewById(R.id.bImportSelectList);
-        etFile = (EditText) view.findViewById(R.id.tImportPath);
-        bImportOk = (Button) view.findViewById(R.id.bImportOk);
-        spFormat = (Spinner) view.findViewById(R.id.spImportFormat);
-        TextView tMsg = (TextView) view.findViewById(R.id.tImportMsg);
+        singleLayout = view.findViewById(R.id.cImportNonMultilist);
+        tInfo = view.findViewById(R.id.tImportInfo);
+        etList = view.findViewById(R.id.tImportList);
+        bSelectList = view.findViewById(R.id.bImportSelectList);
+        etFile = view.findViewById(R.id.tImportPath);
+        bImportOk = view.findViewById(R.id.bImportOk);
+        spFormat = view.findViewById(R.id.spImportFormat);
+        TextView tMsg = view.findViewById(R.id.tImportMsg);
         rgMulti = view.findViewById(R.id.rgImportMultiple);
         rgRaw = view.findViewById(R.id.rgImportSingleRaw);
         rgSingle = view.findViewById(R.id.rgImportSingleMetadata);
 
         bSelectList.setOnClickListener(v -> selectList());
 
-        Button bSelectFile = (Button) view.findViewById(R.id.bImportFile);
+        Button bSelectFile = view.findViewById(R.id.bImportFile);
         bSelectFile.setOnClickListener(v -> selectFile());
 
         tMsg.setMovementMethod(LinkMovementMethod.getInstance());

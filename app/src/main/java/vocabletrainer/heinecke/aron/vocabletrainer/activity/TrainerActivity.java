@@ -66,15 +66,15 @@ public class TrainerActivity extends FragmentActivity implements TrainerModeFrag
         setContentView(R.layout.activity_trainer);
         setTitle(R.string.Trainer_Title);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
         if (ab != null) {
             ab.setDisplayHomeAsUpEnabled(true);
         }
 
-        tExercise = (TextView) findViewById(R.id.tTrainerExercise);
-        tColumnQuestion = (TextView) findViewById(R.id.tTrainerExColumn);
+        tExercise = findViewById(R.id.tTrainerExercise);
+        tColumnQuestion = findViewById(R.id.tTrainerExColumn);
 
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         trainingMode = -1;

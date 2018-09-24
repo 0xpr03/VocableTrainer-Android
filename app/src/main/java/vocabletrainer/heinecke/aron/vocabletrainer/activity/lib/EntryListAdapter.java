@@ -89,9 +89,9 @@ public class EntryListAdapter extends BaseAdapter {
 
             convertView = inflater.inflate(R.layout.entry_list_view, null);
 
-            holder.colA = (TextView) convertView.findViewById(R.id.entryFirstText);
-            holder.colB = (TextView) convertView.findViewById(R.id.entrySecondText);
-            holder.colTipp = (TextView) convertView.findViewById(R.id.entryThirdText);
+            holder.colA = convertView.findViewById(R.id.entryFirstText);
+            holder.colB = convertView.findViewById(R.id.entrySecondText);
+            holder.colTipp = convertView.findViewById(R.id.entryThirdText);
             if(holder.colA.getTypeface() == null){
                 holder.originTypeface = ANDROID_WORKAROUND_STYLE;
             }else {

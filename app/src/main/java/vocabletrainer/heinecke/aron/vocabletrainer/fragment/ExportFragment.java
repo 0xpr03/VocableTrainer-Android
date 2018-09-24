@@ -132,12 +132,12 @@ public class ExportFragment extends PagerFragment {
         setHasOptionsMenu(true);
         getActivity().setTitle(R.string.Export_Title);
 
-        tExportFile = (EditText) view.findViewById(R.id.tExportFile);
-        btnExport = (Button) view.findViewById(R.id.bExportStart);
-        chkExportMultiple = (CheckBox) view.findViewById(R.id.chkExportMulti);
-        chkExportTableInfo = (CheckBox) view.findViewById(R.id.chkExportMeta);
-        spFormat = (Spinner) view.findViewById(R.id.spExpFormat);
-        tMsg = (TextView) view.findViewById(R.id.tExportMsg);
+        tExportFile = view.findViewById(R.id.tExportFile);
+        btnExport = view.findViewById(R.id.bExportStart);
+        chkExportMultiple = view.findViewById(R.id.chkExportMulti);
+        chkExportTableInfo = view.findViewById(R.id.chkExportMeta);
+        spFormat = view.findViewById(R.id.spExpFormat);
+        tMsg = view.findViewById(R.id.tExportMsg);
 
         GenericComparator.ValueRetriever[] retrievers = new GenericComparator.ValueRetriever[]{
                 GenTableComparator.retName, GenTableComparator.retA, GenTableComparator.retB
@@ -201,10 +201,10 @@ public class ExportFragment extends PagerFragment {
             else
                 expFile = null;
         }
-        Button btnExport = (Button) view.findViewById(R.id.bExportStart);
+        Button btnExport = view.findViewById(R.id.bExportStart);
         btnExport.setOnClickListener(v -> onExport());
 
-        Button btnFileDialog = (Button) view.findViewById(R.id.bExportSelFile);
+        Button btnFileDialog = view.findViewById(R.id.bExportSelFile);
         btnFileDialog.setOnClickListener(v -> selectFile());
 
         spAdapterFormat = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item);

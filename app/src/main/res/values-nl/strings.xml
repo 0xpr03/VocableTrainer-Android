@@ -109,7 +109,7 @@
     <string name="ListSelector_Diag_delete_btn_Delete">Verwijderen</string>
     <string name="ListSelector_Diag_delete_btn_Cancel">Annuleren</string>
     <string name="File_Diag_exists_Title">Bestand bestaat al</string>
-    <string name="File_Diag_MSG_part" formatted="false">Weet je zeker dat je het bestand '%f' wilt overschrijven?</string>
+    <string name="File_Diag_MSG_part" formatted="false">Weet je zeker dat je het bestand \'%f\' wilt overschrijven?</string>
     <string name="File_Diag_btn_OK">Overschrijven</string>
     <string name="File_Diag_btn_CANCEL">Annuleren</string>
     <!-- Messages -->

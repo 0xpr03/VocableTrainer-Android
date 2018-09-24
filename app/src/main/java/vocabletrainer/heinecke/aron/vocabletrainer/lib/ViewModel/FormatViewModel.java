@@ -4,7 +4,6 @@ import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
-import android.arch.lifecycle.ViewModel;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -21,12 +20,6 @@ public class FormatViewModel extends AndroidViewModel {
     private static final String TAG = "FormatViewModel";
     private MutableLiveData<CSVCustomFormat> csvCustomFormat;
     private MutableLiveData<Boolean> inFormatFragment;
-
-    @Override
-    protected void onCleared() {
-        super.onCleared();
-        Log.w("FormatViewModel","onCleared");
-    }
 
     /**
      * Create new FormatViewModel, loading last CustomFormat

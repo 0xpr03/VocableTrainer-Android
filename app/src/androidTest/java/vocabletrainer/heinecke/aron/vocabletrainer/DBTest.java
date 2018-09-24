@@ -43,7 +43,7 @@ public class DBTest {
     }
 
     @Test
-    public void useAppContext() throws Exception {
+    public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
         assertEquals("vocabletrainer.heinecke.aron.vocabletrainer", appContext.getPackageName());

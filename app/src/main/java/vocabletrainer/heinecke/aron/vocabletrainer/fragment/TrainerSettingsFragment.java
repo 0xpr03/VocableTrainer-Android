@@ -76,16 +76,16 @@ public class TrainerSettingsFragment extends BaseFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_trainer_settings, container, false);
-        bHints = (CheckBox) view.findViewById(R.id.tSettingsChkAllowTips);
-        bCaseSensitive = (CheckBox) view.findViewById(R.id.chkTSettingsChkCaseSens);
-        bTrimSpaces = (CheckBox) view.findViewById(R.id.tSettingsChkTrimSpaces);
-        bAdditionAuto = (CheckBox) view.findViewById(R.id.tSettingsChkAdditionAuto);
-        tTimesVocable = (EditText) view.findViewById(R.id.tSettingsSolveTimes);
-        RadioButton rbA = (RadioButton) view.findViewById(R.id.rTSettingsA);
-        RadioButton rbB = (RadioButton) view.findViewById(R.id.rTSettingsB);
-        RadioButton rbR = (RadioButton) view.findViewById(R.id.rTSettingsAB);
+        bHints = view.findViewById(R.id.tSettingsChkAllowTips);
+        bCaseSensitive = view.findViewById(R.id.chkTSettingsChkCaseSens);
+        bTrimSpaces = view.findViewById(R.id.tSettingsChkTrimSpaces);
+        bAdditionAuto = view.findViewById(R.id.tSettingsChkAdditionAuto);
+        tTimesVocable = view.findViewById(R.id.tSettingsSolveTimes);
+        RadioButton rbA = view.findViewById(R.id.rTSettingsA);
+        RadioButton rbB = view.findViewById(R.id.rTSettingsB);
+        RadioButton rbR = view.findViewById(R.id.rTSettingsAB);
         rButtons = new RadioButton[]{rbA,rbB,rbR};
-        Button bStart = (Button) view.findViewById(R.id.tSettingsOkBtn);
+        Button bStart = view.findViewById(R.id.tSettingsOkBtn);
         bStart.setOnClickListener(v -> {
             int timesToSolve;
             try {

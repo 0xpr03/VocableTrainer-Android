@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 
 public class FormatterTest {
     @Test
-    public void format_isCorrect() throws Exception {
+    public void format_isCorrect() {
         Formatter fmt = new Formatter();
         fmt.changeSI(true);
         long bytes_1024 = 1024;

@@ -46,14 +46,14 @@ public class TrainerClassicMMFragment extends TrainerModeFragment implements Tra
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_trainer_classic_mm, container, false);
 
-        tHint = (TextView) view.findViewById(R.id.tTrainerQOut);
-        tColumnAnswer = (TextView) view.findViewById(R.id.tTrainerInputColumn);
+        tHint = view.findViewById(R.id.tTrainerQOut);
+        tColumnAnswer = view.findViewById(R.id.tTrainerInputColumn);
         //tInput = (EditText) view.findViewById(R.id.tTrainerInput);
-        inputLayout = (LinearLayout) view.findViewById(R.id.tInputLayout);
-        bSolve = (Button) view.findViewById(R.id.bTrainerSolve);
-        mainContainer = (ScrollView) view.findViewById(R.id.tTrainerModeScroller);
-        bCheckInput = (Button) view.findViewById(R.id.bTrainerEnter);
-        bShowNext = (Button) view.findViewById(R.id.bTrainerShowNext);
+        inputLayout = view.findViewById(R.id.tInputLayout);
+        bSolve = view.findViewById(R.id.bTrainerSolve);
+        mainContainer = view.findViewById(R.id.tTrainerModeScroller);
+        bCheckInput = view.findViewById(R.id.bTrainerEnter);
+        bShowNext = view.findViewById(R.id.bTrainerShowNext);
         //mainContainer.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
         bCheckInput.setOnClickListener(v -> {
             InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -151,7 +151,7 @@ public class TrainerClassicMMFragment extends TrainerModeFragment implements Tra
         inputList = new TextInputLayout[max];
         for(int i = 0; i < max; i++){
             View elem = generateInput();
-            TextInputLayout input = (TextInputLayout) elem.findViewById(R.id.tTrainerInput_wrapper);
+            TextInputLayout input = elem.findViewById(R.id.tTrainerInput_wrapper);
             inputList[i] = input;
             inputLayout.addView(elem);
         }

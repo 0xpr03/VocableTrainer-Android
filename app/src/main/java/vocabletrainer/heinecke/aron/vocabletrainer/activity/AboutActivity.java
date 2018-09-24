@@ -31,7 +31,7 @@ public class AboutActivity extends AppCompatActivity {
 
         setTitle(R.string.About_Title);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
         if (ab != null) {
@@ -43,7 +43,7 @@ public class AboutActivity extends AppCompatActivity {
             MSG = getText(R.string.About_Msg).toString().replaceAll("\\n", "<br>")
                     .replaceAll("%v", versionName);
         }
-        TextView msgTextbox = (TextView) findViewById(R.id.etAboutMsg);
+        TextView msgTextbox = findViewById(R.id.etAboutMsg);
         setTextViewHTML(msgTextbox,MSG);
     }
 

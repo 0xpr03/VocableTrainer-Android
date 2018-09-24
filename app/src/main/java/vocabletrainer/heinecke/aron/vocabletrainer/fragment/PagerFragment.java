@@ -22,11 +22,11 @@ public abstract class PagerFragment extends BaseFragment{
      * Called when fragment goes invisible (viewpager)<br>
      *     Does not replace onPause/onStop/onCreate, as these are no page changes.
      */
-    protected void onFragmentInvisible(){};
+    protected void onFragmentInvisible(){}
 
     /**
      * Called when fragment goes visible (viewpager)<br>
      *     Does not replace onPause/onStop/onCreate, as these are no page changes.
      */
-    protected void onFragmentVisible(){};
+    protected void onFragmentVisible(){}
 }

@@ -93,7 +93,7 @@ public class FileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_file);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
         if(ab != null) {
@@ -111,10 +111,10 @@ public class FileActivity extends AppCompatActivity {
 
         fmt = new Formatter();
 
-        TextView msg = (TextView) findViewById(R.id.tFileMsg);
-        tFileName = (EditText) findViewById(R.id.tFileName);
-        tCurrentDir = (TextView) findViewById(R.id.tCurrentDir);
-        bOk = (Button) findViewById(R.id.bFileOk);
+        TextView msg = findViewById(R.id.tFileMsg);
+        tFileName = findViewById(R.id.tFileName);
+        tCurrentDir = findViewById(R.id.tCurrentDir);
+        bOk = findViewById(R.id.bFileOk);
 
         Intent intent = getIntent();
         msg.setText(intent.getStringExtra(PARAM_MESSAGE));
@@ -154,7 +154,7 @@ public class FileActivity extends AppCompatActivity {
      * Setup listview
      */
     private void initListView() {
-        listView = (ListView) findViewById(R.id.listViewFiles);
+        listView = findViewById(R.id.listViewFiles);
         listView.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
         listView.setLongClickable(false);
 

@@ -21,11 +21,9 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.Spinner;
-import android.widget.TableLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -44,7 +42,6 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.ExportViewModel
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.FormatViewModel;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
-import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
 
 /**
  * Exporter fragment
@@ -70,7 +67,6 @@ public class ExportFragment extends PagerFragment {
     private static final ArrayList<VList> EMPTY_LISTS = new ArrayList<>(0);
     private ExImportActivity activity;
     private GenericSpinnerEntry<CSVCustomFormat> customFormatEntry;
-    private FormatViewModel formatViewModel;
     private ProgressDialog progressDialog;
     private ExportViewModel exportViewModel;
 
@@ -89,7 +85,7 @@ public class ExportFragment extends PagerFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        formatViewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(FormatViewModel.class);
+        FormatViewModel formatViewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(FormatViewModel.class);
         formatViewModel.getCustomFormatLD().observe(this, format -> {
             customFormatEntry.updateObject(format);
         });
@@ -105,13 +101,15 @@ public class ExportFragment extends PagerFragment {
         }
 
         exportViewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(ExportViewModel.class);
+
         exportViewModel.getExportingHandles().observe(this, exporting -> {
             if(exporting!= null){
                 if(exporting){
                     if(progressDialog == null){
                         progressDialog = ProgressDialog.newInstance();
                     }
-                    progressDialog.setDisplayMode(false,exportViewModel.getExportSize(),R.string.Export_Exporting_Title);
+                    progressDialog.setDisplayMode(false,exportViewModel.getExportSize(),R.string.Export_Exporting_Title,
+                            exportViewModel.getCancelExportHandle());
                     progressDialog.setProgressHandle(exportViewModel.getProgressExportHandle());
 
                     if(!progressDialog.isAdded())
@@ -120,6 +118,12 @@ public class ExportFragment extends PagerFragment {
                     progressDialog.dismiss();
                     progressDialog = null;
                 }
+            }
+        });
+
+        exportViewModel.getCancelExportHandle().observe(this, data -> {
+            if(data != null && data){
+                Toast.makeText(getContext(),R.string.Export_Cancel_Toast, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -279,7 +283,7 @@ public class ExportFragment extends PagerFragment {
     public void onExport() {
         CSVCustomFormat format = getCFormat();
         ExportStorage es = new ExportStorage(format, getLists(), chkExportTableInfo.isChecked(), chkExportMultiple.isChecked(), expFile);
-        exportViewModel.runImport(getContext(),es);
+        exportViewModel.runExport(getContext(),es);
     }
 
     /**

@@ -19,22 +19,28 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVHeaders.CSV_MET
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVHeaders.CSV_METADATA_START;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
 
+/**
+ * Export task running in background & reporting progress
+ */
 public class Exporter extends AsyncTask<Integer, Integer, String> {
     private final static String TAG = "ExportTask";
     private final ExportFragment.ExportStorage es;
     private final Database db;
     private MutableLiveData<Integer> progressHandle;
     private final Function<Void,String> exportCallback;
+    private final Function<Void,String> cancelCallback;
 
     /**
      * Creates a new ExportOperation
      *
      * @param es
      */
-    public Exporter(ExportFragment.ExportStorage es, MutableLiveData<Integer> progressHandle, Function<Void,String> exportCallback, Context context) {
+    public Exporter(ExportFragment.ExportStorage es, MutableLiveData<Integer> progressHandle,
+            Function<Void,String> exportCallback,Function<Void,String> cancelCallback, Context context) {
         this.es = es;
         this.progressHandle = progressHandle;
         this.exportCallback = exportCallback;
+        this.cancelCallback = cancelCallback;
         db = new Database(context);
     }
 
@@ -48,6 +54,9 @@ public class Exporter extends AsyncTask<Integer, Integer, String> {
             MultiMeaningHandler handler = new MultiMeaningHandler(es.cFormat);
             int i = 0;
             for (VList list : es.lists) {
+                if(isCancelled()){
+                    break;
+                }
                 if (list.getId() == ID_RESERVED_SKIP) {
                     continue;
                 }
@@ -63,6 +72,9 @@ public class Exporter extends AsyncTask<Integer, Integer, String> {
                 List<VEntry> vocables = db.getVocablesOfTable(list);
 
                 for (VEntry ent : vocables) {
+                    if(isCancelled()) {
+                        break;
+                    }
                     List<String> mA = ent.getAMeanings();
                     List<String> mB = ent.getBMeanings();
                     printer.print(handler.formatMultiMeaning(mA));
@@ -74,10 +86,6 @@ public class Exporter extends AsyncTask<Integer, Integer, String> {
                 i++;
                 publishProgress(i);
             }
-            Log.d(TAG, "closing file");
-            printer.close();
-            writer.close();
-            fw.close();
         } catch (Exception e) {
             Log.wtf(TAG, e);
         }
@@ -87,12 +95,14 @@ public class Exporter extends AsyncTask<Integer, Integer, String> {
 
     @Override
     protected void onProgressUpdate(Integer... values) {
-        Log.d(TAG, "updating progress");
         progressHandle.setValue(values[0]);
     }
 
     @Override
     protected void onPostExecute(String result) {
-        exportCallback.function(result);
+         if(isCancelled())
+             cancelCallback.function(result);
+         else
+             exportCallback.function(result);
     }
 }

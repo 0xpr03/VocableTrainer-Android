@@ -2,17 +2,15 @@ package vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel;
 
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModel;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import java.util.ArrayList;
-
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ExportFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Exporter;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Function;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 
 /**
  * Export ViewModel containinig relevant data & handles background tasking
@@ -22,15 +20,32 @@ public class ExportViewModel extends ViewModel {
     private int exportListAmount; // TODO: temporary until selector has own viewmodel
     private MutableLiveData<Integer> progressExport;
     private MutableLiveData<Boolean> exporting;
+    private MutableLiveData<Boolean> cancelExport;
+    private Observer<Boolean> observeCancel;
     private AsyncTask task;
 
     public ExportViewModel() {
         exportListAmount = 0;
         progressExport = new MutableLiveData<>();
         exporting = new MutableLiveData<>();
-        exporting = new MutableLiveData<>();
+        cancelExport = new MutableLiveData<>();
+        cancelExport.setValue(false);
+        exporting.setValue(false);
         progressExport.setValue(0);
+        observeCancel = aBoolean -> {
+            if(aBoolean != null && aBoolean && task != null && task.getStatus() == AsyncTask.Status.RUNNING){
+                task.cancel(true);
+            }
+        };
+        cancelExport.observeForever(observeCancel);
     }
+
+    /**
+     * Get cancelExport handle
+     * @return mutable LiveData handle for cancelling export
+     */
+    public MutableLiveData<Boolean> getCancelExportHandle() { return cancelExport; }
+
 
     /**
      * Returns exporting status handle
@@ -56,11 +71,17 @@ public class ExportViewModel extends ViewModel {
         return exportListAmount;
     }
 
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        cancelExport.removeObserver(observeCancel);
+    }
+
     /**
-     * Run Import task
+     * Run Export task
      * @param context
      */
-    public void runImport(Context context, ExportFragment.ExportStorage exportStorage){
+    public void runExport(Context context, ExportFragment.ExportStorage exportStorage){
         if(task != null && task.getStatus() != AsyncTask.Status.FINISHED) {
             Log.w(TAG,"preventing second running export");
             return;
@@ -71,8 +92,14 @@ public class ExportViewModel extends ViewModel {
             exportListAmount = 0;
             return null;
         };
+        Function<Void,String> callbackCancel = param -> {
+            exporting.setValue(false);
+            exportListAmount = 0;
+            cancelExport.setValue(false);
+            return null;
+        };
 
-        Exporter exporter = new Exporter(exportStorage,progressExport,callback,context);
+        Exporter exporter = new Exporter(exportStorage,progressExport,callback,callbackCancel,context);
         this.exportListAmount = exportStorage.lists.size();
         this.progressExport.setValue(0); // don't start on max on redo
         this.exporting.setValue(true);

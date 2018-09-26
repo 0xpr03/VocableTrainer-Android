@@ -1,6 +1,7 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.dialog;
 
 import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MutableLiveData;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -9,6 +10,7 @@ import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -26,10 +28,12 @@ public class ProgressDialog extends DialogFragment {
     private static final String P_KEY_TITLE = "title";
     private static final String P_KEY_MODE = "mode";
     private static final String P_KEY_PROGRESS = "progress";
-    ProgressBar progressBar;
+    private ProgressBar progressBar;
     private LiveData<Integer> progressData;
+    private MutableLiveData<Boolean> cancelHandle;
     private boolean indeterminateMode = true;
     private TextView messageView, titleView;
+    private Button btnCancel;
     private int max = 0;
     private @StringRes int title = R.string.Placeholder;
 
@@ -66,15 +70,27 @@ public class ProgressDialog extends DialogFragment {
     }
 
     /**
-     * Update display mode for progress
+     * Update display mode for progress, no cancel button
      * @param indeterminateMode
      * @param max
      * @param title Title of dialog
      */
-    public void setDisplayMode(final boolean indeterminateMode, final int max, final @StringRes int title){
+    public void setDisplayMode(final boolean indeterminateMode, final int max, final @StringRes int title) {
+        setDisplayMode(indeterminateMode,max,title,null);
+    }
+
+    /**
+     * Update display mode for progress with option to enable cancel button
+     * @param indeterminateMode
+     * @param max
+     * @param title Title of dialog
+     * @param cancelHandle Cancel handle to use, on null the cancel button is disabled
+     */
+    public void setDisplayMode(final boolean indeterminateMode, final int max, final @StringRes int title,@Nullable MutableLiveData<Boolean> cancelHandle){
         this.indeterminateMode = indeterminateMode;
         this.title = title;
         this.max = max;
+        this.cancelHandle = cancelHandle;
         if(this.isVisible()){
             updateDisplayMode();
         }
@@ -90,6 +106,7 @@ public class ProgressDialog extends DialogFragment {
         }
         messageView.setVisibility(indeterminateMode ? View.VISIBLE : View.GONE);
         titleView.setText(title);
+        btnCancel.setEnabled(cancelHandle != null);
     }
 
     /**
@@ -126,6 +143,8 @@ public class ProgressDialog extends DialogFragment {
         progressBar = view.findViewById(R.id.dialog_progressbar);
         messageView = view.findViewById(R.id.dialog_message);
         titleView = view.findViewById(R.id.dialog_title);
+        btnCancel = view.findViewById(R.id.button_close);
+        btnCancel.setOnClickListener(v -> cancelHandle.setValue(true));
         updateDisplayMode();
         if(savedInstanceState != null)
             progressBar.setProgress(savedInstanceState.getInt(P_KEY_PROGRESS));

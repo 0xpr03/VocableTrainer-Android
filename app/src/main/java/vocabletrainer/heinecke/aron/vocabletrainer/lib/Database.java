@@ -457,6 +457,7 @@ public class Database {
                     }
                 }
             }
+
             db.setTransactionSuccessful();
             return true;
         } catch (Exception e) {
@@ -500,10 +501,6 @@ public class Database {
             Log.e(TAG, "", e);
             return -1;
         }
-    }
-
-    public SQLiteStatement prepareInsertStatement() {
-        return db.compileStatement("");
     }
 
     /**
@@ -898,9 +895,16 @@ public class Database {
     }
 
     /**
+     * Start Transaction
+     */
+    public void startTransaction() {
+        db.beginTransaction();
+    }
+
+    /**
      * Ends a transaction created by the getSessionInsert Statement
      */
-    public void endSessionTransaction(boolean success) {
+    public void endTransaction(boolean success) {
         if (!db.inTransaction()) {
             throw new IllegalStateException("No transaction ongoing!");
         }

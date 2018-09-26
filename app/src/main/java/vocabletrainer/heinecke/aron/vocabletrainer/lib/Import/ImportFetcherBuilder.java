@@ -17,6 +17,7 @@ public class ImportFetcherBuilder {
     private ImportHandler handler;
     private ImportFetcher.MessageProvider messageProvider;
     private Function<Void,String> importCallback;
+    private Function<Void,String> cancelCallback;
     private MutableLiveData<Integer> progressHandle;
     private boolean logErrors = true;
 
@@ -50,6 +51,11 @@ public class ImportFetcherBuilder {
         return this;
     }
 
+    public ImportFetcherBuilder setCancelCallback(Function<Void,String> cancelCallback) {
+        this.cancelCallback = cancelCallback;
+        return this;
+    }
+
     public ImportFetcherBuilder setLogErrors(boolean logErrors) {
         this.logErrors = logErrors;
         return this;
@@ -64,6 +70,6 @@ public class ImportFetcherBuilder {
                 || messageProvider == null || importCallback == null)
             throw new IllegalArgumentException();
         return new ImportFetcher(format, source, handler, progressHandle,
-                messageProvider,importCallback,logErrors);
+                messageProvider,importCallback,logErrors,cancelCallback);
     }
 }

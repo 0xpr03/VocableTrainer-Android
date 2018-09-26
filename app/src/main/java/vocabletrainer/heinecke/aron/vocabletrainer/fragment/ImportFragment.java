@@ -23,6 +23,7 @@ import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.concurrent.Callable;
@@ -67,6 +68,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
     VList targetList;
     ArrayAdapter<GenericSpinnerEntry<CSVCustomFormat>> spAdapterFormat;
     private RadioGroup rgSingle, rgRaw, rgMulti;
+    private Button bReparse;
     private Spinner spFormat;
     private Button bSelectList;
     private EditText etList;
@@ -79,6 +81,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
     private ExImportActivity activity;
     private GenericSpinnerEntry<CSVCustomFormat> customFormatEntry;
     private Importer.IMPORT_LIST_MODE importListMode;
+    // used for parsing on custom format change & cancel of parsing
     private boolean parsingInvalidated;
     private ProgressDialog progressDialogImport;
     private ProgressDialog progressDialogReparse;
@@ -133,6 +136,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
             if(previewData != null){
                 // reset import list mode, change of available modes
                 importListMode = null;
+                parsingInvalidated = false;
                 refreshView();
             }
         });
@@ -144,7 +148,9 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
                     if (progressDialogImport == null) {
                         progressDialogImport = ProgressDialog.newInstance();
                     }
-                    progressDialogImport.setDisplayMode(false,importViewModel.getPreviewParser().getAmountRows(),R.string.Import_Importing_Title);
+                    progressDialogImport.setDisplayMode(false,
+                            importViewModel.getPreviewParser().getAmountRows(),R.string.Import_Importing_Title,
+                            importViewModel.getCancelImportHandle());
 
                     progressDialogImport.setProgressHandle(importViewModel.getProgressData());
                     if(!progressDialogImport.isAdded())
@@ -163,7 +169,8 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
                     if (progressDialogReparse == null) {
                         progressDialogReparse = ProgressDialog.newInstance();
                     }
-                    progressDialogReparse.setDisplayMode(true,0,R.string.Import_Preview_Update_Title);
+                    progressDialogReparse.setDisplayMode(true,0,R.string.Import_Preview_Update_Title,
+                            importViewModel.getCancelPreviewHandle());
 
                     progressDialogReparse.setProgressHandle(importViewModel.getProgressData());
                     if(!progressDialogReparse.isAdded())
@@ -172,6 +179,15 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
                     progressDialogReparse.dismiss();
                     progressDialogReparse = null;
                 }
+            }
+        });
+
+        importViewModel.getCancelPreviewHandle().observe(this, data -> {
+            if(data!= null && data){
+                parsingInvalidated = true;
+                refreshView();
+                Toast.makeText(getContext(),R.string.Import_Cancel_Toast_Preview,Toast.LENGTH_LONG).show();
+                bReparse.setVisibility(View.VISIBLE);
             }
         });
     }
@@ -193,11 +209,13 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
         rgMulti = view.findViewById(R.id.rgImportMultiple);
         rgRaw = view.findViewById(R.id.rgImportSingleRaw);
         rgSingle = view.findViewById(R.id.rgImportSingleMetadata);
+        bReparse = view.findViewById(R.id.bImportReparse);
 
         bSelectList.setOnClickListener(v -> selectList());
 
         Button bSelectFile = view.findViewById(R.id.bImportFile);
         bSelectFile.setOnClickListener(v -> selectFile());
+        bReparse.setOnClickListener(v -> refreshParsing());
 
         tMsg.setMovementMethod(LinkMovementMethod.getInstance());
 
@@ -271,11 +289,10 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
             case R.id.radio_ignore_m:
                 importListMode = Importer.IMPORT_LIST_MODE.IGNORE;
                 break;
-            case -1: // nothing selected
-                importListMode = null;
-                break;
             default:
                 Log.wtf(TAG,"invalid id: "+id);
+            case -1: // nothing selected
+                importListMode = null;
                 break;
         }
     }
@@ -352,8 +369,9 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
      * Refresh preview parsing, change view accordingly
      */
     private void refreshParsing() {
-        parsingInvalidated = false;
         if (impFile != null && impFile.exists()) {
+            importViewModel.resetPreviewData();
+            bReparse.setVisibility(View.GONE);
             importViewModel.previewParse(getFormatSelected(),impFile,mp);
         }
     }
@@ -377,7 +395,8 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
         singleLayout.setVisibility(importViewModel.isMultiList() ? View.GONE : View.VISIBLE);
         rgMulti.setVisibility(importViewModel.isMultiList() ? View.VISIBLE : View.GONE);
         rgRaw.setVisibility(importViewModel.isRawData() ? View.VISIBLE : View.GONE);
-        rgSingle.setVisibility(importViewModel.isRawData() ? View.GONE : View.VISIBLE);
+        // last option has to watch out for invalid parsing, when others are not true would default to visible
+        rgSingle.setVisibility(importViewModel.isRawData() || parsingInvalidated ? View.GONE : View.VISIBLE);
         if(impFile != null && importListMode == null) {
             if (rgMulti.getVisibility() == View.VISIBLE) {
                 updateImportListModeByButtonID(rgMulti.getCheckedRadioButtonId());
@@ -480,7 +499,8 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
      */
     private void checkInput() {
         boolean is_ok = true;
-        if (impFile == null) {
+        Log.d(TAG,"parsing invalid:"+parsingInvalidated);
+        if (impFile == null || importListMode == null || parsingInvalidated) {
             is_ok = false;
         }
         //noinspection StatementWithEmptyBody
@@ -499,7 +519,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
                 is_ok = false;
             }
         }
-
+        Log.d(TAG,"enable ok: "+is_ok);
         bImportOk.setEnabled(is_ok);
     }
 

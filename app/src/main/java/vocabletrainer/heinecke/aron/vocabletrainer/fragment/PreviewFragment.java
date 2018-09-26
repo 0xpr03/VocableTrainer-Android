@@ -3,6 +3,7 @@ package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,7 +28,6 @@ public class PreviewFragment extends BaseFragment {
     public static final String TAG = "PagerFragment";
     private ArrayList<VEntry> lst;
     private EntryListAdapter adapter;
-    private ImportViewModel model;
     private VEntry ENTRY_LOADING;
     private VEntry ENTRY_EMPTY;
 
@@ -37,11 +37,11 @@ public class PreviewFragment extends BaseFragment {
         ENTRY_LOADING = new VEntry(getString(R.string.Import_Preview_Loading),"","",ID_RESERVED_SKIP);
         ENTRY_EMPTY = new VEntry(getString(R.string.Import_Preview_No_data),"","",ID_RESERVED_SKIP);
 
-        model = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(ImportViewModel.class);
+        ImportViewModel model = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(ImportViewModel.class);
         model.getPreviewList().observe(this, previewList -> {
             Log.d(TAG,"preview change");
             lst.clear();
-            if(previewList.size() > 0)
+            if(previewList != null && previewList.size() > 0)
                 lst.addAll(previewList);
             else
                 lst.add(ENTRY_EMPTY);
@@ -60,12 +60,12 @@ public class PreviewFragment extends BaseFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_preview, container, false);
         lst = new ArrayList<>();
-        adapter = new EntryListAdapter(getActivity(), lst);
+        adapter = new EntryListAdapter(Objects.requireNonNull(getActivity()), lst);
         ListView listView = view.findViewById(R.id.lstImportPreview);
         listView.setAdapter(adapter);
 

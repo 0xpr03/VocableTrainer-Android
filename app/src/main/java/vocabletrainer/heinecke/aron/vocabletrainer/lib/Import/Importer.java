@@ -41,6 +41,7 @@ public class Importer implements ImportHandler {
 
     @Override
     public void start() {
+        db.startTransaction();
         // raw data or single list with create flag
         if (previewParser.isRawData() || (!previewParser.isMultiList() && mode == IMPORT_LIST_MODE.CREATE)) {
             currentList = overrideList;
@@ -95,6 +96,12 @@ public class Importer implements ImportHandler {
     @Override
     public void finish() {
         flushBuffer();
+        db.endTransaction(true);
+    }
+
+    @Override
+    public void cancel() {
+        db.endTransaction(false);
     }
 
     /**

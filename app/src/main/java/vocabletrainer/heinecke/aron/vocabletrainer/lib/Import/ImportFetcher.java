@@ -3,6 +3,7 @@ package vocabletrainer.heinecke.aron.vocabletrainer.lib.Import;
 import android.arch.lifecycle.MutableLiveData;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.util.Log;
@@ -24,7 +25,8 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVHeaders.CSV_MET
 
 /**
  * ImportFetcher class<br>
- * Does the basic parsing work, passes data to specified ImportHandler
+ * Does the basic parsing work, passes data to specified ImportHandler<br>
+ * Supports callbacks for finish & cancel of execution
  */
 public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
     private final static String TAG = "ImportFetcher";
@@ -41,6 +43,7 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
     private final MutableLiveData<Integer> progressHandle;
     private final MessageProvider messageProvider;
     private final Function<Void,String> importCallback;
+    private final Function<Void,String> cancelCallback;
     private final boolean logErrors;
     private long lastUpdate = 0;
     private StringBuilder log;
@@ -57,11 +60,12 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
      * @param messageProvider Message provider for logs
      * @param importCallback callback after successful import, given import log as param, return ignored
      * @param logErrors   disable error logging on false
+     * @param cancelCallback Callback to be executed on cancel action
      */
     ImportFetcher(final CSVCustomFormat cformat, final File source, final ImportHandler handler,
                   final MutableLiveData<Integer> progressHandle,
                   final MessageProvider messageProvider, final Function<Void,String> importCallback,
-                  final boolean logErrors) {
+                  final boolean logErrors,@Nullable final Function<Void,String> cancelCallback) {
         this.source = source;
         this.cformat = cformat;
         this.handler = handler;
@@ -70,25 +74,33 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
         this.messageProvider = messageProvider;
         this.importCallback = importCallback;
         this.logErrors = logErrors;
+        this.cancelCallback = cancelCallback;
     }
 
     @Override
     protected void onProgressUpdate(Integer... values) {
-        progressHandle.setValue(values[0]); // TODO: evaluate set/postValue
+        progressHandle.setValue(values[0]);
+    }
+
+    @Override
+    protected void onCancelled(String s) {
+        super.onCancelled(s);
+        try{
+            if(cancelCallback != null)
+                cancelCallback.function(s);
+        } catch (Exception e){
+            Log.e(TAG,"cancelCallback crash",e);
+        }
     }
 
     @Override
     protected void onPostExecute(String s) {
         try {
-            importCallback.function(s);
+            if(importCallback != null)
+                importCallback.function(s);
         } catch (Exception e){
             Log.e(TAG,"importCallback crash",e);
         }
-    }
-
-    @Override
-    protected void onCancelled() {
-
     }
 
     /**
@@ -100,7 +112,6 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
         return record.getRecordNumber()+": ["+ TextUtils.join(",",record.toList())+"]";
     }
 
-    @SuppressWarnings("ConstantConditions")
     @Override
     protected String doInBackground(Integer... params) {
         try (
@@ -115,7 +126,7 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
             int vocableAmount = 0;
             for (CSVRecord record : parser) {
                 if(this.isCancelled()) {
-                    log.append("Cancelled"); // TODO: use string resource
+                    log.append(messageProvider.I_IMPORT_CANCEL);
                     break;
                 }
                 if (System.currentTimeMillis() - lastUpdate > 250) { // don't spam the UI thread
@@ -155,14 +166,15 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
                 }
             }
             //prepend to start
-            log.insert(0,messageProvider.formatIMPORTED_AMOUNT(vocableAmount));
-            parser.close();
-            bufferedReader.close();
-            reader.close();
+            if(!isCancelled())
+                log.insert(0,messageProvider.formatIMPORTED_AMOUNT(vocableAmount));
         } catch (Exception e) {
             Log.e(TAG, "", e);
         } finally {
-            handler.finish();
+            if(this.isCancelled())
+                handler.cancel();
+            else
+                handler.finish();
         }
         return log.toString();
     }
@@ -174,6 +186,7 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
         final String E_NOT_ENOUGH_VALUES;
         final String W_TOO_MANY_VALUES;
         final String I_IMPORTED_AMOUNT;
+        final String I_IMPORT_CANCEL;
 
         /**
          * Creates a new MessageProvider
@@ -183,6 +196,7 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
             E_NOT_ENOUGH_VALUES = fragment.getString(R.string.Import_Error_MIN_RECORD_SIZE);
             W_TOO_MANY_VALUES = fragment.getString(R.string.Import_Warn_MAX_RECORD_SIZE);
             I_IMPORTED_AMOUNT = fragment.getString(R.string.Import_Info_Import);
+            I_IMPORT_CANCEL = fragment.getString(R.string.Import_Cancel_Log);
         }
 
         /**

@@ -35,4 +35,9 @@ public interface ImportHandler {
      * Called directly before the start
      */
     void start();
+
+    /**
+     * Called on cancel
+     */
+    void cancel();
 }

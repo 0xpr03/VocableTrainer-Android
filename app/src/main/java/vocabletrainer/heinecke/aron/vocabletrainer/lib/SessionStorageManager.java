@@ -184,7 +184,7 @@ public class SessionStorageManager {
          * @param success commits changes on true
          */
         private void endWrite(boolean success){
-            db.endSessionTransaction(success);
+            db.endTransaction(success);
         }
 
         /**

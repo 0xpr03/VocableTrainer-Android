@@ -62,6 +62,7 @@
     <string name="Import_preview_text">Preview</string>
     <string name="Import_list_hint">List to use</string>
     <string name="Import_btn_List_Select">Select List</string>
+    <string name="Import_btn_Reparse">Reparse</string>
     <string name="Import_Info_multilist">Detected Multi-List format</string>
     <string name="Import_Info_singlelist">Detected single list</string>
     <string name="Import_Info_rawlist">Detected raw list</string>
@@ -71,10 +72,13 @@
     <string name="Import_Finished_Title">Importing finished</string>
     <string name="Import_Preview_Loading">Loading data..</string>
     <string name="Import_Preview_No_data">No data to display..</string>
+    <string name="Import_Cancel_Toast_Preview">Please reparse to continue</string>
+    <string name="Import_Cancel_Log">Import cancelled</string>
     <string name="Export_Title">Export Lists</string>
     <string name="Export_Tab_Main">Settings</string>
     <string name="Export_Tab_List">List Selection</string>
     <string name="ExImport_Tab_CustomFormat">Custom Format</string>
+    <string name="Export_Cancel_Toast">Export cancelled</string>
     <string name="Export_Ok">Export</string>
     <string name="Export_file_placeholder">Export File</string>
     <string name="Export_chk_Table_Meta">Export List Meta</string>

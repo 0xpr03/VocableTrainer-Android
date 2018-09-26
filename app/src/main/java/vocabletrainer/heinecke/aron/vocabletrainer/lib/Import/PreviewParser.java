@@ -59,6 +59,11 @@ public class PreviewParser implements ImportHandler {
 
     }
 
+    @Override
+    public void cancel() {
+
+    }
+
     /**
      * Returns preview data
      * @return

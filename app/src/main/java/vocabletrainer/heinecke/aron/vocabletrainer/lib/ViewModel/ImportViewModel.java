@@ -33,14 +33,17 @@ public class ImportViewModel extends ViewModel {
     private MutableLiveData<Boolean> reparsing;
     private MutableLiveData<Boolean> importing;
     private MutableLiveData<Integer> progress;
-    private MutableLiveData<Boolean> exporting;
     private MutableLiveData<String> importLog;
+    private MutableLiveData<Boolean> cancelPreview; // cancelPreview parser thread trigger
+    private MutableLiveData<Boolean> cancelImport;
     private boolean isMultiList;
     private boolean isRawData;
     // set on preview parsing finished, contains data
     private MutableLiveData<PreviewParser> previewParser;
     // internal observer, resetting reparsing on update
     private Observer<ArrayList<VEntry>> observerPreviewList;
+    // internal observer for setting whether it was cancelled
+    private Observer<Boolean> observerCancel;
     private AsyncTask parserThread;
 
     /**
@@ -59,6 +62,12 @@ public class ImportViewModel extends ViewModel {
             updateIsReparsing(false);
             return null;
         };
+        Function<Void,String> callbackCancel = param -> {
+            resetPreviewData();
+            updateIsReparsing(false);
+            cancelPreview.setValue(false);
+            return null;
+        };
         ImportFetcher imp = new ImportFetcherBuilder()
                 .setFormat(format)
                 .setSource(impFile)
@@ -67,6 +76,7 @@ public class ImportViewModel extends ViewModel {
                 .setMessageProvider(mp)
                 .setProgressHandle(progress)
                 .setImportCallback(callback)
+                .setCancelCallback(callbackCancel)
                 .createImportFetcher();
         Log.d(TAG, "starting preview parsing task");
         this.updateIsReparsing(true);
@@ -80,6 +90,7 @@ public class ImportViewModel extends ViewModel {
         Function<Void,String> callback = param -> {
             importing.setValue(false);
             importLog.setValue(param);
+            cancelImport.setValue(false);
             return null;
         };
         Log.d(TAG, "amount: " + getPreviewParser().getAmountRows());
@@ -91,6 +102,7 @@ public class ImportViewModel extends ViewModel {
                 .setMessageProvider(mp)
                 .setImportCallback(callback)
                 .setProgressHandle(progress)
+                .setCancelCallback(callback)
                 .setLogErrors(true)
                 .createImportFetcher();
         Log.d(TAG, "Starting import");
@@ -113,8 +125,9 @@ public class ImportViewModel extends ViewModel {
 
     @Override
     protected void onCleared() {
-        Log.w(TAG,"onCleared");
         previewList.removeObserver(observerPreviewList);
+        cancelPreview.removeObserver(observerCancel);
+        cancelImport.removeObserver(observerCancel);
         if(parserThread != null && parserThread.getStatus() == RUNNING){
             parserThread.cancel(true);
         }
@@ -195,21 +208,43 @@ public class ImportViewModel extends ViewModel {
         this.reparsing = new MutableLiveData<>();
         this.importing = new MutableLiveData<>();
         this.progress = new MutableLiveData<>();
-        this.exporting = new MutableLiveData<>();
         this.previewParser = new MutableLiveData<>();
         this.importLog = new MutableLiveData<>();
-        previewList.setValue(new ArrayList<>());
+        this.cancelPreview = new MutableLiveData<>();
+        this.cancelImport = new MutableLiveData<>();
+        previewList.setValue(new ArrayList<>(0));
         reparsing.setValue(false);
         importing.setValue(false);
         progress.setValue(0);
-        exporting.setValue(false);
         previewParser.setValue(null);
+        cancelPreview.setValue(false);
+        cancelImport.setValue(false);
         // new value in preview list -> finished parsing
         observerPreviewList = (val -> reparsing.setValue(false));
         previewList.observeForever(observerPreviewList);
         setRawData(false);
         setMultiList(true);
+
+        observerCancel = (val -> {
+            if(val != null && val && parserThread != null && parserThread.getStatus() == RUNNING){
+                parserThread.cancel(true);
+            }
+        });
+        cancelPreview.observeForever(observerCancel);
+        cancelImport.observeForever(observerCancel);
     }
+
+    /**
+     * Get cancelPreview handle
+     * @return mutable LiveData handle for cancelling preview parser
+     */
+    public MutableLiveData<Boolean> getCancelPreviewHandle() { return cancelPreview; }
+
+    /**
+     * Get cancelImport handle
+     * @return mutable LiveData handle for cancelling import
+     */
+    public MutableLiveData<Boolean> getCancelImportHandle() { return cancelImport; }
 
     /**
      * Get preview LiveData
@@ -233,6 +268,16 @@ public class ImportViewModel extends ViewModel {
      */
     public void updateIsReparsing(boolean reparsing) {
         this.reparsing.setValue(reparsing);
+    }
+
+    /**
+     * Reset preview data to null
+     */
+    public void resetPreviewData() {
+        this.setMultiList(false);
+        this.setRawData(false);
+        previewList.setValue(new ArrayList<>(0));
+        previewParser.setValue(null);
     }
 
     /**

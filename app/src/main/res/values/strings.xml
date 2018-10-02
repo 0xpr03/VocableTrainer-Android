@@ -190,7 +190,10 @@
     <string name="Pref_General">General</string>
     <string name="Pref_Reset_Previous">Reset to previous</string>
     <string name="Pref_Reset_Default">Reset to default</string>
-
+    <string name="Beta_Warning_Diag_Title">Info</string>
+    <string name="Beta_Warning_Diag_Msg">This software is currently in beta state. This includes, but not limited to, data loss, destroying your phone, eating your children and burning your dog! You have been warned.</string>
+    <string name="Beta_Warning_Btn_Accept">TLDR</string>
+    <string name="Beta_Warning_Btn_Exit">Get me outta here</string>
     <!-- Should not be visible, indicates a bug when visible in UI.-->
     <!-- Also serves the purpose of making dynamic elements visible in designer. -->
     <string name="Placeholder" translatable="false"><![CDATA[<Placeholder>]]></string>

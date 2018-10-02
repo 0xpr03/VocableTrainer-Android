@@ -33,16 +33,16 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         showedDialog = settings.getBoolean(P_KEY_ALPHA_DIALOG, false);
         if (!showedDialog) {
-            final AlertDialog.Builder finishedDiag = new AlertDialog.Builder(this);
+            final AlertDialog.Builder betaWarnDiag = new AlertDialog.Builder(this);
 
-            finishedDiag.setTitle("Info");
-            finishedDiag.setMessage("This software is currently in beta state. This includes, but not limited to, data loss, destroying your phone, eating your children and burning your dog! You have been warned.");
+            betaWarnDiag.setTitle(R.string.Beta_Warning_Diag_Title);
+            betaWarnDiag.setMessage(R.string.Beta_Warning_Diag_Msg);
 
-            finishedDiag.setPositiveButton("TLDR", (dialog, whichButton) -> showedDialog = true);
+            betaWarnDiag.setPositiveButton(R.string.Beta_Warning_Btn_Accept, (dialog, whichButton) -> showedDialog = true);
 
-            finishedDiag.setNegativeButton("Get me outta here", (dialog, whichButton) -> System.exit(0));
+            betaWarnDiag.setNegativeButton(R.string.Beta_Warning_Btn_Exit, (dialog, whichButton) -> System.exit(0));
 
-            finishedDiag.show();
+            betaWarnDiag.show();
         }
 
 

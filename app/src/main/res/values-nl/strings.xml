@@ -2,7 +2,6 @@
     <string name="Trainer_hint_solution">Antwoord</string>
     <string name="Trainer_btn_Show_Next"> Volgende tonen</string>
     <string name="Trainer_btn_Show_Next_Auto">Volgende tonen (in %d)</string>
-    <string name="Trainer_btn_ok">Oké</string>
     <string name="Trainer_Quick_btn_Correct">Juist</string>
     <string name="Trainer_Quick_btn_Wrong">Onjuist</string>
     <string name="Trainer_Quick_btn_Resolve">Oplossen</string>
@@ -53,7 +52,7 @@
     <string name="CSV_Format">CSV-format</string>
     <string name="Select_File_btn">Bestand selecteren</string>
     <string name="Import_Title">Importeren</string>
-    <string name="Import_Ok">Importeren</string>
+    <string name="Import_OK">Importeren</string>
     <string name="Import_file_placeholder">Bestand importeren</string>
     <string name="Import_preview_text">Voorbeeld</string>
     <string name="Import_list_hint">Te gebruiken lijst</string>
@@ -66,7 +65,7 @@
     <string name="Import_Importing_Title">Bezig met importeren…</string>
     <string name="Import_Finished_Title">Importeren voltooid</string>
     <string name="Export_Title">Exporteren</string>
-    <string name="Export_Ok">Exporteren</string>
+    <string name="Export_OK">Exporteren</string>
     <string name="Export_file_placeholder">Exportbestand</string>
     <string name="Export_chk_Table_Meta">Lijst-metagegevens exporteren</string>
     <string name="Export_chk_Multilist">Meerdere lijsten exporteren</string>
@@ -74,14 +73,13 @@
     <string name="Export_Exporting_Title">Bezig met exporteren…</string>
     <string name="Export_Error_Format_Multivalue_Title">Ongeldig CSV-formaat</string>
     <string name="Export_Error_Format_Multivalue_Text">De exportering vereist een geldig CSV-formaat met ondersteuning voor meerdere waardes om gegevensverlies te voorkomen.</string>
-    <string name="File_btn_OK">Oké</string>
     <string name="File_btn_Cancel">Annuleren</string>
     <string name="File_t_hint">Bestandsnaam.xyz</string>
     <string name="File_Menu_Sort_Name">naam</string>
     <string name="File_Menu_Sort_Size">grootte</string>
     <!-- General -->
     <string name="GEN_Sort">Sortering</string>
-    <string name="GEN_Ok">Oké</string>
+    <string name="GEN_OK">Oké</string>
     <!-- Dialogs -->
     <string name="Trainer_Diag_finished_Title">Afgerond</string>
     <string name="Trainer_Diag_finished_MSG">Je hebt deze trainingssessie afgerond.</string>
@@ -90,11 +88,9 @@
     <string name="Editor_Diag_delete_btn_OK">Verwijderen</string>
     <string name="Editor_Diag_delete_btn_CANCEL">Annuleren</string>
     <string name="Editor_Diag_edit_Title">Item bewerken</string>
-    <string name="Editor_Diag_edit_btn_OK">Oké</string>
     <string name="Editor_Diag_edit_btn_CANCEL">Annuleren</string>
     <string name="Editor_Diag_table_Title_New">Nieuwe lijst</string>
     <string name="Editor_Diag_table_Title_Edit">Lijst bewerken</string>
-    <string name="Editor_Diag_table_btn_Ok">Oké</string>
     <string name="Editor_Diag_table_btn_Canel">Annuleren</string>
     <string name="Format_Diag_error_Title">Ongeldige invoer</string>
 

@@ -1,7 +1,6 @@
 <resources>
 
     <string name="Trainer_hint_solution">回答</string>
-    <string name="Trainer_btn_ok">OK</string>
     <string name="Main_btn_About">アプリについて</string>
     <string name="Main_btn_Delete_List">リストを削除</string>
     <string name="Main_btn_Edit_List">リストを編集</string>
@@ -28,11 +27,9 @@
     <string name="Editor_Diag_delete_btn_OK">削除</string>
     <string name="Editor_Diag_delete_btn_CANCEL">キャンセル</string>
     <string name="Editor_Diag_edit_Title">エントリを編集</string>
-    <string name="Editor_Diag_edit_btn_OK">OK</string>
     <string name="Editor_Diag_edit_btn_CANCEL">キャンセル</string>
     <string name="Editor_Diag_table_Title_New">新しいリスト</string>
     <string name="Editor_Diag_table_Title_Edit">リストを編集</string>
-    <string name="Editor_Diag_table_btn_Ok">OK</string>
 
     <string name="About_btn_Close">閉じる</string>
     <string name="ListSelector_Diag_delete_Title">リストを削除</string>

@@ -3,7 +3,6 @@
     <string name="Trainer_hint_solution">Answer</string>
     <string name="Trainer_btn_Show_Next">Show Next</string>
     <string name="Trainer_btn_Show_Next_Auto">Show Next (in %d)</string>
-    <string name="Trainer_btn_ok">Ok</string>
     <string name="Trainer_Quick_btn_Correct">Correct</string>
     <string name="Trainer_Quick_btn_Wrong">Wrong</string>
     <string name="Trainer_Quick_btn_Resolve">Resolve</string>
@@ -59,7 +58,7 @@
     <string name="Import_Title">Import Lists</string>
     <string name="Import_Tab_Main">Settings</string>
     <string name="Import_Tab_Preview">Preview</string>
-    <string name="Import_Ok">Import</string>
+    <string name="Import_OK">Import</string>
     <string name="Import_file_placeholder">Import File</string>
     <string name="Import_preview_text">Preview</string>
     <string name="Import_list_hint">List to use</string>
@@ -81,7 +80,7 @@
     <string name="Export_Tab_List">List Selection</string>
     <string name="ExImport_Tab_CustomFormat">Custom Format</string>
     <string name="Export_Cancel_Toast">Export cancelled</string>
-    <string name="Export_Ok">Export</string>
+    <string name="Export_OK">Export</string>
     <string name="Export_file_placeholder">Export File</string>
     <string name="Export_chk_Table_Meta">Export List Meta</string>
     <string name="Export_chk_Multilist">Export Multiple Lists</string>
@@ -89,14 +88,13 @@
     <string name="Export_Exporting_Title">Exporting..</string>
     <string name="Export_Error_Format_Multivalue_Title">Invalid CSV Format</string>
     <string name="Export_Error_Format_Multivalue_Text">Export requires a CSV Format with multi-value support to avoid data loss.</string>
-    <string name="File_btn_OK">Ok</string>
     <string name="File_btn_Cancel">Cancel</string>
     <string name="File_t_hint">File_Name.xyz</string>
     <string name="File_Menu_Sort_Name">name</string>
     <string name="File_Menu_Sort_Size">size</string>
     <!-- General -->
     <string name="GEN_Sort">Sorting</string>
-    <string name="GEN_Ok">Ok</string>
+    <string name="GEN_OK">OK</string>
     <string name="GEN_Cancel">Cancel</string>
     <string name="GEN_Undo">UNDO</string>
     <!-- Dialogs -->
@@ -107,16 +105,11 @@
     <string name="Editor_Diag_delete_btn_OK">Delete</string>
     <string name="Editor_Diag_delete_btn_CANCEL">Cancel</string>
     <string name="Editor_Diag_edit_Title">Edit Entry</string>
-    <string name="Editor_Diag_edit_btn_OK">Ok</string>
     <string name="Editor_Diag_edit_btn_CANCEL">Cancel</string>
     <string name="Editor_Diag_table_Title_New">New List</string>
     <string name="Editor_Diag_table_Title_Edit">Edit List</string>
-    <string name="Editor_Diag_table_btn_Ok">Ok</string>
     <string name="Editor_Diag_table_btn_Canel">Cancel</string>
     <string name="Format_Diag_error_Title">Invalid Input</string>
-    <string name="tDB_Update_Text" formatted="true" translatable="false">VA is going to make a major DB upgrade, allowing for N:N vocable lists.\nFor more Information see <a href="https://github.com/0xpr03/VocableTrainer-Android/issues/22">here.</a>\nPlease backup your lists via export just in case.</string>
-    <string name="tDB_Update_Close" translatable="false">Close</string>
-    <string name="tDB_Update_Close_Dismissed" translatable="false">Don\'t show again</string>
 
     <string name="About_Title">About</string>
     <!-- Special escape because of replacement & re-parsing as HTML \n = <br>-->

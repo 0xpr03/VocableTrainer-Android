@@ -216,7 +216,7 @@ public class FormatFragment extends PreferenceFragmentCompat implements Fragment
 
             errorDiag.setTitle(R.string.Format_Diag_error_Title);
             errorDiag.setMessage(msg);
-            errorDiag.setPositiveButton(R.string.GEN_Ok, (dialog, whichButton) -> {
+            errorDiag.setPositiveButton(R.string.GEN_OK, (dialog, whichButton) -> {
             });
 
             errorDiag.show();

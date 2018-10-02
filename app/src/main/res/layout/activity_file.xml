@@ -64,7 +64,7 @@
             android:layout_marginBottom="8dp"
             android:layout_marginEnd="8dp"
             android:onClick="onOkPressed"
-            android:text="@string/File_btn_OK"
+            android:text="@string/GEN_OK"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toRightOf="@+id/bFileCancel"
             app:layout_constraintRight_toRightOf="parent" />

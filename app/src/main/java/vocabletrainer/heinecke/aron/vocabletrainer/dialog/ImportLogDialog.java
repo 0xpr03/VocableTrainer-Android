@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 
@@ -40,7 +39,7 @@ public class ImportLogDialog extends DialogFragment {
         alertDialog.setTitle(R.string.Import_Finished_Title);
         alertDialog.setMessage(getArguments().getString(LOG));
 
-        alertDialog.setPositiveButton(R.string.GEN_Ok, (dialog, whichButton) -> this.dismiss());
+        alertDialog.setPositiveButton(R.string.GEN_OK, (dialog, whichButton) -> this.dismiss());
         return alertDialog.create();
     }
 }

@@ -336,7 +336,7 @@ public class ExportFragment extends PagerFragment {
             alert.setCancelable(true);
             alert.setTitle(R.string.Export_Error_Format_Multivalue_Title);
             alert.setMessage(R.string.Export_Error_Format_Multivalue_Text);
-            alert.setNeutralButton(R.string.GEN_Ok, (dialogInterface, i) -> {
+            alert.setNeutralButton(R.string.GEN_OK, (dialogInterface, i) -> {
                 formatWarnDialog = false; // clear state
             });
             alert.show();

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="Trainer_hint_solution">Antwort</string>
-    <string name="Trainer_btn_ok">Ok</string>
     <string name="ListSelector_Title_Delete">Ausgewähltes Löschen</string>
     <string name="Main_btn_Delete_List">Liste Löschen</string>
     <string name="Main_btn_Edit_List">Liste Editieren</string>
@@ -25,10 +24,8 @@
     <string name="Editor_Diag_delete_btn_OK">Löschen</string>
     <string name="Editor_Diag_edit_Title">Eintrag Editieren</string>
     <string name="Editor_Diag_edit_btn_CANCEL">Abbrechen</string>
-    <string name="Editor_Diag_edit_btn_OK">Ok</string>
     <string name="Editor_Diag_table_Title_Edit">Liste editieren</string>
     <string name="Editor_Diag_table_Title_New">Neue Liste</string>
-    <string name="Editor_Diag_table_btn_Ok">Ok</string>
     <string name="Editor_Diag_table_btn_Canel">Abbrechen</string>
     <string name="ListSelector_Diag_delete_Msg" formatted="false">Möchten Sie diese Liste löschen: %s: %s, %s</string>
     <string name="ListSelector_Diag_delete_Title">Liste Löschen</string>
@@ -43,7 +40,7 @@
     <string name="CSV_Format_Tabs">Tabs</string>
     <string name="Export_Exporting_Title">Exportiere..</string>
     <string name="Export_Message">UTF8 kodierte CSV Datei mit (mehreren) vokabel Liste(n) importieren.\nSiehe <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Export">Wiki Eintrag</a> für weiter Informationen.</string>
-    <string name="Export_Ok">Exportieren</string>
+    <string name="Export_OK">Exportieren</string>
     <string name="Export_chk_Multilist">Mehrere Listen exportieren</string>
     <string name="Export_chk_Table_Meta">Exportiere Listen Meta-daten</string>
     <string name="Export_file_placeholder">Export Datei</string>
@@ -51,10 +48,9 @@
     <string name="File_Diag_btn_OK">Überschreiben</string>
     <string name="File_Diag_exists_Title">Datei existiert bereits</string>
     <string name="File_btn_Cancel">Abbrechen</string>
-    <string name="File_btn_OK">Ok</string>
     <string name="File_t_hint">Datei_Name.xyz</string>
     <string name="Import_Importing_Title">Importiere..</string>
-    <string name="Import_Ok">Importieren</string>
+    <string name="Import_OK">Importieren</string>
     <string name="Import_Preview_Update_Title">Aktualisiere..</string>
     <string name="Import_Rawlist_MERGE">An Liste anhängen</string>
     <string name="Import_Singlelist_ADD">An Liste anhängen falls existent</string>
@@ -92,7 +88,7 @@
     <string name="Trainer_Title">Üben</string>
     <string name="Trainer_Quick_btn_Correct">Richtig</string>
     <string name="GEN_Sort">Sortierung</string>
-    <string name="GEN_Ok">Ok</string>
+    <string name="GEN_OK">Ok</string>
     <string name="File_Menu_Sort_Name">Name</string>
     <string name="File_Menu_Sort_Size">Größe</string>
     <string name="Sort_Col_Tip">Spalte Tip</string>

@@ -140,7 +140,7 @@ public class VListEditorDialog extends DialogFragment {
 
         alertDialog.setView(view);
 
-        alertDialog.setPositiveButton(R.string.Editor_Diag_table_btn_Ok, (dialog, whichButton) -> {
+        alertDialog.setPositiveButton(R.string.GEN_OK, (dialog, whichButton) -> {
             if (iColA.getText().length() == 0 || iColB.length() == 0 || iName.getText().length() == 0) {
                 Log.d(TAG, "empty insert");
             }

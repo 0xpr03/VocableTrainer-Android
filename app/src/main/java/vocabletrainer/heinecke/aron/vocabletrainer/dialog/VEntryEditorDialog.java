@@ -135,7 +135,7 @@ public class VEntryEditorDialog extends DialogFragment {
         tAddition.setSingleLine();
         tAddition.setText(addition);
 
-        builder.setPositiveButton(R.string.Editor_Diag_edit_btn_OK, (dialog, whichButton) -> {
+        builder.setPositiveButton(R.string.GEN_OK, (dialog, whichButton) -> {
             List<String> mA = getMeanings(meaningsA);
             List<String> mB = getMeanings(meaningsB);
 

@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -58,7 +59,6 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
     private EntryListAdapter adapter;
     private ListView listView;
     private Database db;
-    private View undoContainer;
     private VEntry lastDeleted;
     private int deletedPosition;
     private int sortSetting;
@@ -104,8 +104,6 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
         },ID_RESERVED_SKIP);
 
         Intent intent = getIntent();
-        undoContainer = findViewById(R.id.undobar);
-        undoContainer.setVisibility(View.GONE);
 
         FloatingActionButton bNewEntry = findViewById(R.id.bEditorNewEntry);
         bNewEntry.setOnClickListener(v -> addEntry());
@@ -296,17 +294,42 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
         delDiag.setTitle(R.string.Editor_Diag_delete_Title);
         delDiag.setMessage(String.format(getString(R.string.Editor_Diag_delete_MSG_part) + "\n %s %s %s", entry.getAString(), entry.getBString(), entry.getTip()));
 
-        delDiag.setPositiveButton(R.string.Editor_Diag_delete_btn_OK, (dialog, whichButton) -> {
-            lastDeleted = entry;
-            deletedPosition = position;
-            adapter.remove(entry);
-            showUndo();
-            Log.d(TAG, "deleted");
-        });
+        delDiag.setPositiveButton(R.string.Editor_Diag_delete_btn_OK, (dialog, whichButton) -> deleteEntry(position, entry));
 
         delDiag.setNegativeButton(R.string.Editor_Diag_delete_btn_CANCEL, (dialog, whichButton) -> Log.d(TAG, "canceled"));
 
         delDiag.show();
+    }
+
+    /**
+     * Perform entry deletion with undo possibility
+     * @param deletedPosition
+     * @param entry
+     */
+    private void deleteEntry(final int deletedPosition, final VEntry entry){
+        adapter.remove(entry);
+        Snackbar snackbar = Snackbar
+                .make(listView, R.string.Editor_Entry_Deleted_Message, Snackbar.LENGTH_LONG)
+                .setAction(R.string.GEN_Undo, view -> adapter.addEntryRendered(entry,deletedPosition))
+                .addCallback(new Snackbar.Callback(){
+                    @Override
+                    public void onDismissed(Snackbar transientBottomBar, int event) {
+                        switch(event){
+                            case DISMISS_EVENT_CONSECUTIVE: // second deletion
+                            case DISMISS_EVENT_TIMEOUT: // timeout
+                            case DISMISS_EVENT_MANUAL: // dismiss() -> view change
+                            case DISMISS_EVENT_SWIPE: // swiped away
+                                Log.d(TAG,"deleting entry");
+                                entry.setDelete(true);
+                                ArrayList<VEntry> lst = new ArrayList<>(1);
+                                lst.add(entry);
+                                Database db = new Database(getApplicationContext());
+                                db.upsertEntries(lst); // TODO make a single function
+                                break;
+                        }
+                    }
+                });
+        snackbar.show();
     }
 
     /**
@@ -383,80 +406,6 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
         listEditorDialog = VListEditorDialog.newInstance(!list.isExisting());
         setListEditorActions();
         listEditorDialog.show(getSupportFragmentManager(), VListEditorDialog.TAG);
-    }
-
-    /**
-     * Show undo view<br>
-     * On viewchange during the animation we're not deleting the vocable
-     */
-    private void showUndo() {
-        undoContainer.setVisibility(View.VISIBLE);
-        undoContainer.bringToFront();
-        ScaleAnimation scaleAnimation = new ScaleAnimation(0f,1f,1f,1f,
-                Animation.RELATIVE_TO_SELF, 0f, // Pivot point of X scaling
-                Animation.RELATIVE_TO_SELF, 1f);
-        final AlphaAnimation alphaAnimation = new AlphaAnimation(0.0f,1.0f);
-
-        AnimationSet animationSet = new AnimationSet(true);
-        animationSet.addAnimation(scaleAnimation);
-        animationSet.addAnimation(alphaAnimation);
-        animationSet.setDuration(500);
-        animationSet.setFillEnabled(true);
-
-        animationSet.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {}
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                AnimationSet animationSetOut = new AnimationSet(true);
-                AlphaAnimation alphaAnimation1 = new AlphaAnimation(1f,0f);
-                ScaleAnimation scaleAnimation1 = new ScaleAnimation(1f,0f,1f,1f,
-                        Animation.RELATIVE_TO_SELF, 1f,
-                        Animation.RELATIVE_TO_SELF, 1f);
-                ScaleAnimation scaleAnimation2 = new ScaleAnimation(1f,0f,1f,0f,
-                        Animation.RELATIVE_TO_SELF, 1f,
-                        Animation.RELATIVE_TO_SELF, 1f);
-
-                scaleAnimation2.setStartOffset(500);
-                animationSetOut.addAnimation(alphaAnimation1);
-                animationSetOut.addAnimation(scaleAnimation1);
-                animationSetOut.addAnimation(scaleAnimation2);
-                animationSetOut.setDuration(2000);
-                animationSetOut.setStartOffset(2000);
-                animationSetOut.setFillEnabled(true);
-                animationSetOut.setAnimationListener(new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {}
-
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-                        undoContainer.setVisibility(View.GONE);
-                        lastDeleted.setDelete(true);
-                        ArrayList<VEntry> lst = new ArrayList<>(1);
-                        lst.add(lastDeleted);
-                        db.upsertEntries(lst);
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {}
-                });
-                undoContainer.setAnimation(animationSetOut);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {}
-        });
-        undoContainer.clearAnimation();
-        undoContainer.setAnimation(animationSet);
-
-        undoContainer.setOnClickListener(v -> {
-            Log.d(TAG, "undoing");
-            undoContainer.clearAnimation();
-            adapter.addEntryRendered(lastDeleted, deletedPosition);
-            undoContainer.setVisibility(View.GONE);
-            listView.setFocusable(true);
-        });
     }
 
     @Override

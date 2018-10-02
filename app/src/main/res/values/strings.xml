@@ -53,6 +53,7 @@
     <string name="Editor_Hint_Tip">Hint</string>
     <string name="Editor_Hint_Addition">Additional</string>
     <string name="Editor_ListSettings">List Settings</string>
+    <string name="Editor_Entry_Deleted_Message">Entry deleted</string>
     <string name="CSV_Format">CSV Format</string>
     <string name="Select_File_btn">Select File</string>
     <string name="Import_Title">Import Lists</string>

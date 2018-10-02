@@ -248,7 +248,6 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
 
         // setup listview
         initRecyclerView();
-        //loadTables(preselected); TODO
         updateOkButton();
         return view;
     }
@@ -349,7 +348,7 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
      * Update enabled state of OK button
      */
     private void updateOkButton() {
-        bOk.setEnabled(listPickerViewModel.getSelectedLists().size() > 0); // TODO more performant
+        bOk.setEnabled(listPickerViewModel.getSelectedLists().size() > 0);
     }
 
     /**

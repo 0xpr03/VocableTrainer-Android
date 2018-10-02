@@ -8,4 +8,6 @@
 - List view reworked, allowing for background loading & undo
 - Fixed a bug when selecting lists and sorting
 - Improved performance for list selections
+- Fix bug with missing undo-bar & entries not getting deleted
+- List editor dialog UI fix
 - Internal improvements & upgrades

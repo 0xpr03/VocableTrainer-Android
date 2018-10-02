@@ -38,7 +38,9 @@
     <string name="TSettings_Tab_List">Lists</string>
     <string name="TSettings_Info_missing_lists">You have to select at least one list.</string>
     <string name="ListSelector_Title_Edit">Select list to edit</string>
-    <string name="ListSelector_Title_Delete">Delete selected Table</string>
+    <string name="ListSelector_Title_Delete">Delete selected List</string>
+    <string name="List_Deleted_Message">List deleted</string>
+    <string name="List_Delete_Icon_Description">DELETE</string>
     <string name="Sort_Col_Name">Name</string>
     <string name="Sort_Col_A">Column A</string>
     <string name="Sort_Col_B">Column B</string>
@@ -50,7 +52,6 @@
     <string name="Editor_Hint_List_Name">List Name</string>
     <string name="Editor_Hint_Tip">Hint</string>
     <string name="Editor_Hint_Addition">Additional</string>
-    <string name="Editor_Undo">Undo</string>
     <string name="Editor_ListSettings">List Settings</string>
     <string name="CSV_Format">CSV Format</string>
     <string name="Select_File_btn">Select File</string>
@@ -96,6 +97,7 @@
     <string name="GEN_Sort">Sorting</string>
     <string name="GEN_Ok">Ok</string>
     <string name="GEN_Cancel">Cancel</string>
+    <string name="GEN_Undo">UNDO</string>
     <!-- Dialogs -->
     <string name="Trainer_Diag_finished_Title">Finished</string>
     <string name="Trainer_Diag_finished_MSG">You\'ve finished this training session.</string>
@@ -123,6 +125,7 @@
     <string name="ListSelector_Diag_delete_Msg" formatted="false">Do you really want to delete the following list: %s: %s, %s</string>
     <string name="ListSelector_Diag_delete_btn_Delete">Delete</string>
     <string name="ListSelector_Diag_delete_btn_Cancel">Cancel</string>
+    <string name="ListSelector_Diag_delete_error_Toast">Unable to delete list!</string>
     <string name="File_Diag_exists_Title">File exists</string>
     <string name="File_Diag_MSG_part" formatted="false">Do you really want to overwrite the file %f ?</string>
     <string name="File_Diag_btn_OK">Overwrite</string>

@@ -5,4 +5,7 @@
 - Fixed crash when selecting a list on raw data import
 - Fixed bug were custom formats missed the new record delimiter on export
 - Fixed hint menu in training staying clickable when no hint exists
-- Background improvements & upgrades
+- List view reworked, allowing for background loading & undo
+- Fixed a bug when selecting lists and sorting
+- Improved performance for list selections
+- Internal improvements & upgrades

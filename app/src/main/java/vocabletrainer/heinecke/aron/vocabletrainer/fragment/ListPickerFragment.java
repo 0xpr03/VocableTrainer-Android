@@ -1,34 +1,39 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
-import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.Button;
-import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.TableListAdapter;
+import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.ListTouchHelper;
+import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.ListRecyclerAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenTableComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.ListPickerViewModel;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
@@ -38,20 +43,20 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERV
  *     This can be used externally in other fragments<br>
  *     Requires a toolbar
  */
-public class ListPickerFragment extends PagerFragment {
+public class ListPickerFragment extends PagerFragment implements ListRecyclerAdapter.ItemClickListener, ListTouchHelper.SwipeListener {
     public static final String TAG = "ListPickerFragment";
     private static final String P_KEY_LA_SORT = "LA_sorting";
-    private static final String K_MULTISELECT = "multiselect";
+    private static final String K_MULTISELECT = "multiSelect";
     private static final String K_SHOWOK = "showok";
     private static final String K_PRESELECT = "preselect";
     private static final String K_DELETE = "delete";
 
     private View view;
     private Database db;
-    private boolean multiselect;
+    private boolean multiSelect;
     private boolean showOkButton;
-    private ListView listView;
-    private TableListAdapter adapter;
+    private RecyclerView recyclerView;
+    private ListRecyclerAdapter adapter;
     private boolean delete;
     private Button bOk;
     private int sort_type;
@@ -61,10 +66,54 @@ public class ListPickerFragment extends PagerFragment {
     private GenTableComparator cComp;
     private FinishListener listener;
     private AlertDialog dialog;
+    private ListPickerViewModel listPickerViewModel;
 
     @Override
     protected void onFragmentInvisible() {
-        listener.selectionUpdate(getSelectedItems());
+        //listener.selectionUpdate(getSelectedItems());
+    }
+
+    @Override
+    public void onItemClick(View view, int position) {
+        if(!multiSelect){
+            VList list = adapter.getItemAt(position);
+            if (list.getId() != ID_RESERVED_SKIP) {
+                ArrayList<VList> result = new ArrayList<>(1);
+                result.add(list);
+                listener.selectionUpdate(result);
+            }
+        }
+        Log.d(TAG,"item licked at: "+ position);
+    }
+
+    @Override
+    public void onSwiped(ListRecyclerAdapter.VListViewHolder viewHolder, int position) {
+        if(position < adapter.getItemCount() -1){
+            VList entry = adapter.getItemAt(position);
+            Snackbar snackbar = Snackbar
+                    .make(recyclerView, R.string.List_Deleted_Message, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.GEN_Undo, view -> {
+                        adapter.restoreEntry(entry,position);
+                        recyclerView.scrollToPosition(position);
+                    })
+                    .addCallback(new Snackbar.Callback(){
+                        @Override
+                        public void onDismissed(Snackbar transientBottomBar, int event) {
+                            switch(event){
+                                case DISMISS_EVENT_CONSECUTIVE: // second deletion
+                                case DISMISS_EVENT_TIMEOUT: // timeout
+                                case DISMISS_EVENT_MANUAL: // dismiss() -> view change
+                                case DISMISS_EVENT_SWIPE: // swiped away
+                                    Log.d(TAG,"deleting list");
+                                    Database db = new Database(getContext());
+                                    db.deleteTable(entry);
+                                break;
+                            }
+                        }
+                    });
+            snackbar.show();
+            adapter.removeEntry(entry);
+        }
     }
 
     /**
@@ -74,7 +123,7 @@ public class ListPickerFragment extends PagerFragment {
         /**
          * Called when ok button is pressed or list picker goes invisible
          * @param selected Selected lists<br>
-         *        Contains one element if multiselect is disabled
+         *        Contains one element if multiSelect is disabled
          */
         void selectionUpdate(ArrayList<VList> selected);
 
@@ -107,6 +156,26 @@ public class ListPickerFragment extends PagerFragment {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        listPickerViewModel = ViewModelProviders.of(getActivity()).get(ListPickerViewModel.class);
+
+        listPickerViewModel.getListsHandle().observe(this, lists -> {
+            if(lists != null) {
+                // effectively nothing happens if lists == current
+                adapter.submitList(lists, cComp);
+                Log.d(TAG,"retrieved data size:"+lists.size());
+            }
+        });
+
+        // check to not override checked items on viewport change (export)
+        if(listPickerViewModel.isDataInvalidated()){
+            loadTables();
+        }
+    }
+
+    @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         listener = null;
@@ -121,7 +190,15 @@ public class ListPickerFragment extends PagerFragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         Log.d(TAG,"onActivityCreated "+(savedInstanceState != null));
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(listPickerViewModel.isDataInvalidated()){
+            // effectively submitList doesn't do anything if list==list
+            listPickerViewModel.loadLists(getContext());
+        }
     }
 
     @Override
@@ -137,10 +214,9 @@ public class ListPickerFragment extends PagerFragment {
             bundle = new Bundle();
         }
         // default values required for {@link ExImportActivity.ViewPagerAdapter.class} solution, using no arguments
-        multiselect = bundle.getBoolean(K_MULTISELECT,true);
+        multiSelect = bundle.getBoolean(K_MULTISELECT,true);
         showOkButton = bundle.getBoolean(K_SHOWOK,false);
         delete = bundle.getBoolean(K_DELETE,false);
-        List<VList> preselected = bundle.getParcelableArrayList(K_PRESELECT);
 
         ActionBar ab = getACActivity().getSupportActionBar();
         if (ab != null) {
@@ -164,15 +240,15 @@ public class ListPickerFragment extends PagerFragment {
         ,ID_RESERVED_SKIP);
 
         bOk = view.findViewById(R.id.btnOkSelect);
-        bOk.setVisibility(showOkButton && multiselect ? View.VISIBLE : View.GONE);
+        bOk.setVisibility(showOkButton && multiSelect ? View.VISIBLE : View.GONE);
 
         SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
         sort_type = settings.getInt(P_KEY_LA_SORT, R.id.lMenu_sort_Name);
         updateComp();
 
         // setup listview
-        initListView();
-        loadTables(preselected);
+        initRecyclerView();
+        //loadTables(preselected); TODO
         updateOkButton();
         return view;
     }
@@ -223,125 +299,57 @@ public class ListPickerFragment extends PagerFragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         Log.d(TAG,"onSaveInstanceState");
-        ArrayList<VList> lst;
-        if(listView.getChoiceMode() == AbsListView.CHOICE_MODE_MULTIPLE){
-            lst = getSelectedItems();
-        } else {
-            lst = new ArrayList<>(0);
-        }
-        outState.putParcelableArrayList(K_PRESELECT,lst);
         outState.putBoolean(K_SHOWOK,showOkButton);
-        outState.putBoolean(K_MULTISELECT, multiselect);
+        outState.putBoolean(K_MULTISELECT, multiSelect);
         outState.putBoolean(K_DELETE, delete);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        loadTables(null);
     }
 
     /**
      * Load lists from db
-     *
-     * @param tickedLists already selected lists, can be null
      */
-    private void loadTables(List<VList> tickedLists) {
-        List<VList> lists = db.getTables();
-        adapter.setAllUpdated(lists, cComp);
-        if (tickedLists != null) {
-            for (int i = 0; i < adapter.getCount(); i++) {
-                VList tbl = adapter.getItem(i);
-                if (tbl.isExisting() && tickedLists.contains(tbl)) {
-                    listView.setItemChecked(i, true);
-                }
-            }
-        }
+    private void loadTables() {
+        Log.d(TAG,"loading lists");
+        listPickerViewModel.loadLists(getContext());
     }
 
     /**
      * Setup list view
      */
-    private void initListView() {
-        listView = view.findViewById(R.id.listVIewLstSel);
+    private void initRecyclerView() {
+        recyclerView = view.findViewById(R.id.listViewRecyclerView);
         // fix bug with collapsing toolbar + scrollview
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            listView.setNestedScrollingEnabled(true);
-            listView.startNestedScroll(View.OVER_SCROLL_ALWAYS);
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            listView.setNestedScrollingEnabled(true);
+//            listView.startNestedScroll(View.OVER_SCROLL_ALWAYS);
+//        }
         ArrayList<VList> lists = new ArrayList<>();
-        adapter = new TableListAdapter(getActivity(), R.layout.table_list_view, lists, multiselect);
+        adapter = new ListRecyclerAdapter(lists, multiSelect, getContext());
+        if (!delete){
+            adapter.setItemClickListener(this);
+        }
+        LinearLayoutManager manager = new LinearLayoutManager(getActivity());
+        recyclerView.setLayoutManager(manager);
 
-        listView.setAdapter(adapter);
+        recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), LinearLayoutManager.VERTICAL));
+        recyclerView.setAdapter(adapter);
 
-        if (multiselect) {
-            // TODO: title; setTitle(R.string.ListSelector_Title_Training);
-            listView.setItemsCanFocus(false);
-            listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-            if(showOkButton) {
-                listView.setOnItemClickListener((adapterView, view, position, id) -> {
-                    if (adapter.getItem(position).getId() != ID_RESERVED_SKIP) {
-                        updateOkButton();
-                    }
-                });
-                bOk.setOnClickListener(v -> listener.selectionUpdate(getSelectedItems()));
-            }
-        } else {
-            if (delete) {
-//                setTitle(R.string.ListSelector_Title_Delete);
-                listView.setOnItemClickListener((parent, view, position, id) -> {
-                    VList list = adapter.getItem(position);
-                    if (list.getId() != ID_RESERVED_SKIP) {
-                        showDeleteDialog(list);
-                    }
-                });
-            } else {
-//                setTitle(R.string.ListSelector_Title_Edit);
-                listView.setOnItemClickListener((parent, view, position, id) -> {
-                    VList list = adapter.getItem(position);
-                    if (list.getId() != ID_RESERVED_SKIP) {
-                        ArrayList<VList> result = new ArrayList<>(1);
-                        result.add(list);
-                        listener.selectionUpdate(result);
-                    }
-                });
-            }
+        if(delete) {
+            ListTouchHelper touchHelper = new ListTouchHelper(this);
+            new ItemTouchHelper(touchHelper).attachToRecyclerView(recyclerView);
+
+            getACActivity().getSupportActionBar().setTitle(R.string.ListSelector_Title_Delete);
         }
     }
 
-    /**
-     * Get selected items
-     * Can be used to query the selected items at any time
-     * @return List of VList which are selected
-     */
-    public ArrayList<VList> getSelectedItems(){
-        ArrayList<VList> selectedLists = new ArrayList<>(10);
-        if(listView != null) { // export calls validate before listpicker is finished with init
-            Log.d(TAG,listView.toString());
-            final SparseBooleanArray checkedItems = listView.getCheckedItemPositions();
-            int chkItemsCount = checkedItems.size();
-
-            for (int i = 0; i < chkItemsCount; ++i) {
-                if (checkedItems.valueAt(i)) {
-                    VList item = adapter.getItem(checkedItems.keyAt(i));
-                    if (item.isExisting())
-                        selectedLists.add(item);
-                    else
-                        Log.d(TAG, "ignoring item");
-                }
-            }
-        } else {
-            Log.w(TAG,"listview is null!");
-        }
-        Log.d(TAG,"found "+selectedLists.size()+" items");
-        return selectedLists;
+    private void deleteList(int position){
+        Log.d(TAG,"triggered deletion");
     }
 
     /**
      * Update enabled state of OK button
      */
     private void updateOkButton() {
-        bOk.setEnabled(listView.getCheckedItemCount() > 0);
+        bOk.setEnabled(listPickerViewModel.getSelectedLists().size() > 0); // TODO more performant
     }
 
     /**
@@ -357,8 +365,11 @@ public class ListPickerFragment extends PagerFragment {
                 listToDelete.getName(), listToDelete.getNameA(), listToDelete.getNameB()));
 
         finishedDiag.setPositiveButton(R.string.ListSelector_Diag_delete_btn_Delete, (dialog, whichButton) -> {
-            db.deleteTable(listToDelete);
-            adapter.removeEntryUpdated(listToDelete);
+            if(db.deleteTable(listToDelete)) {
+                adapter.removeEntry(listToDelete);
+            } else{
+                Toast.makeText(getContext(),R.string.ListSelector_Diag_delete_error_Toast,Toast.LENGTH_LONG).show();
+            }
         });
 
         finishedDiag.setNegativeButton(R.string.ListSelector_Diag_delete_btn_Cancel, (dialog, whichButton) -> {

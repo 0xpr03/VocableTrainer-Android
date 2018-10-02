@@ -38,18 +38,17 @@ public class TableListAdapter extends ArrayAdapter<VList> {
      * New lists list adapter
      *
      * @param context context to use, should be "this" for activities, avoiding style problems
-     * @param textViewResourceId row resource XML
      * @param lists
      * @param displayCheckbox set to true to show checkbox for multi select
      */
-    public TableListAdapter(Context context, int textViewResourceId, @NonNull ArrayList<VList> lists, final boolean displayCheckbox) {
-        super(context, textViewResourceId, lists);
+    public TableListAdapter(Context context, @NonNull ArrayList<VList> lists, final boolean displayCheckbox) {
+        super(context, R.layout.list_recycler_item, lists);
         this.dataItem = lists;
         header = new VList(ID_RESERVED_SKIP,context.getString(R.string.Editor_Hint_Column_A), context.getString(R.string.Editor_Hint_Column_B), context.getString(R.string.Editor_Hint_List_Name),null);
         // don't re-add header on restore
         if(dataItem.size() == 0 || !dataItem.get(0).equals(header))
             dataItem.add(STARTING_ITEM - 1, header);
-        resLayout = textViewResourceId;
+        resLayout = R.layout.list_recycler_item;
         this.context = context;
         this.displayCheckbox = displayCheckbox;
     }
@@ -96,12 +95,14 @@ public class TableListAdapter extends ArrayAdapter<VList> {
         if(convertView == null)
             convertView = inflater.inflate(resLayout, parent, false);
 
-        TextView colName = convertView.findViewById(R.id.tableFirstText);
-        TextView colA = convertView.findViewById(R.id.tableSecondText);
-        TextView colB = convertView.findViewById(R.id.tableThirdText);
+        TextView colName = convertView.findViewById(R.id.tListEntryName);
+        TextView colA = convertView.findViewById(R.id.tListEntryColA);
+        TextView colB = convertView.findViewById(R.id.tListEntryColB);
 
         if (!displayCheckbox) {
-            convertView.findViewById(R.id.tblCheckBox).setVisibility(View.GONE);
+            convertView.findViewById(R.id.chkListEntrySelect).setVisibility(View.GONE);
+        } else {
+
         }
 
 
@@ -113,7 +114,7 @@ public class TableListAdapter extends ArrayAdapter<VList> {
         }
 
         if (displayCheckbox)
-            convertView.findViewById(R.id.tblCheckBox).setVisibility(reserved ? View.INVISIBLE : View.VISIBLE);
+            convertView.findViewById(R.id.chkListEntrySelect).setVisibility(reserved ? View.INVISIBLE : View.VISIBLE);
 
         colName.setTypeface(null, typeface);
         colA.setTypeface(null, typeface);

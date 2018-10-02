@@ -1,5 +1,6 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib;
 
+import android.arch.lifecycle.LiveData;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -7,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -270,15 +272,29 @@ public class Database {
      * @return ArrayList<\VList>
      */
     public List<VList> getTables() {
+        return getTables(null);
+    }
+
+    /**
+     * Get a list of all lists
+     * @param cancelHandle Handle for cancel, null for cancel disable, value has to be set
+     * @return ArrayList<\VList>
+     */
+    public List<VList> getTables(@Nullable LiveData<Boolean> cancelHandle) {
         final String[] column = {KEY_TABLE,KEY_NAME_A,KEY_NAME_B,KEY_NAME_TBL,KEY_CREATED};
         try (
                 Cursor cursor = db.query(TBL_TABLES,column,null,null,null,null,null);
         ) {
             List<VList> list = new ArrayList<>();
             while (cursor.moveToNext()) {
-                list.add(new VList(cursor.getInt(0), cursor.getString(1),
-                    cursor.getString(2), cursor.getString(3),
-                    new Date(cursor.getLong(4))));
+                //noinspection ConstantConditions
+                if(cancelHandle != null && cancelHandle.getValue()){
+                    break;
+                }
+                VList entry = new VList(cursor.getInt(0), cursor.getString(1),
+                        cursor.getString(2), cursor.getString(3),
+                        new Date(cursor.getLong(4)));
+                list.add(entry);
             }
             return list;
         } catch (Exception e) {

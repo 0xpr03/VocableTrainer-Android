@@ -40,6 +40,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEnt
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.ExportViewModel;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.FormatViewModel;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.ListPickerViewModel;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
 
@@ -69,6 +70,7 @@ public class ExportFragment extends PagerFragment {
     private GenericSpinnerEntry<CSVCustomFormat> customFormatEntry;
     private ProgressDialog progressDialog;
     private ExportViewModel exportViewModel;
+    private ListPickerViewModel listPickerViewModel;
 
     /**
      * Required interface for attachers of this class
@@ -84,6 +86,7 @@ public class ExportFragment extends PagerFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        listPickerViewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(ListPickerViewModel.class);
 
         FormatViewModel formatViewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(FormatViewModel.class);
         formatViewModel.getCustomFormatLD().observe(this, format -> {
@@ -267,14 +270,7 @@ public class ExportFragment extends PagerFragment {
     }
 
     private ArrayList<VList> getLists(){
-        ArrayList<VList> list = EMPTY_LISTS;
-        if(activity != null) {
-            return activity.getExportLists();
-        } else {
-            Log.wtf(TAG,"No ListPickerFragment found!");
-        }
-        Log.d(TAG,"List size: "+list.size());
-        return list;
+        return listPickerViewModel.getSelectedLists();
     }
 
     /**

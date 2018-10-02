@@ -18,6 +18,7 @@ public class VList implements Parcelable {
     private int totalVocs;
     private int unfinishedVocs;
     private int id;
+    private boolean selected;
 
     /**
      * Creates a new VList data object
@@ -34,6 +35,7 @@ public class VList implements Parcelable {
         this.created = created;
         this.totalVocs = MIN_ID_TRESHOLD - 1;
         this.unfinishedVocs = MIN_ID_TRESHOLD - 1;
+        this.selected = false;
     }
 
     /**
@@ -80,6 +82,13 @@ public class VList implements Parcelable {
         return getId() + " " + getName() + " " + getNameA() + " " + getNameB() + " " + getTotalVocs() + " " + getUnfinishedVocs();
     }
 
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
 
     /**
      * Tests for equality based on list ID

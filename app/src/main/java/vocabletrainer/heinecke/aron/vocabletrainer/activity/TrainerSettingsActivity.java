@@ -1,5 +1,6 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -20,6 +21,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ListPickerFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.TrainerSettingsFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.ListPickerViewModel;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.TrainerActivity.PARAM_TABLES;
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.TrainerActivity.PARAM_TRAINER_SETTINGS;
@@ -34,11 +36,14 @@ public class TrainerSettingsActivity extends FragmentActivity implements Trainer
     ViewPagerAdapter viewPagerAdapter;
     private ViewPager viewPager;
     private ListPickerFragment listPicker;
+    private ListPickerViewModel listPickerViewModel;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trainer_settings);
+
+        listPickerViewModel = ViewModelProviders.of(this).get(ListPickerViewModel.class);
 
         final Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -77,11 +82,11 @@ public class TrainerSettingsActivity extends FragmentActivity implements Trainer
 
     @Override
     public void handleFinish(TrainerSettings settings) {
-        ArrayList<VList> picked = listPicker.getSelectedItems();
+        List<VList> picked = listPickerViewModel.getSelectedLists();
         if(picked.size() > 0) {
             Intent intent = new Intent(this, TrainerActivity.class);
             intent.putExtra(PARAM_TRAINER_SETTINGS, settings);
-            intent.putParcelableArrayListExtra(PARAM_TABLES, picked);
+            intent.putParcelableArrayListExtra(PARAM_TABLES, new ArrayList<>(picked));
             startActivity(intent);
         } else {
             Toast.makeText(getBaseContext(), R.string.TSettings_Info_missing_lists, Toast.LENGTH_LONG).show();

@@ -1,6 +1,7 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
 import android.app.Activity;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
@@ -13,6 +14,7 @@ import java.util.List;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ListPickerFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.ListPickerViewModel;
 
 /**
  * List selector activity
@@ -67,6 +69,7 @@ public class ListActivity extends FragmentActivity implements ListPickerFragment
         if(editorMode){
             multiselect = false;
             delete = false;
+            ab.setTitle(R.string.ListSelector_Title_Edit);
         }
 
         ArrayList<VList> preselected;
@@ -114,6 +117,9 @@ public class ListActivity extends FragmentActivity implements ListPickerFragment
     @Override
     public void selectionUpdate(ArrayList<VList> selected) {
         if(editorMode) {
+            ListPickerViewModel listPickerViewModel = ViewModelProviders.of(this).get(ListPickerViewModel.class);
+            listPickerViewModel.setDataInvalidated(); // editor changed entry
+
             Intent myIntent = new Intent(this, EditorActivity.class);
             myIntent.putExtra(EditorActivity.PARAM_NEW_TABLE, false);
             VList lst = selected.get(0);

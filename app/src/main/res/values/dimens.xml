@@ -1,4 +1,6 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="text_margin">16dp</dimen>
+    <dimen name="ic_delete">30dp</dimen>
+    <dimen name="padd_10">10dp</dimen>
 </resources>

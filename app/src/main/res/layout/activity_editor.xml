@@ -77,7 +77,7 @@
                 android:drawableLeft="@drawable/ic_undo_white_48dp"
                 android:enabled="false"
                 android:focusable="false"
-                android:text="@string/Editor_Undo"
+                android:text="@string/GEN_Undo"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="@android:color/background_light" />
         </LinearLayout>

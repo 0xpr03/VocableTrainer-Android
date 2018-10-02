@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="@dimen/padd_10"
     android:orientation="horizontal">
 
     <TextView
@@ -9,19 +10,22 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="First"></TextView>
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:text="@string/Placeholder" />
 
     <TextView
         android:id="@+id/entrySecondText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="Second"></TextView>
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:text="@string/Placeholder" />
 
     <TextView
         android:id="@+id/entryThirdText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="0.9"
-        android:text="Third"></TextView>
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:text="@string/Placeholder" />
 </LinearLayout>

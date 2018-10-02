@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 
 import java.util.concurrent.Callable;
@@ -31,6 +32,12 @@ public class TrainerResultDialog extends DialogFragment {
         dialog.setTrainer(trainer);
         dialog.setFinishAction(callable);
         return dialog;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setStyle(android.support.v4.app.DialogFragment.STYLE_NORMAL, R.style.CustomDialog);
     }
 
     /**

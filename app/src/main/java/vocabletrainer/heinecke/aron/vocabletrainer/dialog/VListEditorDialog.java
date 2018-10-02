@@ -5,8 +5,12 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
@@ -74,6 +78,7 @@ public class VListEditorDialog extends DialogFragment {
         } else if(getArguments() != null){
             newList = getArguments().getBoolean(PARAM_NEW);
         }
+        setStyle(DialogFragment.STYLE_NORMAL, R.style.CustomDialog);
     }
 
     @Override
@@ -109,16 +114,14 @@ public class VListEditorDialog extends DialogFragment {
         Log.d(TAG,"onCreateDialog");
         list = getListProvider().getList();
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
-        alertDialog.setMessage(newList ? R.string.Editor_Diag_table_Title_New : R.string.Editor_Diag_table_Title_Edit );
-        iName = new EditText(getActivity());
-        iColA = new EditText(getActivity());
-        iColB = new EditText(getActivity());
+        final View view = View.inflate(getActivity(), R.layout.dialog_list, null);
+        alertDialog.setTitle(newList ? R.string.Editor_Diag_table_Title_New : R.string.Editor_Diag_table_Title_Edit );
+        iName = view.findViewById(R.id.tListName);
+        iColA = view.findViewById(R.id.tListColumnA);
+        iColB = view.findViewById(R.id.tListColumnB);
 
         iName.setText(list.getName());
         iName.setSingleLine();
-        iName.setHint(R.string.Editor_Hint_List_Name);
-        iColA.setHint(R.string.Editor_Hint_Column_A);
-        iColB.setHint(R.string.Editor_Hint_Column_B);
         iColA.setText(list.getNameA());
         iColA.setSingleLine();
         iColB.setSingleLine();
@@ -135,11 +138,7 @@ public class VListEditorDialog extends DialogFragment {
             iColB.setText(savedInstanceState.getString(KEY_COL_B));
         }
 
-        LinearLayout rl = new TableLayout(getActivity());
-        rl.addView(iName);
-        rl.addView(iColA);
-        rl.addView(iColB);
-        alertDialog.setView(rl);
+        alertDialog.setView(view);
 
         alertDialog.setPositiveButton(R.string.Editor_Diag_table_btn_Ok, (dialog, whichButton) -> {
             if (iColA.getText().length() == 0 || iColB.length() == 0 || iName.getText().length() == 0) {

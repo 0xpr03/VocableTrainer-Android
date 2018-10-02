@@ -30,23 +30,18 @@
     <string name="Editor_Diag_table_Title_New">Neue Liste</string>
     <string name="Editor_Diag_table_btn_Ok">Ok</string>
     <string name="Editor_Diag_table_btn_Canel">Abbrechen</string>
-    <string name="Editor_Undo">Rückgängig</string>
     <string name="ListSelector_Diag_delete_Msg" formatted="false">Möchten Sie diese Liste löschen: %s: %s, %s</string>
     <string name="ListSelector_Diag_delete_Title">Liste Löschen</string>
     <string name="ListSelector_Diag_delete_btn_Cancel">Abbrechen</string>
     <string name="ListSelector_Diag_delete_btn_Delete">Löschen</string>
     <string name="ListSelector_Title_Edit">Liste auswählen zum Editieren</string>
-    <string name="ListSelector_Title_Training">Liste zum Trainieren auswählen</string>
     <string name="Trainer_Diag_finished_MSG">Training beendet</string>
     <string name="Trainer_Diag_finished_Title">Fertig</string>
-    <string name="Trainer_Diag_finished_btn_OK">Ok</string>
-    <string name="TSettings_Title">Training Einstellungen</string>
     <string name="CSV_Format">CSV Format</string>
     <string name="CSV_Format_Default">Standard</string>
     <string name="CSV_Format_EXCEL">Excel</string>
     <string name="CSV_Format_Tabs">Tabs</string>
     <string name="Export_Exporting_Title">Exportiere..</string>
-    <string name="Export_Cancel">Abbrechen</string>
     <string name="Export_Message">UTF8 kodierte CSV Datei mit (mehreren) vokabel Liste(n) importieren.\nSiehe <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Export">Wiki Eintrag</a> für weiter Informationen.</string>
     <string name="Export_Ok">Exportieren</string>
     <string name="Export_chk_Multilist">Mehrere Listen exportieren</string>
@@ -58,7 +53,6 @@
     <string name="File_btn_Cancel">Abbrechen</string>
     <string name="File_btn_OK">Ok</string>
     <string name="File_t_hint">Datei_Name.xyz</string>
-    <string name="Import_Cancel">Abbrechen</string>
     <string name="Import_Importing_Title">Importiere..</string>
     <string name="Import_Ok">Importieren</string>
     <string name="Import_Preview_Update_Title">Aktualisiere..</string>
@@ -93,7 +87,6 @@
     <string name="TSettings_rb_B">Spalte B abfragen</string>
     <string name="TSettings_rb_Random">Zufällige Spalte abfragen</string>
     <string name="About_Title">Über</string>
-    <string name="Editor_Title">Editor</string>
     <string name="Export_Title">Exportieren</string>
     <string name="Import_Title">Importieren</string>
     <string name="Trainer_Title">Üben</string>
@@ -102,8 +95,6 @@
     <string name="GEN_Ok">Ok</string>
     <string name="File_Menu_Sort_Name">Name</string>
     <string name="File_Menu_Sort_Size">Größe</string>
-    <string name="ExImport_Edit_CustomFormat">Custom Format editieren</string>
-    <string name="Editor_search_hint">Dateiname</string>
     <string name="Sort_Col_Tip">Spalte Tip</string>
     <string name="Sort_Col_B">Spalte B</string>
     <string name="Sort_Col_A">Spalte A</string>

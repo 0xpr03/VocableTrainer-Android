@@ -11,22 +11,18 @@
 
     <string name="Trainer_btn_Hint">ヒントを表示</string>
     <string name="Trainer_btn_Solution">解決策を表示</string>
-    <string name="TSettings_Title">トレーニング設定</string>
     <string name="TSettings_Time_Solve">解決までの時間</string>
     <string name="TSettings_chkbx_Tips">ヒントを許可</string>
     <string name="TSettings_btn_Start">セッションを開始</string>
     <string name="ListSelector_Title_Edit">編集するリストを選択</string>
     <string name="ListSelector_Title_Delete">選択した表を削除</string>
-    <string name="ListSelector_Title_Training">トレーニングのリストを選択</string>
     <string name="Editor_Hint_Column_A">項目 A</string>
     <string name="Editor_Hint_Column_B">項目 B</string>
     <string name="Editor_Hint_List_Name">リスト名</string>
     <string name="Editor_Hint_Tip">ヒント</string>
-    <string name="Editor_Undo">元に戻す</string>
     <!-- Dialogs -->
     <string name="Trainer_Diag_finished_Title">完了しました</string>
     <string name="Trainer_Diag_finished_MSG">このトレーニングセッションを完了しました。</string>
-    <string name="Trainer_Diag_finished_btn_OK">OK</string>
     <string name="Editor_Diag_delete_Title">エントリを削除</string>
     <string formatted="false" name="Editor_Diag_delete_MSG_part">このエントリを削除しますか ?</string>
     <string name="Editor_Diag_delete_btn_OK">削除</string>

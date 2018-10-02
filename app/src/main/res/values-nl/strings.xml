@@ -49,11 +49,9 @@
     <string name="Editor_Hint_List_Name">Lijstnaam</string>
     <string name="Editor_Hint_Tip">Hint</string>
     <string name="Editor_Hint_Addition">Extra</string>
-    <string name="Editor_Undo">Ongedaan maken</string>
     <string name="Editor_ListSettings">Lijstinstellingen</string>
     <string name="CSV_Format">CSV-format</string>
     <string name="Select_File_btn">Bestand selecteren</string>
-    <string name="ExImport_Edit_CustomFormat">Aangepast formaat bewerken</string>
     <string name="Import_Title">Importeren</string>
     <string name="Import_Ok">Importeren</string>
     <string name="Import_file_placeholder">Bestand importeren</string>
@@ -64,8 +62,8 @@
     <string name="Import_Info_singlelist">Eén lijst gedetecteerd</string>
     <string name="Import_Info_rawlist">Kale lijst gedetecteerd</string>
     <string name="Import_File_select_Info">Bronbestand selecteren</string>
-    <string name="Import_Preview_Update_Title">Bezig met bijwerken...</string>
-    <string name="Import_Importing_Title">Bezig met importeren...</string>
+    <string name="Import_Preview_Update_Title">Bezig met bijwerken…</string>
+    <string name="Import_Importing_Title">Bezig met importeren…</string>
     <string name="Import_Finished_Title">Importeren voltooid</string>
     <string name="Export_Title">Exporteren</string>
     <string name="Export_Ok">Exporteren</string>
@@ -73,7 +71,7 @@
     <string name="Export_chk_Table_Meta">Lijst-metagegevens exporteren</string>
     <string name="Export_chk_Multilist">Meerdere lijsten exporteren</string>
     <string name="Export_File_select_Info">Exportbestand selecteren</string>
-    <string name="Export_Exporting_Title">Bezig met exporteren...</string>
+    <string name="Export_Exporting_Title">Bezig met exporteren…</string>
     <string name="Export_Error_Format_Multivalue_Title">Ongeldig CSV-formaat</string>
     <string name="Export_Error_Format_Multivalue_Text">De exportering vereist een geldig CSV-formaat met ondersteuning voor meerdere waardes om gegevensverlies te voorkomen.</string>
     <string name="File_btn_OK">Oké</string>

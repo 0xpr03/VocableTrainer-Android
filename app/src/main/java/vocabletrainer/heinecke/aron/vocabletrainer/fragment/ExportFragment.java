@@ -129,6 +129,13 @@ public class ExportFragment extends PagerFragment {
                 Toast.makeText(getContext(),R.string.Export_Cancel_Toast, Toast.LENGTH_SHORT).show();
             }
         });
+
+        exportViewModel.getExportFinishedHandle().observe(this, data -> {
+            if(data != null && data){
+                Toast.makeText(getContext(),R.string.Export_Info_Finished,Toast.LENGTH_SHORT).show();
+                exportViewModel.resetExportFinished();
+            }
+        });
     }
 
     @Nullable

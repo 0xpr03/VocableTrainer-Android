@@ -136,6 +136,7 @@
     <string name="File_Error_Nullpointer">Unable to show files. Nullpointer</string>
     <string name="Import_Message" formatted="true">Import a UTF8 encoded CSV file containing (multiple) vocable lists.\nSee the <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Import">wiki page</a> for help.</string>
     <string name="Export_Message" formatted="true">Export to UTF8 encoded CSV file (with list info)\nSee the <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Export">wiki page</a> for help.</string>
+    <string name="Export_Info_Finished">Export finished</string>
     <string name="Format_Error_Input_equals">The values of the following options should not be equal: $A : $B</string>
     <string name="Import_Error_MIN_RECORD_SIZE">Invalid entry, not enough values:</string>
     <string name="Import_Warn_MAX_RECORD_SIZE">Entry has too many values: </string>

@@ -21,6 +21,7 @@ public class ExportViewModel extends ViewModel {
     private MutableLiveData<Integer> progressExport;
     private MutableLiveData<Boolean> exporting;
     private MutableLiveData<Boolean> cancelExport;
+    private MutableLiveData<Boolean> exportFinished;
     private Observer<Boolean> observeCancel;
     private AsyncTask task;
 
@@ -29,6 +30,7 @@ public class ExportViewModel extends ViewModel {
         progressExport = new MutableLiveData<>();
         exporting = new MutableLiveData<>();
         cancelExport = new MutableLiveData<>();
+        exportFinished = new MutableLiveData<>();
         cancelExport.setValue(false);
         exporting.setValue(false);
         progressExport.setValue(0);
@@ -77,6 +79,17 @@ public class ExportViewModel extends ViewModel {
         cancelExport.removeObserver(observeCancel);
     }
 
+    public LiveData<Boolean> getExportFinishedHandle() {
+        return exportFinished;
+    }
+
+    /**
+     * Reset exportFinished value
+     */
+    public void resetExportFinished(){
+        exportFinished.setValue(false);
+    }
+
     /**
      * Run Export task
      * @param context
@@ -89,6 +102,7 @@ public class ExportViewModel extends ViewModel {
         //post export
         Function<Void,String> callback = param -> {
             exporting.setValue(false);
+            exportFinished.setValue(true);
             exportListAmount = 0;
             return null;
         };

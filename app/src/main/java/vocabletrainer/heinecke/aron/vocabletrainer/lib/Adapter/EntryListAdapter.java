@@ -1,4 +1,4 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.activity.lib;
+package vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter;
 
 import android.app.Activity;
 import android.graphics.Typeface;

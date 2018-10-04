@@ -33,7 +33,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.ExImportActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.FileActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ProgressDialog;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVCustomFormat;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVCustomFormat;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenTableComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;

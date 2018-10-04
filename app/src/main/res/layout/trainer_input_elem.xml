@@ -9,7 +9,7 @@
     android:layout_marginBottom="10dp"
     android:orientation="vertical">
 
-    <vocabletrainer.heinecke.aron.vocabletrainer.lib.CEditText
+    <vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget.CEditText
         android:id="@+id/tTrainerInput"
         android:imeOptions="flagNoExtractUi"
         android:inputType="text|textNoSuggestions"

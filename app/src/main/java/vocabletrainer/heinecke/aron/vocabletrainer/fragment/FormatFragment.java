@@ -27,8 +27,8 @@ import java.util.Objects;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.FragmentActivity;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVCustomFormat;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.CustomEditTextPreference;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVCustomFormat;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget.CustomEditTextPreference;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.FormatViewModel;
 
 /**

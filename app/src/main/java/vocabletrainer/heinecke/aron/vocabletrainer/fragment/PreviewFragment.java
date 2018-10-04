@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.EntryListAdapter;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.EntryListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.ImportViewModel;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
 

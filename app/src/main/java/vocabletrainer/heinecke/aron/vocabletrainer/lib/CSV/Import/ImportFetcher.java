@@ -1,4 +1,4 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.lib.Import;
+package vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.Import;
 
 import android.arch.lifecycle.MutableLiveData;
 import android.os.AsyncTask;
@@ -17,11 +17,11 @@ import java.io.FileReader;
 import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVCustomFormat;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVCustomFormat;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Function;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.MultiMeaningHandler;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.MultiMeaningHandler;
 
-import static vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVHeaders.CSV_METADATA_START;
+import static vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVHeaders.CSV_METADATA_START;
 
 /**
  * ImportFetcher class<br>

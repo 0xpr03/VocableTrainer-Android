@@ -35,15 +35,15 @@ import vocabletrainer.heinecke.aron.vocabletrainer.activity.ListActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ImportLogDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ProgressDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.VListEditorDialog;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVCustomFormat;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.CustomItemSelectedListener;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.ImportFetcher;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.Importer;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVCustomFormat;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget.CustomItemSelectedListener;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.Import.ImportFetcher;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.Import.Importer;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.FormatViewModel;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.ImportViewModel;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewCreation;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget.ViewCreation;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
 

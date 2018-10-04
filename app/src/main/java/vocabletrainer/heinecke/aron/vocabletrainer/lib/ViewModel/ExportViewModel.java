@@ -9,7 +9,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ExportFragment;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Exporter;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.Exporter;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Function;
 
 /**

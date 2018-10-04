@@ -6,11 +6,11 @@ import org.junit.rules.ExpectedException;
 
 import java.util.Arrays;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVCustomFormat;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.MultiMeaningHandler;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVCustomFormat;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.MultiMeaningHandler;
 
 import static org.junit.Assert.*;
-import static vocabletrainer.heinecke.aron.vocabletrainer.lib.MultiMeaningHandler.ERROR_MSG_FORMAT;
+import static vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.MultiMeaningHandler.ERROR_MSG_FORMAT;
 
 /**
  * Tests for multi-meaning formatting

@@ -24,11 +24,10 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.ListTouchHelper;
-import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.ListRecyclerAdapter;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.ListTouchHelper;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.ListRecyclerAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenTableComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;

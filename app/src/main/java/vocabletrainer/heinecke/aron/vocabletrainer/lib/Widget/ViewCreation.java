@@ -1,4 +1,4 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.lib;
+package vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget;
 
 import android.view.View;
 import android.widget.RadioButton;

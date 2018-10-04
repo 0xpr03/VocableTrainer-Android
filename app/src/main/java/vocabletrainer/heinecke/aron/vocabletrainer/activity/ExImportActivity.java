@@ -2,10 +2,8 @@ package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
 import android.Manifest;
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
@@ -28,18 +26,16 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.ViewPagerAdapter;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.ViewPagerAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ExportFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.FormatFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ImportFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ListPickerFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.PreviewFragment;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVCustomFormat;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVCustomFormat;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.FormatViewModel;
-
-import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
 
 /**
  * Activity for import/export

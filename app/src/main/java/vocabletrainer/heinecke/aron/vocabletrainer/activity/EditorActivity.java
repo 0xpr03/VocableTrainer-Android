@@ -13,18 +13,13 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
-import android.view.animation.ScaleAnimation;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.EntryListAdapter;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.EntryListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.VEntryEditorDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.VListEditorDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenEntryComparator;

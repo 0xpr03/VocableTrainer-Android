@@ -1,10 +1,12 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.lib;
+package vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV;
 
 import android.support.annotation.NonNull;
 
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVCustomFormat;
 
 /**
  * Multi meaning handler

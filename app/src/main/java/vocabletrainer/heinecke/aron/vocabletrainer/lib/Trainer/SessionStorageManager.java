@@ -1,4 +1,4 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.lib;
+package vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer;
 
 import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;

@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.activity.lib.FileListAdapter;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.FileListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenFileEntryComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Formatter;

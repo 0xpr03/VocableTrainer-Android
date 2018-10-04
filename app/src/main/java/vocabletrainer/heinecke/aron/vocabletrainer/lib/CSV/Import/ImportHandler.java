@@ -1,4 +1,4 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.lib.Import;
+package vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.Import;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.lib;
+package vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV;
 
 import android.os.Parcel;
 import android.os.Parcelable;

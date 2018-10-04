@@ -1,11 +1,9 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.activity.lib;
+package vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter;
 
 import android.graphics.Canvas;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
-
-import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ListPickerFragment;
 
 /**
  * VList touch helper for recyclerview

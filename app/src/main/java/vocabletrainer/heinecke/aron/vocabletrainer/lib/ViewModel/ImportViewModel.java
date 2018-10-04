@@ -12,12 +12,12 @@ import android.util.Log;
 import java.io.File;
 import java.util.ArrayList;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVCustomFormat;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVCustomFormat;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Function;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.ImportFetcher;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.ImportFetcherBuilder;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.Importer;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Import.PreviewParser;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.Import.ImportFetcher;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.Import.ImportFetcherBuilder;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.Import.Importer;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.Import.PreviewParser;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
 
 import static android.os.AsyncTask.Status.RUNNING;

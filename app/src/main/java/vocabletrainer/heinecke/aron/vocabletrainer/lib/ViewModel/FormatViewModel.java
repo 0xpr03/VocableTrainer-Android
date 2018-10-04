@@ -7,7 +7,7 @@ import android.arch.lifecycle.MutableLiveData;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVCustomFormat;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVCustomFormat;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.ExImportActivity.loadCustomFormat;
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;

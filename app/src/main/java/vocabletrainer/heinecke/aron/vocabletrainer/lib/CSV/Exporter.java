@@ -1,4 +1,4 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.lib;
+package vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV;
 
 import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
@@ -12,11 +12,13 @@ import java.io.FileWriter;
 import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ExportFragment;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Function;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 
-import static vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVHeaders.CSV_METADATA_COMMENT;
-import static vocabletrainer.heinecke.aron.vocabletrainer.lib.CSVHeaders.CSV_METADATA_START;
+import static vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVHeaders.CSV_METADATA_COMMENT;
+import static vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVHeaders.CSV_METADATA_START;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
 
 /**

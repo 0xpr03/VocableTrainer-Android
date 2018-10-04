@@ -1,4 +1,4 @@
-package vocabletrainer.heinecke.aron.vocabletrainer.lib;
+package vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget;
 
 import android.view.View;
 import android.widget.AdapterView;
@@ -18,7 +18,7 @@ public abstract class CustomItemSelectedListener implements AdapterView.OnItemSe
     }
 
     /**
-     * Set firstSelect as undone, disabling the next itemSelect call
+     * Set firstSelect as undone, disabling the next itemSelect call from triggering itemSelected
      */
     public void setFirstUnselected() {
         this.firstSelect = true;

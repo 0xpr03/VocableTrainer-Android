@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Random;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.SessionStorageManager;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;

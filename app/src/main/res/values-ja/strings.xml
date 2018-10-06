@@ -32,8 +32,4 @@
     <string name="Editor_Diag_table_Title_Edit">リストを編集</string>
 
     <string name="About_btn_Close">閉じる</string>
-    <string name="ListSelector_Diag_delete_Title">リストを削除</string>
-    <string formatted="false" name="ListSelector_Diag_delete_Msg">次のリストを削除してもよろしいですか: %s: %s, %s</string>
-    <string name="ListSelector_Diag_delete_btn_Delete">削除</string>
-    <string name="ListSelector_Diag_delete_btn_Cancel">キャンセル</string>
 </resources>

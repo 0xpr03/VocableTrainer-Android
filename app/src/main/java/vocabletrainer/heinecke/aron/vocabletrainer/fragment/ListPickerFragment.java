@@ -186,12 +186,6 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        Log.d(TAG,"onActivityCreated "+(savedInstanceState != null));
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
         if(listPickerViewModel.isDataInvalidated()){
@@ -201,7 +195,7 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView "+(savedInstanceState != null));
         view = inflater.inflate(R.layout.fragment_list_selector,container,false);
         db = new Database(getActivity());
@@ -305,7 +299,7 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         Log.d(TAG,"onSaveInstanceState");
         outState.putBoolean(K_SHOWOK,showOkButton);
@@ -359,33 +353,6 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
      */
     private void updateOkButton() {
         bOk.setEnabled(listPickerViewModel.getSelectedLists().size() > 0);
-    }
-
-    /**
-     * Show delete dialog for table
-     *
-     * @param listToDelete
-     */
-    private void showDeleteDialog(final VList listToDelete) {
-        final AlertDialog.Builder finishedDiag = new AlertDialog.Builder(getActivity());
-
-        finishedDiag.setTitle(R.string.ListSelector_Diag_delete_Title);
-        finishedDiag.setMessage(String.format(getText(R.string.ListSelector_Diag_delete_Msg).toString(),
-                listToDelete.getName(), listToDelete.getNameA(), listToDelete.getNameB()));
-
-        finishedDiag.setPositiveButton(R.string.ListSelector_Diag_delete_btn_Delete, (dialog, whichButton) -> {
-            if(db.deleteTable(listToDelete)) {
-                adapter.removeEntry(listToDelete);
-            } else{
-                Toast.makeText(getContext(),R.string.ListSelector_Diag_delete_error_Toast,Toast.LENGTH_LONG).show();
-            }
-        });
-
-        finishedDiag.setNegativeButton(R.string.ListSelector_Diag_delete_btn_Cancel, (dialog, whichButton) -> {
-            // do nothing
-        });
-
-        dialog = finishedDiag.show();
     }
 
     @Override

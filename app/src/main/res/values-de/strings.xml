@@ -27,10 +27,6 @@
     <string name="Editor_Diag_table_Title_Edit">Liste editieren</string>
     <string name="Editor_Diag_table_Title_New">Neue Liste</string>
     <string name="Editor_Diag_table_btn_Canel">Abbrechen</string>
-    <string name="ListSelector_Diag_delete_Msg" formatted="false">Möchten Sie diese Liste löschen: %s: %s, %s</string>
-    <string name="ListSelector_Diag_delete_Title">Liste Löschen</string>
-    <string name="ListSelector_Diag_delete_btn_Cancel">Abbrechen</string>
-    <string name="ListSelector_Diag_delete_btn_Delete">Löschen</string>
     <string name="ListSelector_Title_Edit">Liste auswählen zum Editieren</string>
     <string name="Trainer_Diag_finished_MSG">Training beendet</string>
     <string name="Trainer_Diag_finished_Title">Fertig</string>
@@ -119,7 +115,6 @@
     <string name="Export_Tab_Main">Einstellungen</string>
     <string name="GEN_Cancel">Abbrechen</string>
     <string name="GEN_Undo">RÜCKGÄNGI</string>
-    <string name="ListSelector_Diag_delete_error_Toast">Liste konnte nicht gelöscht werden!</string>
     <string name="Export_Info_Finished">Export abgeschlossen</string>
     <string name="Import_Error_MIN_RECORD_SIZE">Ungültiger Eintrag, nicht genug Werte:</string>
     <string name="Import_Warn_MAX_RECORD_SIZE">Eintrag hat zu viele Werte:</string>

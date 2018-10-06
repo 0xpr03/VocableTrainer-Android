@@ -98,10 +98,6 @@
     <!-- Special escape because of replacement & re-parsing as HTML \n = <br>-->
     <string name="About_Msg" formatted="false">Over: VocableTrainer %v\nAuteursrecht 2017 Aron Heinecke\nUitgebracht onder de &lt;a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache License 2.0&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/wiki">Documentatie&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/issues">Bugrapportages &amp; Ideeënbus&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/releases">Wijzigingslog&lt;/a>\n\nGebruikmakend van &lt;a href="https://commons.apache.org/csv/">Apache Commons CSV&lt;/a></string>
     <string name="About_btn_Close">Sluiten</string>
-    <string name="ListSelector_Diag_delete_Title">Lijst verwijderen</string>
-    <string name="ListSelector_Diag_delete_Msg" formatted="false">Weet je zeker dat je de volgende lijst wilt verwijderen: %s: %s, %s</string>
-    <string name="ListSelector_Diag_delete_btn_Delete">Verwijderen</string>
-    <string name="ListSelector_Diag_delete_btn_Cancel">Annuleren</string>
     <string name="File_Diag_exists_Title">Bestand bestaat al</string>
     <string name="File_Diag_MSG_part" formatted="false">Weet je zeker dat je het bestand \'%f\' wilt overschrijven?</string>
     <string name="File_Diag_btn_OK">Overschrijven</string>

@@ -252,6 +252,13 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
     }
 
     @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        MenuItem selectAll = menu.findItem(R.id.lMenu_select_all);
+        selectAll.setVisible(multiSelect);
+        super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu,inflater);
         inflater.inflate(R.menu.list,menu);
@@ -266,6 +273,10 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
                 sort_type = item.getItemId();
                 updateComp();
                 adapter.updateSorting(cComp);
+                return true;
+            case R.id.lMenu_select_all:
+                listPickerViewModel.setSelectAll(!listPickerViewModel.isSelectAll());
+                adapter.selectAll(listPickerViewModel.isSelectAll());
                 return true;
         }
 

@@ -2,6 +2,7 @@
 - Import & Export can now work in background and accross device changes
 - Import & Export can be cancelled
 - Import hardened against database corruption on failure
+- Added select all function for list picking
 - Fixed crash when selecting a list on raw data import
 - Fixed bug were custom formats missed the new record delimiter on export
 - Fixed hint menu in training staying clickable when no hint exists

@@ -21,6 +21,25 @@ public class ListPickerViewModel extends ViewModel {
     private MutableLiveData<Boolean> cancelLoading;
     private boolean dataInvalidated;
     private Thread loaderTask;
+    private boolean selectAll;
+
+    /**
+     * Get select all
+     * Used to remember select all swap state
+     * @return
+     */
+    public boolean isSelectAll() {
+        return selectAll;
+    }
+
+    /**
+     * Set select all
+     * Used to remember select all swap state
+     * @param selectAll
+     */
+    public void setSelectAll(boolean selectAll) {
+        this.selectAll = selectAll;
+    }
 
     /**
      * Returns list data handle
@@ -42,6 +61,7 @@ public class ListPickerViewModel extends ViewModel {
         lists = new MutableLiveData<>();
         loading = new MutableLiveData<>();
         dataInvalidated = true;
+        selectAll = false;
     }
 
     /**

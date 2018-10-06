@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" xmlns:support="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/lMenu_select_all"
+        android:icon="@drawable/baseline_select_all_white_24"
+        android:title="@string/Placeholder"
+        support:showAsAction="ifRoom" />
+    <item
         android:id="@+id/lMenu_sort"
         android:icon="@drawable/ic_sort_white_48dp"
         android:title="@string/GEN_Sort"

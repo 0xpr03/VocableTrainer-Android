@@ -87,6 +87,17 @@ public class ListRecyclerAdapter extends ListAdapter<VList,ListRecyclerAdapter.V
     }
 
     /**
+     * Set all elements as select
+     * @param select
+     */
+    public void selectAll(final boolean select){
+        for(VList entry : data){
+            entry.setSelected(select);
+        }
+        notifyDataSetChanged();
+    }
+
+    /**
      * Submit data with sorting
      * @param newData
      * @param comparator

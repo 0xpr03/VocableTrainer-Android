@@ -33,7 +33,7 @@
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:text="Placeholder"
+            android:text="@string/Placeholder"
             android:textAppearance="@style/TextAppearance.AppCompat.Title"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
@@ -93,7 +93,8 @@
             android:inputType="textPersonName"
             app:layout_constraintBottom_toTopOf="@+id/bFileOk"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent" />
+            app:layout_constraintRight_toRightOf="parent"
+            android:autofillHints="exportFile" />
 
         <TextView
             android:id="@+id/tCurrentDir"

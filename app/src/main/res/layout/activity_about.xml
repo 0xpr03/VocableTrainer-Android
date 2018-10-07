@@ -35,7 +35,7 @@
             android:layout_marginTop="16dp"
             android:allowUndo="false"
             android:ems="10"
-            android:text="Placeholder"
+            android:text="@string/Placeholder"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             android:textSize="18sp"
             app:layout_constraintBottom_toTopOf="@+id/bAbout_Ok"

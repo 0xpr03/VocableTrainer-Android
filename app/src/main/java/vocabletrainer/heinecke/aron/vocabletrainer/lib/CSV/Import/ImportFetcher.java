@@ -18,8 +18,8 @@ import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVCustomFormat;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Function;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.MultiMeaningHandler;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Function;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVHeaders.CSV_METADATA_START;
 

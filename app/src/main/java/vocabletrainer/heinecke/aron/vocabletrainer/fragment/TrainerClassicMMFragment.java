@@ -3,6 +3,7 @@ package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputLayout;
 import android.util.Log;
@@ -43,7 +44,7 @@ public class TrainerClassicMMFragment extends TrainerModeFragment implements Tra
     private Button bCheckInput;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_trainer_classic_mm, container, false);
 
         tHint = view.findViewById(R.id.tTrainerQOut);
@@ -74,7 +75,7 @@ public class TrainerClassicMMFragment extends TrainerModeFragment implements Tra
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
         outState.putStringArrayList(KEY_INPUT,getData());

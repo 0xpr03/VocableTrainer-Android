@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -34,8 +35,6 @@ import vocabletrainer.heinecke.aron.vocabletrainer.activity.ExImportActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.FileActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ProgressDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVCustomFormat;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenTableComparator;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.ExportViewModel;
@@ -65,23 +64,11 @@ public class ExportFragment extends PagerFragment {
     private TextView tMsg;
     private View view;
     private boolean formatWarnDialog = false; // prevent dialog double trigger, due to spFormat logic
-    private static final ArrayList<VList> EMPTY_LISTS = new ArrayList<>(0);
     private ExImportActivity activity;
     private GenericSpinnerEntry<CSVCustomFormat> customFormatEntry;
     private ProgressDialog progressDialog;
     private ExportViewModel exportViewModel;
     private ListPickerViewModel listPickerViewModel;
-
-    /**
-     * Required interface for attachers of this class
-     */
-    public interface ExportListProvider {
-        /**
-         * Get list of VLists to export
-         * @return
-         */
-        ArrayList<VList> getExportLists();
-    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -89,9 +76,7 @@ public class ExportFragment extends PagerFragment {
         listPickerViewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(ListPickerViewModel.class);
 
         FormatViewModel formatViewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(FormatViewModel.class);
-        formatViewModel.getCustomFormatLD().observe(this, format -> {
-            customFormatEntry.updateObject(format);
-        });
+        formatViewModel.getCustomFormatLD().observe(this, format -> customFormatEntry.updateObject(format));
         formatViewModel.getInFormatFragmentLD().observe(this, inFragment -> {
             //noinspection ConstantConditions
             if(!inFragment) {
@@ -140,7 +125,7 @@ public class ExportFragment extends PagerFragment {
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_export, container, false);
         formatWarnDialog = false;
         setHasOptionsMenu(true);
@@ -152,10 +137,6 @@ public class ExportFragment extends PagerFragment {
         chkExportTableInfo = view.findViewById(R.id.chkExportMeta);
         spFormat = view.findViewById(R.id.spExpFormat);
         tMsg = view.findViewById(R.id.tExportMsg);
-
-        GenericComparator.ValueRetriever[] retrievers = new GenericComparator.ValueRetriever[]{
-                GenTableComparator.retName, GenTableComparator.retA, GenTableComparator.retB
-        };
 
         initView(savedInstanceState);
         return view;
@@ -298,7 +279,7 @@ public class ExportFragment extends PagerFragment {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString(KEY_FILE_PATH,expFile != null ? expFile.getAbsolutePath() : "");
         if(progressDialog != null && progressDialog.isAdded())

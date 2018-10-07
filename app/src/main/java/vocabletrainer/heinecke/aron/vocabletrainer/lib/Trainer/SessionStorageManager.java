@@ -11,7 +11,6 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer.Trainer;
 
 /**
  * Manager for sessions, loading saving of settings

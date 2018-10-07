@@ -14,18 +14,16 @@ import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.BasicFileEntry;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
 
 /**
  * BaseAdapter for file list views
  */
 public class FileListAdapter extends BaseAdapter {
 
+    @SuppressWarnings("unused")
     private static final String TAG = "FileListAdapter";
-    private List<BasicFileEntry> dataItems = null;
-    private Activity activity;
+    private List<BasicFileEntry> dataItems;
     private LayoutInflater inflater;
-    private VEntry header;
 
     /**
      * Creates a new entry list adapter
@@ -35,7 +33,6 @@ public class FileListAdapter extends BaseAdapter {
      */
     public FileListAdapter(Activity activity, List<BasicFileEntry> items) {
         super();
-        this.activity = activity;
         this.dataItems = items;
         inflater = activity.getLayoutInflater();
     }
@@ -102,8 +99,8 @@ public class FileListAdapter extends BaseAdapter {
      * View Holder, storing data for re-use
      */
     private class ViewHolder {
-        protected TextView colA;
-        protected TextView colB;
-        protected int originPaintFlags;
+        TextView colA;
+        TextView colB;
+        int originPaintFlags;
     }
 }

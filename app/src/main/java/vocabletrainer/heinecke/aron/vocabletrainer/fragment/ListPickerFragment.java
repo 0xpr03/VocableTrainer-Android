@@ -8,7 +8,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,13 +20,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.ListTouchHelper;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.ListRecyclerAdapter;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.ListTouchHelper;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenTableComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
@@ -51,7 +49,6 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
     private static final String K_DELETE = "delete";
 
     private View view;
-    private Database db;
     private boolean multiSelect;
     private boolean showOkButton;
     private RecyclerView recyclerView;
@@ -64,7 +61,6 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
     private GenTableComparator compB;
     private GenTableComparator cComp;
     private FinishListener listener;
-    private AlertDialog dialog;
     private ListPickerViewModel listPickerViewModel;
 
     @Override
@@ -198,7 +194,6 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView "+(savedInstanceState != null));
         view = inflater.inflate(R.layout.fragment_list_selector,container,false);
-        db = new Database(getActivity());
 
         Bundle bundle = getArguments();
         if(savedInstanceState != null){
@@ -239,7 +234,6 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
         sort_type = settings.getInt(P_KEY_LA_SORT, R.id.lMenu_sort_Name);
         updateComp();
 
-        // setup listview
         initRecyclerView();
         updateOkButton();
         return view;
@@ -344,22 +338,11 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
         }
     }
 
-    private void deleteList(int position){
-        Log.d(TAG,"triggered deletion");
-    }
-
     /**
      * Update enabled state of OK button
      */
     private void updateOkButton() {
         bOk.setEnabled(listPickerViewModel.getSelectedLists().size() > 0);
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        if(dialog != null && dialog.isShowing())
-            dialog.dismiss();
     }
 
     @Override

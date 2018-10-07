@@ -101,8 +101,6 @@ public class TableListAdapter extends ArrayAdapter<VList> {
 
         if (!displayCheckbox) {
             convertView.findViewById(R.id.chkListEntrySelect).setVisibility(View.GONE);
-        } else {
-
         }
 
 

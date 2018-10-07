@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -26,8 +25,9 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERV
 public class EntryListAdapter extends BaseAdapter {
 
     private static final int ANDROID_WORKAROUND_STYLE = -1;
+    @SuppressWarnings("unused")
     private static final String TAG = "EntryListAdapter";
-    private List<VEntry> dataItems = null;
+    private List<VEntry> dataItems;
     private LayoutInflater inflater;
     private VEntry header;
 
@@ -87,7 +87,7 @@ public class EntryListAdapter extends BaseAdapter {
         if (convertView == null) {
             holder = new ViewHolder();
 
-            convertView = inflater.inflate(R.layout.entry_list_view, null);
+            convertView = inflater.inflate(R.layout.entry_list_view, parent,false);
 
             holder.colA = convertView.findViewById(R.id.entryFirstText);
             holder.colB = convertView.findViewById(R.id.entrySecondText);
@@ -172,22 +172,12 @@ public class EntryListAdapter extends BaseAdapter {
     }
 
     /**
-     * Returns all entries, existing and deleted
-     *
-     * @return
-     */
-    public List<VEntry> getAllEntries() {
-        ArrayList<VEntry> entries = new ArrayList<>(this.dataItems);
-        return entries;
-    }
-
-    /**
      * View Holder, storing data for re-use
      */
     private class ViewHolder {
-        protected TextView colA;
-        protected TextView colB;
-        protected TextView colTipp;
-        protected int originTypeface;
+        TextView colA;
+        TextView colB;
+        TextView colTipp;
+        int originTypeface;
     }
 }

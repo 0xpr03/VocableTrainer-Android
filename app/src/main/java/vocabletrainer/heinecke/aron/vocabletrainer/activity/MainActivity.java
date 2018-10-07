@@ -20,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
     private final static int REQUEST_PERM_EXPORT = 30;
     private final static int REQUEST_PERM_IMPORT = 35;
     private static final String P_KEY_ALPHA_DIALOG = "showedAlphaDialog";
+    @SuppressWarnings("unused")
     @Deprecated
     private static final String P_KEY_DB_CHANGE_N_N = "showedDBDialogN_N";
     private static boolean showedDialog = false;

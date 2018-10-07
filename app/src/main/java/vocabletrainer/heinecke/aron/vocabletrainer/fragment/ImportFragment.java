@@ -36,13 +36,13 @@ import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ImportLogDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ProgressDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.VListEditorDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVCustomFormat;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget.CustomItemSelectedListener;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.Import.ImportFetcher;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.Import.Importer;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.FormatViewModel;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.ImportViewModel;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget.CustomItemSelectedListener;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget.ViewCreation;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
@@ -192,7 +192,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
         });
     }
 
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView restore: "+(savedInstanceState != null));
         View view = inflater.inflate(R.layout.fragment_import, container, false);
         setHasOptionsMenu(true);
@@ -380,7 +380,6 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
      * Called when import was clicked
      */
     public void onImport() {
-        //TODO: add cancel option
         Importer dataHandler = new Importer(getActivity().getApplicationContext(), importViewModel.getPreviewParser(), importListMode, targetList);
         importViewModel.runImport(dataHandler,getFormatSelected(),impFile,mp);
     }

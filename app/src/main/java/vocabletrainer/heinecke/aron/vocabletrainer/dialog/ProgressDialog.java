@@ -1,5 +1,6 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.dialog;
 
+import android.annotation.SuppressLint;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.os.Bundle;
@@ -70,16 +71,6 @@ public class ProgressDialog extends DialogFragment {
     }
 
     /**
-     * Update display mode for progress, no cancel button
-     * @param indeterminateMode
-     * @param max
-     * @param title Title of dialog
-     */
-    public void setDisplayMode(final boolean indeterminateMode, final int max, final @StringRes int title) {
-        setDisplayMode(indeterminateMode,max,title,null);
-    }
-
-    /**
      * Update display mode for progress with option to enable cancel button
      * @param indeterminateMode
      * @param max
@@ -114,6 +105,7 @@ public class ProgressDialog extends DialogFragment {
      *     removes previous livedata handle
      * @param progressHandle
      */
+    @SuppressLint("SetTextI18n")
     public void setProgressHandle(LiveData<Integer> progressHandle){
         if(this.progressData != null){
             this.progressData.removeObservers(this);
@@ -138,7 +130,7 @@ public class ProgressDialog extends DialogFragment {
             title = savedInstanceState.getInt(P_KEY_TITLE);
             indeterminateMode = savedInstanceState.getBoolean(P_KEY_MODE);
         }
-        View view = getLayoutInflater().inflate(R.layout.dialog_progress, null);
+        View view = View.inflate(getContext(),R.layout.dialog_progress, null);
 
         progressBar = view.findViewById(R.id.dialog_progressbar);
         messageView = view.findViewById(R.id.dialog_message);

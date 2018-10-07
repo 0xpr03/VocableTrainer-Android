@@ -26,12 +26,12 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.ViewPagerAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ExportFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.FormatFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ImportFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ListPickerFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.PreviewFragment;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.ViewPagerAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVCustomFormat;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
@@ -40,7 +40,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.FormatViewModel
 /**
  * Activity for import/export
  */
-public class ExImportActivity extends FragmentActivity implements ListPickerFragment.FinishListener, ExportFragment.ExportListProvider {
+public class ExImportActivity extends FragmentActivity {
     private final static String P_KEY_S_CSV_FORMAT = "csv_format";
 
     private static final String TAG = "ExImportActivity";
@@ -54,7 +54,6 @@ public class ExImportActivity extends FragmentActivity implements ListPickerFrag
     public static final String PARAM_IMPORT = "show_import";
     private ViewPager viewPager;
     private ViewPagerAdapter viewPagerAdapter;
-    private ArrayList<VList> selectedExportLists = new ArrayList<>(0);
     private FormatViewModel formatViewModel;
 
     @Override
@@ -204,25 +203,6 @@ public class ExImportActivity extends FragmentActivity implements ListPickerFrag
         adapter.add(spinnerEntry);
         adapter.notifyDataSetChanged();
         return spinnerEntry;
-    }
-
-    @Override
-    public void selectionUpdate(ArrayList<VList> selected) {
-        this.selectedExportLists = selected;
-    }
-
-    @Override
-    public void cancel() {
-
-    }
-
-    /**
-     * Returns selected VLists for export
-     * @return
-     */
-    @Override
-    public ArrayList<VList> getExportLists() {
-        return selectedExportLists;
     }
 
 }

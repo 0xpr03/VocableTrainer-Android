@@ -29,7 +29,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="tTraienrInputColumn"
+            android:text="@string/Placeholder"
             android:textAppearance="@style/TextAppearance.AppCompat"
             app:layout_constraintStart_toEndOf="@+id/textView2"
             app:layout_constraintTop_toTopOf="@+id/textView2" />
@@ -53,7 +53,7 @@
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginTop="8dp"
-            android:text="tHint/Resolve"
+            android:text="@string/Placeholder"
             android:textAppearance="@style/TextAppearance.AppCompat"
             android:textSize="18sp"
             app:layout_constraintLeft_toLeftOf="parent"

@@ -196,7 +196,7 @@ public class Database {
                         + " FROM " + TBL_VOCABLE
                         + " WHERE " + KEY_TABLE + " = ?", new String[]{String.valueOf(list.getId())});
                 Cursor cMA = db.rawQuery(String.format(sqlMeaning,TBL_MEANING_A),new String[]{Integer.toString(list.getId())});
-                Cursor cMB = db.rawQuery(String.format(sqlMeaning,TBL_MEANING_B),new String[]{Integer.toString(list.getId())});
+                Cursor cMB = db.rawQuery(String.format(sqlMeaning,TBL_MEANING_B),new String[]{Integer.toString(list.getId())})
         ) {
             List<VEntry> lst = new ArrayList<>();
             SparseArray<List<String>> mapA = new SparseArray<>();
@@ -255,14 +255,12 @@ public class Database {
     public int getEntryPoints(@NonNull final VEntry ent) {
         try (
                 Cursor cursor = db.rawQuery("SELECT " + KEY_POINTS + " "
-                        + "FROM " + TBL_SESSION + " WHERE " + KEY_TABLE + " = ? AND " + KEY_VOC + " = ?", new String[]{String.valueOf(ent.getList().getId()), String.valueOf(ent.getId())});
+                        + "FROM " + TBL_SESSION + " WHERE " + KEY_TABLE + " = ? AND " + KEY_VOC + " = ?", new String[]{String.valueOf(ent.getList().getId()), String.valueOf(ent.getId())})
         ) {
             if (cursor.moveToNext())
                 return cursor.getInt(0);
             else
                 return -1;
-        } catch (Exception e) {
-            throw e;
         }
     }
 
@@ -283,7 +281,7 @@ public class Database {
     public List<VList> getTables(@Nullable LiveData<Boolean> cancelHandle) {
         final String[] column = {KEY_TABLE,KEY_NAME_A,KEY_NAME_B,KEY_NAME_TBL,KEY_CREATED};
         try (
-                Cursor cursor = db.query(TBL_TABLES,column,null,null,null,null,null);
+                Cursor cursor = db.query(TBL_TABLES,column,null,null,null,null,null)
         ) {
             List<VList> list = new ArrayList<>();
             while (cursor.moveToNext()) {
@@ -396,7 +394,7 @@ public class Database {
                 SQLiteStatement insMeanA = db.compileStatement("INSERT INTO " + TBL_MEANING_A + "("
                         + KEY_TABLE + ","+KEY_VOC+","+KEY_MEANING+") VALUES (?,?,?)");
                 SQLiteStatement insMeanB = db.compileStatement("INSERT INTO " + TBL_MEANING_B + "("
-                        + KEY_TABLE + ","+KEY_VOC+","+KEY_MEANING+") VALUES (?,?,?)");
+                        + KEY_TABLE + ","+KEY_VOC+","+KEY_MEANING+") VALUES (?,?,?)")
 
         ) {
             final String whereDelMeaning = KEY_TABLE + " = ? AND "+KEY_VOC+" = ?";
@@ -527,7 +525,7 @@ public class Database {
      *              This is on purpose no VList object
      * @return highest ID <b>or -1 if none is found</b>
      */
-    private int getHighestVocID(final SQLiteDatabase db, final int table) throws Exception {
+    private int getHighestVocID(final SQLiteDatabase db, final int table) {
         if (VList.isIDValid(table)) {
             try (Cursor cursor = db.rawQuery("SELECT MAX(" + KEY_VOC + ") "
                     + "FROM " + TBL_VOCABLE + " "
@@ -537,8 +535,6 @@ public class Database {
                 } else {
                     return MIN_ID_TRESHOLD - 1;
                 }
-            } catch (Exception e) {
-                throw e;
             }
         } else {
             throw new IllegalArgumentException("invalid table ID!");
@@ -551,7 +547,7 @@ public class Database {
      * @param db
      * @return highest ID,  <b>-1 is none if found</b>
      */
-    private int getHighestTableID(final SQLiteDatabase db) throws Exception {
+    private int getHighestTableID(final SQLiteDatabase db) {
         if (db == null)
             throw new IllegalArgumentException("invalid DB");
 
@@ -563,8 +559,6 @@ public class Database {
             } else {
                 return MIN_ID_TRESHOLD - 1;
             }
-        } catch (Exception e) {
-            throw e;
         }
     }
 
@@ -769,7 +763,7 @@ public class Database {
         for (VList list : lists) {
             try (
                     Cursor curLeng = db.rawQuery("SELECT COUNT(*) FROM " + TBL_VOCABLE + " WHERE " + KEY_TABLE + "  = ?", new String[]{String.valueOf(list.getId())});
-                    Cursor curFinished = db.rawQuery("SELECT COUNT(*) FROM " + TBL_SESSION + " WHERE " + KEY_TABLE + "  = ? AND " + KEY_POINTS + " >= ?", new String[]{String.valueOf(list.getId()), String.valueOf(settings.timesToSolve)});
+                    Cursor curFinished = db.rawQuery("SELECT COUNT(*) FROM " + TBL_SESSION + " WHERE " + KEY_TABLE + "  = ? AND " + KEY_POINTS + " >= ?", new String[]{String.valueOf(list.getId()), String.valueOf(settings.timesToSolve)})
             ) {
                 if (!curLeng.moveToNext())
                     return false;
@@ -782,8 +776,6 @@ public class Database {
                     unfinishedLists.add(list);
                 }
                 Log.d(TAG, list.toString());
-                curLeng.close();
-                curFinished.close();
             } catch (Exception e) {
                 Log.e(TAG, "", e);
                 return false;
@@ -819,7 +811,7 @@ public class Database {
                         + " WHERE tbl." + KEY_TABLE + " = ?"
                         + " AND tbl." + KEY_VOC + " != ?"
                         + " AND ( " + KEY_POINTS + " IS NULL OR " + KEY_POINTS + " < ? ) "
-                        + " ORDER BY RANDOM() LIMIT 1", arg);
+                        + " ORDER BY RANDOM() LIMIT 1", arg)
         ) {
             if (cV.moveToNext()) {
                 List<String> meaningA = new LinkedList<>();
@@ -952,6 +944,7 @@ public class Database {
 
     }
 
+    @SuppressWarnings("DeprecatedIsStillUsed")
     class internalDB extends SQLiteOpenHelper {
         private final static int DATABASE_VERSION = 2;
 
@@ -1016,7 +1009,7 @@ public class Database {
             this(context, false);
         }
 
-        public internalDB(Context context, final boolean dev) {
+        internalDB(Context context, final boolean dev) {
             super(context, dev ? DB_NAME_DEV : DB_NAME_PRODUCTION, null, DATABASE_VERSION);
 
         }
@@ -1037,12 +1030,10 @@ public class Database {
                     else
                         Log.v(TAG,"check passed for "+key+" "+table);
                 }
-            } catch (Exception e) {
-                throw e;
             }
         }
 
-        public void checkForIllegalIds(@NonNull SQLiteDatabase db) {
+        void checkForIllegalIds(@NonNull SQLiteDatabase db) {
             Log.d(TAG,"checking for illegal IDs");
             checkIllegalIDs(db,KEY_VOC,TBL_VOCABLE);
             checkIllegalIDs(db,KEY_TABLE,TBL_VOCABLE);

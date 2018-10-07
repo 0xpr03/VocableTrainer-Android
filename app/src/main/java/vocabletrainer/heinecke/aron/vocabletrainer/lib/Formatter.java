@@ -8,6 +8,7 @@ import java.text.DecimalFormat;
  * Help library with consts and custom formats
  */
 public class Formatter {
+    @SuppressWarnings("unused")
     private final static String TAG = "Formatter";
     private final DecimalFormat formatBytes = new DecimalFormat("#,##0.#");
 

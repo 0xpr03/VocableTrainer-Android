@@ -119,10 +119,6 @@ public class ListRecyclerAdapter extends ListAdapter<VList,ListRecyclerAdapter.V
         super.submitList(newData);
     }
 
-    public boolean isMultiselect() {
-        return multiselect;
-    }
-
     /**
      * Remove entry<br>
      *     Does not actually delete the item from the Database
@@ -146,7 +142,7 @@ public class ListRecyclerAdapter extends ListAdapter<VList,ListRecyclerAdapter.V
 
     @NonNull
     @Override
-    public VListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public VListViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_recycler_item,parent,false);
         return new VListViewHolder(view,itemLongClickListener,itemClickListener);
     }

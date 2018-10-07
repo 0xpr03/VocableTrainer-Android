@@ -19,9 +19,9 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.EntryListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.VEntryEditorDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.VListEditorDialog;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.EntryListAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenEntryComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;

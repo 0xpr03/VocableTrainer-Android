@@ -21,9 +21,9 @@ import vocabletrainer.heinecke.aron.vocabletrainer.fragment.TrainerClassicMMFrag
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.TrainerModeFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.TrainerQuickFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer.SessionStorageManager;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer.SessionStorageManager;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer.Trainer;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;

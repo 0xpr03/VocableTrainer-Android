@@ -12,16 +12,16 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="First"
+        android:text="@string/Placeholder"
         android:textAppearance="@style/TextAppearance.AppCompat"
-        android:textSize="14sp"></TextView>
+        android:textSize="14sp" />
 
     <TextView
         android:id="@+id/entrySecondText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="0.2"
-        android:text="Second"
+        android:text="@string/Placeholder"
         android:textAppearance="@style/TextAppearance.AppCompat"
-        android:textSize="14sp"></TextView>
+        android:textSize="14sp" />
 </LinearLayout>

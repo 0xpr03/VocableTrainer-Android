@@ -2,6 +2,7 @@ package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -34,7 +35,7 @@ public class TrainerClassicFragment extends TrainerModeFragment {
     private CountDownTimer timer;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_trainer_classic, container, false);
         tHint = view.findViewById(R.id.tTrainerQOut);
         tColumnAnswer = view.findViewById(R.id.tTrainerInputColumn);
@@ -79,7 +80,7 @@ public class TrainerClassicFragment extends TrainerModeFragment {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
         outState.putString(KEY_INPUT,tInput.getText().toString());

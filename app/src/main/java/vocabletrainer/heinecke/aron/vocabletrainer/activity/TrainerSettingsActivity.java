@@ -31,6 +31,7 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.activity.TrainerActivi
  */
 public class TrainerSettingsActivity extends FragmentActivity implements TrainerSettingsFragment.FinishHandler, ListPickerFragment.FinishListener {
 
+    @SuppressWarnings("unused")
     private static final String TAG = "TrainerSettings";
 
     ViewPagerAdapter viewPagerAdapter;

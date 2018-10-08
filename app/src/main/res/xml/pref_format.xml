@@ -27,8 +27,8 @@
         <vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget.CustomEditTextPreference
             android:dependency="@string/k_pref_escape"
             android:key="@string/k_pref_escape_char"
-            android:title="@string/Pref_Quote_Char"
-            android:summary="@string/Pref_Quote_Char_Desc" />
+            android:title="@string/Pref_Escape_Char"
+            android:summary="@string/Pref_Escape_Char_desc" />
     </PreferenceCategory>
     <PreferenceCategory
         android:persistent="false"

@@ -170,6 +170,8 @@
     <string name="Pref_Comment_Char_Desc">Comment character to parse</string>
     <string name="Pref_Escape">Escaping</string>
     <string name="Pref_Escape_Desc">Handle Escapes</string>
+    <string name="Pref_Escape_Char">Escape Char</string>
+    <string name="Pref_Escape_Char_desc">Escape character to parse</string>
     <string name="Pref_Quote">Quote</string>
     <string name="Pref_Quote_Desc">Handle Quotes</string>
     <string name="Pref_Quote_Char">Quote Char</string>

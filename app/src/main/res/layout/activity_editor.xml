@@ -47,7 +47,7 @@
             app:layout_anchor="@+id/constraintLayout"
             app:layout_constraintBottom_toBottomOf="@+id/listviewEditor"
             app:layout_constraintRight_toRightOf="@+id/listviewEditor"
-            app:srcCompat="@android:drawable/ic_input_add"
+            app:srcCompat="@drawable/ic_add_white_24dp"
             android:focusable="true" />
     </android.support.constraint.ConstraintLayout>
 

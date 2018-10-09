@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="16dp"
+    tools:context="vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget.CharacterPreference">
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/tCharInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/tCharInput"
+            android:hint="@string/Placeholder"
+            android:layout_width="match_parent"
+            android:maxLength="1"
+            android:layout_height="wrap_content" />
+    </android.support.design.widget.TextInputLayout>
+
+    <TextView
+        style="@style/InputLabel"
+        android:paddingTop="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/Character_Preference_Preset_Label" />
+
+    <Spinner
+        android:id="@+id/spPreset"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>

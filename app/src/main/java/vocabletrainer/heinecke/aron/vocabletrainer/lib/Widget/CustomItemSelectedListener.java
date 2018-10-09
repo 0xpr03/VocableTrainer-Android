@@ -20,7 +20,7 @@ public abstract class CustomItemSelectedListener implements AdapterView.OnItemSe
     /**
      * Set firstSelect as undone, disabling the next itemSelect call from triggering itemSelected
      */
-    public void setFirstUnselected() {
+    public void disableNextEvent() {
         this.firstSelect = true;
     }
 

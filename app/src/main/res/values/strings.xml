@@ -125,6 +125,7 @@
     <string name="File_Diag_btn_OK">Overwrite</string>
     <string name="File_Diag_btn_CANCEL">Cancel</string>
     <!-- Messages -->
+    <string name="Character_Incorrect_Amount">Incorrect character amount!</string>
     <string name="Perm_CSV">Permission is required to load/write your CSV files for import/export.</string>
     <string name="File_Error_Mediastate">No storage found / is writable! Unable to continue.</string>
     <string name="File_Error_Nullpointer">Unable to show files. Nullpointer</string>
@@ -136,6 +137,14 @@
     <string name="Import_Warn_MAX_RECORD_SIZE">Entry has too many values: </string>
     <string name="Import_Info_Import">Imported %d vocables</string>
     <!-- Spinner -->
+    <string name="Character_Tab">Tab (\\t)</string>
+    <string name="Character_Comma">Comma (,)</string>
+    <string name="Character_Backslash">Backslash (\\)</string>
+    <string name="Character_Line_Feed">Line Feed (\\r)</string>
+    <string name="Character_Semicolon">Semicolon (;)</string>
+    <string name="Character_Quotations_Mark">Quotation Mark (\")</string>
+    <string name="Character_Custom">Custom Character</string>
+
     <string name="Import_Multilist_REPLACE">Replace existing lists</string>
     <string name="Import_Multilist_IGNORE">Ignore existing lists</string>
     <string name="Import_Multilist_ADD">Append if list exists</string>
@@ -158,6 +167,7 @@
     <string name="title_activity_format">FormatActivity</string>
 
     <!--format preferences -->
+    <string name="Character_Preference_Preset_Label">Presets</string>
     <string name="Pref_Multi_Transl">Multi-Translations</string>
     <string name="Pref_Multi_Transl_Desc">Handle multiple translations</string>
     <string name="Pref_Multi_Transl_Char">Multi-Translation Delimiter Char</string>

@@ -9,7 +9,6 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.preference.EditTextPreference;
-import android.support.v7.preference.EditTextPreferenceDialogFragmentCompat;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.text.InputFilter;
@@ -17,8 +16,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.EditText;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.Constants;
@@ -28,8 +25,9 @@ import java.util.Objects;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.FragmentActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVCustomFormat;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget.CustomEditTextPreference;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.FormatViewModel;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget.CharacterPreference;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget.CharacterPreferenceDialog;
 
 /**
  * Fragment for custom cFormat preferences<br>
@@ -288,13 +286,15 @@ public class FormatFragment extends PreferenceFragmentCompat implements Fragment
         // hack for custom dialog to allow for edittext filters
 
         // dialog shown
+        //noinspection ConstantConditions
         if (getFragmentManager().findFragmentByTag(C_DIALOG_TAG) != null) {
             return;
         }
 
         DialogFragment f = null;
-        if (preference instanceof CustomEditTextPreference) {
-            f = EditTextPreferenceDialog.newInstance(preference.getKey(),lengthFilter);
+        if (preference instanceof CharacterPreference) {
+            //f = EditTextPreferenceDialog.newInstance(preference.getKey(),lengthFilter);
+            f = CharacterPreferenceDialog.newInstance(preference);
         } else {
             super.onDisplayPreferenceDialog(preference);
         }
@@ -325,29 +325,5 @@ public class FormatFragment extends PreferenceFragmentCompat implements Fragment
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         verifyFormat();
-    }
-
-    /**
-     * Custom EditText preference dialog to allow for Filters
-     * Because correct Android is hard.
-     */
-    public static class EditTextPreferenceDialog extends EditTextPreferenceDialogFragmentCompat {
-        private InputFilter[] filters;
-
-        public static EditTextPreferenceDialog newInstance(String key, InputFilter[] filters) {
-            final EditTextPreferenceDialog
-                    fragment = new EditTextPreferenceDialog();
-            final Bundle b = new Bundle(1);
-            b.putString(ARG_KEY, key);
-            fragment.setArguments(b);
-            fragment.filters = filters;
-            return fragment;
-        }
-
-        @Override
-        protected void onBindDialogView(View view) {
-            super.onBindDialogView(view);
-            ((EditText)view.findViewById(android.R.id.edit)).setFilters(filters);
-        }
     }
 }

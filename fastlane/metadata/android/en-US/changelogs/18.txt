@@ -1,4 +1,5 @@
 - Reworked import & export UI to be viewport safe
+- Added Dialog for special characters in custom format preferences
 - Import & Export can now work in background and accross device changes
 - Import & Export can be cancelled
 - Import hardened against database corruption on failure

@@ -221,7 +221,7 @@ public class ExportFragment extends PagerFragment {
         Button btnFileDialog = view.findViewById(R.id.bExportSelFile);
         btnFileDialog.setOnClickListener(v -> selectFile());
 
-        spAdapterFormat = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item);
+        spAdapterFormat = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item);
         spAdapterFormat.setDropDownViewResource(android.R.layout.select_dialog_singlechoice);
 
         SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);

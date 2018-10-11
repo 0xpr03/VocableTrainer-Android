@@ -94,7 +94,7 @@
     <string name="Trainer_Quick_btn_Wrong">Falsch</string>
     <string name="Trainer_Quick_btn_Resolve">Auflösen</string>
     <string name="Trainer_Quick_Asked">Gefragt</string>
-    <string name="Format_Error_Input_equals">Die folgenden Werte drüfen nicht gleich sein: $A : $B</string>
+    <string name="Format_Error_Input_equals">Die folgenden Werte dürfen nicht gleich sein: $A : $B</string>
     <string name="Format_Diag_error_Title">Ungültige Eingabe</string>
     <string name="TSettings_Tab_List">Listen</string>
     <string name="TSettings_Info_missing_lists">Bitte mindestens eine Liste auswählen.</string>
@@ -131,10 +131,10 @@
     <string name="TSettings_chkbx_TrimSpaces">Umgebende Leerzeichen ignorieren</string>
     <string name="Import_btn_Reparse">Neu Parsen</string>
     <string name="Export_Tab_List">Listen Auswahl</string>
-    <string name="ExImport_Tab_CustomFormat">Benutzerdefiniertes Format</string>
+    <string name="ExImport_Tab_CustomFormat">Ben. Format</string>
     <string name="Export_Cancel_Toast">Export abgebrochen</string>
     <string name="Export_Error_Format_Multivalue_Title">Ungültiges CSV Format</string>
-    <string name="Export_Error_Format_Multivalue_Text">Der Export erforder tein CSV Format mit Unterstützung für mehrere Bedeutungen</string>
+    <string name="Export_Error_Format_Multivalue_Text">Der Export erfordert ein CSV Format mit Unterstützung für mehrere Bedeutungen</string>
     <string name="Pref_Reset_Previous">Zurücksetzen auf vorherigen Zustand</string>
     <string name="Pref_Reset_Default">Zurücksetzen auf Standard</string>
     <string name="Pref_Ignore_First_Line">Ignoriere erste Zeile als Header</string>

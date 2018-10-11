@@ -79,7 +79,7 @@ public class ListRecyclerAdapter extends ListAdapter<VList,ListRecyclerAdapter.V
      * @param multiSelect enable checkbox mode
      * @param context context for date formatting etc
      */
-    public ListRecyclerAdapter(List<VList> data, final boolean multiSelect, Context context){
+    public ListRecyclerAdapter(@NonNull List<VList> data, final boolean multiSelect, Context context){
         super(DIFF_CALLBACK);
         this.data = data;
         this.multiselect = multiSelect;
@@ -189,7 +189,7 @@ public class ListRecyclerAdapter extends ListAdapter<VList,ListRecyclerAdapter.V
     }
 
     /**
-     * VLIst view holder with click & long click capabilities
+     * VList view holder with click & long click capabilities
      */
     public class VListViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener,View.OnLongClickListener {
 

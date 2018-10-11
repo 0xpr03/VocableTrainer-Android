@@ -21,6 +21,17 @@ public class FileEntry extends BasicFileEntry {
         this.file = file;
     }
 
+    /**
+     * File Entry for media virtual folders
+     * @param file
+     * @param type
+     * @param name
+     */
+    public FileEntry(final File file,final int type, final String name){
+        super(file.getName(), "",file.length(), type, true);
+        this.file = file;
+    }
+
     public File getFile() {
         return file;
     }

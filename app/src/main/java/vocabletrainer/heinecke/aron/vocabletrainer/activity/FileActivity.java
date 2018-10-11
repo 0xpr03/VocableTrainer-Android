@@ -1,13 +1,22 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
 import android.app.Activity;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SimpleItemAnimator;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -16,21 +25,22 @@ import android.view.View;
 import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Objects;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.FileListAdapter;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.FileRecyclerAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenFileEntryComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Formatter;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.BasicFileEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.FileEntry;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.FilePickerViewModel;
 
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
 
@@ -40,7 +50,7 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.
  * To be called as startActivityForResult
  * @author Aron Heinecke
  */
-public class FileActivity extends AppCompatActivity {
+public class FileActivity extends AppCompatActivity implements FileRecyclerAdapter.ItemClickListener {
     /**
      * Param key under which the selected file is returned to the next activity<br>
      * File is passed as string containing the absolute path<br>
@@ -54,8 +64,13 @@ public class FileActivity extends AppCompatActivity {
      */
     public static final String RETURN_FILE_USER_NAME = "user_file_path";
     /**
+     * Param key for start file to be pre-selected<br>
+     * Type: String
+     */
+    public static final String PARAM_START_FILE = "start_file";
+    /**
      * Param key for write flag<br>
-     * Pass as true to get a save-as activity, otherwise read file "dialog"
+     * Pass as true to get a save-as activity, otherwise read file mode
      */
     public static final String PARAM_WRITE_FLAG = "write_flag";
     /**
@@ -70,23 +85,22 @@ public class FileActivity extends AppCompatActivity {
     private static final String P_KEY_FA_LAST_FILENAME = "last_filename";
     private static final String P_KEY_FA_SORT = "FA_sorting_name";
     private static final String TAG = "FileActivity";
-    private ListView listView;
+    private RecyclerView recyclerView;
     private EditText tFileName;
     private TextView tCurrentDir;
     private Button bOk;
 
-    private ArrayList<BasicFileEntry> entries;
-    private FileListAdapter adapter;
+    private FileRecyclerAdapter adapter;
     private Formatter fmt;
     private boolean write;
-    private File currentDir;
     private BasicFileEntry selectedEntry;
-    private String basicDir; // user invisible part to remove
     private String defaultFileName;
     private File selectedFile;
     private boolean sorting_name;
     private Comparator<BasicFileEntry> compName;
     private Comparator<BasicFileEntry> compSize;
+    private FilePickerViewModel filePickerViewModel;
+    private MenuItem menuItemUp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,14 +125,32 @@ public class FileActivity extends AppCompatActivity {
 
         fmt = new Formatter();
 
+        filePickerViewModel = ViewModelProviders.of(this).get(FilePickerViewModel.class);
+
+        filePickerViewModel.getErrorHandle().observe(this, error -> {
+            if(error != null){
+                Log.e(TAG,error);
+                Snackbar.make(findViewById(R.id.contentView), error, Snackbar.LENGTH_LONG)
+                        .show();
+                filePickerViewModel.resetError();
+            }
+        });
+
         TextView msg = findViewById(R.id.tFileMsg);
         tFileName = findViewById(R.id.tFileName);
         tCurrentDir = findViewById(R.id.tCurrentDir);
         bOk = findViewById(R.id.bFileOk);
 
+        filePickerViewModel.getPathStringHandle().observe(this, path -> {
+            if(path != null){
+                tCurrentDir.setText(path);
+            }
+        });
+
         Intent intent = getIntent();
         msg.setText(intent.getStringExtra(PARAM_MESSAGE));
         write = intent.getBooleanExtra(PARAM_WRITE_FLAG, false);
+        filePickerViewModel.setWriteMode(write);
 
         tFileName.setVisibility(write ? View.VISIBLE : View.GONE);
 
@@ -126,11 +158,44 @@ public class FileActivity extends AppCompatActivity {
         defaultFileName = defaultName == null ? "file.xy" : defaultName;
 
         initListView();
+        filePickerViewModel.getViewListHandle().observe(this, list -> {
+            if(list!= null){
+                adapter.submitList(list,sorting_name ? compName : compSize);
+                FileEntry preselectedElement = filePickerViewModel.getPreselectedElement();
+                if(preselectedElement != null){
+                    int position = adapter.getPositionOfElement(preselectedElement);
+                    filePickerViewModel.resetPreselectedElement();
+                    if(position > -1)
+                        recyclerView.scrollToPosition(position);
+                    setSelectedFile(preselectedElement);
+                    adapter.setInitialSelectedElement(preselectedElement);
+                }
+                if(menuItemUp != null) {
+                    menuItemUp.setEnabled(filePickerViewModel.isActionUpAllowed());
+                    if(filePickerViewModel.isActionUpAllowed()) {
+                        menuItemUp.getIcon().setColorFilter(null);
+                    } else {
+                        menuItemUp.getIcon().setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN);
+                    }
+                }
+            }
+        });
+        if(savedInstanceState == null){
+            String startPath = intent.getStringExtra(PARAM_START_FILE);
+            if(startPath != null){
+                if(filePickerViewModel.setPickedFile(new File(startPath), this)){
+                    return; // no need for default loading
+                }
+            }
+        }
+        loadStartDirectory(getSharedPreferences(PREFS_NAME,0));
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.file, menu);
+        menuItemUp = menu.findItem(R.id.fMenu_Up);
+        Log.d(TAG,"menu null ?"+(menuItemUp == null));
         return true;
     }
 
@@ -145,6 +210,9 @@ public class FileActivity extends AppCompatActivity {
                 sorting_name = false;
                 applySorting();
                 return true;
+            case R.id.fMenu_Up:
+                filePickerViewModel.goUp(this);
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -154,37 +222,18 @@ public class FileActivity extends AppCompatActivity {
      * Setup listview
      */
     private void initListView() {
-        listView = findViewById(R.id.listViewFiles);
-        listView.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
-        listView.setLongClickable(false);
+        recyclerView = findViewById(R.id.listViewFiles);
 
-        entries = new ArrayList<>(20); // just a good guess
-        adapter = new FileListAdapter(this, entries);
+        adapter = new FileRecyclerAdapter(new ArrayList<>(),this);
+        adapter.setItemClickListener(this);
+        LinearLayoutManager manager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(manager);
 
-        listView.setAdapter(adapter);
+        recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
+        recyclerView.setAdapter(adapter);
 
-        listView.setOnItemClickListener((parent, view, pos, id) -> {
-            BasicFileEntry entry = entries.get(pos);
-            if (entry.getTypeID() == BasicFileEntry.TYPE_FILE) {
-                Log.d(TAG, "selected: " + entry.getName() + " " + view.toString());
-                view.setSelected(true);
-                view.setActivated(true);
-                selectedEntry = entry;
-                bOk.setEnabled(true);
-                if (write) {
-                    tFileName.setText(entry.getName());
-                }
-            } else if (entry.getTypeID() == BasicFileEntry.TYPE_DIR) {
-                currentDir = ((FileEntry) entry).getFile();
-                changeDir();
-            } else if (entry.getTypeID() == BasicFileEntry.TYPE_UP) {
-                goUp();
-            }
-        });
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         sorting_name = settings.getBoolean(P_KEY_FA_SORT, true);
-        setBasicDir(settings);
-        changeDir();
     }
 
     /**
@@ -193,26 +242,6 @@ public class FileActivity extends AppCompatActivity {
      */
     private void applySorting() {
         adapter.updateSorting(sorting_name ? compName : compSize);
-    }
-
-    /**
-     * Go on directory up in navigation, if possible
-     */
-    private void goUp() {
-        if (isRoot()) {
-            Log.d(TAG, "cancel go up");
-        } else {
-            currentDir = currentDir.getParentFile();
-            changeDir();
-        }
-    }
-
-    /**
-     * Check whether we're at root dir and can't go further above
-     * @return true on root
-     */
-    private boolean isRoot(){
-        return currentDir.getAbsolutePath().equals(basicDir);
     }
 
     /**
@@ -251,7 +280,7 @@ public class FileActivity extends AppCompatActivity {
      */
     public void onOkPressed(View view) {
         if (write || selectedEntry != null) {
-            selectedFile = write ? new File(currentDir, tFileName.getText().toString()) : ((FileEntry) selectedEntry).getFile();
+            selectedFile = write ? new File(filePickerViewModel.getCurrentFolder(), tFileName.getText().toString()) : ((FileEntry) selectedEntry).getFile();
             Log.d(TAG, "file:" + selectedFile.getAbsolutePath());
             if (write) {
                 if (selectedFile.isDirectory()) { // required !?
@@ -306,53 +335,12 @@ public class FileActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Load default or last path / file into dialog
-     */
-    private void setBasicDir(SharedPreferences settings) {
-        currentDir = new File(settings.getString(P_KEY_FA_LAST_DIR, ""));
-        if (!currentDir.exists() || !currentDir.canWrite()) { // old value not valid anymore
-            Log.w(TAG, "old path is invalid");
-            currentDir = Environment.getExternalStorageDirectory();
+    private void loadStartDirectory(SharedPreferences settings){
+        File folder = new File(settings.getString(P_KEY_FA_LAST_DIR, ""));
+        if(!filePickerViewModel.setViewFile(folder, this)){
+            Log.i(TAG, "old path is invalid "+folder.getAbsolutePath());
+            filePickerViewModel.showMediaSelection(this);
         }
-        this.basicDir = Environment.getExternalStorageDirectory().getAbsolutePath();
-        tFileName.setText(settings.getString(P_KEY_FA_LAST_FILENAME, defaultFileName));
-    }
-
-    /**
-     * Change directory in view to the one specified in currentDir<br>
-     * if currentDir is null, we're assuming that the overview is required
-     */
-    private void changeDir() {
-        selectedEntry = null;
-        if (!write) {
-            bOk.setEnabled(false);
-        }
-        if (checkMediaState()) {
-            if (currentDir != null) {
-                File[] files = currentDir.listFiles();
-                if (files == null) {
-                    Log.e(TAG, "null file list!");
-                    Toast.makeText(FileActivity.this, R.string.File_Error_Nullpointer, Toast.LENGTH_LONG).show();
-                    if(isRoot()){ // can't do anything, no access to base dir
-                        return;
-                    }
-                    currentDir = currentDir.getParentFile();
-                    files = currentDir.listFiles();
-                }
-                entries.clear();
-                entries.add(new BasicFileEntry("..", "", 0, BasicFileEntry.TYPE_UP, true)); // go back entry
-                for (File file : files) {
-                    entries.add(new FileEntry(file, fmt));
-                }
-                applySorting();
-            }
-        }
-
-        String newDirLabel = currentDir.getAbsolutePath().replaceFirst(basicDir, "");
-        if (newDirLabel.length() == 0)
-            newDirLabel = "/";
-        tCurrentDir.setText(newDirLabel);
     }
 
     @Override
@@ -362,8 +350,40 @@ public class FileActivity extends AppCompatActivity {
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
         editor.putString(P_KEY_FA_LAST_FILENAME, tFileName.getText().toString());
-        editor.putString(P_KEY_FA_LAST_DIR, currentDir.getAbsolutePath());
+        String folderPath = null;
+        if(filePickerViewModel.getCurrentFolder() != null)
+            folderPath = filePickerViewModel.getCurrentFolder().getAbsolutePath();
+        editor.putString(P_KEY_FA_LAST_DIR, folderPath);
         editor.putBoolean(P_KEY_FA_SORT, sorting_name);
         editor.apply();
+    }
+
+    /**
+     * Update UI to reflect file selection<br>
+     *     Does not update recyclerview
+     * @param entry
+     */
+    private void setSelectedFile(FileEntry entry){
+        selectedEntry = entry;
+        bOk.setEnabled(true);
+        if (write) {
+            tFileName.setText(entry.getName());
+        }
+    }
+
+    @Override
+    public void onItemClick(View view, int position) {
+        BasicFileEntry entry = adapter.getItemAt(position);
+        if (entry.getTypeID() == BasicFileEntry.TYPE_FILE) {
+            Log.d(TAG,"file select");
+            adapter.selectSingleEntry(position);
+            setSelectedFile((FileEntry) entry);
+        } else if (entry.getTypeID() == BasicFileEntry.TYPE_UP) {
+            Log.d(TAG,"up select");
+            filePickerViewModel.goUp(this);
+        } else {
+            Log.d(TAG, "folder select");
+            filePickerViewModel.setViewFile(((FileEntry) entry).getFile(),this);
+        }
     }
 }

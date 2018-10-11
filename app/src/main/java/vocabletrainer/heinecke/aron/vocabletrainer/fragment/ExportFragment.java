@@ -254,6 +254,8 @@ public class ExportFragment extends PagerFragment {
         myIntent.putExtra(FileActivity.PARAM_WRITE_FLAG, true);
         myIntent.putExtra(FileActivity.PARAM_MESSAGE, getString(R.string.Export_File_select_Info));
         myIntent.putExtra(FileActivity.PARAM_DEFAULT_FILENAME, "list.csv");
+        if(expFile != null)
+            myIntent.putExtra(FileActivity.PARAM_START_FILE,expFile.getAbsolutePath());
         startActivityForResult(myIntent, REQUEST_FILE_RESULT_CODE);
     }
 

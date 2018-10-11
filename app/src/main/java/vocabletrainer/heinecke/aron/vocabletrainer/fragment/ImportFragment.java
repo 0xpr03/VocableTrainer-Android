@@ -439,6 +439,8 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
         myIntent.putExtra(FileActivity.PARAM_WRITE_FLAG, false);
         myIntent.putExtra(FileActivity.PARAM_MESSAGE, getString(R.string.Import_File_select_Info));
         myIntent.putExtra(FileActivity.PARAM_DEFAULT_FILENAME, "list.csv");
+        if(impFile != null)
+            myIntent.putExtra(FileActivity.PARAM_START_FILE,impFile.getAbsolutePath());
         startActivityForResult(myIntent, REQUEST_FILE_RESULT_CODE);
     }
 

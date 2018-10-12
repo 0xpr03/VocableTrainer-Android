@@ -17,7 +17,6 @@
 
     <TextView
         android:id="@+id/dialog_message"
-        android:text="@string/Placeholder"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>

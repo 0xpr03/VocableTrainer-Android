@@ -66,7 +66,6 @@ public class FileRecyclerAdapter extends ListAdapter<BasicFileEntry,FileRecycler
     private List<BasicFileEntry> data;
     private ItemClickListener itemClickListener;
     private BasicFileEntry lastSelected = null;
-    private final int colorSelected;
 
     public void setItemClickListener(ItemClickListener itemClickListener) {
         this.itemClickListener = itemClickListener;
@@ -124,19 +123,9 @@ public class FileRecyclerAdapter extends ListAdapter<BasicFileEntry,FileRecycler
         if(newData == data){
             return;
         }
-        this.data = newData;
+        data = newData;
         super.submitList(newData);
     }
-
-    /**
-     * Get item at position
-     * @param pos
-     * @return
-     */
-    public BasicFileEntry getItemAt(int pos) {
-        return data.get(pos);
-    }
-
 
     /**
      * Creates a new entry list adapter
@@ -147,14 +136,16 @@ public class FileRecyclerAdapter extends ListAdapter<BasicFileEntry,FileRecycler
     public FileRecyclerAdapter(@NonNull List<BasicFileEntry> data,@NonNull Context context) {
         super(DIFF_CALLBACK);
         this.data = data;
-        final TypedValue value = new TypedValue ();
-        context.getTheme().resolveAttribute (R.color.bg_row_background, value, true);
-        this.colorSelected = value.data;
     }
 
     @Override
     public int getItemCount() {
         return data.size();
+    }
+
+    @Override
+    public BasicFileEntry getItem(int position) {
+        return data.get(position);
     }
 
     @NonNull
@@ -250,8 +241,11 @@ public class FileRecyclerAdapter extends ListAdapter<BasicFileEntry,FileRecycler
 
         @Override
         public void onClick(View v) {
-            if(itemClickListener != null)
-                itemClickListener.onItemClick(v,getAdapterPosition());
+            if(itemClickListener != null) {
+                int pos = getAdapterPosition();
+                if(pos >= 0) // prevent invalid clicks
+                    itemClickListener.onItemClick(v, pos);
+            }
         }
     }
 }

@@ -89,6 +89,7 @@
     <string name="Export_Error_Format_Multivalue_Title">Invalid CSV Format</string>
     <string name="Export_Error_Format_Multivalue_Text">Export requires a CSV Format with multi-value support to avoid data loss.</string>
     <string name="File_btn_Cancel">Cancel</string>
+    <string name="File_Loading">Loading..</string>
     <string name="File_t_hint">File_Name.xyz</string>
     <string name="File_Menu_Sort_Name">name</string>
     <string name="File_Menu_Sort_Size">size</string>
@@ -127,6 +128,8 @@
     <string name="File_Error_NoWrite_Perm">No writing permissions: </string>
     <string name="File_Error_No_Media_For_File">No Media found: </string>
     <string name="File_Error_Nullpointer">Unable to show files. Nullpointer: </string>
+    <!-- this should only trigger for protected "folders" like .android_secure-->
+    <string name="File_Error_Permission">No permission to access: </string>
     <string name="Import_Message" formatted="true">Import a UTF8 encoded CSV file containing (multiple) vocable lists.\nSee the <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Import">wiki page</a> for help.</string>
     <string name="Export_Message" formatted="true">Export to UTF8 encoded CSV file (with list info)\nSee the <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Export">wiki page</a> for help.</string>
     <string name="Export_Info_Finished">Export finished</string>

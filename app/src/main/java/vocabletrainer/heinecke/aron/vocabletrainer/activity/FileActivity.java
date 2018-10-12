@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
@@ -34,6 +35,7 @@ import java.util.Comparator;
 import java.util.Objects;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ProgressDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.FileRecyclerAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenFileEntryComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
@@ -91,16 +93,15 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
     private Button bOk;
 
     private FileRecyclerAdapter adapter;
-    private Formatter fmt;
     private boolean write;
     private BasicFileEntry selectedEntry;
-    private String defaultFileName;
     private File selectedFile;
     private boolean sorting_name;
     private Comparator<BasicFileEntry> compName;
     private Comparator<BasicFileEntry> compSize;
     private FilePickerViewModel filePickerViewModel;
     private MenuItem menuItemUp;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,6 +115,10 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
             ab.setDisplayHomeAsUpEnabled(true);
         }
 
+        if(savedInstanceState != null){
+            progressDialog = (ProgressDialog) getSupportFragmentManager().getFragment(savedInstanceState, ProgressDialog.TAG);
+        }
+
         compName = new GenFileEntryComparator<>(new GenericComparator.ValueRetriever[] {
                 GenFileEntryComparator.retType,GenFileEntryComparator.retName,
                 GenFileEntryComparator.retSize
@@ -123,8 +128,6 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
                 GenFileEntryComparator.retName
         });
 
-        fmt = new Formatter();
-
         filePickerViewModel = ViewModelProviders.of(this).get(FilePickerViewModel.class);
 
         filePickerViewModel.getErrorHandle().observe(this, error -> {
@@ -133,6 +136,9 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
                 Snackbar.make(findViewById(R.id.contentView), error, Snackbar.LENGTH_LONG)
                         .show();
                 filePickerViewModel.resetError();
+                if(progressDialog != null && progressDialog.isAdded()){
+                    progressDialog.dismiss();
+                }
             }
         });
 
@@ -153,9 +159,6 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
         filePickerViewModel.setWriteMode(write);
 
         tFileName.setVisibility(write ? View.VISIBLE : View.GONE);
-
-        String defaultName = intent.getStringExtra(PARAM_DEFAULT_FILENAME);
-        defaultFileName = defaultName == null ? "file.xy" : defaultName;
 
         initListView();
         filePickerViewModel.getViewListHandle().observe(this, list -> {
@@ -178,14 +181,17 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
                         menuItemUp.getIcon().setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN);
                     }
                 }
+                if(progressDialog != null && progressDialog.isAdded()){
+                    progressDialog.dismiss();
+                }
             }
         });
         if(savedInstanceState == null){
             String startPath = intent.getStringExtra(PARAM_START_FILE);
             if(startPath != null){
-                if(filePickerViewModel.setPickedFile(new File(startPath), this)){
-                    return; // no need for default loading
-                }
+                File startFile = new File(startPath);
+                filePickerViewModel.goToFile(startFile.getParentFile(),startFile, this,true);
+                return;
             }
         }
         loadStartDirectory(getSharedPreferences(PREFS_NAME,0));
@@ -211,7 +217,12 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
                 applySorting();
                 return true;
             case R.id.fMenu_Up:
-                filePickerViewModel.goUp(this);
+                if (!filePickerViewModel.isRunning()) {
+                    showProgressDialog();
+                    filePickerViewModel.goUp(this);
+                }else{
+                    displayLoadingToast();
+                }
                 return true;
         }
 
@@ -241,6 +252,10 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
      * Notifies data change
      */
     private void applySorting() {
+        if(filePickerViewModel.isRunning()){
+            Toast.makeText(this,"T Loading..",Toast.LENGTH_SHORT).show();
+            return;
+        }
         adapter.updateSorting(sorting_name ? compName : compSize);
     }
 
@@ -319,28 +334,16 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
         }
     }
 
-    /**
-     * Checks current media state
-     *
-     * @return true when media is ready
-     */
-    private boolean checkMediaState() {
-        String extState = Environment.getExternalStorageState();
-        if (!extState.equals(Environment.MEDIA_MOUNTED) || extState.equals(Environment.MEDIA_MOUNTED_READ_ONLY)) {
-            Log.e(TAG, "media state: " + extState);
-            Toast.makeText(FileActivity.this, R.string.File_Error_Mediastate, Toast.LENGTH_LONG).show();
-            return false;
-        } else {
-            return true;
-        }
-    }
-
     private void loadStartDirectory(SharedPreferences settings){
         File folder = new File(settings.getString(P_KEY_FA_LAST_DIR, ""));
-        if(!filePickerViewModel.setViewFile(folder, this)){
-            Log.i(TAG, "old path is invalid "+folder.getAbsolutePath());
-            filePickerViewModel.showMediaSelection(this);
-        }
+        filePickerViewModel.goToFile(folder, null, this,true);
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if(progressDialog != null && progressDialog.isAdded())
+            getSupportFragmentManager().putFragment(outState, ProgressDialog.TAG, progressDialog);
     }
 
     @Override
@@ -373,17 +376,38 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
 
     @Override
     public void onItemClick(View view, int position) {
-        BasicFileEntry entry = adapter.getItemAt(position);
+        if (filePickerViewModel.isRunning()) {
+            displayLoadingToast();
+            return;
+        }
+        BasicFileEntry entry = adapter.getItem(position);
         if (entry.getTypeID() == BasicFileEntry.TYPE_FILE) {
-            Log.d(TAG,"file select");
             adapter.selectSingleEntry(position);
             setSelectedFile((FileEntry) entry);
         } else if (entry.getTypeID() == BasicFileEntry.TYPE_UP) {
-            Log.d(TAG,"up select");
+            showProgressDialog();
             filePickerViewModel.goUp(this);
         } else {
-            Log.d(TAG, "folder select");
-            filePickerViewModel.setViewFile(((FileEntry) entry).getFile(),this);
+            showProgressDialog();
+            filePickerViewModel.goToFile(((FileEntry) entry).getFile(), null, this, false);
         }
+    }
+
+    /**
+     * Display toast stating a currently loading task
+     */
+    private void displayLoadingToast() {
+        Toast.makeText(this, "T Loading..", Toast.LENGTH_SHORT).show();
+        Log.d(TAG,"loading..");
+    }
+
+    /**
+     * Display indeterminate progress dialog
+     */
+    private void showProgressDialog(){
+        progressDialog = ProgressDialog.newInstance();
+        progressDialog.setDisplayMode(true,0, R.string.File_Loading,null);
+        if(!progressDialog.isAdded())
+            progressDialog.show(getSupportFragmentManager(),ProgressDialog.TAG);
     }
 }

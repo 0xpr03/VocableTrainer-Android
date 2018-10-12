@@ -159,6 +159,8 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
         filePickerViewModel.setWriteMode(write);
 
         tFileName.setVisibility(write ? View.VISIBLE : View.GONE);
+        if(intent.hasExtra(PARAM_DEFAULT_FILENAME))
+            tFileName.setText(intent.getStringExtra(PARAM_DEFAULT_FILENAME));
 
         initListView();
         filePickerViewModel.getViewListHandle().observe(this, list -> {
@@ -190,6 +192,7 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
             String startPath = intent.getStringExtra(PARAM_START_FILE);
             if(startPath != null){
                 File startFile = new File(startPath);
+                tFileName.setText(startFile.getName());
                 filePickerViewModel.goToFile(startFile.getParentFile(),startFile, this,true);
                 return;
             }
@@ -336,6 +339,9 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
 
     private void loadStartDirectory(SharedPreferences settings){
         File folder = new File(settings.getString(P_KEY_FA_LAST_DIR, ""));
+        if(settings.contains(P_KEY_FA_LAST_FILENAME)){
+            tFileName.setText(settings.getString(P_KEY_FA_LAST_FILENAME,""));
+        }
         filePickerViewModel.goToFile(folder, null, this,true);
     }
 

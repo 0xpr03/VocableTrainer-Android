@@ -403,7 +403,7 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
      * Display toast stating a currently loading task
      */
     private void displayLoadingToast() {
-        Toast.makeText(this, "T Loading..", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.File_Loading, Toast.LENGTH_SHORT).show();
         Log.d(TAG,"loading..");
     }
 

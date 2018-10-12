@@ -93,12 +93,14 @@
     <string name="File_t_hint">File_Name.xyz</string>
     <string name="File_Menu_Sort_Name">name</string>
     <string name="File_Menu_Sort_Size">size</string>
+    <string name="File_Menu_Up_Desc">Go up</string>
     <string name="Perm_Retry">Retry</string>
     <!-- General -->
     <string name="GEN_Sort">Sorting</string>
     <string name="GEN_OK">OK</string>
     <string name="GEN_Cancel">Cancel</string>
     <string name="GEN_Undo">UNDO</string>
+    <string name="GEN_Select_all">Select all</string>
     <!-- Dialogs -->
     <string name="Trainer_Diag_finished_Title">Finished</string>
     <string name="Trainer_Diag_finished_MSG">You\'ve finished this training session.</string>

@@ -3,7 +3,7 @@
     <item
         android:id="@+id/fMenu_Up"
         android:icon="@drawable/ic_arrow_upward_24dp"
-        android:title="@string/Placeholder"
+        android:title="@string/File_Menu_Up_Desc"
         support:showAsAction="ifRoom" />
 
     <item

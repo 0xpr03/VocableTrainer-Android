@@ -7,9 +7,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -17,13 +15,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SimpleItemAnimator;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -32,14 +28,12 @@ import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Objects;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ProgressDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.FileRecyclerAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenFileEntryComparator;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenericComparator;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Formatter;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.BasicFileEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.FileEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.FilePickerViewModel;
@@ -153,6 +147,12 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
             }
         });
 
+        filePickerViewModel.getWritableDirHandle().observe(this, isWriteable -> {
+            if(isWriteable != null){
+                bOk.setEnabled(!write || isWriteable);
+            }
+        });
+
         Intent intent = getIntent();
         msg.setText(intent.getStringExtra(PARAM_MESSAGE));
         write = intent.getBooleanExtra(PARAM_WRITE_FLAG, false);
@@ -204,7 +204,6 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.file, menu);
         menuItemUp = menu.findItem(R.id.fMenu_Up);
-        Log.d(TAG,"menu null ?"+(menuItemUp == null));
         return true;
     }
 
@@ -256,7 +255,7 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
      */
     private void applySorting() {
         if(filePickerViewModel.isRunning()){
-            Toast.makeText(this,"T Loading..",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,R.string.File_Loading,Toast.LENGTH_SHORT).show();
             return;
         }
         adapter.updateSorting(sorting_name ? compName : compSize);
@@ -303,6 +302,9 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
             if (write) {
                 if (selectedFile.isDirectory()) { // required !?
                     selectedFile = null;
+                    Snackbar.make(findViewById(R.id.contentView), R.string.File_Error_IsDir, Snackbar.LENGTH_LONG)
+                            .show();
+                    Log.d(TAG,"selection is directory");
                 } else if (selectedFile.exists()) {
                     final AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
@@ -374,10 +376,11 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
      */
     private void setSelectedFile(FileEntry entry){
         selectedEntry = entry;
-        bOk.setEnabled(true);
         if (write) {
             tFileName.setText(entry.getName());
         }
+        Boolean isWritable = filePickerViewModel.getWritableDirHandle().getValue();
+        bOk.setEnabled(!write || (isWritable != null && isWritable) );
     }
 
     @Override
@@ -404,7 +407,6 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
      */
     private void displayLoadingToast() {
         Toast.makeText(this, R.string.File_Loading, Toast.LENGTH_SHORT).show();
-        Log.d(TAG,"loading..");
     }
 
     /**

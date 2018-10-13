@@ -130,6 +130,7 @@
     <string name="File_Error_NoWrite_Perm">No writing permissions: </string>
     <string name="File_Error_No_Media_For_File">No Media found: </string>
     <string name="File_Error_Nullpointer">Unable to show files. Nullpointer: </string>
+    <string name="File_Error_IsDir">File is already a directory</string>
     <!-- this should only trigger for protected "folders" like .android_secure-->
     <string name="File_Error_Permission">No permission to access: </string>
     <string name="Import_Message" formatted="true">Import a UTF8 encoded CSV file containing (multiple) vocable lists.\nSee the <a href="https://github.com/0xpr03/VocableTrainer-Android/wiki/Import">wiki page</a> for help.</string>

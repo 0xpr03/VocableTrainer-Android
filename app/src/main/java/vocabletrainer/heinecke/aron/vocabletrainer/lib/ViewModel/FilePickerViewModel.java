@@ -4,7 +4,6 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModel;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.FileObserver;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -35,6 +34,7 @@ public class FilePickerViewModel extends ViewModel {
     private MutableLiveData<String> pathString;
     private MutableLiveData<ArrayList<BasicFileEntry>> viewList;
     private MutableLiveData<String> error;
+    private MutableLiveData<Boolean> writableDir;
     private boolean writeMode;
     private Formatter formatter;
     private final BasicFileEntry ENTRY_UP;
@@ -55,6 +55,7 @@ public class FilePickerViewModel extends ViewModel {
         pathString = new MutableLiveData<>();
         viewList = new MutableLiveData<>();
         error = new MutableLiveData<>();
+        writableDir = new MutableLiveData<>();
     }
 
     /**
@@ -78,6 +79,14 @@ public class FilePickerViewModel extends ViewModel {
         if(fileObserver != null)
             fileObserver.stopWatching();
         super.onCleared();
+    }
+
+    /**
+     * Return handle indicating whether current folder is writable
+     * @return
+     */
+    public LiveData<Boolean> getWritableDirHandle() {
+        return writableDir;
     }
 
     public LiveData<String> getPathStringHandle() {
@@ -149,19 +158,19 @@ public class FilePickerViewModel extends ViewModel {
     }
 
     /**
-     * Go to specified file<br>
+     * Go to specified folder<br>
      * Runs in background, protected
-     * @param file Folder to display
-     * @param preselected Preselected file in folder
+     * @param folder Folder to display
+     * @param preselected Preselected folder in folder
      * @param context
      * @param fallbackToMedia set true to fallback to @{displayMediaSelection} on failure
      */
-    public void goToFile(@NonNull final File file,@Nullable final File preselected,@NonNull final Context context, final boolean fallbackToMedia){
+    public void goToFile(@NonNull final File folder,@Nullable final File preselected,@NonNull final Context context, final boolean fallbackToMedia){
         synchronized (lock) { // isolate task init & run
             if (task != null && task.isAlive())
                 return;
             task = new Thread(() -> {
-                if(!setViewFile(file,preselected,context) && fallbackToMedia) {
+                if(!setViewFile(folder,preselected,context) && fallbackToMedia) {
                     displayMediaSelection(context);
                 }
             });
@@ -170,45 +179,47 @@ public class FilePickerViewModel extends ViewModel {
     }
 
     /**
-     * Set view file without picked file, unprotected, same thread as caller
-     * @param file
+     * Set view folder without picked folder, unprotected, same thread as caller
+     * @param folder
      * @param context
      * @return true on success
      */
-    private boolean setViewFile(File file, Context context){
-        return setViewFile(file,null, context);
+    private boolean setViewFile(File folder, Context context){
+        return setViewFile(folder,null, context);
     }
 
     /**
      * Set view to location of specified folder<br>
      * Runs on same thread, unprotected
-     * @param file
+     * @param folder
      * @param pickedFile File to pick
      * @return success, false on failure (permissions.. )
      */
-    private boolean setViewFile(File file, @Nullable File pickedFile, @NonNull Context context){
-        Log.d(TAG, "new File: " + file.getAbsolutePath());
-        if (file.exists() && file.isDirectory() && file.canRead()) {
+    private boolean setViewFile(File folder, @Nullable File pickedFile, @NonNull Context context){
+        Log.d(TAG, "new File: " + folder.getAbsolutePath());
+        if (folder.exists() && folder.isDirectory() && folder.canRead()) {
             if (fileObserver != null) {
                 fileObserver.stopWatching();
                 fileObserver = null;
             }
-            if (writeMode && !file.canWrite()) {
-                error.postValue(context.getString(R.string.File_Error_NoWrite_Perm)+ file.getAbsolutePath());
-                return false;
+            if (writeMode && !folder.canWrite()) {
+                error.postValue(context.getString(R.string.File_Error_NoWrite_Perm)+ folder.getAbsolutePath());
+                // don't exit, allow traversing
             }
-            Map.Entry<String, File> media = getPathMedia(file, context);
+            Map.Entry<String, File> media = getPathMedia(folder, context);
             if (media == null) {
-                error.postValue(context.getString(R.string.File_Error_No_Media_For_File)+ file.getAbsolutePath());
+                error.postValue(context.getString(R.string.File_Error_No_Media_For_File)+ folder.getAbsolutePath());
                 return false;
             }
             ArrayList<BasicFileEntry> entryList = new ArrayList<>();
             entryList.add(ENTRY_UP);
-            File[] files = file.listFiles();
+            File[] files = folder.listFiles();
             if (files == null) {
                 error.postValue(context.getString(R.string.File_Error_Nullpointer));
                 return false;
             }
+            // postponed till all tests are passed
+            writableDir.postValue(folder.canWrite());
             for (File entry : files) {
                 FileEntry fileEntry = new FileEntry(entry, formatter);
                 if (pickedFile != null && fileEntry.getFile().getAbsolutePath().equals(pickedFile.getAbsolutePath())) {
@@ -217,10 +228,10 @@ public class FilePickerViewModel extends ViewModel {
                 }
                 entryList.add(fileEntry);
             }
-            currentFolder = file;
-            pathString.postValue(media.getKey() + file.getAbsolutePath().replace(media.getValue().getAbsolutePath(), ""));
+            currentFolder = folder;
+            pathString.postValue(media.getKey() + folder.getAbsolutePath().replace(media.getValue().getAbsolutePath(), ""));
             viewList.postValue(entryList);
-            fileObserver = new FileObserver(file.getAbsolutePath()) {
+            fileObserver = new FileObserver(folder.getAbsolutePath()) {
                 @Override
                 public void onEvent(int event, @Nullable String path) {
                     if (fileObserverInitialTrigger) {
@@ -231,8 +242,8 @@ public class FilePickerViewModel extends ViewModel {
                         return;
                     }
                     dirChange.set(true);
-                    Log.d(TAG, "file observer triggered "+path);
-                    if(!setViewFile(file, context)){
+                    Log.d(TAG, "folder observer triggered "+path);
+                    if(!setViewFile(folder, context)){
                         displayMediaSelection(context);
                     }; // re-trigger, refreshing view
                     dirChange.set(false);
@@ -243,7 +254,7 @@ public class FilePickerViewModel extends ViewModel {
             fileObserver.startWatching();
             return true;
         } else {
-            error.postValue(context.getString(R.string.File_Error_Permission)+file.getName());
+            error.postValue(context.getString(R.string.File_Error_Permission)+folder.getName());
         }
         return false;
     }

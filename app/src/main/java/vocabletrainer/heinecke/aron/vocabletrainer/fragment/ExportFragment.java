@@ -109,6 +109,20 @@ public class ExportFragment extends PagerFragment {
             }
         });
 
+        exportViewModel.getExceptionHandle().observe(this, error -> {
+            if(error != null){
+                final AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+                alert.setCancelable(true);
+                alert.setTitle(R.string.Export_Error_Info_Title);
+                alert.setMessage(error);
+                alert.setPositiveButton(R.string.GEN_OK, (dialogInterface, i) -> {
+                    // do nothing, dismiss dialog
+                });
+                alert.show();
+                exportViewModel.resetException();
+            }
+        });
+
         exportViewModel.getCancelExportHandle().observe(this, data -> {
             if(data != null && data){
                 Toast.makeText(getContext(),R.string.Export_Cancel_Toast, Toast.LENGTH_SHORT).show();

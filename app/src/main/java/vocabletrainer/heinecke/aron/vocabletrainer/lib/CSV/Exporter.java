@@ -28,9 +28,10 @@ public class Exporter extends AsyncTask<Integer, Integer, String> {
     private final static String TAG = "ExportTask";
     private final ExportFragment.ExportStorage es;
     private final Database db;
-    private MutableLiveData<Integer> progressHandle;
+    private final MutableLiveData<Integer> progressHandle;
     private final Function<Void,String> exportCallback;
     private final Function<Void,String> cancelCallback;
+    private final MutableLiveData<String> exceptionHandle;
 
     /**
      * Creates a new ExportOperation
@@ -38,12 +39,14 @@ public class Exporter extends AsyncTask<Integer, Integer, String> {
      * @param es
      */
     public Exporter(ExportFragment.ExportStorage es, MutableLiveData<Integer> progressHandle,
-            Function<Void,String> exportCallback,Function<Void,String> cancelCallback, Context context) {
+            Function<Void,String> exportCallback,Function<Void,String> cancelCallback, Context context,
+                    MutableLiveData<String> exceptionHandle) {
         this.es = es;
         this.progressHandle = progressHandle;
         this.exportCallback = exportCallback;
         this.cancelCallback = cancelCallback;
         db = new Database(context);
+        this.exceptionHandle = exceptionHandle;
     }
 
     @Override
@@ -89,7 +92,8 @@ public class Exporter extends AsyncTask<Integer, Integer, String> {
                 publishProgress(i);
             }
         } catch (Exception e) {
-            Log.wtf(TAG, e);
+            exceptionHandle.postValue("Exception: "+e);
+            Log.e(TAG,"Export exception", e);
         }
 
         return null;

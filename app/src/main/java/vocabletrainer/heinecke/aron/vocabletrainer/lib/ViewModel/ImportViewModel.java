@@ -33,7 +33,7 @@ public class ImportViewModel extends ViewModel {
     private MutableLiveData<Boolean> reparsing;
     private MutableLiveData<Boolean> importing;
     private MutableLiveData<Integer> progress;
-    private MutableLiveData<String> importLog;
+    private MutableLiveData<LogData> importLog; // also preview parsing, see data container
     private MutableLiveData<Boolean> cancelPreview; // cancelPreview parser thread trigger
     private MutableLiveData<Boolean> cancelImport;
     private boolean isMultiList;
@@ -45,6 +45,24 @@ public class ImportViewModel extends ViewModel {
     // internal observer for setting whether it was cancelled
     private Observer<Boolean> observerCancel;
     private AsyncTask parserThread;
+
+    /**
+     * Log Data container
+     */
+    public static class LogData{
+        public final String log;
+        public final boolean isPreview;
+
+        /**
+         * New Log data container
+         * @param log Log data
+         * @param isPreview whether it's preview data or not
+         */
+        public LogData(@NonNull String log, boolean isPreview) {
+            this.log = log;
+            this.isPreview = isPreview;
+        }
+    }
 
     /**
      * Start preview parsing
@@ -60,6 +78,7 @@ public class ImportViewModel extends ViewModel {
             setRawData(dataHandler.isRawData());
             setPreviewParser(dataHandler);
             updateIsReparsing(false);
+            importLog.setValue(new LogData(param,true)); // show logged exceptions during preview parsing
             return null;
         };
         Function<Void,String> callbackCancel = param -> {
@@ -89,7 +108,7 @@ public class ImportViewModel extends ViewModel {
             return;
         Function<Void,String> callback = param -> {
             importing.setValue(false);
-            importLog.setValue(param);
+            importLog.setValue(new LogData(param,false));
             cancelImport.setValue(false);
             return null;
         };
@@ -137,7 +156,7 @@ public class ImportViewModel extends ViewModel {
      * Returns import log live data
      * @return
      */
-    public LiveData<String> getLogHandle() {
+    public LiveData<LogData> getLogHandle() {
         return importLog;
     }
 
@@ -174,7 +193,7 @@ public class ImportViewModel extends ViewModel {
     }
 
     /**
-     * Update preview parser & update previewData
+     * Update preview parser & update preview data
      * @param parser
      */
     public void setPreviewParser(@NonNull PreviewParser parser){

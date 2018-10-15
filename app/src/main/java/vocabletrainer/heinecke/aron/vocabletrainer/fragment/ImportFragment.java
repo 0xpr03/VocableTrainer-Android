@@ -105,9 +105,9 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
         importViewModel = ViewModelProviders.of(getActivity()).get(ImportViewModel.class);
         FormatViewModel formatViewModel = ViewModelProviders.of(getActivity()).get(FormatViewModel.class);
 
-        importViewModel.getLogHandle().observe(this, log -> {
-            if(log != null && log.length() > 1) {
-                ImportLogDialog logDialog = ImportLogDialog.newInstance(log);
+        importViewModel.getLogHandle().observe(this, logData -> {
+            if(logData != null && logData.log.length() > 0) {
+                ImportLogDialog logDialog = ImportLogDialog.newInstance(logData);
                 logDialog.show(getACActivity().getSupportFragmentManager(),ImportLogDialog.TAG);
                 importViewModel.resetLog();
             }

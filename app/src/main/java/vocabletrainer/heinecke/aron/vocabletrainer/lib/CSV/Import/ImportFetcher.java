@@ -44,7 +44,7 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
     private final MessageProvider messageProvider;
     private final Function<Void,String> importCallback;
     private final Function<Void,String> cancelCallback;
-    private final boolean logErrors;
+    private final boolean logEverything;
     private long lastUpdate = 0;
     private StringBuilder log;
 
@@ -59,13 +59,13 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
      * @param progressHandle Progress handle<br>
      * @param messageProvider Message provider for logs
      * @param importCallback callback after successful import, given import log as param, return ignored
-     * @param logErrors   disable error logging on false
+     * @param logEverything   whether to log all or exceptions only (preview vs import)
      * @param cancelCallback Callback to be executed on cancel action
      */
     ImportFetcher(final CSVCustomFormat cformat, final File source, final ImportHandler handler,
                   final MutableLiveData<Integer> progressHandle,
                   final MessageProvider messageProvider, final Function<Void,String> importCallback,
-                  final boolean logErrors,@Nullable final Function<Void,String> cancelCallback) {
+                  final boolean logEverything, @Nullable final Function<Void,String> cancelCallback) {
         this.source = source;
         this.cformat = cformat;
         this.handler = handler;
@@ -73,7 +73,7 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
         this.log = new StringBuilder();
         this.messageProvider = messageProvider;
         this.importCallback = importCallback;
-        this.logErrors = logErrors;
+        this.logEverything = logEverything;
         this.cancelCallback = cancelCallback;
     }
 
@@ -135,14 +135,14 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
                 }
 
                 if (record.size() < MIN_RECORD_SIZE) { // ignore, not enough values
-                    if(logErrors) {
+                    if(logEverything) {
                         Log.w(TAG, "ignoring entry, missing values: " + record.toString());
                         log.append(messageProvider.E_NOT_ENOUGH_VALUES);
                         log.append(recordToString(record));
                         log.append('\n');
                     }
                     continue;
-                } else if (record.size() > MAX_RECORD_SIZE && logErrors) { // warn, too many values
+                } else if (record.size() > MAX_RECORD_SIZE && logEverything) { // warn, too many values
                     Log.w(TAG, "entry longer then necessary: " + record.toString());
                     log.append(messageProvider.W_TOO_MANY_VALUES);
                     log.append(recordToString(record));
@@ -155,21 +155,25 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
                     handler.newTable(v1, v2, v3);
                     tbl_start = false;
                 } else //noinspection StatementWithEmptyBody
+                {
                     if (tbl_start = (v1.equals(CSV_METADATA_START[0]) && v2.equals(CSV_METADATA_START[1]) && v3.equals(CSV_METADATA_START[2]))) {
-                    //do nothing
-                } else {
-                    vocableAmount++;
-                    List<String> mA = multiMeaningHandler.parseMultiMeaning(v1);
-                    List<String> mB = multiMeaningHandler.parseMultiMeaning(v2);
-                    String addition = record.size() < ADDITION_RECORD_SIZE ? empty_v : record.get(REC_V4);
-                    handler.newEntry(mA, mB, v3,addition);
+                        //do nothing
+                    } else {
+                        vocableAmount++;
+                        List<String> mA = multiMeaningHandler.parseMultiMeaning(v1);
+                        List<String> mB = multiMeaningHandler.parseMultiMeaning(v2);
+                        String addition = record.size() < ADDITION_RECORD_SIZE ? empty_v : record.get(REC_V4);
+                        handler.newEntry(mA, mB, v3,addition);
+                    }
                 }
             }
             //prepend to start
-            if(!isCancelled())
+            if(!isCancelled() && logEverything)
                 log.insert(0,messageProvider.formatIMPORTED_AMOUNT(vocableAmount));
         } catch (Exception e) {
-            Log.e(TAG, "", e);
+            log.append("Exception: ");
+            log.append(e.toString());
+            Log.e(TAG, "Import exception", e);
         } finally {
             if(this.isCancelled())
                 handler.cancel();

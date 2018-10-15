@@ -22,6 +22,7 @@ public class ExportViewModel extends ViewModel {
     private MutableLiveData<Boolean> exporting;
     private MutableLiveData<Boolean> cancelExport;
     private MutableLiveData<Boolean> exportFinished;
+    private MutableLiveData<String> exception;
     private Observer<Boolean> observeCancel;
     private AsyncTask task;
 
@@ -31,6 +32,7 @@ public class ExportViewModel extends ViewModel {
         exporting = new MutableLiveData<>();
         cancelExport = new MutableLiveData<>();
         exportFinished = new MutableLiveData<>();
+        exception = new MutableLiveData<>();
         cancelExport.setValue(false);
         exporting.setValue(false);
         progressExport.setValue(0);
@@ -40,6 +42,21 @@ public class ExportViewModel extends ViewModel {
             }
         };
         cancelExport.observeForever(observeCancel);
+    }
+
+    /**
+     * Resets exception back to null (none)
+     */
+    public void resetException(){
+        exception.setValue(null);
+    }
+
+    /**
+     * Returns exception handle, for error reporting
+     * @return
+     */
+    public LiveData<String> getExceptionHandle() {
+        return exception;
     }
 
     /**
@@ -113,10 +130,12 @@ public class ExportViewModel extends ViewModel {
             return null;
         };
 
-        Exporter exporter = new Exporter(exportStorage,progressExport,callback,callbackCancel,context);
+        Exporter exporter = new Exporter(exportStorage,progressExport,callback,callbackCancel,context,
+                exception);
         this.exportListAmount = exportStorage.lists.size();
         this.progressExport.setValue(0); // don't start on max on redo
         this.exporting.setValue(true);
+        resetException();
         task = exporter.execute(0); // 0 is just to pass something
     }
 

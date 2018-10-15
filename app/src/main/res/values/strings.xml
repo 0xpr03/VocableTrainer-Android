@@ -70,7 +70,10 @@
     <string name="Import_File_select_Info">Select import source file</string>
     <string name="Import_Preview_Update_Title">Updating..</string>
     <string name="Import_Importing_Title">Importing..</string>
+    <!-- result dialog title -->
     <string name="Import_Finished_Title">Importing finished</string>
+    <!-- exception dialog title for preview parsing -->
+    <string name="Import_Preview_Log_Title">Preview log</string>
     <string name="Import_Preview_Loading">Loading data..</string>
     <string name="Import_Preview_No_data">No data to display..</string>
     <string name="Import_Cancel_Toast_Preview">Please reparse to continue</string>
@@ -88,6 +91,7 @@
     <string name="Export_Exporting_Title">Exporting..</string>
     <string name="Export_Error_Format_Multivalue_Title">Invalid CSV Format</string>
     <string name="Export_Error_Format_Multivalue_Text">Export requires a CSV Format with multi-value support to avoid data loss.</string>
+    <string name="Export_Error_Info_Title">Export Error:</string>
     <string name="File_btn_Cancel">Cancel</string>
     <string name="File_Loading">Loading..</string>
     <string name="File_t_hint">File_Name.xyz</string>

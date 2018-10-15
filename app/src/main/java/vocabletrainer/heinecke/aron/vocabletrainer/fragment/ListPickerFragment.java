@@ -83,7 +83,7 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
 
     @Override
     public void onSwiped(ListRecyclerAdapter.VListViewHolder viewHolder, int position) {
-        if(position < adapter.getItemCount() -1){
+        if(position < adapter.getItemCount()){
             VList entry = adapter.getItemAt(position);
             Snackbar snackbar = Snackbar
                     .make(recyclerView, R.string.List_Deleted_Message, Snackbar.LENGTH_LONG)

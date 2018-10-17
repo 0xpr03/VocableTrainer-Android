@@ -78,6 +78,7 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
      */
     public static final String PARAM_DEFAULT_FILENAME = "default_filename";
     private static final String P_KEY_FA_LAST_DIR = "last_directory";
+    private static final String P_KEY_FA_LAST_DIR_MEDIA = "last_dir_media";
     private static final String P_KEY_FA_LAST_FILENAME = "last_filename";
     private static final String P_KEY_FA_SORT = "FA_sorting_name";
     private static final String TAG = "FileActivity";
@@ -344,7 +345,11 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
         if(settings.contains(P_KEY_FA_LAST_FILENAME)){
             tFileName.setText(settings.getString(P_KEY_FA_LAST_FILENAME,""));
         }
-        filePickerViewModel.goToFile(folder, null, this,true);
+        if(settings.getBoolean(P_KEY_FA_LAST_DIR_MEDIA, false)){
+            filePickerViewModel.goToMediaSelection(this);
+        } else {
+            filePickerViewModel.goToFile(folder, null, this, true);
+        }
     }
 
     @Override
@@ -364,6 +369,7 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
         String folderPath = null;
         if(filePickerViewModel.getCurrentFolder() != null)
             folderPath = filePickerViewModel.getCurrentFolder().getAbsolutePath();
+        editor.putBoolean(P_KEY_FA_LAST_DIR_MEDIA,filePickerViewModel.getCurrentFolder() == null);
         editor.putString(P_KEY_FA_LAST_DIR, folderPath);
         editor.putBoolean(P_KEY_FA_SORT, sorting_name);
         editor.apply();
@@ -413,6 +419,7 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
      * Display indeterminate progress dialog
      */
     private void showProgressDialog(){
+        recyclerView.stopScroll(); // prevent crash through update while scrolling
         progressDialog = ProgressDialog.newInstance();
         progressDialog.setDisplayMode(true,0, R.string.File_Loading,null);
         if(!progressDialog.isAdded())

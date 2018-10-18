@@ -1,14 +1,16 @@
-- Reworked import & export UI to be viewport safe
+- Reworked import & export UI viewport safe
 - Import & Export can now work in background and accross device changes
-- Import & Export can be cancelled
+- Import & Export can now be cancelled
 - Import hardened against database corruption on failure
-- Added select all function for list picking
-- Fixed crash when selecting a list on raw data import
-- Fixed bug were custom formats missed the new record delimiter on export
-- Fixed hint menu in training staying clickable when no hint exists
 - List view reworked, allowing for background loading & undo
-- Fixed a bug when selecting lists and sorting
 - Improved performance for list selections
+- Added select-all button for list picker
+- Reworked file picker, added detection for multiple storages & background loading
+- Now displays internal errors during import/export or preview parsing.
+- Fixed crash when selecting a list on raw data import
+- Fixed bug were custom formats lacked any record delimiter on export
+- Fixed hint menu in training staying clickable when no hint exists
+- Fixed a bug when selecting lists and sorting
 - Fix bug with missing undo-bar & entries not getting deleted
 - List editor dialog UI fix
 - Internal improvements & upgrades

@@ -8,3 +8,5 @@
 .externalNativeBuild
 *.directory
 /live test data/
+*.txt
+*.xml

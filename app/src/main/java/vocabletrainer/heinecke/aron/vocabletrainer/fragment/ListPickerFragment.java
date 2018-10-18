@@ -19,7 +19,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import java.util.ArrayList;
 
@@ -54,7 +53,6 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
     private RecyclerView recyclerView;
     private ListRecyclerAdapter adapter;
     private boolean delete;
-    private Button bOk;
     private int sort_type;
     private GenTableComparator compName;
     private GenTableComparator compA;
@@ -227,15 +225,11 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
                         GenTableComparator.retA, GenTableComparator.retName}
         ,ID_RESERVED_SKIP);
 
-        bOk = view.findViewById(R.id.btnOkSelect);
-        bOk.setVisibility(showOkButton && multiSelect ? View.VISIBLE : View.GONE);
-
         SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
         sort_type = settings.getInt(P_KEY_LA_SORT, R.id.lMenu_sort_Name);
         updateComp();
 
         initRecyclerView();
-        updateOkButton();
         return view;
     }
 
@@ -336,13 +330,6 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
 
             getACActivity().getSupportActionBar().setTitle(R.string.ListSelector_Title_Delete);
         }
-    }
-
-    /**
-     * Update enabled state of OK button
-     */
-    private void updateOkButton() {
-        bOk.setEnabled(listPickerViewModel.getSelectedLists().size() > 0);
     }
 
     @Override

@@ -19,6 +19,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ItemPickerDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.VEntryEditorDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.VListEditorDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.EntryListAdapter;
@@ -36,7 +37,7 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList.isID
 /**
  * List editor activity
  */
-public class EditorActivity extends AppCompatActivity implements VEntryEditorDialog.EditorDialogDataProvider, VListEditorDialog.ListEditorDataProvider {
+public class EditorActivity extends AppCompatActivity implements VEntryEditorDialog.EditorDialogDataProvider, VListEditorDialog.ListEditorDataProvider, ItemPickerDialog.ItemPickerHandler {
     /**
      * Param key for new list, default is false
      */
@@ -47,6 +48,7 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
     public static final String PARAM_TABLE = "list";
     public static final String TAG = "EditorActivity";
     private static final String P_KEY_EA_SORT = "EA_sorting";
+    private static final String P_KEY_SORTING_DIALOG = "sorting_dialog_editor";
     private static final String KEY_EDITOR_POSITION = "editorPosition";
     private static final String KEY_EDITOR_ENTRY = "editorEntry";
     private VList list;
@@ -54,17 +56,14 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
     private EntryListAdapter adapter;
     private ListView listView;
     private Database db;
-    private VEntry lastDeleted;
-    private int deletedPosition;
     private int sortSetting;
     private GenEntryComparator cComp;
     private GenEntryComparator compA;
     private GenEntryComparator compB;
     private GenEntryComparator compTip;
-    private MenuItem mSort_ColA;
-    private MenuItem mSort_ColB;
-    VEntryEditorDialog editorDialog;
-    VListEditorDialog listEditorDialog;
+    private ItemPickerDialog sortingDialog;
+    private VEntryEditorDialog editorDialog;
+    private VListEditorDialog listEditorDialog;
 
     // current edit
     private int editPosition = MIN_ID_TRESHOLD -1; // store position for viewport change, shared object
@@ -108,7 +107,7 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
 
 
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        sortSetting = settings.getInt(P_KEY_EA_SORT, R.id.eMenu_sort_A);
+        sortSetting = settings.getInt(P_KEY_EA_SORT, 0);
         updateComp();
 
         // handle passed params
@@ -152,9 +151,22 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
                     editorEntry = savedInstanceState.getParcelable(KEY_EDITOR_ENTRY);
                 setEditorDialogActions();
             }
+            sortingDialog = (ItemPickerDialog) getSupportFragmentManager().getFragment(savedInstanceState,P_KEY_SORTING_DIALOG);
+            if(sortingDialog != null) {
+                setSortingDialogParams();
+            }
         }
 
         this.setTitle(list.getName());
+    }
+
+    /**
+     * Set handlers & overrides for sortingDialog
+     */
+    private void setSortingDialogParams(){
+        sortingDialog.setItemPickerHandler(this);
+        sortingDialog.overrideEntry(0,list.getNameA());
+        sortingDialog.overrideEntry(1,list.getNameB());
     }
 
     /**
@@ -169,8 +181,6 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
      * Handles list column name changes
      */
     private void updateColumnNames(){
-        mSort_ColB.setTitle(list.getNameB());
-        mSort_ColA.setTitle(list.getNameA());
         adapter.setTableData(list);
     }
 
@@ -179,18 +189,18 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
      */
     private void updateComp(){
         switch(sortSetting){
-            case R.id.eMenu_sort_A:
+            case 0:
                 cComp = compA;
                 break;
-            case R.id.eMenu_sort_B:
+            case 1:
                 cComp = compB;
                 break;
-            case R.id.eMenu_sort_Tip:
+            case 2:
                 cComp = compTip;
                 break;
             default:
                 cComp = compA;
-                sortSetting = R.id.eMenu_sort_A;
+                sortSetting = 0;
                 break;
         }
         adapter.updateSorting(cComp);
@@ -199,8 +209,6 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.editor, menu);
-        mSort_ColA = menu.findItem(R.id.eMenu_sort_A);
-        mSort_ColB = menu.findItem(R.id.eMenu_sort_B);
         updateColumnNames();
         return true;
     }
@@ -214,11 +222,10 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
             case R.id.tEditorListEdit:
                 showTableInfoDialog();
                 return true;
-            case R.id.eMenu_sort_A:
-            case R.id.eMenu_sort_B:
-            case R.id.eMenu_sort_Tip:
-                sortSetting = item.getItemId();
-                updateComp();
+            case R.id.eMenu_sort:
+                sortingDialog = ItemPickerDialog.newInstance(R.array.sort_entries,R.string.GEN_Sort);
+                setSortingDialogParams();
+                sortingDialog.show(getSupportFragmentManager(),P_KEY_SORTING_DIALOG);
                 return true;
         }
 
@@ -417,6 +424,8 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
             outState.putBoolean(PARAM_NEW_TABLE,true);
             outState.putParcelable(PARAM_TABLE,list);
         }
+        if(sortingDialog != null && sortingDialog.isAdded())
+            getSupportFragmentManager().putFragment(outState,P_KEY_SORTING_DIALOG,sortingDialog);
     }
 
     @Override
@@ -438,5 +447,11 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
     @Override
     public VList getList() {
         return list;
+    }
+
+    @Override
+    public void onItemPickerSelected(int position) {
+        sortSetting = position;
+        updateComp();
     }
 }

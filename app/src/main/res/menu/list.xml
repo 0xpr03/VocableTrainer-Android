@@ -9,19 +9,5 @@
         android:id="@+id/lMenu_sort"
         android:icon="@drawable/ic_sort_white_48dp"
         android:title="@string/GEN_Sort"
-        support:showAsAction="always">
-
-        <menu>
-            <item
-                android:id="@+id/lMenu_sort_Name"
-                android:title="@string/Sort_Col_Name" />
-            <item
-                android:id="@+id/lMenu_sort_A"
-                android:title="@string/Sort_Col_A" />
-            <item
-                android:id="@+id/lMenu_sort_B"
-                android:title="@string/Sort_Col_B" />
-        </menu>
-
-    </item>
+        support:showAsAction="always" />
 </menu>

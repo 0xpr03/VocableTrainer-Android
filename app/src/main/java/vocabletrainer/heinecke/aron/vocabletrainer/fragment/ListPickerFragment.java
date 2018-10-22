@@ -23,6 +23,7 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ItemPickerDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.ListRecyclerAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.ListTouchHelper;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Comparator.GenTableComparator;
@@ -39,9 +40,11 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERV
  *     This can be used externally in other fragments<br>
  *     Requires a toolbar
  */
-public class ListPickerFragment extends PagerFragment implements ListRecyclerAdapter.ItemClickListener, ListTouchHelper.SwipeListener {
+public class ListPickerFragment extends PagerFragment implements ListRecyclerAdapter.ItemClickListener,
+        ListTouchHelper.SwipeListener, ItemPickerDialog.ItemPickerHandler {
     public static final String TAG = "ListPickerFragment";
     private static final String P_KEY_LA_SORT = "LA_sorting";
+    private static final String P_KEY_SORTING_DIALOG = "sorting_dialog_list";
     private static final String K_MULTISELECT = "multiSelect";
     private static final String K_SHOWOK = "showok";
     private static final String K_PRESELECT = "preselect";
@@ -60,6 +63,7 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
     private GenTableComparator cComp;
     private FinishListener listener;
     private ListPickerViewModel listPickerViewModel;
+    private ItemPickerDialog sortingDialog;
 
     @Override
     protected void onFragmentInvisible() {
@@ -109,6 +113,14 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
         }
     }
 
+    @Override
+    public void onItemPickerSelected(int position) {
+        sort_type = position;
+        updateComp();
+        adapter.updateSorting(cComp);
+        sortingDialog = null;
+    }
+
     /**
      * Interface for list picker finish
      */
@@ -151,6 +163,13 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if(savedInstanceState != null){
+            sortingDialog = (ItemPickerDialog) getACActivity().getSupportFragmentManager().getFragment(savedInstanceState, P_KEY_SORTING_DIALOG);
+            Log.d(TAG,"sortingDialog: "+sortingDialog);
+            if(sortingDialog != null)
+                sortingDialog.setItemPickerHandler(this);
+        }
 
         listPickerViewModel = ViewModelProviders.of(getActivity()).get(ListPickerViewModel.class);
 
@@ -226,7 +245,7 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
         ,ID_RESERVED_SKIP);
 
         SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
-        sort_type = settings.getInt(P_KEY_LA_SORT, R.id.lMenu_sort_Name);
+        sort_type = settings.getInt(P_KEY_LA_SORT, 0);
         updateComp();
 
         initRecyclerView();
@@ -249,12 +268,10 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.lMenu_sort_Name:
-            case R.id.lMenu_sort_A:
-            case R.id.lMenu_sort_B:
-                sort_type = item.getItemId();
-                updateComp();
-                adapter.updateSorting(cComp);
+            case R.id.lMenu_sort:
+                sortingDialog = ItemPickerDialog.newInstance(R.array.sort_lists,R.string.GEN_Sort);
+                sortingDialog.setItemPickerHandler(this);
+                sortingDialog.show(getACActivity().getSupportFragmentManager(),P_KEY_SORTING_DIALOG);
                 return true;
             case R.id.lMenu_select_all:
                 listPickerViewModel.setSelectAll(!listPickerViewModel.isSelectAll());
@@ -270,18 +287,18 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
      */
     private void updateComp() {
         switch (sort_type) {
-            case R.id.lMenu_sort_A:
+            case 1:
                 cComp = compA;
                 break;
-            case R.id.lMenu_sort_B:
+            case 2:
                 cComp = compB;
                 break;
-            case R.id.lMenu_sort_Name:
+            case 0:
                 cComp = compName;
                 break;
             default:
                 cComp = compName;
-                sort_type = R.id.lMenu_sort_Name;
+                sort_type = 0;
                 break;
         }
     }
@@ -293,6 +310,9 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
         outState.putBoolean(K_SHOWOK,showOkButton);
         outState.putBoolean(K_MULTISELECT, multiSelect);
         outState.putBoolean(K_DELETE, delete);
+        if(sortingDialog != null && sortingDialog.isAdded()){
+            getACActivity().getSupportFragmentManager().putFragment(outState, P_KEY_SORTING_DIALOG, sortingDialog);
+        }
     }
 
     /**

@@ -4,20 +4,11 @@
         android:id="@+id/tMenu_Tip"
         android:icon="@drawable/ic_help_white_48dp"
         android:title="@string/Trainer_btn_Hint"
-        support:showAsAction="always"/>
+        support:showAsAction="ifRoom"/>
     <item
-        android:id="@+id/tMenu_Classic"
-        android:title="@string/Trainer_Mode_Classic"
-        support:showAsAction="never"
-        />
-    <item
-        android:id="@+id/tMenu_ClassicMM"
-        android:title="@string/Trainer_Mode_Classic_MM"
-        support:showAsAction="never"
-        />
-    <item
-        android:id="@+id/tMenu_Quick"
-        android:title="@string/Trainer_Mode_Quick"
-        support:showAsAction="never"
+        android:id="@+id/tMenu_Mode"
+        android:icon="@drawable/ic_mode_white_24dp"
+        android:title="@string/Trainer_Menu_Mode"
+        support:showAsAction="ifRoom"
         />
 </menu>

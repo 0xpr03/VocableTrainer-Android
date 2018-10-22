@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="sort_lists">
+        <item>@string/Sort_Col_Name</item>
+        <item>@string/Sort_Col_A</item>
+        <item>@string/Sort_Col_B</item>
+    </string-array>
+    <string-array name="sort_entries">
+        <item>@string/Sort_Col_A</item>
+        <item>@string/Sort_Col_B</item>
+        <item>@string/Sort_Col_Tip</item>
+    </string-array>
+    <string-array name="training_modes">
+        <item>@string/Trainer_Mode_Classic</item>
+        <item>@string/Trainer_Mode_Classic_MM</item>
+        <item>@string/Trainer_Mode_Quick</item>
+    </string-array>
+</resources>

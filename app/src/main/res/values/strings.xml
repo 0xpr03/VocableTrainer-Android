@@ -15,6 +15,7 @@
     <string name="Main_btn_Resume_Session">Resume Session</string>
     <string name="Main_btn_Import">Import</string>
     <string name="Main_btn_Export">Export</string>
+    <string name="Trainer_Menu_Mode">Mode</string>
     <string name="Trainer_Mode_Classic">Classic Mode</string>
     <string name="Trainer_Mode_Classic_MM">Classic Multimeaning Mode</string>
     <string name="Trainer_Mode_Quick">Quick Mode</string>

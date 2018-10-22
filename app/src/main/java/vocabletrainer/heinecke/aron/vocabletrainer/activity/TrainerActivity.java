@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ItemPickerDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.TrainerResultDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.TrainerClassicFragment;
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.TrainerClassicMMFragment;
@@ -31,10 +32,11 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.
 /**
  * Trainer activity
  */
-public class TrainerActivity extends FragmentActivity implements TrainerModeFragment.TrainingFragmentHolder {
+public class TrainerActivity extends FragmentActivity implements TrainerModeFragment.TrainingFragmentHolder, ItemPickerDialog.ItemPickerHandler {
     public static final String PARAM_RESUME_SESSION_FLAG = "resume_session";
     public static final String PARAM_TRAINER_SETTINGS = "trainer_settings";
     private static final String KEY_TRAINER_MODE = "trainer_mode";
+    private static final String P_KEY_MODE_DIALOG = "mode_dialog";
     public static final String PARAM_TABLES = "lists";
     private static final String TAG = "TrainerActivity";
     private static final String KEY_TRAINER = "trainer";
@@ -53,6 +55,7 @@ public class TrainerActivity extends FragmentActivity implements TrainerModeFrag
     private TrainerModeFragment cTrainingFragment;
     private int trainingMode = -1;
     private TrainerModeFragment[] modeStorage = new TrainerModeFragment[3];
+    private ItemPickerDialog modeDialog;
 
     private static final int modeClassicID = 0;
     private static final int modeQuickID = 1;
@@ -71,6 +74,12 @@ public class TrainerActivity extends FragmentActivity implements TrainerModeFrag
         ActionBar ab = getSupportActionBar();
         if (ab != null) {
             ab.setDisplayHomeAsUpEnabled(true);
+        }
+
+        if(savedInstanceState != null){
+            modeDialog = (ItemPickerDialog) getSupportFragmentManager().getFragment(savedInstanceState,P_KEY_MODE_DIALOG);
+            if(modeDialog != null)
+                modeDialog.setItemPickerHandler(this);
         }
 
         tExercise = findViewById(R.id.tTrainerExercise);
@@ -217,6 +226,8 @@ public class TrainerActivity extends FragmentActivity implements TrainerModeFrag
         outState.putParcelable(KEY_TRAINER,trainer);
         outState.putInt(KEY_FRAGMENT_NR,trainingMode);
         getSupportFragmentManager().putFragment(outState,KEY_FRAGMENT,cTrainingFragment);
+        if(modeDialog != null && modeDialog.isAdded())
+            getSupportFragmentManager().putFragment(outState,P_KEY_MODE_DIALOG,modeDialog);
     }
 
     @Override
@@ -242,14 +253,10 @@ public class TrainerActivity extends FragmentActivity implements TrainerModeFrag
             case R.id.tMenu_Tip:
                 cTrainingFragment.showTip(trainer.getTip());
                 return true;
-            case R.id.tMenu_Classic:
-                setTrainingMode(modeClassicID);
-                break;
-            case R.id.tMenu_Quick:
-                setTrainingMode(modeQuickID);
-                break;
-            case R.id.tMenu_ClassicMM:
-                setTrainingMode(modeClassicMMID);
+            case R.id.tMenu_Mode:
+                modeDialog = ItemPickerDialog.newInstance(R.array.training_modes,R.string.Trainer_Menu_Mode);
+                modeDialog.setItemPickerHandler(this);
+                modeDialog.show(getSupportFragmentManager(),P_KEY_MODE_DIALOG);
                 break;
         }
 
@@ -289,5 +296,21 @@ public class TrainerActivity extends FragmentActivity implements TrainerModeFrag
     @Override
     public TrainerSettings getTrainerSettings() {
         return settings;
+    }
+
+    @Override
+    public void onItemPickerSelected(int position) {
+        switch(position){
+            default:
+            case 0:
+                setTrainingMode(modeClassicID);
+                break;
+            case 2:
+                setTrainingMode(modeQuickID);
+                break;
+            case 1:
+                setTrainingMode(modeClassicMMID);
+                break;
+        }
     }
 }

@@ -7,7 +7,7 @@
         support:showAsAction="ifRoom" />
     <item
         android:id="@+id/lMenu_sort"
-        android:icon="@drawable/ic_sort_white_48dp"
+        android:icon="@drawable/ic_sort_white_24dp"
         android:title="@string/GEN_Sort"
         support:showAsAction="always" />
 </menu>

@@ -4,12 +4,12 @@
     <item
         android:title="@string/Editor_ListSettings"
         android:id="@+id/tEditorListEdit"
-        android:icon="@drawable/ic_settings_white_48dp"
+        android:icon="@drawable/ic_settings_white_24dp"
         support:showAsAction="ifRoom"
         />
     <item
         android:id="@+id/eMenu_sort"
-        android:icon="@drawable/ic_sort_white_48dp"
+        android:icon="@drawable/ic_sort_white_24dp"
         android:title="@string/GEN_Sort"
         support:showAsAction="ifRoom" />
 </menu>

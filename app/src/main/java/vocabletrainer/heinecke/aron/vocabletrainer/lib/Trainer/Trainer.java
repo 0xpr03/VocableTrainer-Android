@@ -151,7 +151,7 @@ public class Trainer implements Parcelable {
      * @return
      */
     public String getCurrentAddition() {
-        return cVocable.getAddition();
+        return cVocable.getAddition() == null ? "" : cVocable.getAddition();
     }
 
     public String getLastAddition() {
@@ -163,7 +163,7 @@ public class Trainer implements Parcelable {
      * @return true if addition != ''
      */
     public boolean hasLastAddition() {
-        return !getLastAddition().equals("");
+        return getLastAddition() != null && !getLastAddition().equals("");
     }
 
     /**

@@ -176,13 +176,8 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
                     setSelectedFile(preselectedElement);
                     adapter.setInitialSelectedElement(preselectedElement);
                 }
-                if(menuItemUp != null) {
-                    menuItemUp.setEnabled(filePickerViewModel.isActionUpAllowed());
-                    if(filePickerViewModel.isActionUpAllowed()) {
-                        menuItemUp.getIcon().setColorFilter(null);
-                    } else {
-                        menuItemUp.getIcon().setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN);
-                    }
+                if(menuItemUp != null) { // finishes before onCreateOptionsMenu
+                    updateMenuItemUp();
                 }
                 if(progressDialog != null && progressDialog.isAdded()){
                     progressDialog.dismiss();
@@ -201,11 +196,26 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
         loadStartDirectory(getSharedPreferences(PREFS_NAME,0));
     }
 
+    private void updateMenuItemUp(){
+        menuItemUp.setEnabled(filePickerViewModel.isActionUpAllowed());
+        if(filePickerViewModel.isActionUpAllowed()) {
+            menuItemUp.getIcon().setColorFilter(null);
+        } else {
+            menuItemUp.getIcon().setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN);
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.file, menu);
         menuItemUp = menu.findItem(R.id.fMenu_Up);
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        updateMenuItemUp(); // update menu
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override

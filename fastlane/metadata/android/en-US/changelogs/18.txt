@@ -12,6 +12,7 @@
 - Fixed bug were custom formats lacked any record delimiter on export
 - Fixed hint menu in training staying clickable when no hint exists
 - Fixed a bug when selecting lists and sorting
-- Fix bug with missing undo-bar & entries not getting deleted
+- Fixed bug with missing undo-bar & entries not getting deleted
+- Fixed crash with pre 0.6 lists during training
 - List editor dialog UI fix
 - Internal improvements & upgrades

@@ -37,8 +37,8 @@
     <string name="TSettings_Tab_Settings">Settings</string>
     <string name="TSettings_Tab_List">Lists</string>
     <string name="TSettings_Info_missing_lists">You have to select at least one list.</string>
-    <string name="ListSelector_Title_Edit">Select list to edit</string>
-    <string name="ListSelector_Title_Delete">Delete selected List</string>
+    <string name="Lists_Title">Lists</string>
+    <string name="List_Select_Title">Select List</string>
     <string name="List_Deleted_Message">List deleted</string>
     <string name="List_Delete_Icon_Description">DELETE</string>
     <string name="Sort_Col_Name">Name</string>

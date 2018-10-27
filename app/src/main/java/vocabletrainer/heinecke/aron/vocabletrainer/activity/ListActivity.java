@@ -31,22 +31,18 @@ public class ListActivity extends FragmentActivity implements ListPickerFragment
      */
     public static final String RETURN_LISTS = "selected";
     /**
-     * Pass this flag as true to call this as an deletion activity
+     * Pass this flag as true to call this with creation & deletion capabilities
      */
-    public static final String PARAM_DELETE_FLAG = "delete";
+    public static final String PARAM_FULL_FEATURESET = "full_features";
     /**
      * Optional Param key for already selected lists, available when multiselect is set<br>
      * Expects a {@link List} of {@link VList}<br>
      *     This can be null, if nothing is selected
      */
     public static final String PARAM_SELECTED = "selected";
-    /**
-     * Param, if set runs in editor mode, calling EditorActivity & not returning
-     */
-    public static final String PARAM_RUN_EDITOR = "editorMode";
     private boolean multiselect;
+    private boolean fullFeatures;
     ListPickerFragment listPickerFragment;
-    private boolean editorMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,13 +59,13 @@ public class ListActivity extends FragmentActivity implements ListPickerFragment
         Intent intent = getIntent();
         // handle passed params
         multiselect = intent.getBooleanExtra(PARAM_MULTI_SELECT, false);
-        boolean delete = intent.getBooleanExtra(PARAM_DELETE_FLAG, false);
-        editorMode = intent.getBooleanExtra(PARAM_RUN_EDITOR,false);
-        if(editorMode){
-            multiselect = false;
-            delete = false;
-            ab.setTitle(R.string.ListSelector_Title_Edit);
+        fullFeatures = intent.getBooleanExtra(PARAM_FULL_FEATURESET, false);
+        if(fullFeatures){
+            ab.setTitle(R.string.Lists_Title);
+        } else {
+            ab.setTitle(R.string.List_Select_Title);
         }
+
 
         ArrayList<VList> preselected;
         if (intent.hasExtra(PARAM_SELECTED)) {
@@ -82,7 +78,7 @@ public class ListActivity extends FragmentActivity implements ListPickerFragment
             //Restore the fragment's instance
             listPickerFragment = (ListPickerFragment) getSupportFragmentManager().getFragment(savedInstanceState, ListPickerFragment.TAG);
         } else {
-            listPickerFragment = ListPickerFragment.newInstance(multiselect, delete,preselected,true);
+            listPickerFragment = ListPickerFragment.newInstance(multiselect, !fullFeatures,preselected);
         }
 
         setFragment(listPickerFragment);
@@ -103,7 +99,7 @@ public class ListActivity extends FragmentActivity implements ListPickerFragment
 
     @Override
     public void onBackPressed() {
-        if(editorMode) {
+        if(fullFeatures) {
             super.onBackPressed();
         } else {
             Intent returnIntent = new Intent();
@@ -115,7 +111,7 @@ public class ListActivity extends FragmentActivity implements ListPickerFragment
 
     @Override
     public void selectionUpdate(ArrayList<VList> selected) {
-        if(editorMode) {
+        if(fullFeatures) {
             ListPickerViewModel listPickerViewModel = ViewModelProviders.of(this).get(ListPickerViewModel.class);
             listPickerViewModel.setDataInvalidated(); // editor changed entry
 

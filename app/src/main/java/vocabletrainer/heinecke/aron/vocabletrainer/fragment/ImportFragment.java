@@ -488,8 +488,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
             }
             Intent myIntent = new Intent(getActivity(), ListActivity.class);
             myIntent.putExtra(ListActivity.PARAM_MULTI_SELECT, false);
-            myIntent.putExtra(ListActivity.PARAM_DELETE_FLAG, false);
-            myIntent.putExtra(ListActivity.PARAM_RUN_EDITOR,false);
+            myIntent.putExtra(ListActivity.PARAM_FULL_FEATURESET,false);
             myIntent.putExtra(ListActivity.PARAM_SELECTED, targetList);
             startActivityForResult(myIntent, REQUEST_LIST_SELECT_CODE);
         }

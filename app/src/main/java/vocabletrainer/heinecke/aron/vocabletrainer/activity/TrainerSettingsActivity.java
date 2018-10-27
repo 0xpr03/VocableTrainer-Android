@@ -66,7 +66,7 @@ public class TrainerSettingsActivity extends FragmentActivity implements Trainer
         if (savedInstanceState != null) {
             listPicker = (ListPickerFragment) getSupportFragmentManager().getFragment(savedInstanceState, ListPickerFragment.TAG);
         } else {
-            listPicker = ListPickerFragment.newInstance(true, false, null, false);
+            listPicker = ListPickerFragment.newInstance(true, true, null);
         }
         viewPagerAdapter.addFragment(listPicker,R.string.TSettings_Tab_List);
         TrainerSettingsFragment settingsFragment = TrainerSettingsFragment.newInstance();

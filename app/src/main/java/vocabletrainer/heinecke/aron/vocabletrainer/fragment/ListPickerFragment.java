@@ -2,10 +2,12 @@ package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.DividerItemDecoration;
@@ -19,10 +21,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import java.util.ArrayList;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.activity.EditorActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ItemPickerDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.ListRecyclerAdapter;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Adapter.ListTouchHelper;
@@ -45,17 +49,17 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
     public static final String TAG = "ListPickerFragment";
     private static final String P_KEY_LA_SORT = "LA_sorting";
     private static final String P_KEY_SORTING_DIALOG = "sorting_dialog_list";
-    private static final String K_MULTISELECT = "multiSelect";
-    private static final String K_SHOWOK = "showok";
     private static final String K_PRESELECT = "preselect";
-    private static final String K_DELETE = "delete";
+    private static final String K_MULTISELECT = "multiSelect";
+    private static final String K_SELECT_ONLY = "select_only";
+    private static final int CODE_NEW_LIST = 1001;
 
     private View view;
     private boolean multiSelect;
     private boolean showOkButton;
     private RecyclerView recyclerView;
     private ListRecyclerAdapter adapter;
-    private boolean delete;
+    private boolean selectOnly;
     private int sort_type;
     private GenTableComparator compName;
     private GenTableComparator compA;
@@ -64,6 +68,7 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
     private FinishListener listener;
     private ListPickerViewModel listPickerViewModel;
     private ItemPickerDialog sortingDialog;
+    private FloatingActionButton bNewList;
 
     @Override
     protected void onFragmentInvisible() {
@@ -141,20 +146,17 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
     /**
      * Create new ListPickerFragment instance
      * @param multiSelect Multi select enabled
-     * @param delete Delete mode
+     * @param selectOnly Whether only selection is allowed, no delete / creation
      * @param selected List of pre-selected VList
-     * @param showOkButton True for ok-submit button
      * @return ListPickerFragment
      */
     @NonNull
-    public static ListPickerFragment newInstance(final boolean multiSelect, final boolean delete,
-                                                 final ArrayList<VList> selected,
-                                                 final boolean showOkButton){
+    public static ListPickerFragment newInstance(final boolean multiSelect, final boolean selectOnly,
+                                                 final ArrayList<VList> selected){
         ListPickerFragment lpf = new ListPickerFragment();
         Bundle args = new Bundle();
-        args.putBoolean(K_DELETE, delete);
+        args.putBoolean(K_SELECT_ONLY, selectOnly);
         args.putBoolean(K_MULTISELECT, multiSelect);
-        args.putBoolean(K_SHOWOK, showOkButton);
         args.putParcelableArrayList(K_PRESELECT, selected);
         lpf.setArguments(args);
         return lpf;
@@ -208,6 +210,15 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
     }
 
     @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == CODE_NEW_LIST){
+            listPickerViewModel.loadLists(getContext());
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView "+(savedInstanceState != null));
         view = inflater.inflate(R.layout.fragment_list_selector,container,false);
@@ -220,8 +231,18 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
         }
         // default values required for {@link ExImportActivity.ViewPagerAdapter.class} solution, using no arguments
         multiSelect = bundle.getBoolean(K_MULTISELECT,true);
-        showOkButton = bundle.getBoolean(K_SHOWOK,false);
-        delete = bundle.getBoolean(K_DELETE,false);
+        selectOnly = bundle.getBoolean(K_SELECT_ONLY,false);
+
+        bNewList = view.findViewById(R.id.bListNew);
+        bNewList.setVisibility(selectOnly ? View.GONE : View.VISIBLE);
+        bNewList.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent myIntent = new Intent(getActivity(), EditorActivity.class);
+                myIntent.putExtra(EditorActivity.PARAM_NEW_TABLE, true);
+                startActivityForResult(myIntent,CODE_NEW_LIST);
+            }
+        });
 
         ActionBar ab = getACActivity().getSupportActionBar();
         if (ab != null) {
@@ -307,9 +328,8 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         Log.d(TAG,"onSaveInstanceState");
-        outState.putBoolean(K_SHOWOK,showOkButton);
         outState.putBoolean(K_MULTISELECT, multiSelect);
-        outState.putBoolean(K_DELETE, delete);
+        outState.putBoolean(K_SELECT_ONLY, selectOnly);
         if(sortingDialog != null && sortingDialog.isAdded()){
             getACActivity().getSupportFragmentManager().putFragment(outState, P_KEY_SORTING_DIALOG, sortingDialog);
         }
@@ -335,20 +355,20 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
 //        }
         ArrayList<VList> lists = new ArrayList<>();
         adapter = new ListRecyclerAdapter(lists, multiSelect, getContext());
-        if (!delete){
-            adapter.setItemClickListener(this);
-        }
+        adapter.setItemClickListener(this);
+        bNewList.setEnabled(!selectOnly);
+
         LinearLayoutManager manager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(manager);
 
         recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), LinearLayoutManager.VERTICAL));
         recyclerView.setAdapter(adapter);
 
-        if(delete) {
+        if(!selectOnly) {
             ListTouchHelper touchHelper = new ListTouchHelper(this);
             new ItemTouchHelper(touchHelper).attachToRecyclerView(recyclerView);
 
-            getACActivity().getSupportActionBar().setTitle(R.string.ListSelector_Title_Delete);
+            getACActivity().getSupportActionBar().setTitle(R.string.Lists_Title);
         }
     }
 

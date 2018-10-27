@@ -101,24 +101,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Open new table intent
-     *
-     * @param view
-     */
-    public void showNewTable(View view) {
-        Intent myIntent = new Intent(this, EditorActivity.class);
-        myIntent.putExtra(EditorActivity.PARAM_NEW_TABLE, true);
-        this.startActivity(myIntent);
-    }
-
-    /**
      * Open edit table intent
      *
      * @param view
      */
     public void showEditTable(View view) {
         Intent myIntent = new Intent(this, ListActivity.class);
-        myIntent.putExtra(ListActivity.PARAM_RUN_EDITOR, true);
+        myIntent.putExtra(ListActivity.PARAM_FULL_FEATURESET, true);
         this.startActivity(myIntent);
     }
 
@@ -129,17 +118,6 @@ public class MainActivity extends AppCompatActivity {
      */
     public void showTrainer(View view) {
         Intent myIntent = new Intent(this, TrainerSettingsActivity.class);
-        this.startActivity(myIntent);
-    }
-
-    /**
-     * Open list delete
-     *
-     * @param view
-     */
-    public void showDeleteTable(View view) {
-        Intent myIntent = new Intent(this, ListActivity.class);
-        myIntent.putExtra(ListActivity.PARAM_DELETE_FLAG, true);
         this.startActivity(myIntent);
     }
 

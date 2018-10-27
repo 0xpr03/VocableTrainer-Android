@@ -3,7 +3,7 @@
     <string name="Trainer_hint_solution">Antwort</string>
     <string name="ListSelector_Title_Delete">Ausgewähltes Löschen</string>
     <string name="Main_btn_Delete_List">Liste Löschen</string>
-    <string name="Main_btn_Edit_List">Liste Editieren</string>
+    <string name="Main_btn_Edit_List">Liste Bearbeiten</string>
     <string name="Main_btn_New_List">Liste Erzeugen</string>
     <string name="Main_btn_New_Session">Neue Sitzung</string>
     <string name="Main_btn_Resume_Session">Sitzung forsetzen</string>

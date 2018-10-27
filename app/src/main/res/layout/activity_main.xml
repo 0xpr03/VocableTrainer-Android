@@ -44,47 +44,18 @@
 
         <Button
             android:id="@+id/bEditTable"
+            style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
             android:layout_marginTop="8dp"
+            android:layout_marginRight="8dp"
+            android:drawableStart="@drawable/ic_edit_white_24dp"
             android:onClick="showEditTable"
             android:text="@string/Main_btn_Edit_List"
-            android:drawableStart="@drawable/ic_edit_white_24dp"
-            style="@style/Widget.AppCompat.Button.Colored"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/bNewTable" />
-
-        <Button
-            android:id="@+id/bNewTable"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginTop="8dp"
-            android:onClick="showNewTable"
-            android:text="@string/Main_btn_New_List"
-            style="@style/Widget.AppCompat.Button.Colored"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/bTrainerEnter" />
-
-        <Button
-            android:id="@+id/bDeleteTable"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginTop="8dp"
-            android:onClick="showDeleteTable"
-            android:text="@string/Main_btn_Delete_List"
-            style="@style/Widget.AppCompat.Button.Colored"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/bEditTable" />
 
         <Button
             android:id="@+id/button"
@@ -103,18 +74,18 @@
 
         <Button
             android:id="@+id/bExport"
+            style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
             android:layout_marginTop="8dp"
+            android:layout_marginRight="8dp"
+            android:drawableStart="@drawable/ic_file_upload_white_24dp"
             android:onClick="showExport"
             android:text="@string/Main_btn_Export"
-            android:drawableStart="@drawable/ic_file_upload_white_24dp"
-            style="@style/Widget.AppCompat.Button.Colored"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/bDeleteTable" />
+            app:layout_constraintTop_toBottomOf="@+id/bEditTable" />
 
         <Button
             android:layout_width="0dp"

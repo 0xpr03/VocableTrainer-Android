@@ -276,7 +276,9 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
         MenuItem selectAll = menu.findItem(R.id.lMenu_select_all);
-        selectAll.setVisible(multiSelect);
+        // FIX pre-v21 devices, on rotation called twice, one time without selectAll
+        if(selectAll != null)
+            selectAll.setVisible(multiSelect);
         super.onPrepareOptionsMenu(menu);
     }
 

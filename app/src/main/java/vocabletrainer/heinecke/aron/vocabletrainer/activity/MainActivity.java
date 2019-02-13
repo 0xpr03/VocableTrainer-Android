@@ -11,11 +11,13 @@ import android.widget.Button;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget.VectorImageHelper;
 
 /**
  * Main activity
  */
 public class MainActivity extends AppCompatActivity {
+    public static final String TAG = "MainActivity";
     public static final String PREFS_NAME = "voc_prefs";
     private final static int REQUEST_PERM_EXPORT = 30;
     private final static int REQUEST_PERM_IMPORT = 35;
@@ -48,6 +50,13 @@ public class MainActivity extends AppCompatActivity {
 
 
         btnContinue = findViewById(R.id.bLastSession);
+        VectorImageHelper helper = new VectorImageHelper(this,findViewById(android.R.id.content));
+        helper.initImageLeft(R.id.bLastSession,R.drawable.ic_play_arrow_white_24dp);
+        helper.initImageLeft(R.id.bTrainerEnter, R.drawable.ic_send_white_24dp);
+        helper.initImageLeft(R.id.bEditTable, R.drawable.ic_edit_white_24dp);
+        helper.initImageLeft(R.id.bAbout, R.drawable.ic_info_outline_white_24dp);
+        helper.initImageLeft(R.id.bExport, R.drawable.ic_file_upload_white_24dp);
+        helper.initImageLeft(R.id.bImport, R.drawable.ic_file_download_white_24dp);
     }
 
     @Override

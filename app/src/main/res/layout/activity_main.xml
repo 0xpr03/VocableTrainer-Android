@@ -19,12 +19,12 @@
             android:layout_marginTop="8dp"
             android:onClick="continueSession"
             android:text="@string/Main_btn_Resume_Session"
-            android:drawableStart="@drawable/ic_play_arrow_white_24dp"
             style="@style/Widget.AppCompat.Button.Colored"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+        <!--android:drawableStart="@drawable/ic_play_arrow_white_24dp"-->
 
         <Button
             android:id="@+id/bTrainerEnter"
@@ -35,12 +35,13 @@
             android:layout_marginTop="8dp"
             android:onClick="showTrainer"
             android:text="@string/Main_btn_New_Session"
-            android:drawableStart="@drawable/ic_send_white_24dp"
             style="@style/Widget.AppCompat.Button.Colored"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/bLastSession" />
+        <!--android:drawableStart="@drawable/ic_send_white_24dp"-->
+
 
         <Button
             android:id="@+id/bEditTable"
@@ -50,15 +51,16 @@
             android:layout_marginLeft="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginRight="8dp"
-            android:drawableStart="@drawable/ic_edit_white_24dp"
             android:onClick="showEditTable"
             android:text="@string/Main_btn_Edit_List"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/bTrainerEnter" />
+        <!--android:drawableStart="@drawable/ic_edit_white_24dp"-->
+
 
         <Button
-            android:id="@+id/button"
+            android:id="@+id/bAbout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
@@ -66,11 +68,12 @@
             android:layout_marginRight="8dp"
             android:onClick="showAbout"
             android:text="@string/Main_btn_About"
-            android:drawableStart="@drawable/ic_info_outline_white_24dp"
             style="@style/Widget.AppCompat.Button.Colored"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent" />
+        <!--android:drawableStart="@drawable/ic_info_outline_white_24dp"-->
+
 
         <Button
             android:id="@+id/bExport"
@@ -80,14 +83,15 @@
             android:layout_marginLeft="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginRight="8dp"
-            android:drawableStart="@drawable/ic_file_upload_white_24dp"
             android:onClick="showExport"
             android:text="@string/Main_btn_Export"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/bEditTable" />
+        <!--android:drawableStart="@drawable/ic_file_upload_white_24dp"-->
 
         <Button
+            android:id="@+id/bImport"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
@@ -96,12 +100,12 @@
             android:layout_marginTop="8dp"
             android:onClick="showImport"
             android:text="@string/Main_btn_Import"
-            android:drawableStart="@drawable/ic_file_download_white_24dp"
             style="@style/Widget.AppCompat.Button.Colored"
             app:layout_constraintVertical_bias="0"
-            app:layout_constraintBottom_toTopOf="@+id/button"
+            app:layout_constraintBottom_toTopOf="@+id/bAbout"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/bExport" />
+        <!--android:drawableStart="@drawable/ic_file_download_white_24dp"-->
     </android.support.constraint.ConstraintLayout>
 </ScrollView>

@@ -2,10 +2,10 @@ package vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.IdRes;
-import android.support.v7.content.res.AppCompatResources;
-import android.util.Log;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.IdRes;
+import androidx.appcompat.content.res.AppCompatResources;
+
 import android.view.View;
 import android.widget.Button;
 

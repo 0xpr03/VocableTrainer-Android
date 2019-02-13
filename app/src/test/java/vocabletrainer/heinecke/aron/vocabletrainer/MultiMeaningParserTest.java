@@ -1,6 +1,6 @@
 package vocabletrainer.heinecke.aron.vocabletrainer;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.junit.Test;
 

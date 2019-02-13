@@ -29,22 +29,22 @@
 
         </LinearLayout>
 
-        <android.support.design.widget.TextInputLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/wrapper_Hint"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:hintAnimationEnabled="false"
             android:layout_below="@+id/meaningsB">
 
-            <android.support.design.widget.TextInputEditText
+            <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/tHint"
                 android:layout_width="match_parent"
                 android:saveEnabled="false"
                 android:layout_height="wrap_content"
                 android:hint="@string/Editor_Hint_Tip" />
-        </android.support.design.widget.TextInputLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <android.support.design.widget.TextInputLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/wrapper_Addition"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -53,12 +53,12 @@
             android:layout_below="@+id/wrapper_Hint"
             android:paddingBottom="20dp">
 
-            <android.support.design.widget.TextInputEditText
+            <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/tAddition"
                 android:layout_width="match_parent"
                 android:saveEnabled="false"
                 android:layout_height="wrap_content"
                 android:hint="@string/Editor_Hint_Addition" />
-        </android.support.design.widget.TextInputLayout>
+        </com.google.android.material.textfield.TextInputLayout>
     </RelativeLayout>
 </ScrollView>

@@ -1,6 +1,6 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
-import android.support.annotation.CallSuper;
+import androidx.annotation.CallSuper;
 
 /**
  * Pager Fragment which implements PagerListener, listening on viewpager changes

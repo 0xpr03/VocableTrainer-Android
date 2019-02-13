@@ -2,9 +2,14 @@ package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import android.text.InputType;
+import android.text.method.DigitsKeyListener;
+import android.text.method.KeyListener;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -159,6 +164,7 @@ public class TrainerSettingsFragment extends BaseFragment {
         SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
         // use string to show the hint at first via empty string
         tTimesVocable.setText(settings.getString(P_KEY_TS_TIMES_VOCABLE, ""));
+
         bHints.setChecked(settings.getBoolean(P_KEY_TS_ALLOW_HINTS, true));
         bCaseSensitive.setChecked(settings.getBoolean(P_KEY_TS_CASE_SENSITIVE,true));
         bTrimSpaces.setChecked(settings.getBoolean(P_KEY_TS_TRIM,true));

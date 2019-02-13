@@ -1,6 +1,6 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.Import;
 
-import android.arch.lifecycle.MutableLiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import java.io.File;
 

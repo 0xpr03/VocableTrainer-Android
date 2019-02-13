@@ -2,7 +2,7 @@ package vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.support.design.widget.TextInputEditText;
+import com.google.android.material.textfield.TextInputEditText;
 import android.util.AttributeSet;
 import android.util.Log;
 

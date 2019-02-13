@@ -1,6 +1,6 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import java.util.Collection;
 import java.util.LinkedList;

@@ -2,8 +2,8 @@ package vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.util.Log;
 
 import org.apache.commons.csv.CSVFormat;

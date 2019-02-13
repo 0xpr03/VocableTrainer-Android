@@ -1,7 +1,7 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
-import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.appcompat.app.AppCompatActivity;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.FragmentActivity;
 

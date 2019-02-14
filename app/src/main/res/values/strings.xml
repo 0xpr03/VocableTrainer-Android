@@ -120,6 +120,13 @@
     <string name="Editor_Diag_table_btn_Canel">Cancel</string>
     <string name="Format_Diag_error_Title">Invalid Input</string>
 
+    <string name="Survey_Diag_Title">Android Version Survey</string>
+    <string name="Survey_Diag_Msg" formatted="false">To decide whether I should keep support older android versions I\'d like to do a survey. If you accept only your android version is send to <a href="https://vac.proctet.net">the survey.</a> Nothing else will be collected.</string>
+    <string name="Survey_Diag_Accept">Accept Survey</string>
+    <string name="Survey_Diag_Decline">Decline</string>
+    <string name="Survey_Diag_Error_Toast">Error during survey submit!</string>
+    <string name="Survey_Diag_Success_Toast">Thanks for taking part!</string>
+
     <string name="About_Title">About</string>
     <!-- Special escape because of replacement & re-parsing as HTML \n = <br>-->
     <string name="About_Msg" formatted="false">About: VocableTrainer %v\nCopyright 2017 Aron Heinecke\nLicensed under &lt;a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache License 2.0&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/wiki">Documentation&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/issues">Bug Reports &amp; Feature requests&lt;/a>\n\n&lt;a href="https://github.com/0xpr03/VocableTrainer-Android/releases">Changelog&lt;/a>\n\nUsing &lt;a href="https://commons.apache.org/csv/">Apache Commons CSV&lt;/a></string>

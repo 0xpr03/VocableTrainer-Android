@@ -4,12 +4,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
+import vocabletrainer.heinecke.aron.vocabletrainer.dialog.SurveyDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget.VectorImageHelper;
 
@@ -27,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String P_KEY_DB_CHANGE_N_N = "showedDBDialogN_N";
     private static boolean showedDialog = false;
     Button btnContinue;
+    SurveyDialog surveyDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,10 +50,17 @@ public class MainActivity extends AppCompatActivity {
             betaWarnDiag.show();
         }
 
+        if (savedInstanceState != null) {
+            surveyDialog = (SurveyDialog) getSupportFragmentManager().getFragment(savedInstanceState, SurveyDialog.TAG);
+        }
+        if (surveyDialog == null) { // && !SurveyDialog.wasSurveyDisplayed(this)) {
+            surveyDialog = SurveyDialog.newInstance();
+            surveyDialog.show(getSupportFragmentManager(), SurveyDialog.TAG);
+        }
 
         btnContinue = findViewById(R.id.bLastSession);
-        VectorImageHelper helper = new VectorImageHelper(this,findViewById(android.R.id.content));
-        helper.initImageLeft(R.id.bLastSession,R.drawable.ic_play_arrow_white_24dp);
+        VectorImageHelper helper = new VectorImageHelper(this, findViewById(android.R.id.content));
+        helper.initImageLeft(R.id.bLastSession, R.drawable.ic_play_arrow_white_24dp);
         helper.initImageLeft(R.id.bTrainerEnter, R.drawable.ic_send_white_24dp);
         helper.initImageLeft(R.id.bEditTable, R.drawable.ic_edit_white_24dp);
         helper.initImageLeft(R.id.bAbout, R.drawable.ic_info_outline_white_24dp);
@@ -152,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
             Intent myIntent = new Intent(this, PermActivity.class);
             myIntent.putExtra(PermActivity.PARAM_PERMISSION, ExImportActivity.REQUIRED_PERMISSION);
             myIntent.putExtra(PermActivity.PARAM_MESSAGE, getString(R.string.Perm_CSV));
-            this.startActivityForResult(myIntent,REQUEST_PERM_EXPORT);
+            this.startActivityForResult(myIntent, REQUEST_PERM_EXPORT);
         }
     }
 
@@ -168,26 +177,32 @@ public class MainActivity extends AppCompatActivity {
             Intent myIntent = new Intent(this, PermActivity.class);
             myIntent.putExtra(PermActivity.PARAM_PERMISSION, ExImportActivity.REQUIRED_PERMISSION);
             myIntent.putExtra(PermActivity.PARAM_MESSAGE, getString(R.string.Perm_CSV));
-            this.startActivityForResult(myIntent,REQUEST_PERM_IMPORT);
+            this.startActivityForResult(myIntent, REQUEST_PERM_IMPORT);
         }
     }
 
     /**
      * Start import activity, does not check for permissions
      */
-    private void startImportActivityUnchecked(){
+    private void startImportActivityUnchecked() {
         Intent myIntent = new Intent(this, ExImportActivity.class);
-        myIntent.putExtra(ExImportActivity.PARAM_IMPORT,true);
+        myIntent.putExtra(ExImportActivity.PARAM_IMPORT, true);
         this.startActivity(myIntent);
     }
 
     /**
      * Start export activity, does not check for permissions
      */
-    private void startExportActivityUnchecked(){
+    private void startExportActivityUnchecked() {
         Intent myIntent = new Intent(this, ExImportActivity.class);
-        myIntent.putExtra(ExImportActivity.PARAM_IMPORT,false);
+        myIntent.putExtra(ExImportActivity.PARAM_IMPORT, false);
         this.startActivity(myIntent);
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (surveyDialog != null && surveyDialog.isAdded())
+            getSupportFragmentManager().putFragment(outState, SurveyDialog.TAG, surveyDialog);
+    }
 }

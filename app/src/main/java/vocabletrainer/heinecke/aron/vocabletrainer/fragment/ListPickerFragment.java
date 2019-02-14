@@ -52,7 +52,7 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
     private static final String P_KEY_SORTING_DIALOG = "sorting_dialog_list";
     private static final String K_PRESELECT = "preselect";
     private static final String K_MULTISELECT = "multiSelect";
-    private static final String K_SELECT_ONLY = "select_only";
+    public static final String K_SELECT_ONLY = "select_only";
     private static final int CODE_NEW_LIST = 1001;
 
     private View view;

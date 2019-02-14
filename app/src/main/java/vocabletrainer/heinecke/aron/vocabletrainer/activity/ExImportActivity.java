@@ -35,6 +35,8 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVCustomFormat;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.FormatViewModel;
 
+import static vocabletrainer.heinecke.aron.vocabletrainer.fragment.ListPickerFragment.K_SELECT_ONLY;
+
 /**
  * Activity for import/export
  */
@@ -85,7 +87,7 @@ public class ExImportActivity extends FragmentActivity {
      * Init ViewPager
      */
     private void initViewPager(){
-        viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(),this);
+        viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(),this,4);
         Intent intent = getIntent();
         boolean showImport = intent.getBooleanExtra(PARAM_IMPORT, true);
         if(showImport){
@@ -95,7 +97,9 @@ public class ExImportActivity extends FragmentActivity {
         } else {
             getSupportActionBar().setTitle(R.string.Export_Title);
             viewPagerAdapter.addFragment(ExportFragment.class, R.string.Export_Tab_Main);
-            viewPagerAdapter.addFragment(ListPickerFragment.class,R.string.Export_Tab_List);
+            Bundle args = new Bundle();
+            args.putBoolean(K_SELECT_ONLY,true);
+            viewPagerAdapter.addFragment(ListPickerFragment.class,R.string.Export_Tab_List,args);
         }
         viewPagerAdapter.addFragment(FormatFragment.class, R.string.ExImport_Tab_CustomFormat);
         viewPager.setAdapter(viewPagerAdapter);

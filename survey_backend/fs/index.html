@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="author" content="Aron Heinecke" />
+    <script src="https://cdn.plot.ly/plotly-basic-1.44.4.min.js" type="text/javascript"></script>
+    <link rel="icon" href="data:;base64,=">
+    <title>Survey Statistics</title>
+</head>
+
+<body>
+    <div id="pie-chart">
+        <h3>Loading..</h3>
+    </div>
+    <script>
+        (function () {
+
+            function json(response) {
+                return response.json();
+            }
+
+            function handleErrors(response) {
+                if (!response.ok) {
+                    throw new Error("Request failed " + response.statusText);
+                }
+                return response;
+            }
+            fetch("data/get/api", {
+                method: "GET"
+            }).then(handleErrors).then(json).then(function (data) {
+                console.log(JSON.stringify(data));
+
+                var labels = [];
+                var percentage = [];
+
+                for (var i = 0; i < data.length; i++) {
+                    labels.push('API ' + data[i].api);
+                    percentage.push(data[i].percentage);
+                }
+
+                var chart_config = [{
+                    values: percentage,
+                    labels: labels,
+                    type: 'pie'
+                }];
+
+                var layout = {
+                    title: 'API Usage Survey',
+                    font: { size: 18 }
+                };
+                document.getElementById("pie-chart").innerHTML = "";
+                Plotly.newPlot('pie-chart', chart_config, layout, { responsive: true });
+            }).catch(function (err) {
+                console.log("err" + err);
+            })
+
+        })();
+    </script>
+</body>
+
+</html>

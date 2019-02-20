@@ -25,6 +25,8 @@ Feel free to open an Issue for ideas, bugs, localisation or feature requests. Or
 ## FAQ
 - Docs ?!  
   [Docs!](https://github.com/0xpr03/VocableTrainer-Android/wiki)
+- What about these internet permissions?!
+  These are used only the take part in an opt-in android-version survey.  
 - What about a localisation for X ?  
   I would appreciate a PR for localizations.
 - What is this first `1.0` version before `0.1` about ?  

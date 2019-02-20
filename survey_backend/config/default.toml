@@ -1,0 +1,17 @@
+# Copy this file to local.toml and modify it to make changes
+[database]
+user="survey"
+password="survey"
+database="survey"
+port="3306"
+host="localhost"
+
+[files]
+static_files_dir="~/fs"
+
+[log]
+requests=true
+
+[bind]
+host="127.0.0.1"
+port=3219

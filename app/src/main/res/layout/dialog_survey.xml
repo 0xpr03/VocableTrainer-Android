@@ -16,7 +16,7 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
     <TextView
-        android:id="@+id/dialog_message"
+        android:id="@+id/survey_message"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:text="@string/Survey_Diag_Msg"

@@ -46,5 +46,6 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:1.1.2'
     implementation "com.google.android.material:material:$androidSupportVersion"
     testImplementation 'junit:junit:4.12'
-    implementation "com.android.volley:volley:1.1.1"
+
+    implementation "info.guardianproject.netcipher:netcipher:2.0.0-alpha1"
 }

@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -43,6 +44,7 @@ public class SurveyDialog extends DialogFragment {
         surveyViewModel.getErrorLiveData().observe(this,err -> {
             if(err != null && err){
                 Toast.makeText(getContext(),R.string.Survey_Diag_Error_Toast,Toast.LENGTH_LONG).show();
+
                 this.dismiss();
             }
         });
@@ -105,7 +107,7 @@ public class SurveyDialog extends DialogFragment {
         });
         btnAccept.setOnClickListener(v -> {
             Log.d(TAG,"survey participating..");
-            surveyViewModel.submitSurvey(getContext());
+            surveyViewModel.submitSurvey();
         });
         return view;
     }

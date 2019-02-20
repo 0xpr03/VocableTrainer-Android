@@ -3,6 +3,7 @@ package vocabletrainer.heinecke.aron.vocabletrainer.dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,6 +35,7 @@ public class SurveyDialog extends DialogFragment {
     private Button btnCancel;
     private Button btnAccept;
     private SurveyViewModel surveyViewModel;
+    private TextView msg;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -100,6 +102,8 @@ public class SurveyDialog extends DialogFragment {
         progressBar.setVisibility(View.GONE);
         btnCancel = view.findViewById(R.id.button_decline_survey);
         btnAccept = view.findViewById(R.id.button_participate);
+        msg = view.findViewById(R.id.survey_message);
+        msg.setMovementMethod(LinkMovementMethod.getInstance());
         btnCancel.setOnClickListener(v -> {
             SharedPreferences settings = getContext().getSharedPreferences(PREFS_NAME, 0);
             settings.edit().putBoolean(P_KEY_SURVEY_DIALOG_API,true).apply();

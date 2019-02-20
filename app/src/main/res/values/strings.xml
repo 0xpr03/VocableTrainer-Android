@@ -121,7 +121,7 @@
     <string name="Format_Diag_error_Title">Invalid Input</string>
 
     <string name="Survey_Diag_Title">Android Version Survey</string>
-    <string name="Survey_Diag_Msg" formatted="false">To decide whether I should keep support older android versions I\'d like to do a survey. If you accept only your android version is send to <a href="https://vct.proctet.net">the survey.</a> Nothing else will be collected.</string>
+    <string name="Survey_Diag_Msg" ><html>I\'d like to do a survey about the Android versions on which VAT is running.\nSupporting Android devices pre-v21 has gotten increasingly difficult.\nIf you take part the following Information will be send to <a href="https://vct.proctet.net">https://vct.proctet.net</a> and stored:\n<ul><li>Your Android version</li></ul>\nNothing else will be send, no IP is stored.\nYou can also see the results at above URL.</html></string>
     <string name="Survey_Diag_Accept">Accept Survey</string>
     <string name="Survey_Diag_Decline">Decline</string>
     <string name="Survey_Diag_Error_Toast">Error during survey submit!</string>

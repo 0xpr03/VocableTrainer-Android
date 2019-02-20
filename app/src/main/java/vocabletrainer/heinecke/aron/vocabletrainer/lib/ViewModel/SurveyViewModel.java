@@ -81,7 +81,6 @@ public class SurveyViewModel extends ViewModel {
                 JSONObject jsonObject = new JSONObject(result.toString("UTF-8"));
                 in.close();
 
-
                 con.disconnect();
                 Log.d(TAG,"received json: "+jsonObject.toString());
                 loading.postValue(false);

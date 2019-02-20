@@ -20,7 +20,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:text="@string/Survey_Diag_Msg"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
 
     <ProgressBar
         android:id="@+id/dialog_progressbar"

@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"target/*": true
+		},
+		"editor.formatOnSave": true,
+		"editor.formatOnPaste": true
+	}
+}

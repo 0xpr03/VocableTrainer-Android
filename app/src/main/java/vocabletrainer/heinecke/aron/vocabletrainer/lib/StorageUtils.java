@@ -168,12 +168,12 @@ public class StorageUtils {
      * @throws IllegalAccessException
      * @throws NoSuchMethodException
      */
+    @SuppressWarnings("unchecked")
     private static <T> T callReflectionFunction(Object obj, String function)
             throws ClassCastException,InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         Method method = obj.getClass().getDeclaredMethod(function);
         method.setAccessible(true);
         Object r = method.invoke(obj);
-        //noinspection unchecked
         return (T) r;
     }
 }

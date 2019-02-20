@@ -1,0 +1,4 @@
+ - Added opt-in survey about used android versions
+ - Fixed bug with list editing in export
+ - Upgrade dependencies
+ - Migrate dependencies to androidx

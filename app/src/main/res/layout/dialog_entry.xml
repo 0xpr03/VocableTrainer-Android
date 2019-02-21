@@ -7,14 +7,17 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="20dp">
+        android:layout_marginStart="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginRight="20dp">
 
         <LinearLayout
             android:id="@+id/meaningsA"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="false"
             android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="false"
             android:orientation="vertical">
 
         </LinearLayout>
@@ -23,8 +26,8 @@
             android:id="@+id/meaningsB"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="false"
             android:layout_below="@+id/meaningsA"
+            android:layout_alignParentEnd="false"
             android:orientation="vertical">
 
         </LinearLayout>
@@ -33,32 +36,31 @@
             android:id="@+id/wrapper_Hint"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:hintAnimationEnabled="false"
-            android:layout_below="@+id/meaningsB">
+            android:layout_below="@+id/meaningsB"
+            app:hintAnimationEnabled="false">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/tHint"
                 android:layout_width="match_parent"
-                android:saveEnabled="false"
                 android:layout_height="wrap_content"
-                android:hint="@string/Editor_Hint_Tip" />
+                android:hint="@string/Editor_Hint_Tip"
+                android:saveEnabled="false" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/wrapper_Addition"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="false"
-            app:hintAnimationEnabled="false"
             android:layout_below="@+id/wrapper_Hint"
-            android:paddingBottom="20dp">
+            android:layout_alignParentEnd="false"
+            app:hintAnimationEnabled="false">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/tAddition"
                 android:layout_width="match_parent"
-                android:saveEnabled="false"
                 android:layout_height="wrap_content"
-                android:hint="@string/Editor_Hint_Addition" />
+                android:hint="@string/Editor_Hint_Addition"
+                android:saveEnabled="false" />
         </com.google.android.material.textfield.TextInputLayout>
     </RelativeLayout>
 </ScrollView>

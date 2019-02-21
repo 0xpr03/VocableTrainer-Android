@@ -60,6 +60,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/Editor_Hint_Addition"
+                android:imeOptions="actionDone"
                 android:saveEnabled="false" />
         </com.google.android.material.textfield.TextInputLayout>
     </RelativeLayout>

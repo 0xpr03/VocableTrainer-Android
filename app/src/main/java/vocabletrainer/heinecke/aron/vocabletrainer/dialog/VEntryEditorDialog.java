@@ -10,11 +10,14 @@ import com.google.android.material.textfield.TextInputLayout;
 import androidx.fragment.app.DialogFragment;
 import androidx.appcompat.app.AlertDialog;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -134,29 +137,44 @@ public class VEntryEditorDialog extends DialogFragment {
 
         tAddition.setSingleLine();
         tAddition.setText(addition);
+        tAddition.setOnEditorActionListener((textView, actionID, keyEvent) -> {
+            if(actionID == EditorInfo.IME_ACTION_DONE){
+                okAction();
+                dismiss();
+                return true;
+            }
+            return false;
+        });
 
         builder.setPositiveButton(R.string.GEN_OK, (dialog, whichButton) -> {
-            List<String> mA = getMeanings(meaningsA);
-            List<String> mB = getMeanings(meaningsB);
-
-            if (mA.size() == 0 || mB.size() == 0) {
-                Log.d(TAG, "empty insert");
-            }
-
-            entry.setAMeanings(mA);
-            entry.setBMeanings(mB);
-            entry.setTip(tHint.getText().toString());
-            entry.setAddition(tAddition.getText().toString());
-            if(okAction != null){
-                try {
-                    okAction.function(entry);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+            okAction();
         });
         builder.setNegativeButton(R.string.Editor_Diag_edit_btn_CANCEL, (dialog, which) -> callCancelAction());
         return builder.create();
+    }
+
+    /**
+     * Action to perform on done, doesn't close dialog by itself
+     */
+    private void okAction() {
+        List<String> mA = getMeanings(meaningsA);
+        List<String> mB = getMeanings(meaningsB);
+
+        if (mA.size() == 0 || mB.size() == 0) {
+            Log.d(TAG, "empty insert");
+        }
+
+        entry.setAMeanings(mA);
+        entry.setBMeanings(mB);
+        entry.setTip(tHint.getText().toString());
+        entry.setAddition(tAddition.getText().toString());
+        if(okAction != null){
+            try {
+                okAction.function(entry);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**

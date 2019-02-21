@@ -7,8 +7,11 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import java.util.concurrent.Callable;
 
@@ -121,6 +124,14 @@ public class VListEditorDialog extends DialogFragment {
         iColA.setSingleLine();
         iColB.setSingleLine();
         iColB.setText(list.getNameB());
+        iColB.setOnEditorActionListener((textView, actionID, keyEvent) -> {
+            if(actionID == EditorInfo.IME_ACTION_DONE){
+                okAction();
+                dismiss();
+                return true;
+            }
+            return false;
+        });
         if (newList) {
             iName.setSelectAllOnFocus(true);
             iColA.setSelectAllOnFocus(true);
@@ -136,23 +147,30 @@ public class VListEditorDialog extends DialogFragment {
         alertDialog.setView(view);
 
         alertDialog.setPositiveButton(R.string.GEN_OK, (dialog, whichButton) -> {
-            if (iColA.getText().length() == 0 || iColB.length() == 0 || iName.getText().length() == 0) {
-                Log.d(TAG, "empty insert");
-            }
-
-            list.setNameA(iColA.getText().toString());
-            list.setNameB(iColB.getText().toString());
-            list.setName(iName.getText().toString());
-            if(okAction != null){
-                try {
-                    okAction.call();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+            okAction();
         });
         alertDialog.setNegativeButton(R.string.Editor_Diag_table_btn_Canel, (dialog, which) -> callCancelAction());
         return alertDialog.create();
+    }
+
+    /**
+     * Action to perform on ok, doesn't close the dialog by itself
+     */
+    private void okAction() {
+        if (iColA.getText().length() == 0 || iColB.length() == 0 || iName.getText().length() == 0) {
+            Log.d(TAG, "empty insert");
+        }
+
+        list.setNameA(iColA.getText().toString());
+        list.setNameB(iColB.getText().toString());
+        list.setName(iName.getText().toString());
+        if(okAction != null){
+            try {
+                okAction.call();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override

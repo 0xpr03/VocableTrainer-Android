@@ -1,1 +1,3 @@
- -  Fix spacing in editor making buttons hard to access
+ - Fix spacing in editor making buttons hard to access.
+ - Change editor dialog to close on last input finish.
+ - Change list settings dialog to close on last input finish.

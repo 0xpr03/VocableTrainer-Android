@@ -48,14 +48,15 @@ public class MainActivity extends AppCompatActivity {
             betaWarnDiag.setNegativeButton(R.string.Beta_Warning_Btn_Exit, (dialog, whichButton) -> System.exit(0));
 
             betaWarnDiag.show();
-        }
+        } else { // don't show both dialogs, show beta warning at first
 
-        if (savedInstanceState != null) {
-            surveyDialog = (SurveyDialog) getSupportFragmentManager().getFragment(savedInstanceState, SurveyDialog.TAG);
-        }
-        if (surveyDialog == null && !SurveyDialog.wasSurveyDisplayed(this)) {
-            surveyDialog = SurveyDialog.newInstance();
-            surveyDialog.show(getSupportFragmentManager(), SurveyDialog.TAG);
+            if (savedInstanceState != null) {
+                surveyDialog = (SurveyDialog) getSupportFragmentManager().getFragment(savedInstanceState, SurveyDialog.TAG);
+            }
+            if (surveyDialog == null && !SurveyDialog.wasSurveyDisplayed(this)) {
+                surveyDialog = SurveyDialog.newInstance();
+                surveyDialog.show(getSupportFragmentManager(), SurveyDialog.TAG);
+            }
         }
 
         btnContinue = findViewById(R.id.bLastSession);

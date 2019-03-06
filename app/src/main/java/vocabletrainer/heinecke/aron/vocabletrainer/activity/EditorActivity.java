@@ -348,9 +348,12 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
      * @param entry VEntry to edit/create
      * @param position edit position in list, if existing
      */
-    private void showEntryEditDialog(final VEntry entry, final int position) {
+    private synchronized void showEntryEditDialog(final VEntry entry, final int position) {
         if (entry.getId() == ID_RESERVED_SKIP) {
             showTableInfoDialog();
+            return;
+        }
+        if(editorDialog != null && editorDialog.isAdded()) {
             return;
         }
 
@@ -404,7 +407,10 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
      * Show list title editor dialog<br>
      *     Exit editor when newTbl is set and user cancels the dialog
      */
-    private void showTableInfoDialog() {
+    private synchronized void showTableInfoDialog() {
+        if(listEditorDialog != null && listEditorDialog.isAdded()) {
+            return;
+        }
         listEditorDialog = VListEditorDialog.newInstance(!list.isExisting());
         setListEditorActions();
         listEditorDialog.show(getSupportFragmentManager(), VListEditorDialog.TAG);

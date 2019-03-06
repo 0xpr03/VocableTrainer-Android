@@ -26,3 +26,6 @@
 -dontobfuscate
 
 -keepattributes SourceFile,LineNumberTable
+-keepclassmembers class * extends androidx.lifecycle.AndroidViewModel {
+    <init>(...);
+}

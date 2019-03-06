@@ -1,3 +1,6 @@
+ - Fix broken import/export due to androidx upgrade
  - Fix spacing in list editor & settings making buttons hard to access.
+ - Fix possible multi-trigger of editor dialogs
  - Change editor dialog to close on last input finish.
  - Change list settings dialog to close on last input finish.
+ - Upgrade gradle dependency

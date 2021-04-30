@@ -126,18 +126,15 @@ public class TrainerSettingsFragment extends BaseFragment {
      * @param view
      */
     private void refreshTestMode(View view){
-        switch (view.getId()) {
-            case R.id.rTSettingsA:
-                testMode = Trainer.TEST_MODE.A;
-                break;
-            case R.id.rTSettingsB:
+        int id = view.getId();
+        if (id == R.id.rTSettingsA) {
+            testMode = Trainer.TEST_MODE.A;
+        }else if (id == R.id.rTSettingsB){
                 testMode = Trainer.TEST_MODE.B;
-                break;
-            case R.id.rTSettingsAB:
+        }else if (id == R.id.rTSettingsAB){
                 testMode = Trainer.TEST_MODE.RANDOM;
-                break;
-            default:
-                Log.w(TAG,"invalid view passed for mode refresh");
+        }else{
+            Log.w(TAG,"invalid view passed for mode refresh");
         }
     }
 

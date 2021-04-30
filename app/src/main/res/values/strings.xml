@@ -37,6 +37,7 @@
     <string name="TSettings_Tab_Settings">Settings</string>
     <string name="TSettings_Tab_List">Lists</string>
     <string name="TSettings_Info_missing_lists">You have to select at least one list.</string>
+    <string name="TSettings_Missing_Times_solve">Missing times to solve</string>
     <string name="Lists_Title">Lists</string>
     <string name="List_Select_Title">Select List</string>
     <string name="List_Create_Description">Create List</string>

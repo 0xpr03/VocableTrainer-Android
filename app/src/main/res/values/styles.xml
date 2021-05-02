@@ -1,31 +1,72 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="BaseAppTheme" parent="Theme.MaterialComponents.DayNight">
         <!-- Customize your theme here. -->
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:textColorPrimary">@color/textColorPrimary</item>
+        <item name="android:textColorSecondary">@color/textColorSecondary</item>
+        <item name="android:textColor">@color/textColor</item>
+        <item name="android:colorBackground">@color/background_item</item>
+        <item name="android:windowBackground">@color/background_blank</item>
+        <item name="android:borderlessButtonStyle">@style/BorderlessButton</item>
+        <item name="colorBackgroundFloating">@color/background_blank</item>
+        <item name="android:buttonStyle">@style/NormalButton</item>
+        <item name="android:textColorHint">?attr/colorAccent</item>
     </style>
 
-    <style name="AppTheme.NoActionBar" parent="AppTheme">
+    <style name="AppTheme" parent="BaseAppTheme" />
+
+    <style name="TextInputLayout" parent="@style/Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <!-- don't do anything additionally, override on night theme -->
+    </style>
+
+    <style name="NormalButton" parent="Widget.MaterialComponents.Button">
+        <!-- don't do anything additionally, override on night theme -->
+        <item name="android:textColor">@color/colorWhite</item>
+        <item name="backgroundTint">@color/color_button</item>
+    </style>
+
+    <style name="BorderlessButton" parent="Widget.MaterialComponents.Button.TextButton">
+        <!-- don't do anything additionally, override on night theme -->
+        <item name="android:textColor">@color/colorAccent</item>
+    </style>
+
+    <style name="CustomTabLayoutStyle" parent="Base.Widget.Design.TabLayout">
+        <item name="tabSelectedTextColor">@color/colorTabSelected</item>
+<!--        <item name="tabIndicatorColor">@color/tab_indicator</item>-->
+<!--        <item name="tabTextAppearance">@style/CustomTabTexStyle</item>-->
+    </style>
+
+    <style name="AppTheme.NoActionBar" parent="BaseAppTheme">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="CustomDialog" parent="Theme.AppCompat.Light.Dialog">
+
+    <style name="AppTheme.Dialog" parent="Theme.AppCompat.DayNight.Dialog" />
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.DayNight.ActionBar" />
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.DayNight" />
+
+    <style name="CustomDialog" parent="AppTheme.Dialog">
         <!--<item name="android:windowAnimationStyle">@null</item>
         <item name="android:backgroundDimEnabled">false</item>
         <item name="android:windowNoTitle">true</item>-->
+        <item name="colorBackgroundFloating">@color/background_item</item>
         <item name="android:windowMinWidthMajor">90%</item>
+        <item name="android:buttonStyle">@style/NormalButton</item>
+        <item name="android:borderlessButtonStyle">@style/BorderlessButton</item>
         <item name="android:windowMinWidthMinor">90%</item>
+        <item name="buttonBarPositiveButtonStyle">@style/BorderlessButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/BorderlessButton</item>
         <item name="android:gravity">center</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
 
     <style name="Divider">
@@ -35,7 +76,7 @@
         <item name="android:background">@android:color/darker_gray</item>
     </style>
 
-    <style name="InputLabel" parent="TextAppearance.AppCompat.Caption">
+    <style name="InputLabel" parent="TextAppearance.MaterialComponents.Caption">
         <item name="android:paddingBottom">@dimen/input_label_vertical_spacing</item>
         <item name="android:paddingLeft">@dimen/input_label_horizontal_spacing</item>
         <item name="android:paddingRight">@dimen/input_label_horizontal_spacing</item>

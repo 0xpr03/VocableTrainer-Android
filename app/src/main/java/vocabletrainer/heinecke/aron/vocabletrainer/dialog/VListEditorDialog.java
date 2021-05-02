@@ -1,6 +1,6 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.dialog;
 
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -70,13 +70,14 @@ public class VListEditorDialog extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // we have to override this one, because we're inflating + using the builder, apparently
+        setStyle(DialogFragment.STYLE_NORMAL, R.style.CustomDialog);
         Log.d(TAG,"onCreate");
         if(savedInstanceState != null) {
             newList = getArguments().getBoolean(PARAM_NEW);
         } else if(getArguments() != null){
             newList = getArguments().getBoolean(PARAM_NEW);
         }
-        setStyle(DialogFragment.STYLE_NORMAL, R.style.CustomDialog);
     }
 
     @Override
@@ -109,11 +110,14 @@ public class VListEditorDialog extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Log.d(TAG,"onCreateDialog");
         list = getListProvider().getList();
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(requireActivity(),R.style.CustomDialog);
         final View view = View.inflate(getActivity(), R.layout.dialog_list, null);
+        // and we have to use this one, together with onCreate, because of the inflation here
+        // to override dialog buttons + inflated view
+        view.getContext().getTheme().applyStyle(R.style.CustomDialog, true);
         alertDialog.setTitle(newList ? R.string.Editor_Diag_table_Title_New : R.string.Editor_Diag_table_Title_Edit );
+        alertDialog.setView(view);
         iName = view.findViewById(R.id.tListName);
         iColA = view.findViewById(R.id.tListColumnA);
         iColB = view.findViewById(R.id.tListColumnB);
@@ -143,8 +147,6 @@ public class VListEditorDialog extends DialogFragment {
             iColA.setText(savedInstanceState.getString(KEY_COL_A));
             iColB.setText(savedInstanceState.getString(KEY_COL_B));
         }
-
-        alertDialog.setView(view);
 
         alertDialog.setPositiveButton(R.string.GEN_OK, (dialog, whichButton) -> {
             okAction();

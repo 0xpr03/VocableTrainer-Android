@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
+    android:theme="@style/CustomDialog"
     android:orientation="vertical"
     android:padding="15dp">
 
@@ -39,14 +40,14 @@
 
         <Button
             android:id="@+id/button_decline_survey"
-            style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"
+            style="@style/BorderlessButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/Survey_Diag_Decline" />
 
         <Button
             android:id="@+id/button_participate"
-            style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"
+            style="@style/BorderlessButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/Survey_Diag_Accept" />

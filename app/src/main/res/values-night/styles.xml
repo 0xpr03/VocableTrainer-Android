@@ -1,0 +1,57 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="BaseAppTheme">
+        <!-- actual override -->
+        <item name="hintTextColor">?attr/colorAccent</item>
+        <item name="colorControlNormal">?attr/colorAccent</item>
+        <item name="colorControlHighlight">?attr/colorAccent</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar" parent="AppTheme">
+        <!-- override stuff so it works in night mode and uses AppTheme.. -->
+        <!-- used for 99% of the activities in AndroidManifest declaration -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+
+    <style name="TextInputLayout" parent="@style/Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <!-- The color of the label when it is collapsed and the text field is active -->
+        <item name="hintTextColor">?attr/colorAccent</item>
+
+        <!-- The color of the label in all other text field states (such as resting and disabled) -->
+        <item name="android:textColorHint">?attr/colorAccent</item>
+        <item name="android:textColor">@color/textColor</item>
+
+        <item name="hintTextAppearance">@style/AppTheme.TextFloatLabelAppearance</item>
+        <item name="errorTextAppearance">@style/AppTheme.TextErrorAppearance</item>
+        <item name="counterTextAppearance">@style/TextAppearance.Design.Counter</item>
+        <item name="counterOverflowTextAppearance">@style/TextAppearance.Design.Counter.Overflow</item>
+    </style>
+
+    <style name="AppTheme.TextErrorAppearance" parent="TextAppearance.Design.Error">
+        <!-- Error message appearance here -->
+        <item name="android:textColor">#ff0000</item>
+    </style>
+
+    <style name="AppTheme.TextFloatLabelAppearance" parent="TextAppearance.Design.Hint">
+        <!-- Floating label appearance here -->
+        <item name="android:textColor">@color/colorAccent</item>
+    </style>
+
+    <style name="NormalButton" parent="Widget.MaterialComponents.Button">
+        <!-- don't do anything additionally, override on night theme -->
+        <item name="android:textColor">@color/textColor</item>
+        <item name="backgroundTint">@color/color_button</item>
+    </style>
+
+    <style name="BorderlessButton" parent="Widget.MaterialComponents.Button.TextButton">
+        <!-- don't do anything additionally, override on night theme -->
+        <item name="android:textColor">@color/dialogButtonTextColorFix</item>
+    </style>
+
+    <!--<style name="TextButtonOverride" parent="Widget.MaterialComponents.Button">
+        <item name="android:textColor">#ff4991cc</item>
+    </style>-->
+</resources>

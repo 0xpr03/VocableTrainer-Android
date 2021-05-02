@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProviders;
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
@@ -40,7 +41,6 @@ public class SurveyDialog extends DialogFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setStyle(DialogFragment.STYLE_NORMAL, R.style.CustomDialog);
         surveyViewModel = ViewModelProviders.of(getActivity()).get(SurveyViewModel.class);
 
         surveyViewModel.getErrorLiveData().observe(this,err -> {
@@ -96,7 +96,8 @@ public class SurveyDialog extends DialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = View.inflate(getContext(),R.layout.dialog_survey, null);
-
+        /*int color = ContextCompat.getColor(requireContext(), R.color.background);
+        view.setBackgroundColor(color);*/
         progressBar = view.findViewById(R.id.dialog_progressbar);
         progressBar.setIndeterminate(true);
         progressBar.setVisibility(View.GONE);

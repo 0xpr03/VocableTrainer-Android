@@ -2,4 +2,22 @@
 <resources>
     <color name="bg_row_background">#fa315b</color>
     <color name="colorWhite">#ffffff</color>
+    <color name="colorPrimary">#2196f3</color>
+    <color name="colorPrimaryDark">#1976d2</color>
+    <color name="primary_light">#BBDEFB</color>
+    <color name="textColor">#ff000000</color>
+    <color name="colorAccent">#03a9f4</color>
+    <color name="textColorPrimary">#212121</color>
+    <color name="textColorSecondary">#757575</color>
+    <color name="icons">#FFFFFF</color>
+    <color name="divider">#D6D6D6</color>
+    <color name="background_item">#F1F1F1</color>
+    <color name="background_blank">#FFFFFF</color>
+    <color name="colorTabSelected">@color/colorWhite</color>
+
+    <!-- Mainly for night theme color fixes-->
+    <color name="dialogButtonTextColorFix">#ff4991cc</color>
+
+    <color name="toolbarBackground">@color/colorPrimary</color>
+    <color name="appBarcolorPrimaryDark">@color/colorPrimaryDark</color>
 </resources>

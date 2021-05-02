@@ -64,6 +64,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="5dp"
             android:text="@string/GEN_OK"
+            style="@style/NormalButton"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tTrainerInputColumn" />
@@ -105,6 +106,7 @@
             android:layout_marginTop="8dp"
             android:layout_weight="0.5"
             android:text="@string/Trainer_btn_Show_Next"
+            style="@style/NormalButton"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/bTrainerEnter" />
@@ -117,6 +119,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_weight="0.5"
+            style="@style/NormalButton"
             android:text="@string/Trainer_btn_Solution"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

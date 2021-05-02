@@ -1,21 +1,22 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
-import androidx.lifecycle.ViewModelProviders;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.preference.SwitchPreference;
-import androidx.fragment.app.DialogFragment;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
-import androidx.preference.EditTextPreference;
-import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
 import android.text.InputFilter;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.preference.EditTextPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.SwitchPreference;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.Constants;
@@ -210,7 +211,7 @@ public class FormatFragment extends PreferenceFragmentCompat implements Fragment
 
             String msg = getString(R.string.Format_Error_Input_equals).replace("$A",sA).replace("$B",sB);
 
-            final AlertDialog.Builder errorDiag = new AlertDialog.Builder(getActivity());
+            final AlertDialog.Builder errorDiag = new AlertDialog.Builder(getActivity(),R.style.CustomDialog);
 
             errorDiag.setTitle(R.string.Format_Diag_error_Title);
             errorDiag.setMessage(msg);
@@ -287,7 +288,7 @@ public class FormatFragment extends PreferenceFragmentCompat implements Fragment
 
         // dialog shown
         //noinspection ConstantConditions
-        if (getFragmentManager().findFragmentByTag(C_DIALOG_TAG) != null) {
+        if (getParentFragmentManager().findFragmentByTag(C_DIALOG_TAG) != null) {
             return;
         }
 
@@ -300,7 +301,7 @@ public class FormatFragment extends PreferenceFragmentCompat implements Fragment
         }
         if (f != null) {
             f.setTargetFragment(this, 0);
-            f.show(getFragmentManager(), C_DIALOG_TAG);
+            f.show(getParentFragmentManager(), C_DIALOG_TAG);
         }
     }
 

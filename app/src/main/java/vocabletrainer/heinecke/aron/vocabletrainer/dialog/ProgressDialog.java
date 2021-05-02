@@ -1,6 +1,8 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.dialog;
 
 import android.annotation.SuppressLint;
+
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import android.os.Bundle;
@@ -37,12 +39,6 @@ public class ProgressDialog extends DialogFragment {
     private Button btnCancel;
     private int max = 0;
     private @StringRes int title = R.string.Placeholder;
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setStyle(DialogFragment.STYLE_NORMAL, R.style.CustomDialog);
-    }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -131,7 +127,8 @@ public class ProgressDialog extends DialogFragment {
             indeterminateMode = savedInstanceState.getBoolean(P_KEY_MODE);
         }
         View view = View.inflate(getContext(),R.layout.dialog_progress, null);
-
+        // hack to get daynight theme working
+        view.getContext().getTheme().applyStyle(R.style.CustomDialog, true);
         progressBar = view.findViewById(R.id.dialog_progressbar);
         messageView = view.findViewById(R.id.dialog_message);
         titleView = view.findViewById(R.id.dialog_title);

@@ -1,5 +1,6 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -238,12 +240,18 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
     private void saveEdit() {
         ArrayList<VEntry> lst = new ArrayList<>(1);
         lst.add(editorEntry);
-
-        if (!editorEntry.isExisting()) {
+        boolean isExisting = editorEntry.isExisting();
+        if (!isExisting) {
             adapter.addEntryUnrendered(editorEntry);
         }
         db.upsertEntries(lst);
         adapter.notifyDataSetChanged();
+        if(!isExisting) {
+            addEntry();
+        } else {
+            InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+        }
     }
 
     /**
@@ -266,7 +274,7 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
 
         listView.setAdapter(adapter);
 
-        listView.setOnItemClickListener((parent, view, pos, id) -> showEntryEditDialog((VEntry) adapter.getItem(pos), pos));
+        listView.setOnItemClickListener((parent, view, pos, id) -> showEntryEditDialog((VEntry) adapter.getItem(pos), pos,false));
 
         listView.setOnItemLongClickListener((arg0, arg1, pos, id) -> {
             showEntryDeleteDialog((VEntry) adapter.getItem(pos), pos);
@@ -291,7 +299,7 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
     private void showEntryDeleteDialog(final VEntry entry, final int position) {
         if (entry.getId() == ID_RESERVED_SKIP)
             return;
-        AlertDialog.Builder delDiag = new AlertDialog.Builder(this);
+        AlertDialog.Builder delDiag = new AlertDialog.Builder(this,R.style.CustomDialog);
 
         delDiag.setTitle(R.string.Editor_Diag_delete_Title);
         delDiag.setMessage(String.format(getString(R.string.Editor_Diag_delete_MSG_part) + "\n %s %s %s", entry.getAString(), entry.getBString(), entry.getTip()));
@@ -339,7 +347,7 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
      * @param entry
      */
     private void showEntryEditDialog(final VEntry entry) {
-        showEntryEditDialog(entry,MIN_ID_TRESHOLD-1);
+        showEntryEditDialog(entry,MIN_ID_TRESHOLD-1, true);
     }
 
     /**
@@ -348,12 +356,12 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
      * @param entry VEntry to edit/create
      * @param position edit position in list, if existing
      */
-    private synchronized void showEntryEditDialog(final VEntry entry, final int position) {
+    private synchronized void showEntryEditDialog(final VEntry entry, final int position, final boolean forceDialog) {
         if (entry.getId() == ID_RESERVED_SKIP) {
             showTableInfoDialog();
             return;
         }
-        if(editorDialog != null && editorDialog.isAdded()) {
+        if(!forceDialog && editorDialog != null && editorDialog.isAdded()) {
             return;
         }
 

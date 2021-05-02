@@ -52,6 +52,7 @@
             android:layout_marginEnd="8dp"
             android:layout_marginTop="8dp"
             android:text="@string/Select_File_btn"
+            style="@style/NormalButton"
             app:layout_constraintBottom_toBottomOf="@+id/tImportPath"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="@+id/tImportPath" />
@@ -125,6 +126,7 @@
             android:drawableStart="@drawable/baseline_autorenew_black_18"
             android:padding="16dp"
             android:text="@string/Import_btn_Reparse"
+            style="@style/NormalButton"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
@@ -173,6 +175,7 @@
                 android:layout_marginTop="8dp"
                 android:text="@string/Import_btn_List_Select"
                 android:visibility="visible"
+                style="@style/NormalButton"
                 app:layout_constraintBottom_toBottomOf="@+id/tImportList"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/tImportList" />
@@ -263,6 +266,7 @@
             android:layout_marginRight="8dp"
             android:layout_marginTop="8dp"
             android:text="@string/Import_OK"
+            style="@style/NormalButton"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/rgImportMultiple" />

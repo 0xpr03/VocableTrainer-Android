@@ -1,4 +1,5 @@
  - Add dark mode, requires android 8.1 or newer
+ - Display keyboard on new entry & allow continuous entry of vocables
  - Fix a bug where file chooser text jumps around
  - Fix ui feedback when missing times-to-solve
  - Fix broken list creation button on old systems

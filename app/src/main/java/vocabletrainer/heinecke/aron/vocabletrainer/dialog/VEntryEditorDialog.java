@@ -1,26 +1,31 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.dialog;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
-import androidx.fragment.app.DialogFragment;
-import androidx.appcompat.app.AlertDialog;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
+
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Function;
@@ -40,6 +45,7 @@ public class VEntryEditorDialog extends DialogFragment {
     private final static String KEY_INPUT_B_COUNT = "inputBCount";
     private final static String KEY_INPUT_HINT = "inputH";
     private final static String KEY_INPUT_ADDITION = "inputAd";
+    private EditText focusableEditText = null;
     private Function<Void,VEntry> okAction;
     private Function<Void,VEntry> cancelAction;
     private VEntry entry;
@@ -72,6 +78,18 @@ public class VEntryEditorDialog extends DialogFragment {
      */
     public void setCancelAction(Function<Void,VEntry> cancelAction) {
         this.cancelAction = cancelAction;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(focusableEditText != null) {
+            focusableEditText.requestFocus();
+            InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(focusableEditText, InputMethodManager.SHOW_FORCED);
+            InputMethodManager inputMethodManager = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+        }
     }
 
     @Override
@@ -154,6 +172,7 @@ public class VEntryEditorDialog extends DialogFragment {
             okAction();
         });
         builder.setNegativeButton(R.string.Editor_Diag_edit_btn_CANCEL, (dialog, which) -> callCancelAction());
+
         return builder.create();
     }
 
@@ -274,8 +293,14 @@ public class VEntryEditorDialog extends DialogFragment {
         ImageButton btn = container.findViewById(R.id.btnMeaning);
         text.setSingleLine();
 
-        if(focus)
+        if(focus) {
+            Log.d(TAG,"requesting focus");
             layout.requestFocus();
+            InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(text, InputMethodManager.SHOW_FORCED);
+            InputMethodManager inputMethodManager = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+        }
 
         layout.setHint(hint);
         text.setText(meaning);

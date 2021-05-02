@@ -1,0 +1,4 @@
+ - Fix ui feedback when missing times-to-solve
+ - Fix broken list creation button on old systems
+ - Fix broken UI when switching to quick-training mode
+ - A bunch of chores regarding updates and deprecations

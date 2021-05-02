@@ -17,7 +17,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
+            android:background="@color/toolbarBackground"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -90,7 +90,7 @@
 
             <Button
                 android:id="@+id/bFileCancel"
-                style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"
+                style="@style/BorderlessButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="onCancelPressed"
@@ -98,7 +98,7 @@
 
             <Button
                 android:id="@+id/bFileOk"
-                style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"
+                style="@style/BorderlessButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:enabled="false"

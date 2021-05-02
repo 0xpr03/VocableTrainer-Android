@@ -30,17 +30,11 @@ public class ImportLogDialog extends DialogFragment {
         return dialog;
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setStyle(DialogFragment.STYLE_NORMAL, R.style.CustomDialog);
-    }
-
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(requireActivity(),R.style.CustomDialog);
         alertDialog.setTitle(getArguments().getBoolean(PREVIEW) ?
                 R.string.Import_Preview_Log_Title : R.string.Import_Finished_Title);
         alertDialog.setMessage(getArguments().getString(LOG));

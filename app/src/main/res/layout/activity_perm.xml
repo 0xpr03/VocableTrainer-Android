@@ -14,6 +14,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:onClick="onCancel"
+        style="@style/NormalButton"
         android:text="@string/GEN_Cancel"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -28,6 +29,7 @@
         android:layout_marginRight="8dp"
         android:onClick="onRetry"
         android:text="@string/Perm_Retry"
+        style="@style/NormalButton"
         app:layout_constraintBottom_toTopOf="@+id/bPermCancel"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />

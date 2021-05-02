@@ -291,7 +291,7 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
     private void showEntryDeleteDialog(final VEntry entry, final int position) {
         if (entry.getId() == ID_RESERVED_SKIP)
             return;
-        AlertDialog.Builder delDiag = new AlertDialog.Builder(this);
+        AlertDialog.Builder delDiag = new AlertDialog.Builder(this,R.style.CustomDialog);
 
         delDiag.setTitle(R.string.Editor_Diag_delete_Title);
         delDiag.setMessage(String.format(getString(R.string.Editor_Diag_delete_MSG_part) + "\n %s %s %s", entry.getAString(), entry.getBString(), entry.getTip()));

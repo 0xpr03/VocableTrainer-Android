@@ -1,6 +1,7 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -9,6 +10,8 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.SurveyDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
@@ -38,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         showedDialog = settings.getBoolean(P_KEY_ALPHA_DIALOG, false);
         if (!showedDialog) {
-            final AlertDialog.Builder betaWarnDiag = new AlertDialog.Builder(this);
+            final AlertDialog.Builder betaWarnDiag = new AlertDialog.Builder(this,R.style.CustomDialog);
 
             betaWarnDiag.setTitle(R.string.Beta_Warning_Diag_Title);
             betaWarnDiag.setMessage(R.string.Beta_Warning_Diag_Msg);
@@ -71,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_PERM_EXPORT: {

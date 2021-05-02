@@ -1,7 +1,7 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.dialog;
 
 import android.app.Dialog;
-import android.app.DialogFragment;
+import androidx.fragment.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
@@ -60,7 +60,7 @@ public class TrainerResultDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity(),R.style.CustomDialog);
         alertDialog.setTitle(R.string.Trainer_Diag_finished_Title);
         alertDialog.setMessage(R.string.Trainer_Diag_finished_MSG);
 

@@ -77,6 +77,7 @@ public class VEntryEditorDialog extends DialogFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // we have to override this one, because we're inflating + using the builder, apparently
         setStyle(DialogFragment.STYLE_NORMAL, R.style.CustomDialog);
     }
 
@@ -99,9 +100,12 @@ public class VEntryEditorDialog extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity(),R.style.CustomDialog);
 
         final View view = View.inflate(getActivity(), R.layout.dialog_entry, null);
+        // and we have to use this one, together with onCreate, because of the inflation here
+        // to override dialog buttons + inflated view
+        view.getContext().getTheme().applyStyle(R.style.CustomDialog, true);
         builder.setTitle(R.string.Editor_Diag_edit_Title);
         builder.setView(view);
 
@@ -263,8 +267,7 @@ public class VEntryEditorDialog extends DialogFragment {
     private View generateMeaning(final String meaning, final String hint,int image, String description, View.OnClickListener listener,
                                  boolean focus){
         final RelativeLayout container = (RelativeLayout) View.inflate(getActivity(),R.layout.editor_meaning,null);
-
-        container.setTag(tagCounter);
+        container.getContext().getTheme().applyStyle(R.style.CustomDialog, true);
         tagCounter++;
         final TextInputLayout layout = container.findViewById(R.id.wrapper_meaning);
         final TextInputEditText text = container.findViewById(R.id.meaning);

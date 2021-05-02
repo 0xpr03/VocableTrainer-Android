@@ -38,12 +38,6 @@ public class ItemPickerDialog extends DialogFragment {
         this.handler = handler;
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setStyle(DialogFragment.STYLE_NORMAL, R.style.CustomDialog);
-    }
-
     /**
      * Creates a new instance
      */
@@ -73,7 +67,7 @@ public class ItemPickerDialog extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         int itemArray = getArguments().getInt(P_ITEMS);
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity(),R.style.CustomDialog);
         dialog.setTitle(getArguments().getInt(P_TITLE));
         String[] values = getResources().getStringArray(itemArray);
         if(overrides != null) {

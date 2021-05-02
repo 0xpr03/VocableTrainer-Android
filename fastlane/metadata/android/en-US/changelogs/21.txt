@@ -2,3 +2,4 @@
  - Fix broken list creation button on old systems
  - Fix broken UI when switching to quick-training mode
  - A bunch of chores regarding updates and deprecations
+ - Known Bug: Import/Export missing files in selection on latest android

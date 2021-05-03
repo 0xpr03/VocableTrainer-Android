@@ -65,15 +65,13 @@ class Database {
      */
     fun getVocable(vocID: Int, listID: Int): VEntry? {
         db!!.rawQuery(
-                "SELECT $KEY_TIP,$KEY_ADDITION,$KEY_LAST_USED"
-                        + ",tVoc.$KEY_CREATED,$KEY_CORRECT,$KEY_WRONG"
-                        + ",tVoc.$KEY_TABLE,$KEY_NAME_A,$KEY_NAME_B,$KEY_NAME_TBL"
-                        + ",tList.$KEY_CREATED;$KEY_POINTS"
-                        + " FROM $TBL_VOCABLE tVoc"
-                        + " JOIN $TBL_TABLES tList ON tVoc.$KEY_TABLE = tList.$KEY_TABLE"
-                        + " LEFT JOIN $TBL_SESSION ses ON tVoc.$KEY_TABLE = ses.$KEY_TABLE"
-                        + " AND tVoc.$KEY_VOC = ses.$KEY_VOC"
-                        + " WHERE tVoc.$KEY_TABLE = ? AND tVoc.$KEY_VOC = ?", arrayOf(listID.toString(), vocID.toString())).use { cV ->
+                "SELECT $KEY_TIP,$KEY_ADDITION,$KEY_LAST_USED,tVoc.$KEY_CREATED,$KEY_CORRECT,"
+                +"$KEY_WRONG,tVoc.$KEY_TABLE,$KEY_NAME_A,$KEY_NAME_B,$KEY_NAME_TBL,tList.$KEY_CREATED,"
+                +"$KEY_POINTS "
+                +"FROM $TBL_VOCABLE tVoc "
+                +"JOIN $TBL_TABLES tList ON tVoc.$KEY_TABLE = tList.$KEY_TABLE "
+                +"LEFT JOIN $TBL_SESSION ses ON tVoc.$KEY_TABLE = ses.$KEY_TABLE AND tVoc.$KEY_VOC = ses.$KEY_VOC"
+                +"WHERE tVoc.$KEY_TABLE = ? AND tVoc.$KEY_VOC = ?", arrayOf(listID.toString(), vocID.toString())).use { cV ->
             return if (cV.moveToNext()) {
                 val list = VList(listID, cV.getString(7), cV.getString(8),
                         cV.getString(9), Date(cV.getLong(10)))
@@ -195,7 +193,8 @@ class Database {
     @Deprecated("")
     fun getEntryPoints(ent: VEntry): Int {
         db!!.rawQuery("SELECT $KEY_POINTS "
-                + "FROM $TBL_SESSION WHERE $KEY_TABLE = ? AND $KEY_VOC = ?", arrayOf(ent.list.id.toString(), ent.id.toString())).use { cursor -> return if (cursor.moveToNext()) cursor.getInt(0) else -1 }
+                + "FROM $TBL_SESSION WHERE $KEY_TABLE = ? AND $KEY_VOC = ?",
+                arrayOf(ent.list.id.toString(), ent.id.toString())).use { cursor -> return if (cursor.moveToNext()) cursor.getInt(0) else -1 }
     }
 
     /**
@@ -412,7 +411,7 @@ class Database {
         val args = arrayOf(tbl.name, tbl.nameA, tbl.nameB)
         try {
             db!!.rawQuery("SELECT $KEY_TABLE FROM $TBL_TABLES "
-                    +"WHERE $KEY_NAME_TBL = ? AND $KEY_NAME_A = ? AND $KEY_NAME_B  = ? LIMIT 1", args).use { cursor ->
+                    + "WHERE $KEY_NAME_TBL = ? AND $KEY_NAME_A = ? AND $KEY_NAME_B  = ? LIMIT 1", args).use { cursor ->
                 var id = -1
                 if (cursor.moveToNext()) {
                     id = cursor.getInt(0)
@@ -618,7 +617,7 @@ class Database {
             val lst = ArrayList<VList>(10)
             try {
                 db!!.rawQuery("SELECT ses.$KEY_TABLE tbl,$KEY_NAME_A,$KEY_NAME_B,$KEY_NAME_TBL,$KEY_CREATED "
-                        +"FROM $TBL_SESSION_TABLES ses JOIN $TBL_TABLES tbls ON tbls.$KEY_TABLE == ses.$KEY_TABLE", null).use { cursor ->
+                        + "FROM $TBL_SESSION_TABLES ses JOIN $TBL_TABLES tbls ON tbls.$KEY_TABLE == ses.$KEY_TABLE", null).use { cursor ->
                     while (cursor.moveToNext()) {
                         lst.add(VList(cursor.getInt(0), cursor.getString(1),
                                 cursor.getString(2), cursor.getString(3),
@@ -699,10 +698,10 @@ class Database {
         try {
             db!!.rawQuery(
                     "SELECT $KEY_TIP,$KEY_ADDITION,$KEY_LAST_USED,tbl.$KEY_CREATED,$KEY_CORRECT,$KEY_WRONG,tbl.$KEY_VOC,$KEY_POINTS "
-                            +"FROM $TBL_VOCABLE tbl "
-                            +"LEFT JOIN  $TBL_SESSION ses ON tbl.$KEY_VOC = ses.$KEY_VOC AND tbl.$KEY_TABLE = ses.$KEY_TABLE "
-                            +"WHERE tbl.$KEY_TABLE = ? AND tbl.$KEY_VOC != ? AND ( $KEY_POINTS IS NULL OR $KEY_POINTS < ? ) "
-                            +"ORDER BY RANDOM() LIMIT 1", arg).use { cV ->
+                            + "FROM $TBL_VOCABLE tbl "
+                            + "LEFT JOIN  $TBL_SESSION ses ON tbl.$KEY_VOC = ses.$KEY_VOC AND tbl.$KEY_TABLE = ses.$KEY_TABLE "
+                            + "WHERE tbl.$KEY_TABLE = ? AND tbl.$KEY_VOC != ? AND ( $KEY_POINTS IS NULL OR $KEY_POINTS < ? ) "
+                            + "ORDER BY RANDOM() LIMIT 1", arg).use { cV ->
                 return if (cV.moveToNext()) {
                     val meaningA: MutableList<String> = LinkedList()
                     val meaningB: MutableList<String> = LinkedList()
@@ -933,8 +932,8 @@ class Database {
                     db.execSQL("ALTER TABLE $TBL_VOCABLE_V1 ADD COLUMN $KEY_CORRECT INTEGER NOT NULL DEFAULT 0")
                     db.execSQL("ALTER TABLE $TBL_VOCABLE_V1 ADD COLUMN $KEY_WRONG INTEGER NOT NULL DEFAULT 0")
                     db.execSQL("ALTER TABLE $TBL_VOCABLE_V1 ADD COLUMN $KEY_CREATED INTEGER NOT NULL DEFAULT $time")
-                    val args = arrayOf(KEY_TABLE, KEY_VOC,KEY_TIP, KEY_ADDITION, KEY_LAST_USED,
-                            KEY_CREATED, KEY_CORRECT,KEY_WRONG).joinToString(separator = ",")
+                    val args = arrayOf(KEY_TABLE, KEY_VOC, KEY_TIP, KEY_ADDITION, KEY_LAST_USED,
+                            KEY_CREATED, KEY_CORRECT, KEY_WRONG).joinToString(separator = ",")
                     val sqlCpy = "INSERT INTO $TBL_VOCABLE ($args) SELECT $args FROM $TBL_VOCABLE_V1"
                     db.execSQL(sqlCpy)
                     val colMA = arrayOf(KEY_TABLE, KEY_VOC, KEY_MEANING).joinToString(separator = ",")
@@ -948,7 +947,7 @@ class Database {
                 }
                 run {
                     db.execSQL("ALTER TABLE $TBL_TABLES_V1 ADD COLUMN $KEY_CREATED INTEGER NOT NULL DEFAULT $time")
-                    val args = arrayOf(KEY_NAME_TBL, KEY_TABLE,KEY_NAME_A, KEY_NAME_B, KEY_CREATED).joinToString(separator = ",")
+                    val args = arrayOf(KEY_NAME_TBL, KEY_TABLE, KEY_NAME_A, KEY_NAME_B, KEY_CREATED).joinToString(separator = ",")
                     val sqlCpy = "INSERT INTO $TBL_TABLES ($args) SELECT $args FROM $TBL_TABLES_V1"
                     db.execSQL(sqlCpy)
                     db.execSQL("DROP TABLE $TBL_TABLES_V1")

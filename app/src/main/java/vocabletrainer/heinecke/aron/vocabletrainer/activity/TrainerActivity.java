@@ -152,7 +152,7 @@ public class TrainerActivity extends FragmentActivity implements TrainerModeFrag
                 return null;
             };
             TrainerResultDialog resultDialog = TrainerResultDialog.newInstance(trainer,callable);
-            resultDialog.show(getFragmentManager(),TAG);
+            resultDialog.show(getSupportFragmentManager(),TAG);
         }
     }
 

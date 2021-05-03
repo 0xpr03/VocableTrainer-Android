@@ -1,26 +1,31 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.dialog;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
-import androidx.fragment.app.DialogFragment;
-import androidx.appcompat.app.AlertDialog;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
+
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Function;
@@ -40,6 +45,7 @@ public class VEntryEditorDialog extends DialogFragment {
     private final static String KEY_INPUT_B_COUNT = "inputBCount";
     private final static String KEY_INPUT_HINT = "inputH";
     private final static String KEY_INPUT_ADDITION = "inputAd";
+    private EditText focusableEditText = null;
     private Function<Void,VEntry> okAction;
     private Function<Void,VEntry> cancelAction;
     private VEntry entry;
@@ -75,8 +81,20 @@ public class VEntryEditorDialog extends DialogFragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if(focusableEditText != null) {
+            focusableEditText.clearFocus();
+            focusableEditText.requestFocus();
+            InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+        }
+    }
+
+    @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // we have to override this one, because we're inflating + using the builder, apparently
         setStyle(DialogFragment.STYLE_NORMAL, R.style.CustomDialog);
     }
 
@@ -99,9 +117,12 @@ public class VEntryEditorDialog extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity(),R.style.CustomDialog);
 
         final View view = View.inflate(getActivity(), R.layout.dialog_entry, null);
+        // and we have to use this one, together with onCreate, because of the inflation here
+        // to override dialog buttons + inflated view
+        view.getContext().getTheme().applyStyle(R.style.CustomDialog, true);
         builder.setTitle(R.string.Editor_Diag_edit_Title);
         builder.setView(view);
 
@@ -150,6 +171,7 @@ public class VEntryEditorDialog extends DialogFragment {
             okAction();
         });
         builder.setNegativeButton(R.string.Editor_Diag_edit_btn_CANCEL, (dialog, which) -> callCancelAction());
+
         return builder.create();
     }
 
@@ -263,16 +285,18 @@ public class VEntryEditorDialog extends DialogFragment {
     private View generateMeaning(final String meaning, final String hint,int image, String description, View.OnClickListener listener,
                                  boolean focus){
         final RelativeLayout container = (RelativeLayout) View.inflate(getActivity(),R.layout.editor_meaning,null);
-
-        container.setTag(tagCounter);
+        container.getContext().getTheme().applyStyle(R.style.CustomDialog, true);
         tagCounter++;
         final TextInputLayout layout = container.findViewById(R.id.wrapper_meaning);
         final TextInputEditText text = container.findViewById(R.id.meaning);
         ImageButton btn = container.findViewById(R.id.btnMeaning);
         text.setSingleLine();
 
-        if(focus)
-            layout.requestFocus();
+        if(focus) {
+            Log.d(TAG,"setting focus element");
+            focusableEditText = text;
+            focusableEditText.requestFocus();
+        }
 
         layout.setHint(hint);
         text.setText(meaning);

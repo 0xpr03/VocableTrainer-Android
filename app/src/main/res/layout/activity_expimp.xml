@@ -18,7 +18,7 @@
                 android:minHeight="?attr/actionBarSize"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?attr/colorPrimary"
+                android:background="@color/toolbarBackground"
                 android:gravity="center"
                 app:layout_scrollFlags="scroll|enterAlways|snap"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
@@ -27,6 +27,7 @@
             </androidx.appcompat.widget.Toolbar>
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tabs"
+                style="@style/CustomTabLayoutStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:tabGravity="fill"

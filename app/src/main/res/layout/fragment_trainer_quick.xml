@@ -42,6 +42,7 @@
             android:layout_marginRight="8dp"
             android:layout_marginTop="5dp"
             android:text="@string/Trainer_Quick_btn_Resolve"
+            style="@style/NormalButton"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tTrainerInputColumn" />
@@ -77,6 +78,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="@string/Trainer_Quick_btn_Correct"
+            style="@style/NormalButton"
             app:layout_constraintEnd_toStartOf="@+id/bTrainerQWrong"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
@@ -87,6 +89,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/Trainer_Quick_btn_Wrong"
+            style="@style/NormalButton"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/bTrainerQCorrect"

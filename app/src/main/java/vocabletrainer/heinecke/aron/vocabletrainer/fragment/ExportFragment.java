@@ -111,7 +111,7 @@ public class ExportFragment extends PagerFragment {
 
         exportViewModel.getExceptionHandle().observe(this, error -> {
             if(error != null){
-                final AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+                final AlertDialog.Builder alert = new AlertDialog.Builder(getActivity(),R.style.CustomDialog);
                 alert.setCancelable(true);
                 alert.setTitle(R.string.Export_Error_Info_Title);
                 alert.setMessage(error);
@@ -329,7 +329,7 @@ public class ExportFragment extends PagerFragment {
         // <==> (export table info && exportmultulst) || list size == 1
         btnExport.setEnabled(exportFormatOk && listSize > 0 && expFile != null && ((chkExportTableInfo.isChecked() && chkExportMultiple.isChecked()) || listSize == 1));
         if(!exportFormatOk && !formatWarnDialog) {
-            AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+            AlertDialog.Builder alert = new AlertDialog.Builder(requireActivity(),R.style.CustomDialog);
             alert.setCancelable(true);
             alert.setTitle(R.string.Export_Error_Format_Multivalue_Title);
             alert.setMessage(R.string.Export_Error_Format_Multivalue_Text);

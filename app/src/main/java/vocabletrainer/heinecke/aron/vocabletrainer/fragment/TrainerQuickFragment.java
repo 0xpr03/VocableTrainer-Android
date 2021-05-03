@@ -28,7 +28,6 @@ public class TrainerQuickFragment extends TrainerModeFragment {
     private static final int guiStateQuestion = 0;
     private static final int guiStateInit = -1;
 
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
@@ -53,7 +52,6 @@ public class TrainerQuickFragment extends TrainerModeFragment {
         bWrong.setOnClickListener(v -> showNextVocable(false));
 
         return view;
-
     }
 
     /**
@@ -75,9 +73,6 @@ public class TrainerQuickFragment extends TrainerModeFragment {
      * @param newGuiState display mode
      */
     private void changeView(final int newGuiState){
-        if(guiState == newGuiState) {
-            return;
-        }
         boolean showSolution = newGuiState == guiStateSolution;
         tSolution.setVisibility(showSolution ? View.VISIBLE : View.GONE);
         bCorrect.setVisibility(showSolution ? View.VISIBLE : View.GONE);

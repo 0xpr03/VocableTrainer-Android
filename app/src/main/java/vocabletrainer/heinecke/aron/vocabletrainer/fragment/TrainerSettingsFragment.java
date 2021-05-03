@@ -2,14 +2,7 @@ package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import android.text.InputType;
-import android.text.method.DigitsKeyListener;
-import android.text.method.KeyListener;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +11,10 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RadioButton;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 
@@ -95,8 +92,10 @@ public class TrainerSettingsFragment extends BaseFragment {
         bStart.setOnClickListener(v -> {
             int timesToSolve;
             try {
-                timesToSolve = Integer.valueOf(tTimesVocable.getText().toString());
+                timesToSolve = Integer.parseInt(tTimesVocable.getText().toString());
             } catch (NumberFormatException e) {
+                Toast.makeText(requireContext(),R.string.TSettings_Missing_Times_solve,Toast.LENGTH_LONG).show();
+                tTimesVocable.requestFocus();
                 return;
             }
             boolean showHints = bHints.isChecked();
@@ -126,18 +125,15 @@ public class TrainerSettingsFragment extends BaseFragment {
      * @param view
      */
     private void refreshTestMode(View view){
-        switch (view.getId()) {
-            case R.id.rTSettingsA:
-                testMode = Trainer.TEST_MODE.A;
-                break;
-            case R.id.rTSettingsB:
+        int id = view.getId();
+        if (id == R.id.rTSettingsA) {
+            testMode = Trainer.TEST_MODE.A;
+        }else if (id == R.id.rTSettingsB){
                 testMode = Trainer.TEST_MODE.B;
-                break;
-            case R.id.rTSettingsAB:
+        }else if (id == R.id.rTSettingsAB){
                 testMode = Trainer.TEST_MODE.RANDOM;
-                break;
-            default:
-                Log.w(TAG,"invalid view passed for mode refresh");
+        }else{
+            Log.w(TAG,"invalid view passed for mode refresh");
         }
     }
 

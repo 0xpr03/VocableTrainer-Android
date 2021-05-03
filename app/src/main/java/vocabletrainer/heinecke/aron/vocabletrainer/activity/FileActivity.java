@@ -1,13 +1,16 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
 import android.app.Activity;
+
 import androidx.lifecycle.ViewModelProviders;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+
 import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
@@ -317,8 +320,7 @@ public class FileActivity extends AppCompatActivity implements FileRecyclerAdapt
                             .show();
                     Log.d(TAG,"selection is directory");
                 } else if (selectedFile.exists()) {
-                    final AlertDialog.Builder alert = new AlertDialog.Builder(this);
-
+                    final AlertDialog.Builder alert = new AlertDialog.Builder(this,R.style.CustomDialog);
                     alert.setTitle(R.string.File_Diag_exists_Title);
                     alert.setMessage(getString(R.string.File_Diag_MSG_part).replace("%f", selectedFile.getName()));
 

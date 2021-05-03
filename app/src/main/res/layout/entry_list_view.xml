@@ -3,6 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="@dimen/padd_10"
+    android:theme="@style/AppTheme"
+    android:background="@color/background_item"
     android:orientation="horizontal">
 
     <TextView

@@ -256,7 +256,7 @@ public class VEntry implements Serializable, Parcelable {
 
     /**
      * Check whether this entry is existing, according to it's ID<br>
-     *     <b>Note:</b> this is not a check whether this entity exists in the Database
+     *     <b>Note:</b> this is not a check whether this entity exists in the Database or a "special" placeholder
      * @return true if the ID is valid
      */
     public boolean isExisting(){

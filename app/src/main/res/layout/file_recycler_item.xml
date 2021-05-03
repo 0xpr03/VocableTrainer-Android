@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:clickable="true"
     android:layout_height="wrap_content"
     android:layout_marginTop="4dp"
@@ -18,7 +19,8 @@
         android:focusable="false"
         android:clickable="false"
         android:layout_height="40dp"
-        android:tint="@color/colorAccent"
+        app:tint="@color/colorAccent"
+        android:paddingStart="4dp"
         android:paddingEnd="4dp" />
 
     <LinearLayout
@@ -30,12 +32,13 @@
 
         <TextView
             android:id="@+id/entryFirstText"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:clickable="false"
             android:focusable="false"
             android:text="@string/Placeholder"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-            android:layout_width="match_parent" />
+            android:textAlignment="viewStart"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
         <TextView
             android:id="@+id/entrySecondText"
@@ -44,6 +47,7 @@
             android:clickable="false"
             android:focusable="false"
             android:text="@string/Placeholder"
+            android:textAlignment="viewStart"
             android:textAppearance="@style/TextAppearance.AppCompat.Small" />
     </LinearLayout>
 </LinearLayout>

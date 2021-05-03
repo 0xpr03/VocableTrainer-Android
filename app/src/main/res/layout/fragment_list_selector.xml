@@ -6,6 +6,17 @@
     android:layout_height="match_parent"
     tools:context="vocabletrainer.heinecke.aron.vocabletrainer.fragment.ListPickerFragment">
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/listViewRecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </androidx.recyclerview.widget.RecyclerView>
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/bListNew"
         android:layout_width="wrap_content"
@@ -17,17 +28,7 @@
         app:fabSize="normal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/ic_add_white_24dp" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/listViewRecyclerView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-    </androidx.recyclerview.widget.RecyclerView>
+        app:srcCompat="@drawable/ic_add_white_24dp"
+        android:contentDescription="@string/List_Create_Description" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

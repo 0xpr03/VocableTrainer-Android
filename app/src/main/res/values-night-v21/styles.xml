@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="BaseAppTheme">
+        <!-- actual override -->
+        <item name="hintTextColor">?attr/colorAccent</item>
+        <item name="colorControlNormal">?attr/colorAccent</item>
+        <item name="colorControlHighlight">?attr/colorAccent</item>
+        <item name="android:statusBarColor">@color/background_blank</item>
+    </style>
+    <style name="AppTheme.NoActionBar" parent="AppTheme">
+        <!-- override stuff so it works in night mode and uses AppTheme.. -->
+        <!-- used for 99% of the activities in AndroidManifest declaration -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
+        <!-- for this we need to redo it -->
+        <item name="android:statusBarColor">@color/background_blank</item>
+    </style>
+</resources>

@@ -1,11 +1,14 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
 import androidx.preference.DialogPreference;
 import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
@@ -35,6 +38,12 @@ public class CharacterPreferenceDialog extends PreferenceDialogFragmentCompat {
     private CustomItemSelectedListener listener;
     private Button okButton;
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setStyle(DialogFragment.STYLE_NORMAL, R.style.CustomDialog);
+    }
+
     public static CharacterPreferenceDialog newInstance(Preference preference) {
         final CharacterPreferenceDialog
                 fragment = new CharacterPreferenceDialog();
@@ -56,6 +65,7 @@ public class CharacterPreferenceDialog extends PreferenceDialogFragmentCompat {
     @Override
     protected void onBindDialogView(View view) {
         super.onBindDialogView(view);
+        view.getContext().getTheme().applyStyle(R.style.CustomDialog, true);
         PLACEHOLDER = getString(R.string.Placeholder);
         DialogPreference preference = getPreference();
 

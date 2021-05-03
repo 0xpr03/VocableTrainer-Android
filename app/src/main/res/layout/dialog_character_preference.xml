@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center"
+    android:theme="@style/AppTheme"
     android:orientation="vertical"
     android:padding="16dp"
     tools:context="vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget.CharacterPreference">

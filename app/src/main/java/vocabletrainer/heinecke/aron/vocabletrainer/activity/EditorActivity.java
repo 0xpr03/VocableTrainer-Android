@@ -248,9 +248,6 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
         adapter.notifyDataSetChanged();
         if(!isExisting) {
             addEntry();
-        } else {
-            InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            inputMethodManager.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
         }
     }
 
@@ -379,11 +376,11 @@ public class EditorActivity extends AppCompatActivity implements VEntryEditorDia
     private void setEditorDialogActions(){
         editorDialog.setOkAction(e -> {
             saveEdit();
-            Log.d(TAG,"edited");
             return null;
         });
         editorDialog.setCancelAction(e -> {
-            Log.d(TAG,"canceled");
+            InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.toggleSoftInput(0, 0);
             return null;
         });
     }

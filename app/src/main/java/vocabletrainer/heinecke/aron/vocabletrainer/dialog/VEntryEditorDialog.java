@@ -84,11 +84,10 @@ public class VEntryEditorDialog extends DialogFragment {
     public void onResume() {
         super.onResume();
         if(focusableEditText != null) {
+            focusableEditText.clearFocus();
             focusableEditText.requestFocus();
-            InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.showSoftInput(focusableEditText, InputMethodManager.SHOW_FORCED);
-            InputMethodManager inputMethodManager = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-            inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+            InputMethodManager inputMethodManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
         }
     }
 
@@ -294,12 +293,9 @@ public class VEntryEditorDialog extends DialogFragment {
         text.setSingleLine();
 
         if(focus) {
-            Log.d(TAG,"requesting focus");
-            layout.requestFocus();
-            InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.showSoftInput(text, InputMethodManager.SHOW_FORCED);
-            InputMethodManager inputMethodManager = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-            inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+            Log.d(TAG,"setting focus element");
+            focusableEditText = text;
+            focusableEditText.requestFocus();
         }
 
         layout.setHint(hint);

@@ -40,7 +40,9 @@ Feel free to open an Issue for ideas, bugs, localisation or feature requests. Or
 ## Distribution
 
 Please always link to the f-droid repository, I won't give any support for unofficial builds.
-You are not allowed to distribute this application on your own. (Repository, Hosting,..)  
+
+You are not allowed to distribute this application under this name by yourself until 4 years after the last release.
+
 
 ## License
 

@@ -24,17 +24,6 @@ import java.util.*
 class Database {
     private var db: SQLiteDatabase? = null // pointer to DB used in this class
     private var helper: internalDB? = null
-
-    /**
-     * Database for export / import
-     *
-     * @param context
-     * @param file    // file to use for this DB
-     */
-    constructor(context: Context?, file: File?) {
-        helper = internalDB(context, file)
-        db = helper!!.writableDatabase
-    }
     /**
      * Database object, using internal storage for this App (default DB file)
      *
@@ -48,12 +37,19 @@ class Database {
      * @param context
      */
     @JvmOverloads
-    constructor(context: Context?, dev: Boolean = false) {
+    constructor(context: Context?) {
         if (dbIntern == null) {
-            helper = internalDB(context, dev)
+            helper = internalDB(context)
             dbIntern = helper!!.writableDatabase
         }
         db = dbIntern
+    }
+
+    /**
+     * Close DB, all calls afterwards are UB!
+     */
+    fun close() {
+        db!!.close();
     }
 
     /**
@@ -822,7 +818,7 @@ class Database {
             }
         }
 
-    internal inner class internalDB : SQLiteOpenHelper {
+    internal inner class internalDB(context: Context?) : SQLiteOpenHelper(context, DB_NAME_PRODUCTION, null, Companion.DATABASE_VERSION) {
         private val sql_a = ("CREATE TABLE " + TBL_TABLES + " ("
                 + KEY_NAME_TBL + " TEXT NOT NULL,"
                 + KEY_TABLE + " INTEGER PRIMARY KEY,"
@@ -866,10 +862,6 @@ class Database {
                 + KEY_TABLE + " INTEGER NOT NULL,"
                 + KEY_VOC + " INTEGER NOT NULL,"
                 + "PRIMARY KEY (" + KEY_TABLE + "," + KEY_VOC + "))")
-
-        constructor(context: Context?, databaseFile: File?) : super(DatabaseContext(context, databaseFile), "", null, Companion.DATABASE_VERSION) {}
-        constructor(context: Context?) : this(context, false) {}
-        constructor(context: Context?, dev: Boolean) : super(context, if (dev) DB_NAME_DEV else DB_NAME_PRODUCTION, null, Companion.DATABASE_VERSION) {}
 
         /**
          * Check for illegal ID entries below the threshold
@@ -960,8 +952,7 @@ class Database {
 
     companion object {
         private const val TAG = "Database"
-        const val DB_NAME_DEV = "test1.db"
-        private const val DB_NAME_PRODUCTION = "voc.db"
+        const val DB_NAME_PRODUCTION = "voc.db"
         const val MIN_ID_TRESHOLD = 0
         const val ID_RESERVED_SKIP = -2
         private const val TBL_VOCABLE = "`vocables2`"

@@ -1,5 +1,7 @@
 package vocabletrainer.heinecke.aron.vocabletrainer
 
+import android.icu.util.Calendar
+import android.icu.util.TimeZone
 import android.util.Log
 import androidx.test.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnit4
@@ -66,6 +68,14 @@ class DBTest {
     companion object {
         private const val TAG = "UNIT"
         private val _mutex: Lock = ReentrantLock(true)
+    }
+
+    @Test
+    fun testUTC() {
+        val time = System.currentTimeMillis()
+        val utc = Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTimeInMillis();
+        Assert.assertTrue(utc-time <2)
+        Assert.assertEquals(utc.toString(),java.lang.Long.toString(utc))
     }
 
     @Test

@@ -1,63 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_gravity="center"
-    android:theme="@style/CustomDialog"
-    android:orientation="vertical"
-    android:padding="15dp">
-
-    <TextView
-        android:id="@+id/dialog_title"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
-        android:text="@string/Survey_Diag_Title"
-        android:textAppearance="@style/TextAppearance.AppCompat.Title" />
-
-    <TextView
-        android:id="@+id/survey_message"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:text="@string/Survey_Diag_Msg"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
-
-    <ProgressBar
-        android:id="@+id/dialog_progressbar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:padding="8dp" />
-
+    android:layout_gravity="center">
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:gravity="end"
-        android:orientation="horizontal">
+        android:layout_gravity="center"
+        android:theme="@style/CustomDialog"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_margin="15dp">
 
-        <Button
-            android:id="@+id/button_decline_survey"
-            style="@style/BorderlessButton"
+        <TextView
+            android:id="@+id/dialog_title"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/Survey_Diag_Decline" />
+            android:layout_height="match_parent"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="10dp"
+            android:text="@string/Survey_Diag_Title"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
-        <Button
-            android:id="@+id/button_participate"
-            style="@style/BorderlessButton"
+        <TextView
+            android:id="@+id/survey_message"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/Survey_Diag_Accept" />
+            android:layout_height="match_parent"
+            android:text="@string/Survey_Diag_Msg"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
 
-        <!--<Button
-            android:id="@+id/button_ok"
-            style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"
-            android:layout_width="wrap_content"
+        <ProgressBar
+            android:id="@+id/dialog_progressbar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:padding="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="invisible"
-            android:text="@string/GEN_Ok" />-->
+            android:layout_marginTop="15dp"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/button_decline_survey"
+                style="@style/BorderlessButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Survey_Diag_Decline" />
+
+            <Button
+                android:id="@+id/button_participate"
+                style="@style/BorderlessButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Survey_Diag_Accept" />
+
+            <!--<Button
+                android:id="@+id/button_ok"
+                style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="invisible"
+                android:text="@string/GEN_Ok" />-->
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</ScrollView>

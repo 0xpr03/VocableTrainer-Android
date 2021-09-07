@@ -15,6 +15,10 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList
 import java.sql.Date
 import java.sql.SQLException
 import java.util.*
+import android.text.TextUtils
+
+
+
 
 /**
  * Database manager<br></br>
@@ -60,8 +64,8 @@ class Database {
      */
     fun getVocable(vocID: Int, listID: Int): VEntry? {
         db!!.rawQuery(
-                "SELECT $KEY_TIP,$KEY_ADDITION,$KEY_LAST_USED,tVoc.$KEY_CREATED,$KEY_CORRECT,"
-                +"$KEY_WRONG,tVoc.$KEY_LIST,$KEY_NAME_A,$KEY_NAME_B,$KEY_NAME_TBL,tList.$KEY_CREATED,"
+                "SELECT $KEY_TIP,$KEY_ADDITION,$KEY_LAST_USED,tVoc.$KEY_CREATED,$KEY_TIMES_CORRECT,"
+                +"$KEY_TIMES_WRONG,tVoc.$KEY_LIST,$KEY_NAME_A,$KEY_NAME_B,$KEY_NAME_LIST,tList.$KEY_CREATED,"
                 +"$KEY_POINTS "
                 +"FROM $TBL_ENTRIES tVoc "
                 +"JOIN $TBL_LISTS tList ON tVoc.$KEY_LIST = tList.$KEY_LIST "
@@ -133,7 +137,7 @@ class Database {
         val sqlMeaning = ("SELECT $KEY_MEANING,$KEY_ENTRY voc FROM %s WHERE "
                 + "$KEY_LIST = ? ORDER BY voc")
         db!!.rawQuery("SELECT $KEY_TIP,$KEY_ADDITION,$KEY_LAST_USED"
-                + ",$KEY_CREATED,$KEY_CORRECT,$KEY_WRONG"
+                + ",$KEY_CREATED,$KEY_TIMES_CORRECT,$KEY_TIMES_WRONG"
                 + ",$KEY_ENTRY"
                 + " FROM $TBL_ENTRIES WHERE $KEY_LIST = ?", arrayOf(list.id.toString())).use { cV ->
             db!!.rawQuery(String.format(sqlMeaning, TBL_WORDS_A), arrayOf(Integer.toString(list.id))).use { cMA ->
@@ -206,7 +210,7 @@ class Database {
      * @return ArrayList<\VList>
      */
     fun getTables(cancelHandle: LiveData<Boolean>?): List<VList>? {
-        val column = arrayOf(KEY_LIST, KEY_NAME_A, KEY_NAME_B, KEY_NAME_TBL, KEY_CREATED)
+        val column = arrayOf(KEY_LIST, KEY_NAME_A, KEY_NAME_B, KEY_NAME_LIST, KEY_CREATED)
         try {
             db!!.query(TBL_LISTS, column, null, null, null, null, null).use { cursor ->
                 val list: MutableList<VList> = ArrayList()
@@ -239,7 +243,7 @@ class Database {
             try {
                 val args = arrayOf(tbl.id.toString())
                 val values = ContentValues()
-                values.put(KEY_NAME_TBL, tbl.name)
+                values.put(KEY_NAME_LIST, tbl.name)
                 values.put(KEY_NAME_A, tbl.nameA)
                 values.put(KEY_NAME_B, tbl.nameB)
                 val updated = db!!.update(TBL_LISTS, values, KEY_LIST + " = ?",
@@ -260,7 +264,7 @@ class Database {
                 values.put(KEY_LIST, tbl_id)
                 values.put(KEY_NAME_A, tbl.nameA)
                 values.put(KEY_NAME_B, tbl.nameB)
-                values.put(KEY_NAME_TBL, tbl.name)
+                values.put(KEY_NAME_LIST, tbl.name)
                 values.put(KEY_CREATED, tbl.created.time)
                 db!!.insertOrThrow(TBL_LISTS, null, values)
                 tbl.id = tbl_id
@@ -302,7 +306,7 @@ class Database {
         try {
             db!!.compileStatement("DELETE FROM $TBL_ENTRIES WHERE $KEY_ENTRY = ? AND $KEY_LIST = ?").use { delStm ->
                 db!!.compileStatement("UPDATE $TBL_ENTRIES SET $KEY_ADDITION = ?,$KEY_TIP = ? WHERE $KEY_LIST= ? AND $KEY_ENTRY = ?").use { updStm ->
-                    db!!.compileStatement("INSERT INTO $TBL_ENTRIES ($KEY_LIST,$KEY_ENTRY,$KEY_TIP,$KEY_ADDITION,$KEY_CREATED,$KEY_CORRECT,$KEY_WRONG) VALUES (?,?,?,?,?,?,?)").use { insStm ->
+                    db!!.compileStatement("INSERT INTO $TBL_ENTRIES ($KEY_LIST,$KEY_ENTRY,$KEY_TIP,$KEY_ADDITION,$KEY_CREATED,$KEY_TIMES_CORRECT,$KEY_TIMES_WRONG) VALUES (?,?,?,?,?,?,?)").use { insStm ->
                         db!!.compileStatement("INSERT INTO $TBL_WORDS_A($KEY_LIST,$KEY_ENTRY,$KEY_MEANING) VALUES (?,?,?)").use { insMeanA ->
                             db!!.compileStatement("INSERT INTO $TBL_WORDS_B($KEY_LIST,$KEY_ENTRY,$KEY_MEANING) VALUES (?,?,?)").use { insMeanB ->
                                 val whereDelMeaning = "$KEY_LIST = ? AND $KEY_ENTRY = ?"
@@ -406,7 +410,7 @@ class Database {
         val args = arrayOf(tbl.name, tbl.nameA, tbl.nameB)
         try {
             db!!.rawQuery("SELECT $KEY_LIST FROM $TBL_LISTS "
-                    + "WHERE $KEY_NAME_TBL = ? AND $KEY_NAME_A = ? AND $KEY_NAME_B  = ? LIMIT 1", args).use { cursor ->
+                    + "WHERE $KEY_NAME_LIST = ? AND $KEY_NAME_A = ? AND $KEY_NAME_B  = ? LIMIT 1", args).use { cursor ->
                 var id = -1
                 if (cursor.moveToNext()) {
                     id = cursor.getInt(0)
@@ -492,7 +496,7 @@ class Database {
      */
     private fun emptyList_(arg: Array<String>) {
         db!!.delete(TBL_SESSION, "$KEY_LIST = ?", arg)
-        db!!.delete(TBL_SESSION_TABLES, "$KEY_LIST = ?", arg)
+        db!!.delete(TBL_SESSION_LISTS, "$KEY_LIST = ?", arg)
         db!!.delete(TBL_SESSION_VOC, "$KEY_LIST = ?", arg)
         db!!.delete(TBL_ENTRIES, "$KEY_LIST = ?", arg)
         db!!.delete(TBL_WORDS_B, "$KEY_LIST = ?", arg)
@@ -530,7 +534,7 @@ class Database {
         try {
             db!!.delete(TBL_SESSION, null, null)
             db!!.delete(TBL_SESSION_META, null, null)
-            db!!.delete(TBL_SESSION_TABLES, null, null)
+            db!!.delete(TBL_SESSION_LISTS, null, null)
             db!!.delete(TBL_SESSION_VOC, null, null)
             db!!.setTransactionSuccessful()
         } catch (e: Exception) {
@@ -582,7 +586,7 @@ class Database {
         Log.d(TAG, "entry createSession")
         db!!.beginTransaction()
         try {
-            db!!.compileStatement("INSERT INTO $TBL_SESSION_TABLES ($KEY_LIST) VALUES (?)").use { insStm ->
+            db!!.compileStatement("INSERT INTO $TBL_SESSION_LISTS ($KEY_LIST) VALUES (?)").use { insStm ->
                 for (tbl in lists) {
                     insStm.clearBindings()
                     insStm.bindLong(1, tbl.id.toLong())
@@ -611,8 +615,8 @@ class Database {
         get() {
             val lst = ArrayList<VList>(10)
             try {
-                db!!.rawQuery("SELECT ses.$KEY_LIST tbl,$KEY_NAME_A,$KEY_NAME_B,$KEY_NAME_TBL,$KEY_CREATED "
-                        + "FROM $TBL_SESSION_TABLES ses JOIN $TBL_LISTS tbls ON tbls.$KEY_LIST == ses.$KEY_LIST", null).use { cursor ->
+                db!!.rawQuery("SELECT ses.$KEY_LIST tbl,$KEY_NAME_A,$KEY_NAME_B,$KEY_NAME_LIST,$KEY_CREATED "
+                        + "FROM $TBL_SESSION_LISTS ses JOIN $TBL_LISTS tbls ON tbls.$KEY_LIST == ses.$KEY_LIST", null).use { cursor ->
                     while (cursor.moveToNext()) {
                         lst.add(VList(cursor.getInt(0), cursor.getString(1),
                                 cursor.getString(2), cursor.getString(3),
@@ -628,7 +632,7 @@ class Database {
         get() {
             Log.d(TAG, "entry isSessionStored")
             try {
-                db!!.rawQuery("SELECT COUNT(*) FROM $TBL_SESSION_TABLES WHERE 1", null).use { cursor ->
+                db!!.rawQuery("SELECT COUNT(*) FROM $TBL_SESSION_LISTS WHERE 1", null).use { cursor ->
                     cursor.moveToNext()
                     if (cursor.getInt(0) > 0) {
                         Log.d(TAG, "found session")
@@ -692,7 +696,7 @@ class Database {
         Log.v(TAG, Arrays.toString(arg))
         try {
             db!!.rawQuery(
-                    "SELECT $KEY_TIP,$KEY_ADDITION,$KEY_LAST_USED,tbl.$KEY_CREATED,$KEY_CORRECT,$KEY_WRONG,tbl.$KEY_ENTRY,$KEY_POINTS "
+                    "SELECT $KEY_TIP,$KEY_ADDITION,$KEY_LAST_USED,tbl.$KEY_CREATED,$KEY_TIMES_CORRECT,$KEY_TIMES_WRONG,tbl.$KEY_ENTRY,$KEY_POINTS "
                             + "FROM $TBL_ENTRIES tbl "
                             + "LEFT JOIN  $TBL_SESSION ses ON tbl.$KEY_ENTRY = ses.$KEY_ENTRY AND tbl.$KEY_LIST = ses.$KEY_LIST "
                             + "WHERE tbl.$KEY_LIST = ? AND tbl.$KEY_ENTRY != ? AND ( $KEY_POINTS IS NULL OR $KEY_POINTS < ? ) "
@@ -818,67 +822,69 @@ class Database {
         }
 
     internal inner class internalDB(context: Context?) : SQLiteOpenHelper(context, DB_NAME_PRODUCTION, null, Companion.DATABASE_VERSION) {
-        private val sql_a = ("CREATE TABLE " + TBL_LISTS + " ("
-                + KEY_NAME_TBL + " TEXT NOT NULL,"
+        private val sqlLists = ("CREATE TABLE " + TBL_LISTS + " ("
+                + KEY_NAME_LIST + " TEXT NOT NULL,"
                 + KEY_LIST + " INTEGER PRIMARY KEY,"
                 + KEY_NAME_A + " TEXT NOT NULL,"
                 + KEY_NAME_B + " TEXT NOT NULL,"
                 + KEY_CREATED + " INTEGER NOT NULL,"
                 + KEY_CHANGED + " INTEGER NOT NULL )")
-        private val sql_b = ("CREATE INDEX listChangedI ON $TBL_LISTS ($KEY_CHANGED)")
-        private val sql_c = ("CREATE TABLE "+ TBL_LIST_SYNC + " ("
+        private val sqlListsIndex = ("CREATE INDEX listChangedI ON $TBL_LISTS ($KEY_CHANGED)")
+        private val sqlListSync = ("CREATE TABLE "+ TBL_LIST_SYNC + " ("
                 + KEY_LIST + " INTEGER PRIMARY KEY REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE,"
                 + KEY_LIST_UUID + " STRING NOT NULL UNIQUE )")
-        private val sql_d = ("CREATE TABLE " + TBL_ENTRIES + " ("
+        private val sqlEntries = ("CREATE TABLE " + TBL_ENTRIES + " ("
                 + KEY_LIST + " INTEGER REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE, "
                 + KEY_ENTRY + " INTEGER PRIMARY KEY,"
                 + KEY_TIP + " TEXT,"
                 + KEY_ADDITION + "TEXT,"
                 + KEY_LAST_USED + " INTEGER,"
                 + KEY_CREATED + " INTEGER NOT NULL,"
-                + KEY_CORRECT + " INTEGER NOT NULL,"
-                + KEY_WRONG + " INTEGER NOT NULL,"
+                + KEY_TIMES_CORRECT + " INTEGER NOT NULL,"
+                + KEY_TIMES_WRONG + " INTEGER NOT NULL,"
                 + KEY_CHANGED + " INTEGER NOT NULL )")
-        private val sql_e = ("CREATE INDEX entryChangedI ON $TBL_ENTRIES ($KEY_CHANGED)")
-        private val sql_f = ("CREATE TABLE "+ TBL_ENTRY_SYNC + " ("
+        private val sqlEntryIndex = ("CREATE INDEX entryChangedI ON $TBL_ENTRIES ($KEY_CHANGED)")
+        private val sqlEntrySync = ("CREATE TABLE "+ TBL_ENTRY_SYNC + " ("
                 + KEY_ENTRY + " INTEGER PRIMARY KEY REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE, "
                 + KEY_ENTRY_UUID + " STRING NOT NULL UNIQUE )")
-        private val sql_g = ("CREATE TABLE " + TBL_WORDS_A + " ("
-                + KEY_ENTRY + " INTEGER PRIMARY KEY REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE,"
+        private val sqlWordsA = ("CREATE TABLE " + TBL_WORDS_A + " ("
+                + KEY_ENTRY + " INTEGER NOT NULL REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE,"
                 + KEY_MEANING + " TEXT NOT NULL )")
-        private val sql_h = ("CREATE TABLE " + TBL_WORDS_B + " ("
-                + KEY_ENTRY + " INTEGER PRIMARY KEY REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE,"
+        private val sqlWordsB = ("CREATE TABLE " + TBL_WORDS_B + " ("
+                + KEY_ENTRY + " INTEGER NOT NULL REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE,"
                 + KEY_MEANING + " TEXT NOT NULL )")
-        private val sql_i = ("CREATE TABLE " + TBL_SESSION + " ("
+        private val sqlWordsAIndex = ("CREATE INDEX wordsAI ON $TBL_WORDS_A ($KEY_ENTRY)")
+        private val sqlWordsBIndex = ("CREATE INDEX wordsBI ON $TBL_WORDS_B ($KEY_ENTRY)")
+        private val sqlSession = ("CREATE TABLE " + TBL_SESSION + " ("
                 + KEY_ENTRY + " INTEGER PRIMARY KEY REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE,"
                 + KEY_POINTS + " INTEGER NOT NULL )")
-        private val sql_j = ("CREATE TABLE " + TBL_SESSION_META + " ("
+        private val sqlSessionMeta = ("CREATE TABLE " + TBL_SESSION_META + " ("
                 + KEY_MKEY + " TEXT NOT NULL PRIMARY KEY,"
                 + KEY_MVALUE + " TEXT NOT NULL )") // TODO: replace ?, previously combined primary ?!
-        private val sql_k = ("CREATE TABLE " + TBL_SESSION_TABLES + " ("
+        private val sqlSessionLists = ("CREATE TABLE " + TBL_SESSION_LISTS + " ("
                 + KEY_LIST + " INTEGER PRIMARY KEY REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE )")
-        private val sql_l = ("CREATE TABLE " + TBL_SESSION_VOC + " ("
+        private val sqlSessionEntries = ("CREATE TABLE " + TBL_SESSION_ENTRIES + " ("
                 + KEY_ENTRY + " INTEGER PRIMARY KEY REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE )")
-        private val sql_m = ("CREATE TABLE " + TBL_LISTS_DELETED + " ("
+        private val sqlListsDeleted = ("CREATE TABLE " + TBL_LISTS_DELETED + " ("
                 + KEY_LIST_UUID + " text NOT NULL PRIMARY KEY )")
-        private val sql_n = ("CREATE TABLE " + TBL_ENTRIES_DELETED + " ("
+        private val sqlEntriesDeleted = ("CREATE TABLE " + TBL_ENTRIES_DELETED + " ("
                 + KEY_ENTRY_UUID + " text NOT NULL PRIMARY KEY )")
-        private val sql_o = ("CREATE TABLE " + TBL_ENTRY_STATS + " ("
+        private val sqlEntryStats = ("CREATE TABLE " + TBL_ENTRY_STATS + " ("
                 + KEY_ENTRY + " INTEGER REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE,"
                 + KEY_DATE + "INTEGER PRIMARY KEY,"
                 + KEY_TIP_NEEDED + "boolean NOT NULL,"
-                + KEY_CORRECT + "boolean NOT NULL )")
-        private val sql_p = ("CREATE TABLE " + TBL_LIST_CATEGORIES + " ("
+                + KEY_TIMES_CORRECT + "boolean NOT NULL )")
+        private val sqlListCategories = ("CREATE TABLE " + TBL_LIST_CATEGORIES + " ("
                 + KEY_LIST + " INTEGER REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE,"
                 + KEY_CATEGORY + " INTEGER REFERENCES $TBL_CATEGORY($KEY_CATEGORY) ON DELETE CASCADE,"
                 + "PRIMARY KEY ($KEY_LIST ,$KEY_CATEGORY ))")
-        private val sql_q = ("CREATE TABLE "+ TBL_CATEGORY + " ("
+        private val sqlCategory = ("CREATE TABLE "+ TBL_CATEGORY + " ("
                 + KEY_CATEGORY + " INTEGER PRIMARY KEY,"
                 + KEY_CATEGORY_NAME + " STRING NOT NULL,"
                 + KEY_CATEGORY_UUID + " STRING NOT NULL UNIQUE,"
                 + KEY_CHANGED + " INTEGER NOT NULL )")
-        private val sql_r = ("CREATE INDEX categoryChangedI ON $TBL_CATEGORY ($KEY_CHANGED)")
-        private val sql_s = ("CREATE TABLE " + TBL_CATEGORIES_DELETED + " ("
+        private val sqlCategoryIndex = ("CREATE INDEX categoryChangedI ON $TBL_CATEGORY ($KEY_CHANGED)")
+        private val sqlCategoriesDeleted = ("CREATE TABLE " + TBL_CATEGORIES_DELETED + " ("
                 + KEY_CATEGORY_UUID + " text NOT NULL PRIMARY KEY )")
 
         /**
@@ -911,7 +917,29 @@ class Database {
 
         override fun onCreate(db: SQLiteDatabase) {
             Log.d(TAG, "creating db")
-            val tables = arrayOf(sql_a, sql_b, sql_c, sql_d, sql_e, sql_f, sql_g, sql_h, sql_i, sql_j, sql_k,sql_l,sql_m,sql_n,sql_o,sql_p,sql_q,sql_r,sql_s)
+            val tables = arrayOf(
+                sqlLists,
+                sqlListsIndex,
+                sqlListSync,
+                sqlEntries,
+                sqlEntryIndex,
+                sqlEntrySync,
+                sqlWordsA,
+                sqlWordsAIndex,
+                sqlWordsB,
+                sqlWordsBIndex,
+                sqlSession,
+                sqlSessionMeta,
+                sqlSessionLists,
+                sqlSessionEntries,
+                sqlListsDeleted,
+                sqlEntriesDeleted,
+                sqlEntryStats,
+                sqlListCategories,
+                sqlCategory,
+                sqlCategoryIndex,
+                sqlCategoriesDeleted
+            )
             var i = 0
             db.beginTransaction()
             try {
@@ -935,99 +963,256 @@ class Database {
             Log.d(TAG, "db upgrade triggered old:$oldVersion new:$newVersion")
             val start = System.currentTimeMillis()
             if (oldVersion < 2) {
-                val sqlOld_a = ("CREATE TABLE " + TBL_TABLES_V2 + " ("
-                        + KEY_NAME_TBL + " TEXT NOT NULL,"
-                        + KEY_LIST + " INTEGER PRIMARY KEY,"
-                        + KEY_NAME_A + " TEXT NOT NULL,"
-                        + KEY_NAME_B + " TEXT NOT NULL,"
-                        + KEY_CREATED + " INTEGER NOT NULL )")
-                val sqlOld_b = ("CREATE TABLE " + TBL_VOCABLE_V2 + " ("
-                        + KEY_LIST + " INTEGER NOT NULL, "
-                        + KEY_ENTRY + " INTEGER PRIMARY KEY,"
-                        + KEY_TIP + " TEXT,"
-                        + KEY_ADDITION + "TEXT,"
-                        + KEY_LAST_USED + " INTEGER,"
-                        + KEY_CREATED + " INTEGER NOT NULL,"
-                        + KEY_CORRECT + " INTEGER NOT NULL,"
-                        + KEY_WRONG + " INTEGER NOT NULL )")
-                val sqlOld_c = ("CREATE TABLE " + TBL_MEANING_A_V2 + " ("
-                        + KEY_LIST + " INTEGER NOT NULL,"
-                        + KEY_ENTRY + " INTEGER NOT NULL,"
-                        + KEY_MEANING + " TEXT NOT NULL )")
-                val sqlOld_d = ("CREATE TABLE " + TBL_MEANING_B_V2 + " ("
-                        + KEY_LIST + " INTEGER NOT NULL,"
-                        + KEY_ENTRY + " INTEGER NOT NULL,"
-                        + KEY_MEANING + " TEXT NOT NULL )")
-                val sqlOld_e = ("CREATE INDEX primA ON " + TBL_MEANING_A_V2
-                        + "( " + KEY_LIST + "," + KEY_ENTRY + " )")
-                val sqlOld_f = ("CREATE INDEX primB ON " + TBL_MEANING_B_V2
-                        + "( " + KEY_LIST + "," + KEY_ENTRY + " )")
-//                val sqlOld_g = ("CREATE TABLE " + TBL_SESSION + " ("
-//                        + KEY_LIST + " INTEGER NOT NULL,"
-//                        + KEY_ENTRY + " INTEGER NOT NULL,"
-//                        + KEY_POINTS + " INTEGER NOT NULL,"
-//                        + "PRIMARY KEY (" + KEY_LIST + "," + KEY_ENTRY + "))")
-//                val sqlOld_h = ("CREATE TABLE " + TBL_SESSION_META + " ("
-//                        + KEY_MKEY + " TEXT NOT NULL,"
-//                        + KEY_MVALUE + " TEXT NOT NULL,"
-//                        + "PRIMARY KEY (" + KEY_MKEY + "," + KEY_MVALUE + "))")
-//                val sqlOld_i = ("CREATE TABLE " + TBL_SESSION_TABLES + " ("
-//                        + KEY_LIST + " INTEGER PRIMARY KEY )")
-                val sqlOld_j = ("CREATE TABLE " + TBL_SESSION_VOC + " ("
-                        + KEY_LIST + " INTEGER NOT NULL,"
-                        + KEY_ENTRY + " INTEGER NOT NULL,"
-                        + "PRIMARY KEY (" + KEY_LIST + "," + KEY_ENTRY + "))")
-                val newTables = arrayOf(sqlOld_a, sqlOld_b, sqlOld_c, sqlOld_d, sqlOld_e, sqlOld_f, sqlOld_j)
-                for (sql in newTables) db.execSQL(sql)
-                val time = System.currentTimeMillis().toString()
-                run {
-                    db.execSQL("ALTER TABLE $TBL_VOCABLE_V1 ADD COLUMN $KEY_ADDITION TEXT")
-                    db.execSQL("ALTER TABLE $TBL_VOCABLE_V1 ADD COLUMN $KEY_CORRECT INTEGER NOT NULL DEFAULT 0")
-                    db.execSQL("ALTER TABLE $TBL_VOCABLE_V1 ADD COLUMN $KEY_WRONG INTEGER NOT NULL DEFAULT 0")
-                    db.execSQL("ALTER TABLE $TBL_VOCABLE_V1 ADD COLUMN $KEY_CREATED INTEGER NOT NULL DEFAULT $time")
-                    val args = arrayOf(KEY_LIST, KEY_ENTRY, KEY_TIP, KEY_ADDITION, KEY_LAST_USED,
-                            KEY_CREATED, KEY_CORRECT, KEY_WRONG).joinToString(separator = ",")
-                    val sqlCpy = "INSERT INTO $TBL_VOCABLE_V2 ($args) SELECT $args FROM $TBL_VOCABLE_V1"
-                    db.execSQL(sqlCpy)
-                    val colMA = arrayOf(KEY_LIST, KEY_ENTRY, KEY_MEANING).joinToString(separator = ",")
-                    val selMA = arrayOf(KEY_LIST, KEY_ENTRY, KEY_WORD_A).joinToString(separator = ",")
-                    val sqlMeaningA = "INSERT INTO $TBL_MEANING_A_V2 ($colMA) SELECT $selMA FROM $TBL_VOCABLE_V1"
-                    db.execSQL(sqlMeaningA)
-                    val sqlMeaningB = sqlMeaningA.replace(KEY_WORD_A.toRegex(), KEY_WORD_B)
-                            .replace(TBL_MEANING_A_V2.toRegex(), TBL_MEANING_B_V2)
-                    db.execSQL(sqlMeaningB)
-                    db.execSQL("DROP TABLE $TBL_VOCABLE_V1")
-                }
-                run {
-                    db.execSQL("ALTER TABLE $TBL_TABLES_V1 ADD COLUMN $KEY_CREATED INTEGER NOT NULL DEFAULT $time")
-                    val args = arrayOf(KEY_NAME_TBL, KEY_LIST, KEY_NAME_A, KEY_NAME_B, KEY_CREATED).joinToString(separator = ",")
-                    val sqlCpy = "INSERT INTO $TBL_TABLES_V2 ($args) SELECT $args FROM $TBL_TABLES_V1"
-                    db.execSQL(sqlCpy)
-                    db.execSQL("DROP TABLE $TBL_TABLES_V1")
-                }
-                run { checkForIllegalIds(db) }
+                upgrade1to2(db)
             }
             if (oldVersion < 3) {
-                val newTables = arrayOf(sql_k,sql_l,sql_m,sql_n,sql_o,sql_p)
-                for (sql in newTables) db.execSQL(sql)
-                val time = System.currentTimeMillis().toString()
-                // replace with unique index
-                db.execSQL("DROP INDEX primA")
-                db.execSQL("DROP INDEX primB")
-                db.execSQL("CREATE UNIQUE INDEX primUA ON $TBL_MEANING_A_V2 ( $KEY_LIST, $KEY_ENTRY )")
-                db.execSQL("CREATE UNIQUE INDEX primUB ON $TBL_MEANING_B_V2 ( $KEY_LIST, $KEY_ENTRY )")
-
-                // add columns for sync
-                db.execSQL("ALTER TABLE $TBL_LISTS ADD COLUMN $KEY_CHANGED INTEGER NOT NULL DEFAULT $time")
-                db.execSQL(sql_b)
-                db.execSQL("ALTER TABLE $TBL_LISTS ADD COLUMN $KEY_LIST_UUID TEXT UNIQUE")
-                db.execSQL("ALTER TABLE $TBL_ENTRIES ADD COLUMN $KEY_CHANGED INTEGER NOT NULL DEFAULT $time")
-                db.execSQL(sql_d)
-                db.execSQL("ALTER TABLE $TBL_ENTRIES ADD COLUMN $KEY_ENTRY_UUID TEXT UNIQUE")
-
+                upgrade2to3(db)
             }
             val duration = System.currentTimeMillis() - start
             Log.v(TAG, "upgrade end in $duration ms")
+        }
+
+        fun upgrade2to3(db: SQLiteDatabase) {
+            val newTables = arrayOf(
+                sqlLists,
+                sqlListsIndex,
+                sqlListSync,
+                sqlEntries,
+                sqlEntryIndex,
+                sqlEntrySync,
+                sqlWordsA,
+                sqlWordsAIndex,
+                sqlWordsB,
+                sqlWordsBIndex,
+                sqlSession,
+                sqlSessionLists,
+                sqlSessionEntries,
+                sqlListsDeleted,
+                sqlEntriesDeleted,
+                sqlEntryStats,
+                sqlListCategories,
+                sqlCategory,
+                sqlCategoryIndex,
+                sqlCategoriesDeleted
+            )
+            for (sql in newTables) db.execSQL(sql)
+            val time = System.currentTimeMillis().toString()
+            // transfer lists, keep old refs for new auto id mapping
+            db.execSQL("ALTER TABLE $TBL_LISTS ADD COLUMN $KEY_TABLE INTEGER")
+            run {
+                val argsInto = arrayOf(
+                    KEY_NAME_LIST,
+                    KEY_TABLE,
+                    KEY_NAME_A,
+                    KEY_NAME_B,
+                    KEY_CREATED,
+                    KEY_CHANGED
+                ).joinToString(separator = ",")
+                val argsFrom = arrayOf(
+                    KEY_NAME_TBL,
+                    KEY_TABLE,
+                    KEY_NAME_A,
+                    KEY_NAME_B,
+                    KEY_CREATED
+                ).joinToString(separator = ",")
+                val sqlCpy =
+                    "INSERT INTO $TBL_LISTS ($argsInto) SELECT $argsFrom,$time FROM $TBL_TABLES_V2"
+                db.execSQL(sqlCpy)
+            }
+
+            // add legacy mapping for entry foreign tables
+            db.execSQL("ALTER TABLE $TBL_ENTRIES ADD COLUMN $KEY_TABLE INTEGER")
+            db.execSQL("ALTER TABLE $TBL_ENTRIES ADD COLUMN $KEY_VOC INTEGER")
+            run {
+                // transfer entries using legacy ID mapping
+                val argsInto = arrayOf(
+                    KEY_LIST,
+                    KEY_TABLE,
+                    KEY_VOC,
+                    KEY_TIP,
+                    KEY_ADDITION,
+                    KEY_LAST_USED,
+                    KEY_CREATED,
+                    KEY_TIMES_CORRECT,
+                    KEY_TIMES_WRONG,
+                    KEY_CHANGED
+                ).joinToString(separator = ",")
+                val argsFrom = arrayOf(
+                    "oldEntr.$KEY_TABLE",
+                    KEY_VOC,
+                    KEY_TIP,
+                    KEY_ADDITION,
+                    KEY_LAST_USED,
+                    "oldEntr.$KEY_CREATED",
+                    KEY_CORRECT,
+                    KEY_WRONG
+                ).joinToString(separator = ",")
+                val sqlCpy =
+                    "INSERT INTO $TBL_ENTRIES ($argsInto) SELECT lists.$KEY_LIST,$argsFrom,$time FROM $TBL_VOCABLE_V2 oldEntr JOIN $TBL_LISTS lists ON lists.$KEY_TABLE = oldEntr.$KEY_TABLE"
+                db.execSQL(sqlCpy)
+            }
+            run {
+                // now use the legacy mapping for entry based stuff
+                val sqlMA = "INSERT INTO $TBL_WORDS_A ($KEY_ENTRY,$KEY_MEANING) SELECT entries.$KEY_ENTRY,$KEY_MEANING FROM $TBL_MEANING_A_V2 oldM JOIN $TBL_ENTRIES entries ON entries.$KEY_TABLE = oldM.$KEY_TABLE AND entries.$KEY_VOC = oldM.$KEY_VOC"
+                Log.v(TAG, "sql: $sqlMA")
+                db.execSQL(sqlMA)
+                val sqlMB = sqlMA.replace(TBL_MEANING_A_V2, TBL_MEANING_B_V2).replace(TBL_WORDS_A,
+                    TBL_WORDS_B)
+                db.execSQL(sqlMB)
+            }
+            // transfer session entry points
+            db.execSQL("INSERT INTO $TBL_SESSION ($KEY_ENTRY,$KEY_POINTS) SELECT entries.$KEY_ENTRY,$KEY_POINTS FROM $TBL_SESSION_V2 oldSes JOIN $TBL_ENTRIES entries ON entries.$KEY_TABLE = oldSes.$KEY_TABLE AND entries.$KEY_VOC = oldSes.$KEY_VOC")
+            // transfer session tables used
+            db.execSQL("INSERT INTO $TBL_SESSION_LISTS ($KEY_LIST) SELECT lists.$KEY_LIST FROM $TBL_SESSION_TABLES oldSes JOIN $TBL_LISTS lists ON lists.$KEY_TABLE = oldSes.$KEY_TABLE")
+            // transfer single session entries used (shouldn't be in use at this point)
+            db.execSQL("INSERT INTO $TBL_SESSION_ENTRIES ($KEY_ENTRY) SELECT entries.$KEY_ENTRY FROM $TBL_SESSION_VOC oldSesE JOIN $TBL_ENTRIES entries ON entries.$KEY_TABLE = oldSesE.$KEY_TABLE AND entries.$KEY_VOC = oldSesE.$KEY_VOC")
+
+            // drop old ID system
+            //db.execSQL("ALTER TABLE $TBL_ENTRIES DROP COLUMN $KEY_TABLE")
+            //db.execSQL("ALTER TABLE $TBL_ENTRIES DROP COLUMN $KEY_VOC")
+            dropColumns(db, TBL_ENTRIES.replace("`",""), listOf(KEY_TABLE.replace("`",""),KEY_VOC.replace("`","")))
+            //db.execSQL("ALTER TABLE $TBL_LISTS DROP COLUMN $KEY_TABLE")
+            dropColumns(db, TBL_LISTS.replace("`",""), listOf(KEY_TABLE.replace("`","")))
+
+            // drop old tables
+            db.execSQL("DROP TABLE $TBL_TABLES_V2")
+            db.execSQL("DROP TABLE $TBL_VOCABLE_V2")
+            db.execSQL("DROP TABLE $TBL_MEANING_A_V2")
+            db.execSQL("DROP TABLE $TBL_MEANING_B_V2")
+            db.execSQL("DROP TABLE $TBL_SESSION_V2")
+            db.execSQL("DROP TABLE $TBL_SESSION_TABLES")
+            db.execSQL("DROP TABLE $TBL_SESSION_VOC")
+        }
+
+        fun upgrade1to2(db: SQLiteDatabase) {
+            val sqlOld_a = ("CREATE TABLE " + TBL_TABLES_V2 + " ("
+                    + KEY_NAME_TBL + " TEXT NOT NULL,"
+                    + KEY_TABLE + " INTEGER PRIMARY KEY,"
+                    + KEY_NAME_A + " TEXT NOT NULL,"
+                    + KEY_NAME_B + " TEXT NOT NULL,"
+                    + KEY_CREATED + " INTEGER NOT NULL )")
+            val sqlOld_b = ("CREATE TABLE " + TBL_VOCABLE_V2 + " ("
+                    + KEY_TABLE + " INTEGER NOT NULL, "
+                    + KEY_VOC + " INTEGER PRIMARY KEY,"
+                    + KEY_TIP + " TEXT,"
+                    + KEY_ADDITION + "TEXT,"
+                    + KEY_LAST_USED + " INTEGER,"
+                    + KEY_CREATED + " INTEGER NOT NULL,"
+                    + KEY_CORRECT + " INTEGER NOT NULL,"
+                    + KEY_WRONG + " INTEGER NOT NULL )")
+            val sqlOld_c = ("CREATE TABLE " + TBL_MEANING_A_V2 + " ("
+                    + KEY_TABLE + " INTEGER NOT NULL,"
+                    + KEY_VOC + " INTEGER NOT NULL,"
+                    + KEY_MEANING + " TEXT NOT NULL )")
+            val sqlOld_d = ("CREATE TABLE " + TBL_MEANING_B_V2 + " ("
+                    + KEY_TABLE + " INTEGER NOT NULL,"
+                    + KEY_VOC + " INTEGER NOT NULL,"
+                    + KEY_MEANING + " TEXT NOT NULL )")
+            val sqlOld_e = ("CREATE INDEX primA ON " + TBL_MEANING_A_V2
+                    + "( " + KEY_TABLE + "," + KEY_VOC + " )")
+            val sqlOld_f = ("CREATE INDEX primB ON " + TBL_MEANING_B_V2
+                    + "( " + KEY_TABLE + "," + KEY_VOC + " )")
+            // already correct in v1
+//            val sqlOld_g = ("CREATE TABLE " + TBL_SESSION_V2 + " ("
+//                    + KEY_TABLE + " INTEGER NOT NULL,"
+//                    + KEY_VOC + " INTEGER NOT NULL,"
+//                    + KEY_POINTS + " INTEGER NOT NULL,"
+//                    + "PRIMARY KEY (" + KEY_LIST + "," + KEY_ENTRY + "))")
+//            val sqlOld_h = ("CREATE TABLE " + TBL_SESSION_META + " ("
+//                    + KEY_MKEY + " TEXT NOT NULL,"
+//                    + KEY_MVALUE + " TEXT NOT NULL,"
+//                    + "PRIMARY KEY (" + KEY_MKEY + "," + KEY_MVALUE + "))")
+//            val sqlOld_i = ("CREATE TABLE " + TBL_SESSION_TABLES + " ("
+//                    + KEY_TABLE + " INTEGER PRIMARY KEY )")
+            val sqlOld_j = ("CREATE TABLE " + TBL_SESSION_VOC + " ("
+                    + KEY_TABLE + " INTEGER NOT NULL,"
+                    + KEY_VOC + " INTEGER NOT NULL,"
+                    + "PRIMARY KEY (" + KEY_TABLE + "," + KEY_VOC + "))")
+            val newTables = arrayOf(sqlOld_a, sqlOld_b, sqlOld_c, sqlOld_d, sqlOld_e, sqlOld_f, sqlOld_j)
+            for (sql in newTables) db.execSQL(sql)
+            val time = System.currentTimeMillis().toString()
+            run {
+                db.execSQL("ALTER TABLE $TBL_VOCABLE_V1 ADD COLUMN $KEY_ADDITION TEXT")
+                db.execSQL("ALTER TABLE $TBL_VOCABLE_V1 ADD COLUMN $KEY_CORRECT INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE $TBL_VOCABLE_V1 ADD COLUMN $KEY_WRONG INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE $TBL_VOCABLE_V1 ADD COLUMN $KEY_CREATED INTEGER NOT NULL DEFAULT $time")
+                val args = arrayOf(KEY_TABLE, KEY_VOC, KEY_TIP, KEY_ADDITION, KEY_LAST_USED,
+                    KEY_CREATED, KEY_CORRECT, KEY_WRONG).joinToString(separator = ",")
+                val sqlCpy = "INSERT INTO $TBL_VOCABLE_V2 ($args) SELECT $args FROM $TBL_VOCABLE_V1"
+                db.execSQL(sqlCpy)
+                val colMA = arrayOf(KEY_TABLE, KEY_VOC, KEY_MEANING).joinToString(separator = ",")
+                val selMA = arrayOf(KEY_TABLE, KEY_VOC, KEY_WORD_A).joinToString(separator = ",")
+                val sqlMeaningA = "INSERT INTO $TBL_MEANING_A_V2 ($colMA) SELECT $selMA FROM $TBL_VOCABLE_V1"
+                db.execSQL(sqlMeaningA)
+                val sqlMeaningB = sqlMeaningA.replace(KEY_WORD_A.toRegex(), KEY_WORD_B)
+                    .replace(TBL_MEANING_A_V2.toRegex(), TBL_MEANING_B_V2)
+                db.execSQL(sqlMeaningB)
+                db.execSQL("DROP TABLE $TBL_VOCABLE_V1")
+            }
+            run {
+                db.execSQL("ALTER TABLE $TBL_TABLES_V1 ADD COLUMN $KEY_CREATED INTEGER NOT NULL DEFAULT $time")
+                val args = arrayOf(KEY_NAME_TBL, KEY_TABLE, KEY_NAME_A, KEY_NAME_B, KEY_CREATED).joinToString(separator = ",")
+                val sqlCpy = "INSERT INTO $TBL_TABLES_V2 ($args) SELECT $args FROM $TBL_TABLES_V1"
+                db.execSQL(sqlCpy)
+                db.execSQL("DROP TABLE $TBL_TABLES_V1")
+            }
+            run { checkForIllegalIds(db) }
+        }
+
+        // adopted from https://stackoverflow.com/a/51587449/3332686
+        // we don't have DROP COLUMN support until sqlite 3.35.0 from 2021-03-12, so never in android terms
+        // no transaction handling, left to caller
+        fun dropColumns(
+            database: SQLiteDatabase,
+            tableName: String,
+            columnsToRemove: Collection<String?>
+        ) {
+            val columnNames: MutableList<String?> = ArrayList()
+            val columnNamesWithType: MutableList<String?> = ArrayList()
+            val primaryKeys: MutableList<String?> = ArrayList()
+            val query = "pragma table_info($tableName);"
+            val cursor = database.rawQuery(query, null)
+            while (cursor.moveToNext()) {
+                val columnName = cursor.getString(cursor.getColumnIndex("name"))
+                if (columnsToRemove.contains(columnName)) {
+                    continue
+                }
+                val columnType = cursor.getString(cursor.getColumnIndex("type"))
+                val isNotNull = cursor.getInt(cursor.getColumnIndex("notnull")) == 1
+                val isPk = cursor.getInt(cursor.getColumnIndex("pk")) == 1
+                columnNames.add(columnName)
+                var tmp = "`$columnName` $columnType "
+                if (isNotNull) {
+                    tmp += " NOT NULL "
+                }
+                val defaultValueType = cursor.getType(cursor.getColumnIndex("dflt_value"))
+                if (defaultValueType == Cursor.FIELD_TYPE_STRING) {
+                    tmp += " DEFAULT " + "\"" + cursor.getString(cursor.getColumnIndex("dflt_value")) + "\" "
+                } else if (defaultValueType == Cursor.FIELD_TYPE_INTEGER) {
+                    tmp += " DEFAULT " + cursor.getInt(cursor.getColumnIndex("dflt_value")) + " "
+                } else if (defaultValueType == Cursor.FIELD_TYPE_FLOAT) {
+                    tmp += " DEFAULT " + cursor.getFloat(cursor.getColumnIndex("dflt_value")) + " "
+                }
+                columnNamesWithType.add(tmp)
+                if (isPk) {
+                    primaryKeys.add("`$columnName`")
+                }
+            }
+            cursor.close()
+            val columnNamesSeparated = TextUtils.join(", ", columnNames)
+            if (primaryKeys.size > 0) {
+                columnNamesWithType.add("PRIMARY KEY(" + TextUtils.join(", ", primaryKeys) + ")")
+            }
+            val columnNamesWithTypeSeparated = TextUtils.join(", ", columnNamesWithType)
+            database.execSQL("PRAGMA foreign_keys=OFF")
+            database.execSQL("ALTER TABLE " + tableName + " RENAME TO " + tableName + "_old;")
+            database.execSQL("CREATE TABLE $tableName ($columnNamesWithTypeSeparated);")
+            database.execSQL(
+                "INSERT INTO " + tableName + " (" + columnNamesSeparated + ") SELECT "
+                        + columnNamesSeparated + " FROM " + tableName + "_old;"
+            )
+            database.execSQL("DROP TABLE " + tableName + "_old;")
+            database.execSQL("PRAGMA foreign_keys=ON")
         }
     }
 
@@ -1040,30 +1225,34 @@ class Database {
         private const val TBL_LIST_SYNC = "`list_sync`"
         private const val TBL_ENTRIES = "`entries`"
         private const val TBL_ENTRY_SYNC = "`entry_sync`"
-        private const val TBL_SESSION = "`session`"
+        private const val TBL_SESSION = "`session2`"
         private const val TBL_SESSION_META = "`session_meta`"
-        private const val TBL_SESSION_TABLES = "`session_tables`"
+        private const val TBL_SESSION_LISTS = "`session_lists`"
         private const val TBL_WORDS_A = "`words_a`"
         private const val TBL_WORDS_B = "`words_b`"
-        private const val TBL_SESSION_VOC = "`session_voc`"
+        private const val TBL_SESSION_ENTRIES = "`session_entries`"
         private const val TBL_LISTS_DELETED = "`lists_deleted`"
         private const val TBL_ENTRIES_DELETED = "`entries_deleted`"
         private const val TBL_ENTRY_STATS = "`entry_stats`"
         private const val TBL_LIST_CATEGORIES = "`categories`"
         private const val TBL_CATEGORY = "`category_name`"
         private const val TBL_CATEGORIES_DELETED = "`categories_deleted`"
-        private const val KEY_ENTRY = "`voc`"
+        private const val KEY_ENTRY = "`entry`"
         private const val KEY_NAME_A = "`name_a`"
         private const val KEY_NAME_B = "`name_b`"
         private const val KEY_TIP = "`tip`"
         private const val KEY_TIP_NEEDED = "`tip_needed`"
-        private const val KEY_LIST = "`table`"
+        private const val KEY_LIST = "`list`"
         private const val KEY_LAST_USED = "`last_used`"
-        private const val KEY_NAME_TBL = "`name`"
+        private const val KEY_NAME_LIST = "`list_name`"
         private const val KEY_MEANING = "`meaning`"
         private const val KEY_CREATED = "`created`"
-        private const val KEY_CORRECT = "`correct`"
-        private const val KEY_WRONG = "`wrong`"
+        private const val KEY_TIMES_CORRECT = "`times_correct`"
+        private const val KEY_TIMES_WRONG = "`times_wrong`"
+        @Deprecated("Deprecated DB version")
+        private val KEY_CORRECT = "`correct`"
+        @Deprecated("Deprecated DB version")
+        private val KEY_WRONG = "`wrong`"
         private const val KEY_ADDITION = "`addition`"
         private const val KEY_POINTS = "`points`"
         private const val KEY_MKEY = "`key`"
@@ -1101,5 +1290,17 @@ class Database {
         private val TBL_MEANING_A_V2 = "`meaning_a`"
         @Deprecated("Deprecated DB version")
         private val TBL_MEANING_B_V2 = "`meaning_b`"
+        @Deprecated("Deprecated DB version")
+        private val TBL_SESSION_TABLES = "`session_tables`"
+        @Deprecated("Deprecated DB version")
+        private val TBL_SESSION_VOC = "`session_voc`"
+        @Deprecated("Deprecated DB version")
+        private val TBL_SESSION_V2 = "`session`"
+        @Deprecated("Deprecated DB version")
+        private val KEY_NAME_TBL = "`name`"
+        @Deprecated("Deprecated DB version")
+        private val KEY_TABLE = "`table`"
+        @Deprecated("Deprecated DB version")
+        private val KEY_VOC = "`voc`"
     }
 }

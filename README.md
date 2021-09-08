@@ -1,4 +1,4 @@
-# VocableTrainer-Android [![Build Status](https://travis-ci.com/0xpr03/VocableTrainer-Android.svg?branch=master)](https://travis-ci.com/0xpr03/VocableTrainer-Android)
+# VocableTrainer-Android [![Build Status](https://github.com/0xpr03/VocableTrainer-Android/actions/workflows/gradle.yml/badge.svg)](https://github.com/0xpr03/VocableTrainer-Android/actions)
 VocableTrainer-Android is a word and vocable training software for the android platform.
 It provides traning with different modes, sessions and multiple word lists.
 

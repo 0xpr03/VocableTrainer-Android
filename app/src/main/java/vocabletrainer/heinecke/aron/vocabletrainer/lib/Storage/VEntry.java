@@ -31,11 +31,13 @@ public class VEntry implements Serializable, Parcelable {
     private int points;
     private Date last_used;
     private Date created;
+    private Date changed;
+    private String uuid;
     private int correct;
     private int wrong;
     private List<String> meaningA;
     private List<String> meaningB;
-    private boolean changed = false;
+    private boolean isChanged = false;
     private boolean delete = false;
     private static final String CONCAT = "/";
 
@@ -64,18 +66,21 @@ public class VEntry implements Serializable, Parcelable {
      * @param wrong
      */
     public VEntry(@NonNull List<String> meaningA,@NonNull List<String> meaningB,@Nullable String tip,@Nullable String addition,
-                  int id, @NonNull VList list, int points, @Nullable Date last_used,@NonNull Date created, int correct, int wrong) {
+                  int id, @NonNull VList list, int points, @Nullable Date last_used,@NonNull Date created, @Nullable Date changed,
+                  int correct, int wrong, String uuid) {
         this.meaningA = meaningA;
         this.meaningB = meaningB;
         this.tip = tip;
         this.list = list;
         this.points = points;
         this.created = created;
+        this.changed = changed;
         this.last_used = last_used;
         this.correct = correct;
         this.wrong = wrong;
         this.addition = addition;
         this.id = id;
+        this.uuid = uuid;
     }
 
     /**
@@ -93,8 +98,8 @@ public class VEntry implements Serializable, Parcelable {
      * @param wrong
      */
     public VEntry(@NonNull List<String> meaningA,@NonNull List<String> meaningB,@Nullable String tip,@Nullable String addition,
-            int id,@NonNull VList list,@Nullable Date last_used,@NonNull Date created, int correct, int wrong) {
-        this(meaningA,meaningB,tip,addition,id,list,0,last_used,created,correct,wrong);
+            int id,@NonNull VList list,@Nullable Date last_used,@NonNull Date created, @Nullable Date changed, int correct, int wrong,String uuid) {
+        this(meaningA,meaningB,tip,addition,id,list,0,last_used,created,changed,correct,wrong,uuid);
     }
 
     /**
@@ -106,9 +111,9 @@ public class VEntry implements Serializable, Parcelable {
      * @param tip
      */
     public VEntry(String A, String B,String tip, int fID){
-        this(new ArrayList<>(1),new ArrayList<>(1),tip,"",fID,null,0,null,new Date(0),0,0);
+        this(new ArrayList<>(1),new ArrayList<>(1),tip,"",fID,null,0,null,new Date(0),null,0,0,null);
         if(isIDValid(fID)){
-            throw new IllegalArgumentException("no valid ID allowed!");
+            throw new IllegalArgumentException("no valid ID allowed for spacer VEntry!");
         }
         meaningA.add(A);
         meaningB.add(B);
@@ -139,7 +144,7 @@ public class VEntry implements Serializable, Parcelable {
      * @param list
      */
     public VEntry(@NonNull List<String> meaningA,@NonNull List<String> meaningB,@Nullable String tip,@Nullable String addition,@NonNull VList list) {
-        this(meaningA,meaningB,tip,addition,MIN_ID_TRESHOLD-1,list,0,null,new Date(System.currentTimeMillis()),0,0);
+        this(meaningA,meaningB,tip,addition,MIN_ID_TRESHOLD-1,list,0,null,new Date(System.currentTimeMillis()),new Date(System.currentTimeMillis()),0,0,null);
     }
 
     public static final Creator<VEntry> CREATOR = new Creator<VEntry>() {
@@ -170,7 +175,7 @@ public class VEntry implements Serializable, Parcelable {
      */
     public void setAMeanings(List<String> AMeanings) {
         this.meaningA = AMeanings;
-        this.changed = true;
+        this.isChanged = true;
     }
 
     /**
@@ -189,7 +194,7 @@ public class VEntry implements Serializable, Parcelable {
      */
     public void setBMeanings(List<String> BMeanings) {
         this.meaningB = BMeanings;
-        this.changed = true;
+        this.isChanged = true;
     }
 
     /**
@@ -217,7 +222,7 @@ public class VEntry implements Serializable, Parcelable {
      */
     public void setTip(@Nullable String tip) {
         this.tip = tip;
-        this.changed = true;
+        this.isChanged = true;
     }
 
     @Override
@@ -269,7 +274,7 @@ public class VEntry implements Serializable, Parcelable {
      * @return
      */
     public boolean isChanged() {
-        return changed;
+        return isChanged;
     }
 
     public VList getList() {
@@ -361,12 +366,14 @@ public class VEntry implements Serializable, Parcelable {
         meaningA = in.createStringArrayList();
         meaningB = in.createStringArrayList();
         tip = in.readString();
+        uuid = in.readString();
         list = (VList) in.readValue(VList.class.getClassLoader());
         points = in.readInt();
-        changed = readParcableBool(in);
+        isChanged = readParcableBool(in);
         delete = readParcableBool(in);
         created = readParcableDate(in);
         last_used = readParcableDate(in);
+        changed = readParcableDate(in);
         correct = in.readInt();
         wrong = in.readInt();
         addition = in.readString();
@@ -378,12 +385,14 @@ public class VEntry implements Serializable, Parcelable {
         parcel.writeStringList(meaningA);
         parcel.writeStringList(meaningB);
         parcel.writeString(tip);
+        parcel.writeString(uuid);
         parcel.writeValue(list);
         parcel.writeInt(points);
-        writeParcableBool(parcel, changed);
+        writeParcableBool(parcel, isChanged);
         writeParcableBool(parcel, delete);
         writeParcableDate(parcel, created);
         writeParcableDate(parcel, last_used);
+        writeParcableDate(parcel, changed);
         parcel.writeInt(correct);
         parcel.writeInt(wrong);
         parcel.writeString(addition);

@@ -15,9 +15,11 @@ public class VList implements Parcelable {
     private String nameB;
     private String name;
     private Date created;
+    private Date changed;
     private int totalVocs;
     private int unfinishedVocs;
     private int id;
+    private String uuid;
     private boolean selected;
 
     /**
@@ -27,12 +29,14 @@ public class VList implements Parcelable {
      * @param nameA Name for A Column
      * @param nameB Name for B Column
      */
-    public VList(final int id, final String nameA, final String nameB, final String name, final Date created) {
+    public VList(final int id, final String nameA, final String nameB, final String name, final Date created, final Date changed, final String uuid) {
         this.id = id;
         this.nameA = nameA;
         this.nameB = nameB;
         this.name = name;
         this.created = created;
+        this.changed = changed;
+        this.uuid = uuid;
         this.totalVocs = MIN_ID_TRESHOLD - 1;
         this.unfinishedVocs = MIN_ID_TRESHOLD - 1;
         this.selected = false;
@@ -64,7 +68,7 @@ public class VList implements Parcelable {
      * @param name List Name
      */
     public VList(final String nameA, final String nameB, final String name) {
-        this(MIN_ID_TRESHOLD - 1, nameA, nameB, name, new Date(System.currentTimeMillis()));
+        this(MIN_ID_TRESHOLD - 1, nameA, nameB, name, new Date(System.currentTimeMillis()),new Date(System.currentTimeMillis()),null);
     }
 
     /**
@@ -74,7 +78,7 @@ public class VList implements Parcelable {
      * @param id
      */
     public VList(final int id) {
-        this(id, null, null, null,null);
+        this(id, null, null, null,null, null, null);
     }
 
     @Override
@@ -198,7 +202,9 @@ public class VList implements Parcelable {
         parcel.writeInt(totalVocs);
         parcel.writeInt(unfinishedVocs);
         parcel.writeInt(id);
+        parcel.writeString(uuid);
         parcel.writeLong(created != null ? created.getTime() : 0);
+        parcel.writeLong(changed != null ? changed.getTime() : 0);
     }
 
     /**
@@ -212,7 +218,9 @@ public class VList implements Parcelable {
         totalVocs = in.readInt();
         unfinishedVocs = in.readInt();
         id = in.readInt();
+        uuid = in.readString();
         created = new Date(in.readLong());
+        changed = new Date(in.readLong());
     }
 
     public static final Creator<VList> CREATOR = new Creator<VList>() {

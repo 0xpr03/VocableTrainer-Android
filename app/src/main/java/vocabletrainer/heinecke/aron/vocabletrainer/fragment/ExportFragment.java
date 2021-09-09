@@ -1,10 +1,14 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
 import android.app.Activity;
+
+import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,6 +41,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ProgressDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVCustomFormat;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.StorageUtils;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.ExportViewModel;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.FormatViewModel;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.ListPickerViewModel;
@@ -56,7 +61,7 @@ public class ExportFragment extends PagerFragment {
     public static final String TAG = "ExportFragment";
     private EditText tExportFile;
     private Button btnExport;
-    private File expFile;
+    private Uri expFile;
     private CheckBox chkExportTableInfo;
     private CheckBox chkExportMultiple;
     private Spinner spFormat;
@@ -73,9 +78,10 @@ public class ExportFragment extends PagerFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        listPickerViewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(ListPickerViewModel.class);
+        FragmentActivity act = requireActivity();
+        listPickerViewModel = ViewModelProviders.of(act).get(ListPickerViewModel.class);
 
-        FormatViewModel formatViewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(FormatViewModel.class);
+        FormatViewModel formatViewModel = ViewModelProviders.of(act).get(FormatViewModel.class);
         formatViewModel.getCustomFormatLD().observe(this, format -> customFormatEntry.updateObject(format));
         formatViewModel.getInFormatFragmentLD().observe(this, inFragment -> {
             //noinspection ConstantConditions
@@ -88,7 +94,7 @@ public class ExportFragment extends PagerFragment {
             progressDialog = (ProgressDialog) getACActivity().getSupportFragmentManager().getFragment(savedInstanceState, ProgressDialog.TAG);
         }
 
-        exportViewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(ExportViewModel.class);
+        exportViewModel = ViewModelProviders.of(act).get(ExportViewModel.class);
 
         exportViewModel.getExportingHandles().observe(this, exporting -> {
             if(exporting!= null){
@@ -193,6 +199,17 @@ public class ExportFragment extends PagerFragment {
         } else {
             throw new ClassCastException("parent Activity has to be ExImportActivity, is "+getActivity().getClass());
         }
+        activity.getSelectedFile().observe(this, new Observer<Uri>() {
+            @Override
+            public void onChanged(Uri uri) {
+                if (uri != null) {
+                    Log.d(TAG, "got file:" + uri);
+                    expFile = uri;
+                    tExportFile.setText(StorageUtils.getUriName(requireContext(),uri));
+                    checkInputOk();
+                }
+            }
+        });
     }
 
     /**
@@ -203,13 +220,6 @@ public class ExportFragment extends PagerFragment {
         tMsg.setMovementMethod(LinkMovementMethod.getInstance());
         tExportFile.setKeyListener(null);
         btnExport.setEnabled(false);
-        if(savedInstanceState != null) {
-            String path = savedInstanceState.getString(KEY_FILE_PATH, null);
-            if (path != null && !path.equals(""))
-                expFile = new File(path);
-            else
-                expFile = null;
-        }
         Button btnExport = view.findViewById(R.id.bExportStart);
         btnExport.setOnClickListener(v -> onExport());
 
@@ -264,13 +274,14 @@ public class ExportFragment extends PagerFragment {
      * Called on file select click
      */
     public void selectFile() {
-        Intent myIntent = new Intent(getActivity(), FileActivity.class);
-        myIntent.putExtra(FileActivity.PARAM_WRITE_FLAG, true);
-        myIntent.putExtra(FileActivity.PARAM_MESSAGE, getString(R.string.Export_File_select_Info));
-        myIntent.putExtra(FileActivity.PARAM_DEFAULT_FILENAME, "list.csv");
-        if(expFile != null)
-            myIntent.putExtra(FileActivity.PARAM_START_FILE,expFile.getAbsolutePath());
-        startActivityForResult(myIntent, REQUEST_FILE_RESULT_CODE);
+//        Intent myIntent = new Intent(getActivity(), FileActivity.class);
+//        myIntent.putExtra(FileActivity.PARAM_WRITE_FLAG, true);
+//        myIntent.putExtra(FileActivity.PARAM_MESSAGE, getString(R.string.Export_File_select_Info));
+//        myIntent.putExtra(FileActivity.PARAM_DEFAULT_FILENAME, "list.csv");
+//        if(expFile != null)
+//            myIntent.putExtra(FileActivity.PARAM_START_FILE,expFile.getAbsolutePath());
+//        startActivityForResult(myIntent, REQUEST_FILE_RESULT_CODE);
+        activity.createFile();
     }
 
     private ArrayList<VList> getLists(){
@@ -297,23 +308,8 @@ public class ExportFragment extends PagerFragment {
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString(KEY_FILE_PATH,expFile != null ? expFile.getAbsolutePath() : "");
         if(progressDialog != null && progressDialog.isAdded())
             getACActivity().getSupportFragmentManager().putFragment(outState, ProgressDialog.TAG, progressDialog);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_OK) {
-            switch (requestCode) {
-                case REQUEST_FILE_RESULT_CODE:
-                    Log.d(TAG, "got file:" + data.getStringExtra(FileActivity.RETURN_FILE_USER_NAME));
-                    expFile = (File) data.getSerializableExtra(FileActivity.RETURN_FILE);
-                    tExportFile.setText(data.getStringExtra(FileActivity.RETURN_FILE_USER_NAME));
-                    checkInputOk();
-                    break;
-            }
-        }
     }
 
     /**
@@ -354,7 +350,7 @@ public class ExportFragment extends PagerFragment {
         public final ArrayList<VList> lists;
         public final boolean exportTableInfo;
         public final boolean exportMultiple;
-        public final File file;
+        public final Uri file;
         public final CSVCustomFormat cFormat;
 
         /**
@@ -367,7 +363,7 @@ public class ExportFragment extends PagerFragment {
          * @param file            file to read from
          */
         ExportStorage(CSVCustomFormat cFormat, ArrayList<VList> lists, boolean exportTableInfo,
-                      boolean exportMultiple, File file) {
+                      boolean exportMultiple, Uri file) {
             this.cFormat = cFormat;
             this.lists = lists;
             this.exportTableInfo = exportTableInfo;

@@ -3,12 +3,19 @@ package vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV;
 import androidx.lifecycle.MutableLiveData;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
 import org.apache.commons.csv.CSVPrinter;
 
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.fragment.ExportFragment;
@@ -32,6 +39,7 @@ public class Exporter extends AsyncTask<Integer, Integer, String> {
     private final Function<Void,String> exportCallback;
     private final Function<Void,String> cancelCallback;
     private final MutableLiveData<String> exceptionHandle;
+    private OutputStream out;
 
     /**
      * Creates a new ExportOperation
@@ -47,14 +55,22 @@ public class Exporter extends AsyncTask<Integer, Integer, String> {
         this.cancelCallback = cancelCallback;
         db = new Database(context);
         this.exceptionHandle = exceptionHandle;
+        try {
+            out = context.getContentResolver().
+                    openOutputStream(es.file, "w");
+        } catch (FileNotFoundException e) {
+            exceptionHandle.postValue("Exception: "+e);
+            Log.e(TAG,"File open",e);
+        }
+
     }
 
     @Override
     protected String doInBackground(Integer... params) {
         Log.d(TAG, "Starting background task");
-        try (FileWriter fw = new FileWriter(es.file);
-             BufferedWriter writer = new BufferedWriter(fw);
-             CSVPrinter printer = new CSVPrinter(writer, es.cFormat.getFormat())
+        try (
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out));
+                CSVPrinter printer = new CSVPrinter(writer, es.cFormat.getFormat())
         ) {
             MultiMeaningHandler handler = new MultiMeaningHandler(es.cFormat);
             int i = 0;
@@ -94,6 +110,7 @@ public class Exporter extends AsyncTask<Integer, Integer, String> {
         } catch (Exception e) {
             exceptionHandle.postValue("Exception: "+e);
             Log.e(TAG,"Export exception", e);
+            // don't close out, handled by buffer close
         }
 
         return null;

@@ -39,9 +39,6 @@
             android:name=".activity.AboutActivity"
             android:parentActivityName=".activity.MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".activity.FileActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".activity.PermActivity" />
         <activity
             android:name=".activity.ExImportActivity"

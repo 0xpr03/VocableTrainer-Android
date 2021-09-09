@@ -28,13 +28,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.util.concurrent.Callable;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.ExImportActivity;
-import vocabletrainer.heinecke.aron.vocabletrainer.activity.FileActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.ListActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ImportLogDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ProgressDialog;
@@ -63,7 +60,6 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
     private static final String P_KEY_I_IMP_SINGLE = "import_sp_single";
     private static final String P_KEY_I_IMP_RAW = "import_sp_raw";
     private static final String P_KEY_I_IMP_FORMAT = "import_sp_format";
-    private static final int REQUEST_FILE_RESULT_CODE = 1;
     private static final int REQUEST_LIST_SELECT_CODE = 2;
     public static final String TAG = "ImportFragment";
     private static final String KEY_LIST_TARGET = "targetList";
@@ -76,7 +72,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
     private Spinner spFormat;
     private Button bSelectList;
     private EditText etList;
-    private Uri selectedFile;
+    private Uri selectedFile = null;
     private EditText etFile;
     private Button bImportOk;
     private ConstraintLayout singleLayout;
@@ -449,13 +445,6 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
      * Called on file select click
      */
     public void selectFile() {
-//        Intent myIntent = new Intent(getActivity(), FileActivity.class);
-//        myIntent.putExtra(FileActivity.PARAM_WRITE_FLAG, false);
-//        myIntent.putExtra(FileActivity.PARAM_MESSAGE, getString(R.string.Import_File_select_Info));
-//        myIntent.putExtra(FileActivity.PARAM_DEFAULT_FILENAME, "list.csv");
-//        if(selectedFile != null)
-//            myIntent.putExtra(FileActivity.PARAM_START_FILE,impFile.getAbsolutePath());
-//        startActivityForResult(myIntent, REQUEST_FILE_RESULT_CODE);
         activity.openFile();
     }
 

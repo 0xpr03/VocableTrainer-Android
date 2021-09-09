@@ -1,12 +1,9 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
-import android.app.Activity;
-
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -30,13 +27,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Objects;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.ExImportActivity;
-import vocabletrainer.heinecke.aron.vocabletrainer.activity.FileActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ProgressDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVCustomFormat;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
@@ -56,8 +50,6 @@ public class ExportFragment extends PagerFragment {
     private static final String P_KEY_B_EXP_TBL_META = "export_tbl_meta";
     private static final String P_KEY_B_EXP_TBL_MULTI = "export_tbl_multi";
     private static final String P_KEY_I_EXP_FORMAT = "export_format";
-    private static final int REQUEST_FILE_RESULT_CODE = 10;
-    private static final String KEY_FILE_PATH = "filePath";
     public static final String TAG = "ExportFragment";
     private EditText tExportFile;
     private Button btnExport;
@@ -274,13 +266,6 @@ public class ExportFragment extends PagerFragment {
      * Called on file select click
      */
     public void selectFile() {
-//        Intent myIntent = new Intent(getActivity(), FileActivity.class);
-//        myIntent.putExtra(FileActivity.PARAM_WRITE_FLAG, true);
-//        myIntent.putExtra(FileActivity.PARAM_MESSAGE, getString(R.string.Export_File_select_Info));
-//        myIntent.putExtra(FileActivity.PARAM_DEFAULT_FILENAME, "list.csv");
-//        if(expFile != null)
-//            myIntent.putExtra(FileActivity.PARAM_START_FILE,expFile.getAbsolutePath());
-//        startActivityForResult(myIntent, REQUEST_FILE_RESULT_CODE);
         activity.createFile();
     }
 

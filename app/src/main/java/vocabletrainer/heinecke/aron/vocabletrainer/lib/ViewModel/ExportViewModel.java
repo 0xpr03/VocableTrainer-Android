@@ -18,12 +18,12 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Function;
 public class ExportViewModel extends ViewModel {
     private final static String TAG = "ExportViewModel";
     private int exportListAmount; // TODO: temporary until selector has own viewmodel
-    private MutableLiveData<Integer> progressExport;
-    private MutableLiveData<Boolean> exporting;
-    private MutableLiveData<Boolean> cancelExport;
-    private MutableLiveData<Boolean> exportFinished;
-    private MutableLiveData<String> exception;
-    private Observer<Boolean> observeCancel;
+    private final MutableLiveData<Integer> progressExport;
+    private final MutableLiveData<Boolean> exporting;
+    private final MutableLiveData<Boolean> cancelExport;
+    private final MutableLiveData<Boolean> exportFinished;
+    private final MutableLiveData<String> exception;
+    private final Observer<Boolean> observeCancel;
     private AsyncTask task;
 
     public ExportViewModel() {

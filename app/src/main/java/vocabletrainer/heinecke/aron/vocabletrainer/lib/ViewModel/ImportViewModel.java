@@ -32,21 +32,21 @@ import static android.os.AsyncTask.Status.RUNNING;
  */
 public class ImportViewModel extends ViewModel {
     private final static String TAG = "ImportViewModel";
-    private MutableLiveData<ArrayList<VEntry>> previewList;
-    private MutableLiveData<Boolean> reparsing;
-    private MutableLiveData<Boolean> importing;
-    private MutableLiveData<Integer> progress;
-    private MutableLiveData<LogData> importLog; // also preview parsing, see data container
-    private MutableLiveData<Boolean> cancelPreview; // cancelPreview parser thread trigger
-    private MutableLiveData<Boolean> cancelImport;
+    private final MutableLiveData<ArrayList<VEntry>> previewList;
+    private final MutableLiveData<Boolean> reparsing;
+    private final MutableLiveData<Boolean> importing;
+    private final MutableLiveData<Integer> progress;
+    private final MutableLiveData<LogData> importLog; // also preview parsing, see data container
+    private final MutableLiveData<Boolean> cancelPreview; // cancelPreview parser thread trigger
+    private final MutableLiveData<Boolean> cancelImport;
     private boolean isMultiList;
     private boolean isRawData;
     // set on preview parsing finished, contains data
-    private MutableLiveData<PreviewParser> previewParser;
+    private final MutableLiveData<PreviewParser> previewParser;
     // internal observer, resetting reparsing on update
-    private Observer<ArrayList<VEntry>> observerPreviewList;
+    private final Observer<ArrayList<VEntry>> observerPreviewList;
     // internal observer for setting whether it was cancelled
-    private Observer<Boolean> observerCancel;
+    private final Observer<Boolean> observerCancel;
     private AsyncTask parserThread;
 
     /**

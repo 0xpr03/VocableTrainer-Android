@@ -1,10 +1,13 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.fragment;
 
 import android.app.Activity;
+
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
@@ -25,6 +28,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.util.concurrent.Callable;
 
@@ -40,6 +44,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.Import.ImportFetcher;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.Import.Importer;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.StorageUtils;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.FormatViewModel;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.ImportViewModel;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget.CustomItemSelectedListener;
@@ -64,7 +69,6 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
     private static final String KEY_LIST_TARGET = "targetList";
     private static final String KEY_PARSING_INVALIDATED = "parsing_invalidated";
     private static final String KEY_FILE_PATH = "filePath";
-    File impFile;
     VList targetList;
     ArrayAdapter<GenericSpinnerEntry<CSVCustomFormat>> spAdapterFormat;
     private RadioGroup rgSingle, rgRaw, rgMulti;
@@ -72,6 +76,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
     private Spinner spFormat;
     private Button bSelectList;
     private EditText etList;
+    private Uri selectedFile;
     private EditText etFile;
     private Button bImportOk;
     private ConstraintLayout singleLayout;
@@ -228,16 +233,12 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
         mp = new ImportFetcher.MessageProvider(this);
         if (savedInstanceState != null) {
             String path = savedInstanceState.getString(KEY_FILE_PATH, null);
-            if (path != null && !path.equals(""))
-                impFile = new File(path);
-            else
-                impFile = null;
             targetList = savedInstanceState.getParcelable(KEY_LIST_TARGET);
             if (targetList != null)
                 updateTargetListUI();
             parsingInvalidated = savedInstanceState.getBoolean(KEY_PARSING_INVALIDATED,false);
             // viewmodel destroyed, reparsing required
-            if(importViewModel.getPreviewParser() == null && impFile != null){
+            if(importViewModel.getPreviewParser() == null && activity.getSelectedFile() != null){
                 Log.d(TAG,"reparsing, no previewparser in viewmodel");
                 refreshParsing();
             }
@@ -316,6 +317,19 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
         } else {
             throw new ClassCastException("parent Activity has to be ExImportActivity, is "+getActivity().getClass());
         }
+        activity.getSelectedFile().observe(this, new Observer<Uri>() {
+            @Override
+            public void onChanged(Uri uri) {
+                if (uri != null) {
+                    Log.d(TAG, "got file:" + uri);
+                    selectedFile = uri;
+                    etFile.setText(StorageUtils.getUriName(requireContext(),uri));
+                    checkInput();
+                    refreshParsing();
+                }
+            }
+        });
+
     }
 
     /**
@@ -369,10 +383,10 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
      * Refresh preview parsing, change view accordingly
      */
     private void refreshParsing() {
-        if (impFile != null && impFile.exists()) {
+        if (activity.getSelectedFile() != null) {
             importViewModel.resetPreviewData();
             bReparse.setVisibility(View.GONE);
-            importViewModel.previewParse(getFormatSelected(),impFile,mp);
+            importViewModel.previewParse(getFormatSelected(),selectedFile,requireContext(),mp);
         }
     }
 
@@ -381,7 +395,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
      */
     public void onImport() {
         Importer dataHandler = new Importer(getActivity().getApplicationContext(), importViewModel.getPreviewParser(), importListMode, targetList);
-        importViewModel.runImport(dataHandler,getFormatSelected(),impFile,mp);
+        importViewModel.runImport(dataHandler,getFormatSelected(),selectedFile,requireContext(),mp);
     }
 
     /**
@@ -396,7 +410,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
         rgRaw.setVisibility(importViewModel.isRawData() ? View.VISIBLE : View.GONE);
         // last option has to watch out for invalid parsing, when others are not true would default to visible
         rgSingle.setVisibility(importViewModel.isRawData() || parsingInvalidated ? View.GONE : View.VISIBLE);
-        if(impFile != null && importListMode == null) {
+        if(selectedFile != null && importListMode == null) {
             if (rgMulti.getVisibility() == View.VISIBLE) {
                 updateImportListModeByButtonID(rgMulti.getCheckedRadioButtonId());
             } else if (rgSingle.getVisibility() == View.VISIBLE) {
@@ -423,10 +437,10 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
         tInfo.setText(text);
 
         // init, no import file
-        if(impFile == null) {
+        if(selectedFile == null) {
             rgMulti.setVisibility(View.INVISIBLE);
         }
-        tInfo.setVisibility(impFile == null ? View.INVISIBLE : View.VISIBLE);
+        tInfo.setVisibility(selectedFile == null ? View.INVISIBLE : View.VISIBLE);
 
         checkInput();
     }
@@ -435,13 +449,14 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
      * Called on file select click
      */
     public void selectFile() {
-        Intent myIntent = new Intent(getActivity(), FileActivity.class);
-        myIntent.putExtra(FileActivity.PARAM_WRITE_FLAG, false);
-        myIntent.putExtra(FileActivity.PARAM_MESSAGE, getString(R.string.Import_File_select_Info));
-        myIntent.putExtra(FileActivity.PARAM_DEFAULT_FILENAME, "list.csv");
-        if(impFile != null)
-            myIntent.putExtra(FileActivity.PARAM_START_FILE,impFile.getAbsolutePath());
-        startActivityForResult(myIntent, REQUEST_FILE_RESULT_CODE);
+//        Intent myIntent = new Intent(getActivity(), FileActivity.class);
+//        myIntent.putExtra(FileActivity.PARAM_WRITE_FLAG, false);
+//        myIntent.putExtra(FileActivity.PARAM_MESSAGE, getString(R.string.Import_File_select_Info));
+//        myIntent.putExtra(FileActivity.PARAM_DEFAULT_FILENAME, "list.csv");
+//        if(selectedFile != null)
+//            myIntent.putExtra(FileActivity.PARAM_START_FILE,impFile.getAbsolutePath());
+//        startActivityForResult(myIntent, REQUEST_FILE_RESULT_CODE);
+        activity.openFile();
     }
 
     /**
@@ -500,7 +515,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
     private void checkInput() {
         boolean is_ok = true;
         Log.d(TAG,"parsing invalid:"+parsingInvalidated);
-        if (impFile == null || importListMode == null || parsingInvalidated) {
+        if (selectedFile == null || importListMode == null || parsingInvalidated) {
             is_ok = false;
         }
         //noinspection StatementWithEmptyBody
@@ -528,7 +543,6 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
         super.onSaveInstanceState(outState);
         Log.d(TAG,"onSaveInstanceState");
         outState.putParcelable(KEY_LIST_TARGET,targetList);
-        outState.putString(KEY_FILE_PATH,impFile != null ? impFile.getAbsolutePath() : "");
         outState.putBoolean(KEY_PARSING_INVALIDATED,parsingInvalidated);
         if(progressDialogImport != null && progressDialogImport.isAdded())
             getACActivity().getSupportFragmentManager().putFragment(outState, TAG_PROGRESS_IMPORT, progressDialogImport);
@@ -542,12 +556,8 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
             switch (requestCode) {
-                case REQUEST_FILE_RESULT_CODE:
-                    Log.d(TAG, "got file:" + data.getStringExtra(FileActivity.RETURN_FILE_USER_NAME));
-                    impFile = (File) data.getSerializableExtra(FileActivity.RETURN_FILE);
-                    etFile.setText(data.getStringExtra(FileActivity.RETURN_FILE_USER_NAME));
-                    checkInput();
-                    refreshParsing();
+                case ExImportActivity.PICK_FILE:
+
                     break;
                 case REQUEST_LIST_SELECT_CODE:
                     Log.d(TAG, "got list");

@@ -1,12 +1,17 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib;
 
+import android.content.ContentResolver;
 import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+
+import android.provider.OpenableColumns;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -31,6 +36,27 @@ public class StorageUtils {
     private static final String ENV_SECONDARY_STORAGE = "SECONDARY_STORAGE";
     private static final String TAG = "StorageUtils";
     private static final String SETTINGS_EXTENDED_VOLUMES_SEARCH = "search_volumes_extended";
+
+    // taken from https://developer.android.com/training/data-storage/shared/documents-files#java
+    public static String getUriName(@NonNull final Context context,@NonNull final Uri uri) {
+        Cursor cursor = context.getContentResolver()
+                .query(uri, null, null, null, null, null);
+        try {
+            // moveToFirst() returns false if the cursor has 0 rows. Very handy for
+            // "if there's anything to look at, look at it" conditionals.
+            if (cursor != null && cursor.moveToFirst()) {
+
+                // Note it's called "Display Name". This is
+                // provider-specific, and might not necessarily be the file name.
+                String displayName = cursor.getString(
+                        cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                return displayName;
+            }
+        } finally {
+            cursor.close();
+        }
+        return null;
+    }
 
     /**
      * Get all storage locations<br>

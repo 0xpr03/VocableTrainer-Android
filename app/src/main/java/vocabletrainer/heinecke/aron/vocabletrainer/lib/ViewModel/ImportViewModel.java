@@ -4,6 +4,9 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
+
+import android.content.Context;
+import android.net.Uri;
 import android.os.AsyncTask;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -68,7 +71,7 @@ public class ImportViewModel extends ViewModel {
      * Start preview parsing
      * @param format
      */
-    public void previewParse(@NonNull CSVCustomFormat format, @NonNull File impFile, @NonNull ImportFetcher.MessageProvider mp) {
+    public void previewParse(@NonNull CSVCustomFormat format, @NonNull Uri impFile, @NonNull Context context, @NonNull ImportFetcher.MessageProvider mp) {
         if(verifyNoParsersRunning())
             return;
         //CSVCustomFormat format = getFormatSelected();
@@ -92,6 +95,7 @@ public class ImportViewModel extends ViewModel {
                 .setSource(impFile)
                 .setHandler(dataHandler)
                 .setLogErrors(false)
+                .setContext(context)
                 .setMessageProvider(mp)
                 .setProgressHandle(progress)
                 .setImportCallback(callback)
@@ -102,8 +106,8 @@ public class ImportViewModel extends ViewModel {
         parserThread = imp.execute(0); // 0 is just to pass something
     }
 
-    public void runImport(@NonNull Importer dataHandler, @NonNull CSVCustomFormat format, @NonNull File impFile,
-              @NonNull ImportFetcher.MessageProvider mp){
+    public void runImport(@NonNull Importer dataHandler, @NonNull CSVCustomFormat format, @NonNull Uri impFile,
+              @NonNull Context context,@NonNull ImportFetcher.MessageProvider mp){
         if(verifyNoParsersRunning())
             return;
         Function<Void,String> callback = param -> {
@@ -119,6 +123,7 @@ public class ImportViewModel extends ViewModel {
                 .setSource(impFile)
                 .setHandler(dataHandler)
                 .setMessageProvider(mp)
+                .setContext(context)
                 .setImportCallback(callback)
                 .setProgressHandle(progress)
                 .setCancelCallback(callback)

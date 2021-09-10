@@ -62,7 +62,7 @@ public class ExImportActivity extends FragmentActivity {
     public static final int CREATE_FILE = 22;
     public static final int PICK_FILE = 23;
     private MutableLiveData<Uri> selectedFile = new MutableLiveData();
-    private static final String FILE_TYPE = "text/csv";
+    private static final String FILE_TYPE = "text/*";
     private Uri lastUri = null;
     /**
      * Pass this as false to show export options

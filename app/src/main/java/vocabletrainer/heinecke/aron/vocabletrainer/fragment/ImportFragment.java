@@ -63,6 +63,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
     private static final int REQUEST_LIST_SELECT_CODE = 2;
     public static final String TAG = "ImportFragment";
     private static final String KEY_LIST_TARGET = "targetList";
+    private static final String KEY_URI = "URI";
     private static final String KEY_PARSING_INVALIDATED = "parsing_invalidated";
     private static final String KEY_FILE_PATH = "filePath";
     VList targetList;
@@ -82,11 +83,11 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
     private ExImportActivity activity;
     private GenericSpinnerEntry<CSVCustomFormat> customFormatEntry;
     private Importer.IMPORT_LIST_MODE importListMode;
-    // used for parsing on custom format change & cancel of parsing
-    private boolean parsingInvalidated;
+
     private ProgressDialog progressDialogImport;
     private ProgressDialog progressDialogReparse;
     private VListEditorDialog listEditorDialog;
+    private FormatViewModel formatViewModel;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -104,7 +105,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
         }
 
         importViewModel = ViewModelProviders.of(getActivity()).get(ImportViewModel.class);
-        FormatViewModel formatViewModel = ViewModelProviders.of(getActivity()).get(FormatViewModel.class);
+        formatViewModel = ViewModelProviders.of(getActivity()).get(FormatViewModel.class);
 
         importViewModel.getLogHandle().observe(this, logData -> {
             if(logData != null && logData.log.length() > 0) {
@@ -121,14 +122,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
             customFormatEntry.updateObject(obs);
             if(getFormatSelected() == obs) {
                 Log.d(TAG,"new format is selected");
-                parsingInvalidated = true;
-            }
-        });
-        formatViewModel.getInFormatFragmentLD().observe(this, inFormatView -> {
-            Log.d(TAG,"invalidated: "+parsingInvalidated);
-            if(parsingInvalidated && inFormatView != null && !inFormatView) {
-                Log.d(TAG, "refreshParsing");
-                refreshParsing();
+                importViewModel.isInvalidated = true;
             }
         });
 
@@ -137,7 +131,8 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
             if(previewData != null){
                 // reset import list mode, change of available modes
                 importListMode = null;
-                parsingInvalidated = false;
+                importViewModel.isInvalidated = false;
+                Log.d(TAG,"set parsing invalidated to: false");
                 refreshView();
             }
         });
@@ -185,7 +180,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
 
         importViewModel.getCancelPreviewHandle().observe(this, data -> {
             if(data!= null && data){
-                parsingInvalidated = true;
+                importViewModel.isInvalidated = true;
                 refreshView();
                 Toast.makeText(getContext(),R.string.Import_Cancel_Toast_Preview,Toast.LENGTH_LONG).show();
                 bReparse.setVisibility(View.VISIBLE);
@@ -230,16 +225,14 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
         if (savedInstanceState != null) {
             String path = savedInstanceState.getString(KEY_FILE_PATH, null);
             targetList = savedInstanceState.getParcelable(KEY_LIST_TARGET);
+            selectedFile = savedInstanceState.getParcelable(KEY_URI);
             if (targetList != null)
                 updateTargetListUI();
-            parsingInvalidated = savedInstanceState.getBoolean(KEY_PARSING_INVALIDATED,false);
             // viewmodel destroyed, reparsing required
             if(importViewModel.getPreviewParser() == null && activity.getSelectedFile() != null){
                 Log.d(TAG,"reparsing, no previewparser in viewmodel");
                 refreshParsing();
             }
-        } else {
-            parsingInvalidated = false;
         }
         refreshView();
 
@@ -259,6 +252,12 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
             updateImportListModeByButtonID(element.getId());
             refreshView();
             return null;
+        });
+
+        formatViewModel.getInFormatFragmentLD().observe(getViewLifecycleOwner(), inFormatView -> {
+            if(importViewModel.isInvalidated && inFormatView != null && !inFormatView) {
+                refreshParsing();
+            }
         });
 
         return view;
@@ -307,7 +306,6 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-
         if(getActivity() instanceof ExImportActivity) {
             activity = (ExImportActivity) getActivity();
         } else {
@@ -316,7 +314,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
         activity.getSelectedFile().observe(this, new Observer<Uri>() {
             @Override
             public void onChanged(Uri uri) {
-                if (uri != null) {
+                if (uri != null && !uri.equals(selectedFile)) {
                     Log.d(TAG, "got file:" + uri);
                     selectedFile = uri;
                     etFile.setText(StorageUtils.getUriName(requireContext(),uri));
@@ -379,7 +377,8 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
      * Refresh preview parsing, change view accordingly
      */
     private void refreshParsing() {
-        if (activity.getSelectedFile() != null) {
+        Log.d(TAG,"refreshParsing");
+        if (selectedFile != null && !importViewModel.isReparsing()) {
             importViewModel.resetPreviewData();
             bReparse.setVisibility(View.GONE);
             importViewModel.previewParse(getFormatSelected(),selectedFile,requireContext(),mp);
@@ -405,7 +404,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
         rgMulti.setVisibility(importViewModel.isMultiList() ? View.VISIBLE : View.GONE);
         rgRaw.setVisibility(importViewModel.isRawData() ? View.VISIBLE : View.GONE);
         // last option has to watch out for invalid parsing, when others are not true would default to visible
-        rgSingle.setVisibility(importViewModel.isRawData() || parsingInvalidated ? View.GONE : View.VISIBLE);
+        rgSingle.setVisibility(importViewModel.isRawData() || importViewModel.isInvalidated ? View.GONE : View.VISIBLE);
         if(selectedFile != null && importListMode == null) {
             if (rgMulti.getVisibility() == View.VISIBLE) {
                 updateImportListModeByButtonID(rgMulti.getCheckedRadioButtonId());
@@ -503,8 +502,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
      */
     private void checkInput() {
         boolean is_ok = true;
-        Log.d(TAG,"parsing invalid:"+parsingInvalidated);
-        if (selectedFile == null || importListMode == null || parsingInvalidated) {
+        if (selectedFile == null || importListMode == null || importViewModel.isInvalidated) {
             is_ok = false;
         }
         //noinspection StatementWithEmptyBody
@@ -532,7 +530,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
         super.onSaveInstanceState(outState);
         Log.d(TAG,"onSaveInstanceState");
         outState.putParcelable(KEY_LIST_TARGET,targetList);
-        outState.putBoolean(KEY_PARSING_INVALIDATED,parsingInvalidated);
+        outState.putParcelable(KEY_URI,selectedFile);
         if(progressDialogImport != null && progressDialogImport.isAdded())
             getACActivity().getSupportFragmentManager().putFragment(outState, TAG_PROGRESS_IMPORT, progressDialogImport);
         if(progressDialogReparse != null && progressDialogReparse.isAdded())
@@ -543,18 +541,11 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_OK) {
-            switch (requestCode) {
-                case ExImportActivity.PICK_FILE:
-
-                    break;
-                case REQUEST_LIST_SELECT_CODE:
-                    Log.d(TAG, "got list");
-                    targetList = data.getParcelableExtra(ListActivity.RETURN_LISTS);
-                    etList.setText(targetList.getName());
-                    checkInput();
-                    break;
-            }
+        if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_LIST_SELECT_CODE) {
+            Log.d(TAG, "got list");
+            targetList = data.getParcelableExtra(ListActivity.RETURN_LISTS);
+            etList.setText(targetList.getName());
+            checkInput();
         }
     }
 

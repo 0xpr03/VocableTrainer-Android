@@ -41,6 +41,8 @@ public class ImportViewModel extends ViewModel {
     private final MutableLiveData<Boolean> cancelImport;
     private boolean isMultiList;
     private boolean isRawData;
+    // used for parsing on custom format change & cancel of parsing
+    public boolean isInvalidated = true;
     // set on preview parsing finished, contains data
     private final MutableLiveData<PreviewParser> previewParser;
     // internal observer, resetting reparsing on update
@@ -227,7 +229,7 @@ public class ImportViewModel extends ViewModel {
      * New Instance, set default values
      */
     public ImportViewModel() {
-        Log.d(TAG,"ViewModel init");
+        Log.d(TAG,"ImportViewModel init");
         this.previewList = new MutableLiveData<>();
         this.reparsing = new MutableLiveData<>();
         this.importing = new MutableLiveData<>();
@@ -310,6 +312,13 @@ public class ImportViewModel extends ViewModel {
      */
     public LiveData<Boolean> getReparsingHandle() {
         return reparsing;
+    }
+
+    /**
+     * Returns the reparsing state
+     */
+    public Boolean isReparsing() {
+        return reparsing.getValue();
     }
 
     /**

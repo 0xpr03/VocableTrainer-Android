@@ -47,7 +47,21 @@
     </style>
 
 
-    <style name="AppTheme.Dialog" parent="Theme.AppCompat.DayNight.Dialog" />
+    <style name="AppTheme.Dialog" parent="Theme.AppCompat.DayNight.Dialog" >
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:textColorPrimary">@color/textColorPrimary</item>
+        <item name="android:textColorSecondary">@color/textColorSecondary</item>
+        <item name="android:textColor">@color/textColor</item>
+        <item name="android:colorBackground">@color/background_item</item>
+        <item name="android:windowBackground">@color/background_blank</item>
+        <item name="android:borderlessButtonStyle">@style/BorderlessButton</item>
+        <item name="colorBackgroundFloating">@color/background_blank</item>
+        <item name="android:buttonStyle">@style/NormalButton</item>
+        <item name="android:textColorHint">?attr/colorAccent</item>
+    </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.DayNight.ActionBar" />
 
@@ -66,8 +80,6 @@
         <item name="buttonBarNegativeButtonStyle">@style/BorderlessButton</item>
         <item name="android:gravity">center</item>
     </style>
-
-
 
     <style name="Divider">
         <item name="android:layout_width">match_parent</item>

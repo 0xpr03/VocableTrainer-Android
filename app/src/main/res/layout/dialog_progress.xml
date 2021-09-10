@@ -4,6 +4,8 @@
     android:layout_height="wrap_content"
     android:layout_gravity="center"
     android:orientation="vertical"
+    android:theme="@style/CustomDialog"
+    style="@style/CustomDialog"
     android:padding="15dp">
 
     <TextView

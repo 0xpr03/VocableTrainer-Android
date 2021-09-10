@@ -4,6 +4,9 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
+
+import android.content.Context;
+import android.net.Uri;
 import android.os.AsyncTask;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,21 +32,23 @@ import static android.os.AsyncTask.Status.RUNNING;
  */
 public class ImportViewModel extends ViewModel {
     private final static String TAG = "ImportViewModel";
-    private MutableLiveData<ArrayList<VEntry>> previewList;
-    private MutableLiveData<Boolean> reparsing;
-    private MutableLiveData<Boolean> importing;
-    private MutableLiveData<Integer> progress;
-    private MutableLiveData<LogData> importLog; // also preview parsing, see data container
-    private MutableLiveData<Boolean> cancelPreview; // cancelPreview parser thread trigger
-    private MutableLiveData<Boolean> cancelImport;
+    private final MutableLiveData<ArrayList<VEntry>> previewList;
+    private final MutableLiveData<Boolean> reparsing;
+    private final MutableLiveData<Boolean> importing;
+    private final MutableLiveData<Integer> progress;
+    private final MutableLiveData<LogData> importLog; // also preview parsing, see data container
+    private final MutableLiveData<Boolean> cancelPreview; // cancelPreview parser thread trigger
+    private final MutableLiveData<Boolean> cancelImport;
     private boolean isMultiList;
     private boolean isRawData;
+    // used for parsing on custom format change & cancel of parsing
+    public boolean isInvalidated = true;
     // set on preview parsing finished, contains data
-    private MutableLiveData<PreviewParser> previewParser;
+    private final MutableLiveData<PreviewParser> previewParser;
     // internal observer, resetting reparsing on update
-    private Observer<ArrayList<VEntry>> observerPreviewList;
+    private final Observer<ArrayList<VEntry>> observerPreviewList;
     // internal observer for setting whether it was cancelled
-    private Observer<Boolean> observerCancel;
+    private final Observer<Boolean> observerCancel;
     private AsyncTask parserThread;
 
     /**
@@ -68,7 +73,7 @@ public class ImportViewModel extends ViewModel {
      * Start preview parsing
      * @param format
      */
-    public void previewParse(@NonNull CSVCustomFormat format, @NonNull File impFile, @NonNull ImportFetcher.MessageProvider mp) {
+    public void previewParse(@NonNull CSVCustomFormat format, @NonNull Uri impFile, @NonNull Context context, @NonNull ImportFetcher.MessageProvider mp) {
         if(verifyNoParsersRunning())
             return;
         //CSVCustomFormat format = getFormatSelected();
@@ -92,6 +97,7 @@ public class ImportViewModel extends ViewModel {
                 .setSource(impFile)
                 .setHandler(dataHandler)
                 .setLogErrors(false)
+                .setContext(context)
                 .setMessageProvider(mp)
                 .setProgressHandle(progress)
                 .setImportCallback(callback)
@@ -102,8 +108,8 @@ public class ImportViewModel extends ViewModel {
         parserThread = imp.execute(0); // 0 is just to pass something
     }
 
-    public void runImport(@NonNull Importer dataHandler, @NonNull CSVCustomFormat format, @NonNull File impFile,
-              @NonNull ImportFetcher.MessageProvider mp){
+    public void runImport(@NonNull Importer dataHandler, @NonNull CSVCustomFormat format, @NonNull Uri impFile,
+              @NonNull Context context,@NonNull ImportFetcher.MessageProvider mp){
         if(verifyNoParsersRunning())
             return;
         Function<Void,String> callback = param -> {
@@ -119,6 +125,7 @@ public class ImportViewModel extends ViewModel {
                 .setSource(impFile)
                 .setHandler(dataHandler)
                 .setMessageProvider(mp)
+                .setContext(context)
                 .setImportCallback(callback)
                 .setProgressHandle(progress)
                 .setCancelCallback(callback)
@@ -222,7 +229,7 @@ public class ImportViewModel extends ViewModel {
      * New Instance, set default values
      */
     public ImportViewModel() {
-        Log.d(TAG,"ViewModel init");
+        Log.d(TAG,"ImportViewModel init");
         this.previewList = new MutableLiveData<>();
         this.reparsing = new MutableLiveData<>();
         this.importing = new MutableLiveData<>();
@@ -305,6 +312,13 @@ public class ImportViewModel extends ViewModel {
      */
     public LiveData<Boolean> getReparsingHandle() {
         return reparsing;
+    }
+
+    /**
+     * Returns the reparsing state
+     */
+    public Boolean isReparsing() {
+        return reparsing.getValue();
     }
 
     /**

@@ -41,6 +41,8 @@ public class SurveyDialog extends DialogFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // required for using correct width
+        setStyle(DialogFragment.STYLE_NORMAL, R.style.CustomDialog);
         surveyViewModel = ViewModelProviders.of(getActivity()).get(SurveyViewModel.class);
 
         surveyViewModel.getErrorLiveData().observe(this,err -> {

@@ -2,9 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="vocabletrainer.heinecke.aron.vocabletrainer">
-
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -38,9 +35,6 @@
         <activity
             android:name=".activity.AboutActivity"
             android:parentActivityName=".activity.MainActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".activity.FileActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".activity.PermActivity" />
         <activity

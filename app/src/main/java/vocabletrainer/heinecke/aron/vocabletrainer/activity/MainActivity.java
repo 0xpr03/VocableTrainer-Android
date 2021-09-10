@@ -23,8 +23,6 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget.VectorImageHelper;
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "MainActivity";
     public static final String PREFS_NAME = "voc_prefs";
-    private final static int REQUEST_PERM_EXPORT = 30;
-    private final static int REQUEST_PERM_IMPORT = 35;
     private static final String P_KEY_ALPHA_DIALOG = "showedAlphaDialog";
     @SuppressWarnings("unused")
     @Deprecated
@@ -70,23 +68,6 @@ public class MainActivity extends AppCompatActivity {
         helper.initImageLeft(R.id.bAbout, R.drawable.ic_info_outline_white_24dp);
         helper.initImageLeft(R.id.bExport, R.drawable.ic_file_upload_white_24dp);
         helper.initImageLeft(R.id.bImport, R.drawable.ic_file_download_white_24dp);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == Activity.RESULT_OK) {
-            switch (requestCode) {
-                case REQUEST_PERM_EXPORT: {
-                    startExportActivityUnchecked();
-                }
-                break;
-                case REQUEST_PERM_IMPORT: {
-                    startImportActivityUnchecked();
-                }
-                break;
-            }
-        }
     }
 
     @Override
@@ -160,14 +141,9 @@ public class MainActivity extends AppCompatActivity {
      * @param view
      */
     public void showExport(View view) {
-        if (PermActivity.hasPermission(getApplicationContext(), ExImportActivity.REQUIRED_PERMISSION)) {
-            startExportActivityUnchecked();
-        } else {
-            Intent myIntent = new Intent(this, PermActivity.class);
-            myIntent.putExtra(PermActivity.PARAM_PERMISSION, ExImportActivity.REQUIRED_PERMISSION);
-            myIntent.putExtra(PermActivity.PARAM_MESSAGE, getString(R.string.Perm_CSV));
-            this.startActivityForResult(myIntent, REQUEST_PERM_EXPORT);
-        }
+        Intent myIntent = new Intent(this, ExImportActivity.class);
+        myIntent.putExtra(ExImportActivity.PARAM_IMPORT, false);
+        this.startActivity(myIntent);
     }
 
     /**
@@ -176,31 +152,8 @@ public class MainActivity extends AppCompatActivity {
      * @param view
      */
     public void showImport(View view) {
-        if (PermActivity.hasPermission(getApplicationContext(), ExImportActivity.REQUIRED_PERMISSION)) {
-            startImportActivityUnchecked();
-        } else {
-            Intent myIntent = new Intent(this, PermActivity.class);
-            myIntent.putExtra(PermActivity.PARAM_PERMISSION, ExImportActivity.REQUIRED_PERMISSION);
-            myIntent.putExtra(PermActivity.PARAM_MESSAGE, getString(R.string.Perm_CSV));
-            this.startActivityForResult(myIntent, REQUEST_PERM_IMPORT);
-        }
-    }
-
-    /**
-     * Start import activity, does not check for permissions
-     */
-    private void startImportActivityUnchecked() {
         Intent myIntent = new Intent(this, ExImportActivity.class);
         myIntent.putExtra(ExImportActivity.PARAM_IMPORT, true);
-        this.startActivity(myIntent);
-    }
-
-    /**
-     * Start export activity, does not check for permissions
-     */
-    private void startExportActivityUnchecked() {
-        Intent myIntent = new Intent(this, ExImportActivity.class);
-        myIntent.putExtra(ExImportActivity.PARAM_IMPORT, false);
         this.startActivity(myIntent);
     }
 

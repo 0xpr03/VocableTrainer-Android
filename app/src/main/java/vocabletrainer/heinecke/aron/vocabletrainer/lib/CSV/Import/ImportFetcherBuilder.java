@@ -1,5 +1,8 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.Import;
 
+import android.content.Context;
+import android.net.Uri;
+
 import androidx.lifecycle.MutableLiveData;
 
 import java.io.File;
@@ -13,8 +16,9 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Function;
  */
 public class ImportFetcherBuilder {
     private CSVCustomFormat format;
-    private File source;
+    private Uri source;
     private ImportHandler handler;
+    private Context context;
     private ImportFetcher.MessageProvider messageProvider;
     private Function<Void,String> importCallback;
     private Function<Void,String> cancelCallback;
@@ -26,7 +30,7 @@ public class ImportFetcherBuilder {
         return this;
     }
 
-    public ImportFetcherBuilder setSource(File source) {
+    public ImportFetcherBuilder setSource(Uri source) {
         this.source = source;
         return this;
     }
@@ -43,6 +47,11 @@ public class ImportFetcherBuilder {
 
     public ImportFetcherBuilder setMessageProvider(ImportFetcher.MessageProvider messageProvider) {
         this.messageProvider = messageProvider;
+        return this;
+    }
+
+    public ImportFetcherBuilder setContext(Context context) {
+        this.context = context;
         return this;
     }
 
@@ -70,6 +79,6 @@ public class ImportFetcherBuilder {
                 || messageProvider == null || importCallback == null)
             throw new IllegalArgumentException();
         return new ImportFetcher(format, source, handler, progressHandle,
-                messageProvider,importCallback,logErrors,cancelCallback);
+                messageProvider,importCallback,logErrors,cancelCallback,context);
     }
 }

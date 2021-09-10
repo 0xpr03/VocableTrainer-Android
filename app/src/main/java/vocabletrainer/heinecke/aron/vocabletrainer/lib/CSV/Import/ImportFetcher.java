@@ -1,6 +1,9 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.Import;
 
 import androidx.lifecycle.MutableLiveData;
+
+import android.content.Context;
+import android.net.Uri;
 import android.os.AsyncTask;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,7 +16,11 @@ import org.apache.commons.csv.CSVRecord;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.List;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
@@ -37,7 +44,7 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
     private final static int REC_V2 = 1; // meanings B / colA
     private final static int REC_V3 = 2; // tip / colB
     private final static int REC_V4 = 3; // addition (voc only)
-    private final File source;
+    private final Uri source;
     private final CSVCustomFormat cformat;
     private final ImportHandler handler;
     private final MutableLiveData<Integer> progressHandle;
@@ -46,7 +53,8 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
     private final Function<Void,String> cancelCallback;
     private final boolean logEverything;
     private long lastUpdate = 0;
-    private StringBuilder log;
+    private final StringBuilder log;
+    private InputStream in;
 
     /**
      * Creates a new importer<br>
@@ -62,10 +70,11 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
      * @param logEverything   whether to log all or exceptions only (preview vs import)
      * @param cancelCallback Callback to be executed on cancel action
      */
-    ImportFetcher(final CSVCustomFormat cformat, final File source, final ImportHandler handler,
+    ImportFetcher(final CSVCustomFormat cformat, final Uri source, final ImportHandler handler,
                   final MutableLiveData<Integer> progressHandle,
                   final MessageProvider messageProvider, final Function<Void,String> importCallback,
-                  final boolean logEverything, @Nullable final Function<Void,String> cancelCallback) {
+                  final boolean logEverything, @Nullable final Function<Void,String> cancelCallback,
+                  final Context context) {
         this.source = source;
         this.cformat = cformat;
         this.handler = handler;
@@ -75,6 +84,13 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
         this.importCallback = importCallback;
         this.logEverything = logEverything;
         this.cancelCallback = cancelCallback;
+        try {
+            in = context.getContentResolver().openInputStream(source);
+        } catch (FileNotFoundException e) {
+            log.append("Exception: ");
+            log.append(e.toString());
+            Log.e(TAG, "Import exception", e);
+        }
     }
 
     @Override
@@ -115,8 +131,9 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
     @Override
     protected String doInBackground(Integer... params) {
         try (
-                FileReader reader = new FileReader(source);
-                BufferedReader bufferedReader = new BufferedReader(reader);
+//                FileReader reader = new FileReader(source);
+//                InputStream in = getContentResolver().openInputStream(source);
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
                 CSVParser parser = new CSVParser(bufferedReader, cformat.getFormat())
         ) {
             handler.start();
@@ -179,6 +196,7 @@ public class ImportFetcher extends AsyncTask<Integer, Integer, String> {
                 handler.cancel();
             else
                 handler.finish();
+            // don't close in, it's closed by the buffers
         }
         return log.toString();
     }

@@ -41,6 +41,13 @@ public class ProgressDialog extends DialogFragment {
     private @StringRes int title = R.string.Placeholder;
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // required for using correct width
+        setStyle(DialogFragment.STYLE_NORMAL, R.style.CustomDialog);
+    }
+
+    @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(P_KEY_MAX,max);
@@ -126,7 +133,7 @@ public class ProgressDialog extends DialogFragment {
             title = savedInstanceState.getInt(P_KEY_TITLE);
             indeterminateMode = savedInstanceState.getBoolean(P_KEY_MODE);
         }
-        View view = View.inflate(getContext(),R.layout.dialog_progress, null);
+        View view = inflater.inflate(R.layout.dialog_progress,container, false);
         // hack to get daynight theme working
         view.getContext().getTheme().applyStyle(R.style.CustomDialog, true);
         progressBar = view.findViewById(R.id.dialog_progressbar);
@@ -134,11 +141,15 @@ public class ProgressDialog extends DialogFragment {
         titleView = view.findViewById(R.id.dialog_title);
         btnCancel = view.findViewById(R.id.button_close);
         btnCancel.setOnClickListener(v -> cancelHandle.setValue(true));
-        updateDisplayMode();
+
         if(savedInstanceState != null)
             progressBar.setProgress(savedInstanceState.getInt(P_KEY_PROGRESS));
         return view;
     }
 
-
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        updateDisplayMode();
+    }
 }

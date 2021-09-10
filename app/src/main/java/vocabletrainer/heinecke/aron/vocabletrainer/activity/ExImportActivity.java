@@ -1,9 +1,17 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
 import android.Manifest;
+
+import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProviders;
+
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
 import com.google.android.material.appbar.AppBarLayout;
@@ -11,6 +19,8 @@ import com.google.android.material.tabs.TabLayout;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
+
+import android.provider.DocumentsContract;
 import android.util.Base64;
 import android.util.Log;
 import android.view.MenuItem;
@@ -48,6 +58,12 @@ public class ExImportActivity extends FragmentActivity {
      * This permission is required for this activity to work
      */
     public static final String REQUIRED_PERMISSION = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+
+    public static final int CREATE_FILE = 22;
+    public static final int PICK_FILE = 23;
+    private MutableLiveData<Uri> selectedFile = new MutableLiveData();
+    private static final String FILE_TYPE = "text/*";
+    private Uri lastUri = null;
     /**
      * Pass this as false to show export options
      */
@@ -57,8 +73,66 @@ public class ExImportActivity extends FragmentActivity {
     private FormatViewModel formatViewModel;
 
     @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable("URI",selectedFile.getValue());
+    }
+
+    public LiveData<Uri> getSelectedFile() {
+        return selectedFile;
+    }
+
+    public void openFile() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType(FILE_TYPE);
+
+        // Optionally, specify a URI for the file that should appear in the
+        // system file picker when it loads.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && lastUri !=null ) {
+            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, lastUri);
+        }
+
+        startActivityForResult(intent, PICK_FILE);
+    }
+
+    public void createFile() {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType(FILE_TYPE);
+        intent.putExtra(Intent.EXTRA_TITLE, "vocable_export.csv");
+
+        // Optionally, specify a URI for the directory that should be opened in
+        // the system file picker when your app creates the document.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && lastUri !=null) {
+            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, lastUri);
+        }
+
+        startActivityForResult(intent, CREATE_FILE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode,
+                                 Intent resultData) {
+        super.onActivityResult(requestCode, resultCode, resultData);
+        if ((requestCode == CREATE_FILE || requestCode == PICK_FILE)
+                && resultCode == Activity.RESULT_OK) {
+            // The result data contains a URI for the document or directory that
+            // the user selected.
+            if (resultData != null) {
+                lastUri = resultData.getData();
+                selectedFile.setValue(lastUri);
+                Log.d(TAG, "received URI: "+lastUri);
+            }
+        }
+    }
+
+    @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            selectedFile.setValue(savedInstanceState.getParcelable("URI"));
+        }
         Log.d(TAG,"onCreate");
 
         setContentView(R.layout.activity_expimp);

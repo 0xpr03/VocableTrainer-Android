@@ -1,0 +1,5 @@
+ - Fix broken import/export on android 11+
+ - Fix day-night theming for some dialogs
+ - Fix broken dialog width for import/export
+ - Fix a11y issue when displaying the survey question on high font sizes
+ - Exchanging the file access mechanism removes all file permission requirements

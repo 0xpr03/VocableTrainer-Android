@@ -24,7 +24,7 @@ public class PreviewParser implements ImportHandler {
 
     @Override
     public void newTable(String name, String columnA, String columnB) {
-        list.add(new VEntry(columnA, columnB, name, ID_RESERVED_SKIP));
+        list.add(VEntry.Companion.spacer(columnA, columnB, name, ID_RESERVED_SKIP));
         parsed_limiter = 0;
         tblCount++;
         rows++;
@@ -34,7 +34,7 @@ public class PreviewParser implements ImportHandler {
     public void newEntry(List<String> A, List<String> B, String Tip, String addition) {
         rows++;
         if (parsed_limiter < PARSE_LIMIT) {
-            list.add(new VEntry(A, B, Tip, "", null));
+            list.add(VEntry.Companion.predefined(A, B, Tip, "", null));
             //TODO: allow addition column
             parsed_limiter++;
         }

@@ -34,10 +34,10 @@ public class PreviewFragment extends BaseFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ENTRY_LOADING = new VEntry(getString(R.string.Import_Preview_Loading),"","",ID_RESERVED_SKIP);
-        ENTRY_EMPTY = new VEntry(getString(R.string.Import_Preview_No_data),"","",ID_RESERVED_SKIP);
+        ENTRY_LOADING = VEntry.Companion.spacer(getString(R.string.Import_Preview_Loading),"","",ID_RESERVED_SKIP);
+        ENTRY_EMPTY = VEntry.Companion.spacer(getString(R.string.Import_Preview_No_data),"","",ID_RESERVED_SKIP);
 
-        ImportViewModel model = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(ImportViewModel.class);
+        ImportViewModel model = ViewModelProviders.of(requireActivity()).get(ImportViewModel.class);
         model.getPreviewList().observe(this, previewList -> {
             Log.d(TAG,"preview change");
             lst.clear();
@@ -65,7 +65,7 @@ public class PreviewFragment extends BaseFragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_preview, container, false);
         lst = new ArrayList<>();
-        adapter = new EntryListAdapter(Objects.requireNonNull(getActivity()), lst);
+        adapter = new EntryListAdapter(requireActivity(), lst);
         ListView listView = view.findViewById(R.id.lstImportPreview);
         listView.setAdapter(adapter);
 

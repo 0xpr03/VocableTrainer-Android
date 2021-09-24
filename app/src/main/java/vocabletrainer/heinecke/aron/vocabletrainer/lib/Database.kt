@@ -6,8 +6,10 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.database.sqlite.SQLiteStatement
+import android.text.TextUtils
 import android.util.Log
-import android.util.SparseArray
+import androidx.collection.LongSparseArray
+import androidx.core.database.getStringOrNull
 import androidx.lifecycle.LiveData
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry
@@ -15,9 +17,6 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList
 import java.sql.Date
 import java.sql.SQLException
 import java.util.*
-import android.text.TextUtils
-
-
 
 
 /**
@@ -56,31 +55,40 @@ class Database {
     }
 
     /**
-     * Retrieve vocable by ID & list ID
+     * Retrieve vocable by ID
      * @param vocID
      * @param listID
      * @return VEntry with set List<br></br>
      * Null on failure
      */
-    fun getVocable(vocID: Int, listID: Int): VEntry? {
+    fun getVocable(vocID: Long): VEntry? {
         db!!.rawQuery(
-                "SELECT $KEY_TIP,$KEY_ADDITION,$KEY_LAST_USED,tVoc.$KEY_CREATED,$KEY_TIMES_CORRECT,"
-                +"$KEY_TIMES_WRONG,tVoc.$KEY_LIST,$KEY_NAME_A,$KEY_NAME_B,$KEY_NAME_LIST,tList.$KEY_CREATED,"
-                +"$KEY_POINTS "
+                "SELECT $KEY_TIP, $KEY_ADDITION, $KEY_LAST_USED, tVoc.$KEY_CREATED, $KEY_TIMES_CORRECT,"
+                +"$KEY_TIMES_WRONG, tVoc.$KEY_LIST, $KEY_NAME_A, $KEY_NAME_B, $KEY_NAME_LIST,"
+                +"tList.$KEY_CREATED, $KEY_POINTS, $KEY_LIST_UUID, tList.$KEY_CHANGED, tVoc.$KEY_CHANGED,"
+                +"tVoc.$KEY_ENTRY_UUID"
                 +"FROM $TBL_ENTRIES tVoc "
                 +"JOIN $TBL_LISTS tList ON tVoc.$KEY_LIST = tList.$KEY_LIST "
-                +"LEFT JOIN $TBL_SESSION ses ON tVoc.$KEY_LIST = ses.$KEY_LIST AND tVoc.$KEY_ENTRY = ses.$KEY_ENTRY"
-                +"WHERE tVoc.$KEY_LIST = ? AND tVoc.$KEY_ENTRY = ?", arrayOf(listID.toString(), vocID.toString())).use { cV ->
+                +"LEFT JOIN $TBL_SESSION ses ON tVoc.$KEY_ENTRY = ses.$KEY_ENTRY"
+                +"LEFT JOIN $TBL_LIST_SYNC listSync ON tVoc.$KEY_LIST = listSync.$KEY_LIST"
+                +"WHERE tVoc.$KEY_ENTRY = ?", arrayOf(vocID.toString())).use { cV ->
             return if (cV.moveToNext()) {
-                val list = VList(listID, cV.getString(7), cV.getString(8),
-                        cV.getString(9), Date(cV.getLong(10)))
-                val meaningA: MutableList<String> = LinkedList()
-                val meaningB: MutableList<String> = LinkedList()
-                val vocable = VEntry(meaningA, meaningB, cV.getString(0),
-                        cV.getString(1), vocID, list,
-                        if (cV.isNull(11)) 0 else cV.getInt(11),
-                        Date(cV.getLong(2)), Date(cV.getLong(3)),
-                        cV.getInt(4), cV.getInt(5))
+                val list = VList(
+                    _id = cV.getLong(6), name = cV.getString(9),
+                    nameA = cV.getString(7), nameB = cV.getString(8),
+                    created = Date(cV.getLong(10)), uuid = parseUUID(cV.getStringOrNull(12)),
+                    changed = Date(cV.getLong(13))
+                )
+                val meaningA: MutableList<String> = ArrayList()
+                val meaningB: MutableList<String> = ArrayList()
+                val vocable = VEntry(
+                    meaningA = meaningA, meaningB = meaningB, _tip = cV.getString(0),
+                    addition = cV.getString(1), id = vocID, list = list,
+                    points = if (cV.isNull(11)) 0 else cV.getInt(11),
+                    last_used = Date(cV.getLong(2)), created = Date(cV.getLong(3)),
+                    changed = Date(cV.getLong(14)), correct = cV.getInt(4),
+                    wrong = cV.getInt(5), uuid = parseUUID(cV.getStringOrNull(15))
+                )
                 getVocableMeanings(TBL_WORDS_A, vocable, meaningA)
                 getVocableMeanings(TBL_WORDS_B, vocable, meaningB)
                 vocable
@@ -100,7 +108,7 @@ class Database {
      */
     private fun getVocableMeanings(table: String, vocable: VEntry, list: MutableList<String>) {
         db!!.query(table, arrayOf(KEY_MEANING),
-                "$KEY_LIST = ? AND $KEY_ENTRY = ?", arrayOf(Integer.toString(vocable.list.id), Integer.toString(vocable.id)),
+                "$KEY_LIST = ? AND $KEY_ENTRY = ?", arrayOf(vocable.list!!.id.toString(), vocable.id.toString()),
                 null, null, null).use { cM ->
             while (cM.moveToNext()) {
                 list.add(cM.getString(0))
@@ -127,40 +135,55 @@ class Database {
     }
 
     /**
-     * Retruns a List of Entries for the specified list<br></br>
+     * Returns a List of Entries for the specified list<br></br>
      * <u>No point data is being loaded</u>
      *
      * @param list VList for which all entries should be retrieved
      * @return List<VEntry>
     </VEntry> */
     fun getVocablesOfTable(list: VList): List<VEntry> {
-        val sqlMeaning = ("SELECT $KEY_MEANING,$KEY_ENTRY voc FROM %s WHERE "
-                + "$KEY_LIST = ? ORDER BY voc")
-        db!!.rawQuery("SELECT $KEY_TIP,$KEY_ADDITION,$KEY_LAST_USED"
-                + ",$KEY_CREATED,$KEY_TIMES_CORRECT,$KEY_TIMES_WRONG"
-                + ",$KEY_ENTRY"
-                + " FROM $TBL_ENTRIES WHERE $KEY_LIST = ?", arrayOf(list.id.toString())).use { cV ->
-            db!!.rawQuery(String.format(sqlMeaning, TBL_WORDS_A), arrayOf(Integer.toString(list.id))).use { cMA ->
-                db!!.rawQuery(String.format(sqlMeaning, TBL_WORDS_B), arrayOf(Integer.toString(list.id))).use { cMB ->
-                    val lst: MutableList<VEntry> = ArrayList()
-                    val mapA = SparseArray<MutableList<String>>()
-                    val mapB = SparseArray<MutableList<String>>()
-                    while (cV.moveToNext()) {
-                        val meaningA: MutableList<String> = LinkedList()
-                        val meaningB: MutableList<String> = LinkedList()
-                        val vocable = VEntry(meaningA, meaningB, cV.getString(0),
-                                cV.getString(1), cV.getInt(6), list,
-                                Date(cV.getLong(2)), Date(cV.getLong(3)),
-                                cV.getInt(4), cV.getInt(5))
-                        mapA.put(vocable.id, meaningA)
-                        mapB.put(vocable.id, meaningB)
-                        lst.add(vocable)
+        // we read all the meanings for this table, then sort them to their entry
+        val sqlMeaning = ("SELECT $KEY_MEANING,m.$KEY_ENTRY voc FROM %s m "
+                +"JOIN $TBL_ENTRIES e ON e.$KEY_ENTRY = m.$KEY_ENTRY "
+                + "WHERE e.$KEY_LIST = ? ORDER BY voc")
+        db!!.rawQuery(
+            "SELECT $KEY_TIP, $KEY_ADDITION, $KEY_LAST_USED, $KEY_CREATED,"
+                    + "$KEY_TIMES_CORRECT,$KEY_TIMES_WRONG,e.$KEY_ENTRY,$KEY_ENTRY_UUID,$KEY_CHANGED "
+                    + "FROM $TBL_ENTRIES e LEFT JOIN $TBL_ENTRY_SYNC s ON s.$KEY_ENTRY = e.$KEY_ENTRY "
+                    + "WHERE $KEY_LIST = ?", arrayOf(list.id.toString())
+        ).use { cV ->
+            db!!.rawQuery(String.format(sqlMeaning, TBL_WORDS_A), arrayOf(list.id.toString()))
+                .use { cMA ->
+                    db!!.rawQuery(
+                        String.format(sqlMeaning, TBL_WORDS_B),
+                        arrayOf(list.id.toString())
+                    ).use { cMB ->
+                        val lst: MutableList<VEntry> = ArrayList()
+                        val mapA = LongSparseArray<MutableList<String>>()
+                        val mapB = LongSparseArray<MutableList<String>>()
+                        while (cV.moveToNext()) {
+                            val meaningA: MutableList<String> = ArrayList()
+                            val meaningB: MutableList<String> = ArrayList()
+                            val vocable = VEntry(
+                                meaningA = meaningA, meaningB = meaningB,
+                                _tip = cV.getString(0), addition = cV.getString(1),
+                                id = cV.getLong(6), list = list,
+                                last_used = Date(cV.getLong(2)),
+                                created = Date(cV.getLong(3)),
+                                changed = Date(cV.getLong(8)),
+                                correct = cV.getInt(4), wrong = cV.getInt(5),
+                                uuid = parseUUID(cV.getStringOrNull(7))
+                            )
+                            mapA.put(vocable.id, meaningA)
+                            mapB.put(vocable.id, meaningB)
+                            lst.add(vocable)
+                        }
+                        handleMeaningData(cMA, mapA)
+                        handleMeaningData(cMB, mapB)
+                        Log.d(TAG,"Loaded list: $lst")
+                        return lst
                     }
-                    handleMeaningData(cMA, mapA)
-                    handleMeaningData(cMB, mapB)
-                    return lst
                 }
-            }
         }
     }
 
@@ -170,11 +193,11 @@ class Database {
      * @param cursor expected as [0] = String meaning, [1] = int ID
      * @param map
      */
-    private fun handleMeaningData(cursor: Cursor, map: SparseArray<MutableList<String>>) {
+    private fun handleMeaningData(cursor: Cursor, map: LongSparseArray<MutableList<String>>) {
         var lst: MutableList<String>? = null
         var lastID = ID_RESERVED_SKIP
         while (cursor.moveToNext()) {
-            val id = cursor.getInt(1)
+            val id = cursor.getLong(1)
             if (id == ID_RESERVED_SKIP) Log.wtf(TAG, "ID is -1!")
             if (id != lastID || lst == null) {
                 lst = map[id]
@@ -193,7 +216,7 @@ class Database {
     fun getEntryPoints(ent: VEntry): Int {
         db!!.rawQuery("SELECT $KEY_POINTS "
                 + "FROM $TBL_SESSION WHERE $KEY_LIST = ? AND $KEY_ENTRY = ?",
-                arrayOf(ent.list.id.toString(), ent.id.toString())).use { cursor -> return if (cursor.moveToNext()) cursor.getInt(0) else -1 }
+                arrayOf(ent.list!!.id.toString(), ent.id.toString())).use { cursor -> return if (cursor.moveToNext()) cursor.getInt(0) else -1 }
     }
 
     /**
@@ -210,17 +233,25 @@ class Database {
      * @return ArrayList<\VList>
      */
     fun getTables(cancelHandle: LiveData<Boolean>?): List<VList>? {
-        val column = arrayOf(KEY_LIST, KEY_NAME_A, KEY_NAME_B, KEY_NAME_LIST, KEY_CREATED)
+        val column = listOf(KEY_LIST, KEY_NAME_A, KEY_NAME_B, KEY_NAME_LIST, KEY_CREATED,
+            KEY_CHANGED, KEY_LIST_UUID)
         try {
-            db!!.query(TBL_LISTS, column, null, null, null, null, null).use { cursor ->
+            db!!.rawQuery("SELECT l.${column.joinToString (separator = ",")} FROM $TBL_LISTS l LEFT JOIN $TBL_LIST_SYNC s " +
+                    "ON s.$KEY_LIST = l.$KEY_LIST", null).use { cursor ->
                 val list: MutableList<VList> = ArrayList()
                 while (cursor.moveToNext()) {
                     if (cancelHandle != null && cancelHandle.value!!) {
                         break
                     }
-                    val entry = VList(cursor.getInt(0), cursor.getString(1),
-                            cursor.getString(2), cursor.getString(3),
-                            Date(cursor.getLong(4)))
+                    val entry = VList(
+                        _id = cursor.getLong(0),
+                        nameA = cursor.getString(1),
+                        nameB = cursor.getString(2),
+                        name = cursor.getString(3),
+                        created = Date(cursor.getLong(4)),
+                        changed = Date(cursor.getLong(5)),
+                        uuid = parseUUID(cursor.getStringOrNull(6))
+                    )
                     list.add(entry)
                 }
                 return list
@@ -237,42 +268,28 @@ class Database {
      * @param tbl
      * @return true on succuess
      */
-    fun upsertVList(tbl: VList): Boolean {
+    fun upsertVList(tbl: VList) {
         Log.v(TAG, "upsertVList")
-        return if (tbl.isExisting) {
-            try {
-                val args = arrayOf(tbl.id.toString())
-                val values = ContentValues()
-                values.put(KEY_NAME_LIST, tbl.name)
-                values.put(KEY_NAME_A, tbl.nameA)
-                values.put(KEY_NAME_B, tbl.nameB)
-                val updated = db!!.update(TBL_LISTS, values, KEY_LIST + " = ?",
-                        args)
-                if (updated != 1) {
-                    throw SQLException("Update error, updated: $updated")
-                }
-                true
-            } catch (e: Exception) {
-                Log.e(TAG, "", e)
-                false
+        if (tbl.isExisting) {
+            val args = arrayOf(tbl.id.toString())
+            val values = ContentValues()
+            values.put(KEY_NAME_LIST, tbl.name)
+            values.put(KEY_NAME_A, tbl.nameA)
+            values.put(KEY_NAME_B, tbl.nameB)
+            values.put(KEY_CHANGED, tbl.changed.time)
+            val updated = db!!.update(TBL_LISTS, values, KEY_LIST + " = ?",
+                args)
+            if (updated != 1) {
+                throw SQLException("Update error, updated: $updated expected 1")
             }
         } else {
-            try {
-                val tbl_id = getHighestTableID(db) + 1
-                Log.d(TAG, "highest TBL ID: $tbl_id")
-                val values = ContentValues()
-                values.put(KEY_LIST, tbl_id)
-                values.put(KEY_NAME_A, tbl.nameA)
-                values.put(KEY_NAME_B, tbl.nameB)
-                values.put(KEY_NAME_LIST, tbl.name)
-                values.put(KEY_CREATED, tbl.created.time)
-                db!!.insertOrThrow(TBL_LISTS, null, values)
-                tbl.id = tbl_id
-                true
-            } catch (e: Exception) {
-                Log.wtf(TAG, "", e)
-                false
-            }
+            val values = ContentValues()
+            values.put(KEY_NAME_A, tbl.nameA)
+            values.put(KEY_NAME_B, tbl.nameB)
+            values.put(KEY_NAME_LIST, tbl.name)
+            values.put(KEY_CREATED, tbl.created.time)
+            values.put(KEY_CHANGED, tbl.changed.time)
+            tbl.id = db!!.insertOrThrow(TBL_LISTS, null, values)
         }
     }
 
@@ -304,15 +321,13 @@ class Database {
      */
     fun upsertEntries(lst: List<VEntry>): Boolean {
         try {
-            db!!.compileStatement("DELETE FROM $TBL_ENTRIES WHERE $KEY_ENTRY = ? AND $KEY_LIST = ?").use { delStm ->
-                db!!.compileStatement("UPDATE $TBL_ENTRIES SET $KEY_ADDITION = ?,$KEY_TIP = ? WHERE $KEY_LIST= ? AND $KEY_ENTRY = ?").use { updStm ->
-                    db!!.compileStatement("INSERT INTO $TBL_ENTRIES ($KEY_LIST,$KEY_ENTRY,$KEY_TIP,$KEY_ADDITION,$KEY_CREATED,$KEY_TIMES_CORRECT,$KEY_TIMES_WRONG) VALUES (?,?,?,?,?,?,?)").use { insStm ->
-                        db!!.compileStatement("INSERT INTO $TBL_WORDS_A($KEY_LIST,$KEY_ENTRY,$KEY_MEANING) VALUES (?,?,?)").use { insMeanA ->
-                            db!!.compileStatement("INSERT INTO $TBL_WORDS_B($KEY_LIST,$KEY_ENTRY,$KEY_MEANING) VALUES (?,?,?)").use { insMeanB ->
-                                val whereDelMeaning = "$KEY_LIST = ? AND $KEY_ENTRY = ?"
+            db!!.compileStatement("DELETE FROM $TBL_ENTRIES WHERE $KEY_ENTRY = ?").use { delStm ->
+                db!!.compileStatement("UPDATE $TBL_ENTRIES SET $KEY_ADDITION = ?,$KEY_TIP = ?, $KEY_CHANGED = ? WHERE $KEY_ENTRY = ?").use { updStm ->
+                    db!!.compileStatement("INSERT INTO $TBL_ENTRIES ($KEY_LIST,$KEY_TIP,$KEY_ADDITION,$KEY_CREATED,$KEY_TIMES_CORRECT,$KEY_TIMES_WRONG,$KEY_CHANGED) VALUES (?,?,?,?,?,?,?)").use { insStm ->
+                        db!!.compileStatement("INSERT INTO $TBL_WORDS_A($KEY_ENTRY,$KEY_MEANING) VALUES (?,?)").use { insMeanA ->
+                            db!!.compileStatement("INSERT INTO $TBL_WORDS_B($KEY_ENTRY,$KEY_MEANING) VALUES (?,?)").use { insMeanB ->
+                                val whereDelMeaning = "$KEY_ENTRY = ?"
                                 db!!.beginTransaction()
-                                var lastTableID = -1
-                                var lastID = -1
                                 var insertMeanings: Boolean
                                 for (entry in lst) {
                                     //Log.d(TAG, "processing " + entry + " of " + entry.getList());
@@ -320,58 +335,48 @@ class Database {
                                         continue
                                     insertMeanings = false
                                     if (entry.isExisting) {
-                                        if (entry.isDelete || entry.isChanged) {
-                                            // we need to clear meanings anyway
-                                            val args = arrayOf(Integer.toString(entry.list.id), Integer.toString(entry.id))
+                                        if (entry.isDelete || entry.isChanged()) {
+                                            // we can clear meanings anyway
+                                            val args = arrayOf(entry.id.toString())
                                             db!!.delete(TBL_WORDS_B, whereDelMeaning, args)
                                             db!!.delete(TBL_WORDS_A, whereDelMeaning, args)
                                             if (entry.isDelete) {
                                                 delStm.clearBindings()
-                                                delStm.bindLong(1, entry.id.toLong())
-                                                delStm.bindLong(2, entry.list.id.toLong())
+                                                delStm.bindLong(1, entry.id)
                                                 delStm.execute()
-                                            } else if (entry.isChanged) {
+                                            } else if (entry.isChanged()) {
                                                 updStm.clearBindings()
                                                 updStm.bindString(1, entry.addition)
                                                 updStm.bindString(2, entry.tip)
-                                                updStm.bindLong(3, entry.list.id.toLong())
-                                                updStm.bindLong(4, entry.id.toLong())
+                                                updStm.bindLong(3, entry.changed.time)
+                                                updStm.bindLong(4, entry.id)
                                                 updStm.execute()
                                                 insertMeanings = true
                                             }
                                         }
                                     } else if (!entry.isDelete) { // vocable created & deleted in editor
-                                        if (entry.list.id != lastTableID || lastID < MIN_ID_TRESHOLD) {
-                                            lastTableID = entry.list.id
-                                            Log.d(TAG, "lastTableID: $lastTableID lastID: $lastID")
-                                            lastID = getHighestVocID(db, lastTableID)
-                                        }
-                                        lastID++ // make last ID to new ID
                                         insStm.clearBindings()
-                                        insStm.bindLong(1, entry.list.id.toLong())
-                                        insStm.bindLong(2, lastID.toLong())
-                                        insStm.bindString(3, entry.tip)
-                                        insStm.bindString(4, entry.addition)
-                                        insStm.bindLong(5, entry.created.time)
-                                        insStm.bindLong(6, entry.correct.toLong())
-                                        insStm.bindLong(7, entry.wrong.toLong())
-                                        insStm.execute()
+                                        insStm.bindLong(1, entry.list!!.id)
+                                        insStm.bindString(2, entry.tip)
+                                        insStm.bindString(3, entry.addition)
+                                        insStm.bindLong(4, entry.created.time)
+                                        insStm.bindLong(5, entry.correct.toLong())
+                                        insStm.bindLong(6, entry.wrong.toLong())
+                                        insStm.bindLong(7, entry.changed.time)
+                                        entry.id = insStm.executeInsert()
                                         insertMeanings = true
-                                        entry.id = lastID
                                     }
                                     if (insertMeanings) {
-                                        insMeanA.bindLong(1, entry.list.id.toLong())
-                                        insMeanA.bindLong(2, entry.id.toLong())
+                                        insMeanA.bindLong(1, entry.id)
                                         for (meaning in entry.aMeanings) {
-                                            insMeanA.bindString(3, meaning)
+                                            insMeanA.bindString(2, meaning)
                                             if (insMeanA.executeInsert() == -1L) {
                                                 throw Exception("unable to insert meaning")
                                             }
                                         }
-                                        insMeanB.bindLong(1, entry.list.id.toLong())
-                                        insMeanB.bindLong(2, entry.id.toLong())
+                                        insMeanB.bindLong(1, entry.id)
                                         for (meaning in entry.bMeanings) {
-                                            insMeanB.bindString(3, meaning)
+                                            insMeanB.bindString(2, meaning)
                                             if (insMeanB.executeInsert() == -1L) {
                                                 throw Exception("unable to insert meaning")
                                             }
@@ -385,12 +390,8 @@ class Database {
                     }
                 }
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "", e)
-            return false
         } finally {
             if (db!!.inTransaction()) {
-                Log.d(TAG, "in transaction")
                 db!!.endTransaction()
             }
         }
@@ -398,12 +399,12 @@ class Database {
 
     /**
      * Returns the ID of a table with the exact same naming <br></br>
-     * this also updates the VList element itself to contains the right ID
+     * this also updates the VList element itself to contain the right ID
      *
      * @param tbl VList to be used a search source
      * @return ID or  -1 if not found, -2 if an error occurred
      */
-    fun getSetTableID(tbl: VList): Int {
+    fun getSetTableID(tbl: VList): Long {
         if (tbl.id > -1) {
             return tbl.id
         }
@@ -411,9 +412,9 @@ class Database {
         try {
             db!!.rawQuery("SELECT $KEY_LIST FROM $TBL_LISTS "
                     + "WHERE $KEY_NAME_LIST = ? AND $KEY_NAME_A = ? AND $KEY_NAME_B  = ? LIMIT 1", args).use { cursor ->
-                var id = -1
+                var id = -1L
                 if (cursor.moveToNext()) {
-                    id = cursor.getInt(0)
+                    id = cursor.getLong(0)
                 }
                 tbl.id = id
                 return id
@@ -425,62 +426,16 @@ class Database {
     }
 
     /**
-     * Returns the highest vocable ID for the specified table
-     *
-     * @param db
-     * @param table table ID<br></br>
-     * This is on purpose no VList object
-     * @return highest ID **or -1 if none is found**
-     */
-    private fun getHighestVocID(db: SQLiteDatabase?, table: Int): Int {
-        if (VList.isIDValid(table)) {
-            db!!.rawQuery("SELECT MAX($KEY_ENTRY) FROM $TBL_ENTRIES WHERE $KEY_LIST = ? ", arrayOf(table.toString())).use { cursor ->
-                return if (cursor.moveToNext()) {
-                    cursor.getInt(0)
-                } else {
-                    MIN_ID_TRESHOLD - 1
-                }
-            }
-        } else {
-            throw IllegalArgumentException("invalid table ID!")
-        }
-    }
-
-    /**
-     * Returns the highest table ID
-     *
-     * @param db
-     * @return highest ID,  **-1 is none if found**
-     */
-    private fun getHighestTableID(db: SQLiteDatabase?): Int {
-        requireNotNull(db) { "invalid DB" }
-        db.rawQuery("SELECT MAX($KEY_LIST) FROM $TBL_LISTS", arrayOf()).use { cursor ->
-            return if (cursor.moveToNext()) {
-                Log.d(TAG, Arrays.toString(cursor.columnNames))
-                cursor.getInt(0)
-            } else {
-                MIN_ID_TRESHOLD - 1
-            }
-        }
-    }
-
-    /**
      * Deletes the given table and all its vocables
      *
-     * @param tbl VList to delete
+     * @param list VList to delete
      * @return true on success
      */
-    fun deleteTable(tbl: VList): Boolean {
-        return try {
+    fun deleteList(list: VList) {
+        try {
             db!!.beginTransaction()
-            val arg = arrayOf(tbl.id.toString())
-            emptyList_(arg)
-            db!!.delete(TBL_LISTS, KEY_LIST + " = ?", arg)
+            db!!.delete(TBL_LISTS, "$KEY_LIST = ?", arrayOf(list.id.toString()))
             db!!.setTransactionSuccessful()
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "", e)
-            false
         } finally {
             if (db!!.inTransaction()) {
                 db!!.endTransaction()
@@ -489,35 +444,16 @@ class Database {
     }
 
     /**
-     * directly calls table empty SQL<br></br>
-     * <u>does not handle any transactions</u>
-     *
-     * @param arg String array containing the tbl ID at [0]
-     */
-    private fun emptyList_(arg: Array<String>) {
-        db!!.delete(TBL_SESSION, "$KEY_LIST = ?", arg)
-        db!!.delete(TBL_SESSION_LISTS, "$KEY_LIST = ?", arg)
-        db!!.delete(TBL_SESSION_VOC, "$KEY_LIST = ?", arg)
-        db!!.delete(TBL_ENTRIES, "$KEY_LIST = ?", arg)
-        db!!.delete(TBL_WORDS_B, "$KEY_LIST = ?", arg)
-        db!!.delete(TBL_WORDS_A, "$KEY_LIST = ?", arg)
-    }
-
-    /**
      * Clear vocable list from all entries
      *
      * @param tbl
      * @return
      */
-    fun emptyList(tbl: VList): Boolean {
-        return try {
+    fun truncateList(tbl: VList) {
+        try {
             db!!.beginTransaction()
-            emptyList_(arrayOf(tbl.id.toString()))
+            db!!.delete(KEY_ENTRY,"$KEY_LIST = ?", arrayOf(tbl.id.toString()))
             db!!.setTransactionSuccessful()
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "", e)
-            false
         } finally {
             if (db!!.inTransaction()) db!!.endTransaction()
         }
@@ -528,23 +464,16 @@ class Database {
      *
      * @return
      */
-    fun deleteSession(): Boolean {
-        Log.d(TAG, "entry deleteSession")
+    fun deleteSession() {
         db!!.beginTransaction()
         try {
             db!!.delete(TBL_SESSION, null, null)
             db!!.delete(TBL_SESSION_META, null, null)
             db!!.delete(TBL_SESSION_LISTS, null, null)
-            db!!.delete(TBL_SESSION_VOC, null, null)
             db!!.setTransactionSuccessful()
-        } catch (e: Exception) {
-            Log.e(TAG, "", e)
-            return false
         } finally {
             if (db!!.inTransaction()) db!!.endTransaction()
         }
-        Log.d(TAG, "exit deleteSession")
-        return true
     }
 
     /**
@@ -558,9 +487,9 @@ class Database {
             db!!.compileStatement("INSERT OR REPLACE INTO $TBL_SESSION ( $KEY_LIST,$KEY_ENTRY,$KEY_POINTS )VALUES (?,?,?)").use { updStm ->
                 Log.d(TAG, entry.toString())
                 //TODO: update date
-                updStm.bindLong(1, entry.list.id.toLong())
-                updStm.bindLong(2, entry.id.toLong())
-                updStm.bindLong(3, entry.points.toLong())
+                updStm.bindLong(1, entry.list!!.id)
+                updStm.bindLong(2, entry.id)
+                updStm.bindLong(3, entry.points!!.toLong())
                 return if (updStm.executeInsert() > 0) { // possible problem ( insert / update..)
                     Log.d(TAG, "updated voc points")
                     true
@@ -615,12 +544,20 @@ class Database {
         get() {
             val lst = ArrayList<VList>(10)
             try {
-                db!!.rawQuery("SELECT ses.$KEY_LIST tbl,$KEY_NAME_A,$KEY_NAME_B,$KEY_NAME_LIST,$KEY_CREATED "
+                db!!.rawQuery("SELECT ses.$KEY_LIST tbl,$KEY_NAME_A,$KEY_NAME_B,$KEY_NAME_LIST,$KEY_CREATED,$KEY_CHANGED,$KEY_LIST_UUID "
                         + "FROM $TBL_SESSION_LISTS ses JOIN $TBL_LISTS tbls ON tbls.$KEY_LIST == ses.$KEY_LIST", null).use { cursor ->
                     while (cursor.moveToNext()) {
-                        lst.add(VList(cursor.getInt(0), cursor.getString(1),
-                                cursor.getString(2), cursor.getString(3),
-                                Date(cursor.getLong(4))))
+                        lst.add(
+                            VList(
+                                _id = cursor.getLong(0),
+                                nameA = cursor.getString(1),
+                                nameB = cursor.getString(2),
+                                name = cursor.getString(3),
+                                created = Date(cursor.getLong(4)),
+                                changed = Date(cursor.getLong(5)),
+                                uuid = parseUUID(cursor.getStringOrNull(6))
+                            )
+                        )
                     }
                 }
             } catch (e: Exception) {
@@ -691,24 +628,36 @@ class Database {
     fun getRandomTrainerEntry(list: VList, lastEntry: VEntry?, ts: TrainerSettings, allowRepetition: Boolean): VEntry? {
         Log.d(TAG, "getRandomTrainerEntry")
         var lastID = MIN_ID_TRESHOLD - 1
-        if (lastEntry != null && lastEntry.list.id == list.id && !allowRepetition) lastID = lastEntry.id
+        if (lastEntry != null && lastEntry.list!!.id == list.id && !allowRepetition) lastID = lastEntry.id
         val arg = arrayOf(list.id.toString(), lastID.toString(), ts.timesToSolve.toString())
         Log.v(TAG, Arrays.toString(arg))
         try {
             db!!.rawQuery(
-                    "SELECT $KEY_TIP,$KEY_ADDITION,$KEY_LAST_USED,tbl.$KEY_CREATED,$KEY_TIMES_CORRECT,$KEY_TIMES_WRONG,tbl.$KEY_ENTRY,$KEY_POINTS "
+                    "SELECT $KEY_TIP, $KEY_ADDITION, $KEY_LAST_USED, tbl.$KEY_CREATED, $KEY_TIMES_CORRECT,"
+                            + "$KEY_TIMES_WRONG, tbl.$KEY_ENTRY, $KEY_POINTS, tbl.$KEY_CHANGED, $KEY_ENTRY_UUID"
                             + "FROM $TBL_ENTRIES tbl "
                             + "LEFT JOIN  $TBL_SESSION ses ON tbl.$KEY_ENTRY = ses.$KEY_ENTRY AND tbl.$KEY_LIST = ses.$KEY_LIST "
                             + "WHERE tbl.$KEY_LIST = ? AND tbl.$KEY_ENTRY != ? AND ( $KEY_POINTS IS NULL OR $KEY_POINTS < ? ) "
                             + "ORDER BY RANDOM() LIMIT 1", arg).use { cV ->
                 return if (cV.moveToNext()) {
-                    val meaningA: MutableList<String> = LinkedList()
-                    val meaningB: MutableList<String> = LinkedList()
-                    val vocable = VEntry(meaningA, meaningB, cV.getString(0),
-                            cV.getString(1), cV.getInt(6), list,
-                            if (cV.isNull(7)) 0 else cV.getInt(7),
-                            Date(cV.getLong(2)), Date(cV.getLong(3)),
-                            cV.getInt(4), cV.getInt(5))
+                    val meaningA: MutableList<String> = ArrayList()
+                    val meaningB: MutableList<String> = ArrayList()
+                    val points = if(cV.isNull(7)) { 0 } else cV.getInt(7)
+                    val vocable = VEntry(
+                        meaningA = meaningA,
+                        meaningB = meaningB,
+                        _tip = cV.getString(0),
+                        addition = cV.getString(1),
+                        id = cV.getLong(6),
+                        list = list,
+                        points = points,
+                        last_used = Date(cV.getLong(2)),
+                        created = Date(cV.getLong(3)),
+                        correct = cV.getInt(4),
+                        wrong = cV.getInt(5),
+                        uuid = parseUUID(cV.getStringOrNull(9)),
+                        changed = Date(cV.getLong(8))
+                    )
                     getVocableMeanings(TBL_WORDS_A, vocable, meaningA)
                     getVocableMeanings(TBL_WORDS_B, vocable, meaningB)
                     vocable
@@ -886,6 +835,16 @@ class Database {
         private val sqlCategoryIndex = ("CREATE INDEX categoryChangedI ON $TBL_CATEGORY ($KEY_CHANGED)")
         private val sqlCategoriesDeleted = ("CREATE TABLE " + TBL_CATEGORIES_DELETED + " ("
                 + KEY_CATEGORY_UUID + " text NOT NULL PRIMARY KEY )")
+
+        override fun onOpen(db: SQLiteDatabase?) {
+            super.onOpen(db)
+            db?.run {
+                if (!this.isReadOnly) {
+                    this.setForeignKeyConstraintsEnabled(true)
+                }
+            }
+
+        }
 
         /**
          * Check for illegal ID entries below the threshold
@@ -1217,10 +1176,18 @@ class Database {
     }
 
     companion object {
+        fun uuid(): UUID = UUID.randomUUID()
+        fun parseUUID(input: String?): UUID? {
+            return input?.let {
+                UUID.fromString(it)
+            }
+        }
+        fun uuidToString(input: UUID?): String? = input?.toString()
+
         private const val TAG = "Database"
         const val DB_NAME_PRODUCTION = "voc.db"
-        const val MIN_ID_TRESHOLD = 0
-        const val ID_RESERVED_SKIP = -2
+        const val MIN_ID_TRESHOLD = 0L
+        const val ID_RESERVED_SKIP = -2L
         private const val TBL_LISTS = "`lists`"
         private const val TBL_LIST_SYNC = "`list_sync`"
         private const val TBL_ENTRIES = "`entries`"

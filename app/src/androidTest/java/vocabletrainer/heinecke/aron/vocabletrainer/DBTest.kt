@@ -2,7 +2,6 @@ package vocabletrainer.heinecke.aron.vocabletrainer
 
 import android.icu.util.Calendar
 import android.icu.util.TimeZone
-import android.util.Log
 import androidx.test.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnit4
 import org.junit.*
@@ -27,7 +26,7 @@ import kotlin.random.Random
 @RunWith(AndroidJUnit4::class)
 class DBTest {
 
-    private fun string2List(input: String): List<String> {
+    private fun string2List(input: String): MutableList<String> {
         val lst = ArrayList<String>(1)
         lst.add(input)
         return lst
@@ -43,14 +42,14 @@ class DBTest {
     //https://medium.com/mobile-app-development-publication/android-sqlite-database-unit-testing-is-easy-a09994701162#.s44tity8x
     //https://github.com/elye/demo_simpledb_test/blob/master/app/src/test/java/com/elyeproj/simpledb/ExampleUnitTest.kt
     private fun table(): VList {
-        val salt = Random.nextInt()
-        return VList("Test Column A $salt", "Test Column B $salt", "Test List $salt")
+        val id = Random.nextInt()
+        return VList.blank("Test Column A $id", "Test Column B $id","Test List $id")
     }
 
     private fun getEntries(tbl: VList): List<VEntry> {
         val entries: MutableList<VEntry> = ArrayList<VEntry>(100)
         for (i in 0..99) {
-            entries.add(VEntry("A$i", "B$i", "C$i", "D$i", tbl))
+            entries.add(VEntry.importer("A$i", "B$i", "C$i", "D$i",tbl))
         }
         return entries
     }
@@ -83,7 +82,7 @@ class DBTest {
         val db = Database(InstrumentationRegistry.getTargetContext())
         val tbl: VList = table()
         val currentTables: List<VList> = db.tables!!
-        Assert.assertTrue("UpsertTable", db.upsertVList(tbl))
+        db.upsertVList(tbl)
         val tblsNew: List<VList> = db.tables!!
         Assert.assertEquals("Invalid amount of entries", currentTables.size+1, tblsNew.size)
         Assert.assertTrue("Cannot find table after insert", tblsNew.contains(tbl))
@@ -93,7 +92,7 @@ class DBTest {
     fun testDBInsertEntries() {
         val db = Database(InstrumentationRegistry.getTargetContext())
         val tbl: VList = table()
-        Assert.assertTrue("UpsertTable", db.upsertVList(tbl))
+        db.upsertVList(tbl)
         val entries: List<VEntry> = getEntries(tbl)
         Assert.assertTrue("UpsertEntries", db.upsertEntries(entries))
         val result: List<VEntry> = db.getVocablesOfTable(tbl)
@@ -104,31 +103,31 @@ class DBTest {
     fun testDBEditEntries() {
         val db = Database(InstrumentationRegistry.getTargetContext())
         val tbl: VList = table()
-        Assert.assertTrue("UpsertTable", db.upsertVList(tbl))
+        db.upsertVList(tbl)
         val entries: List<VEntry> = getEntries(tbl)
         Assert.assertTrue("UpsertEntries", db.upsertEntries(entries))
         val result: List<VEntry> = db.getVocablesOfTable(tbl)
         Assert.assertEquals("invalid amount of entries", entries.size.toLong(), result.size.toLong())
-        result[20].setAMeanings(string2List("New Word"))
-        result[30].setDelete(true)
+        result[20].aMeanings = string2List("New Word")
+        result[30].isDelete = true
         Assert.assertTrue("UpsertEntries", db.upsertEntries(result))
         val edited: List<VEntry> = db.getVocablesOfTable(tbl)
         Assert.assertEquals("invalid amount of entries", (entries.size - 1).toLong(), edited.size.toLong())
-        Assert.assertEquals("invalid entry data", result[20].getAString(), edited[20].getAString())
-        Assert.assertEquals("invalid entry data", result[20].getBString(), edited[20].getBString())
-        Assert.assertEquals("invalid entry data", result[20].getTip(), edited[20].getTip())
+        Assert.assertEquals("invalid entry data", result[20].aString, edited[20].aString)
+        Assert.assertEquals("invalid entry data", result[20].bString, edited[20].bString)
+        Assert.assertEquals("invalid entry data", result[20].tip, edited[20].tip)
     }
 
     @Test
     fun testDBDelete() {
         val db = Database(InstrumentationRegistry.getTargetContext())
         val tbl: VList = table()
-        Assert.assertTrue("upsert table", db.upsertVList(tbl))
+        db.upsertVList(tbl)
         val entries: List<VEntry> = getEntries(tbl)
         Assert.assertTrue("UpsertEntries", db.upsertEntries(entries))
         Assert.assertEquals("invalid amount entries", entries.size.toLong(), db.getVocablesOfTable(tbl).size.toLong())
         val lists = db.tables!!
-        Assert.assertTrue("delete table", db.deleteTable(tbl))
+        Assert.assertTrue("delete table", db.deleteList(tbl))
         Assert.assertEquals("invalid amount entries", 0, db.getVocablesOfTable(tbl).size.toLong())
         Assert.assertEquals("invalid amount lists", lists.size-1, db.tables!!.size)
     }
@@ -137,7 +136,7 @@ class DBTest {
     fun testDBRandomSelect() {
         val db = Database(InstrumentationRegistry.getTargetContext())
         val tbl: VList = table()
-        Assert.assertTrue("UpsertTable", db.upsertVList(tbl))
+        db.upsertVList(tbl)
         val entries: List<VEntry> = getEntries(tbl)
         Assert.assertTrue("UpsertEntries", db.upsertEntries(entries))
         Assert.assertNotNull(db.getRandomTrainerEntry(tbl, null, TrainerSettings(2, Trainer.TEST_MODE.RANDOM, true, true, true, false), true))
@@ -147,17 +146,17 @@ class DBTest {
     fun testDBEntryPointsInsert() {
         val db = Database(InstrumentationRegistry.getTargetContext())
         val tbl: VList = table()
-        Assert.assertTrue("UpsertTable", db.upsertVList(tbl))
+        db.upsertVList(tbl)
         val entries: List<VEntry> = getEntries(tbl)
         Assert.assertTrue("UpsertEntries", db.upsertEntries(entries))
         val ent: VEntry = entries[0]
-        ent.setPoints(2)
-        Assert.assertEquals(2, ent.getPoints().toLong())
+        ent.points = 2
+        Assert.assertEquals(2, ent.points!!.toLong())
         Assert.assertTrue(db.updateEntryProgress(ent))
-        Assert.assertEquals("table points", ent.getPoints().toLong(), db.getEntryPoints(ent).toLong())
-        ent.setPoints(3)
+        Assert.assertEquals("table points", ent.points!!.toLong(), db.getEntryPoints(ent).toLong())
+        ent.points = 3
         Assert.assertTrue(db.updateEntryProgress(ent))
-        Assert.assertEquals("upd table points", ent.getPoints().toLong(), db.getEntryPoints(ent).toLong())
+        Assert.assertEquals("upd table points", ent.points!!.toLong(), db.getEntryPoints(ent).toLong())
     }
 
     /**
@@ -170,7 +169,7 @@ class DBTest {
         val db = Database(InstrumentationRegistry.getTargetContext())
         val points = 1
         val tbl: VList = table()
-        Assert.assertTrue("UpsertTable", db.upsertVList(tbl))
+        db.upsertVList(tbl)
         var entries: List<VEntry> = getEntries(tbl)
         entries = entries.subList(0, 2)
         Assert.assertEquals(2, entries.size.toLong())
@@ -180,14 +179,14 @@ class DBTest {
         Assert.assertNotNull(chosen)
         val secondChosen: VEntry? = db.getRandomTrainerEntry(tbl, chosen, settings, false)
         Assert.assertNotNull(secondChosen)
-        Assert.assertNotEquals("selected same entry twice", chosen!!.id.toLong(), secondChosen!!.getId().toLong())
+        Assert.assertNotEquals("selected same entry twice", chosen!!.id.toLong(), secondChosen!!.id.toLong())
         chosen.points = points
-        Assert.assertEquals(points.toLong(), chosen.points.toLong())
+        Assert.assertEquals(points.toLong(), chosen.points!!.toLong())
         Assert.assertTrue(db.updateEntryProgress(chosen))
-        Assert.assertEquals("table points", chosen.points.toLong(), db.getEntryPoints(chosen).toLong())
+        Assert.assertEquals("table points", chosen.points!!.toLong(), db.getEntryPoints(chosen).toLong())
         val thirdChosen: VEntry? = db.getRandomTrainerEntry(tbl, null, settings, false)
         Assert.assertNotNull(thirdChosen)
-        Assert.assertNotEquals("selected entry with reached points", chosen.getId().toLong(), thirdChosen!!.getId().toLong())
+        Assert.assertNotEquals("selected entry with reached points", chosen.id.toLong(), thirdChosen!!.id.toLong())
         thirdChosen.points = points
         Assert.assertTrue(db.updateEntryProgress(thirdChosen))
         val fourthChosen: VEntry? = db.getRandomTrainerEntry(tbl, null, settings, false)

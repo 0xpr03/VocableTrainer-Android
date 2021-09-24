@@ -53,13 +53,13 @@ public class Importer implements ImportHandler {
     public void newTable(String name, String columnA, String columnB) {
         flushBuffer();
         ignoreEntries = false;
-        VList tbl = new VList(columnA, columnB, name);
+        VList tbl = VList.Companion.blank(columnA, columnB, name);
         if (previewParser.isRawData()) {
             Log.w(TAG, "New VList command on raw data list!");
         } else if (previewParser.isMultiList() || mode != IMPORT_LIST_MODE.CREATE) {
             if (VList.isIDValid(db.getSetTableID(tbl))) {
                 if (mode == IMPORT_LIST_MODE.REPLACE) {
-                    db.emptyList(tbl);
+                    db.truncateList(tbl);
                 } else if (mode == IMPORT_LIST_MODE.IGNORE) {
                     ignoreEntries = true;
                 }
@@ -74,7 +74,7 @@ public class Importer implements ImportHandler {
     @Override
     public void newEntry(List<String> A, List<String> B, String Tip, String addition) {
         if (!ignoreEntries) {
-            insertBuffer.add(new VEntry(A, B, Tip, addition, currentList));
+            insertBuffer.add(VEntry.Companion.predefined(A, B, Tip, addition, currentList));
             if (insertBuffer.size() >= BUFFER_CAPACITY) {
                 flushBuffer();
             }

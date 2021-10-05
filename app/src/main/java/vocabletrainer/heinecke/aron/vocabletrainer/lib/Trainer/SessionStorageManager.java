@@ -78,8 +78,8 @@ public class SessionStorageManager {
      * @param lists
      * @return true on success
      */
-    public boolean saveSessionTbls(Collection<VList> lists){
-        return db.createSession(lists);
+    public void saveSessionTbls(Collection<VList> lists){
+        db.createSession(lists);
     }
 
     /**

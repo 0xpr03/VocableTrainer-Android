@@ -205,11 +205,9 @@ public class TrainerActivity extends FragmentActivity implements TrainerModeFrag
                         db.deleteSession();
                         if (!ssm.saveSession(settings)) {
                             Log.wtf(TAG, "unable to save session meta");
-                        } else if (!ssm.saveSessionTbls(list)) {
-                            Log.wtf(TAG, "unable to save session lists");
-                        } else {
-                            Log.d(TAG, "saved session");
                         }
+                        ssm.saveSessionTbls(list);
+                        Log.d(TAG, "saved session");
                     }
 
                 }

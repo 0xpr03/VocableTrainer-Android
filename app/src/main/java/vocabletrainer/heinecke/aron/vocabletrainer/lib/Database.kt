@@ -492,7 +492,7 @@ class Database {
             assert(updStm.executeInsert() > 0)
             val values = ContentValues()
             values.put(KEY_ENTRY, entry.id)
-            values.put(KEY_LAST_USED, entry.last_used!!.time)
+            values.put(KEY_LAST_USED, System.currentTimeMillis())
             assert(db!!.replace(TBL_ENTRIES_USED,null,values) > -1)
         }
     }
@@ -504,7 +504,7 @@ class Database {
      * @param lists The VList to use for this sessions
      * @return true on success
      */
-    fun createSession(lists: Collection<VList>): Boolean {
+    fun createSession(lists: Collection<VList>) {
         Log.d(TAG, "entry createSession")
         db!!.beginTransaction()
         try {
@@ -518,11 +518,7 @@ class Database {
                 }
                 db!!.setTransactionSuccessful()
                 Log.d(TAG, "exit createSession")
-                return true
             }
-        } catch (e: Exception) {
-            Log.wtf(TAG, "", e)
-            return false
         } finally {
             if (db!!.inTransaction()) db!!.endTransaction()
         }
@@ -537,7 +533,7 @@ class Database {
         get() {
             val lst = ArrayList<VList>(10)
             try {
-                db!!.rawQuery("SELECT ses.$KEY_LIST tbl,$KEY_NAME_A,$KEY_NAME_B,$KEY_NAME_LIST,$KEY_CREATED,$KEY_CHANGED,$KEY_LIST_UUID "
+                db!!.rawQuery("SELECT ses.$KEY_LIST tbl,$KEY_NAME_A,$KEY_NAME_B,$KEY_NAME_LIST,$KEY_CREATED,$KEY_CHANGED "
                         + "FROM $TBL_SESSION_LISTS ses JOIN $TBL_LISTS tbls ON tbls.$KEY_LIST == ses.$KEY_LIST", null).use { cursor ->
                     while (cursor.moveToNext()) {
                         lst.add(
@@ -548,7 +544,7 @@ class Database {
                                 _name = cursor.getString(3),
                                 created = Date(cursor.getLong(4)),
                                 changed = Date(cursor.getLong(5)),
-                                uuid = parseUUID(cursor.getStringOrNull(6))
+                                uuid = null,
                             )
                         )
                     }
@@ -779,6 +775,7 @@ class Database {
         private val sqlEntryUsed = ("CREATE TABLE "+TBL_ENTRIES_USED + "("
                 + KEY_ENTRY + " INTEGER PRIMARY KEY REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE, "
                 + KEY_LAST_USED + " INTEGER NOT NULL )")
+        private val sqlEntryUsedIndex = ("CREATE INDEX entryUsedI ON $TBL_ENTRIES_USED ($KEY_LAST_USED)")
         private val sqlWordsA = ("CREATE TABLE " + TBL_WORDS_A + " ("
                 + KEY_ENTRY + " INTEGER NOT NULL REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE,"
                 + KEY_MEANING + " TEXT NOT NULL )")
@@ -881,7 +878,8 @@ class Database {
                 sqlCategory,
                 sqlCategoryIndex,
                 sqlCategoriesDeleted,
-                sqlEntryUsed
+                sqlEntryUsed,
+                sqlEntryUsedIndex
             )
             var i = 0
             db.beginTransaction()
@@ -937,7 +935,8 @@ class Database {
                 sqlCategory,
                 sqlCategoryIndex,
                 sqlCategoriesDeleted,
-                sqlEntryUsed
+                sqlEntryUsed,
+                sqlEntryUsedIndex
             )
             for (sql in newTables) db.execSQL(sql)
             val time = System.currentTimeMillis().toString()

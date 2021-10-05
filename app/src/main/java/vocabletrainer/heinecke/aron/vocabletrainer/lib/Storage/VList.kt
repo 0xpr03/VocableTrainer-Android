@@ -18,9 +18,9 @@ import kotlin.jvm.JvmOverloads
  */
 @Parcelize
 data class VList(
-    var nameA: String,
-    var nameB: String,
-    var name: String,
+    private var _nameA: String,
+    private var _nameB: String,
+    private var _name: String,
     var created: Date,
     var changed: Date,
 
@@ -70,6 +70,27 @@ data class VList(
         } else super.equals(obj)
     }
 
+    var name: String
+        get() = _name
+        set(value) {
+            _name = value
+            changed = Date(System.currentTimeMillis())
+        }
+
+    var nameA: String
+        get() = _nameA
+        set(value) {
+            _nameA = value
+            changed = Date(System.currentTimeMillis())
+        }
+
+    var nameB: String
+        get() = _nameB
+        set(value) {
+            _nameB = value
+            changed = Date(System.currentTimeMillis())
+        }
+
     var id: Long
         get() = _id
         /**
@@ -103,7 +124,7 @@ data class VList(
         fun blank(nameA: String, nameB: String,name: String): VList {
             val time = Date(System.currentTimeMillis())
             return VList(
-                name = name, nameB = nameB, nameA = nameA, _id = Database.MIN_ID_TRESHOLD - 1,
+                _name = name, _nameB = nameB, _nameA = nameA, _id = Database.MIN_ID_TRESHOLD - 1,
                 changed = time,
                 uuid = null, created = time
             )
@@ -119,7 +140,7 @@ data class VList(
         fun withId(id: Long, name: String, nameA: String, nameB: String): VList {
             val time = Date(System.currentTimeMillis())
             return VList(
-                name = name, nameB = nameB, nameA = nameA, _id = id,
+                _name = name, _nameB = nameB, _nameA = nameA, _id = id,
                 changed = time,
                 uuid = null, created = time
             )

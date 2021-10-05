@@ -127,7 +127,7 @@ class DBTest {
         Assert.assertTrue("UpsertEntries", db.upsertEntries(entries))
         Assert.assertEquals("invalid amount entries", entries.size.toLong(), db.getVocablesOfTable(tbl).size.toLong())
         val lists = db.tables!!
-        Assert.assertTrue("delete table", db.deleteList(tbl))
+        db.deleteList(tbl)
         Assert.assertEquals("invalid amount entries", 0, db.getVocablesOfTable(tbl).size.toLong())
         Assert.assertEquals("invalid amount lists", lists.size-1, db.tables!!.size)
     }
@@ -152,10 +152,10 @@ class DBTest {
         val ent: VEntry = entries[0]
         ent.points = 2
         Assert.assertEquals(2, ent.points!!.toLong())
-        Assert.assertTrue(db.updateEntryProgress(ent))
+        db.updateEntryProgress(ent)
         Assert.assertEquals("table points", ent.points!!.toLong(), db.getEntryPoints(ent).toLong())
         ent.points = 3
-        Assert.assertTrue(db.updateEntryProgress(ent))
+        db.updateEntryProgress(ent)
         Assert.assertEquals("upd table points", ent.points!!.toLong(), db.getEntryPoints(ent).toLong())
     }
 
@@ -182,13 +182,13 @@ class DBTest {
         Assert.assertNotEquals("selected same entry twice", chosen!!.id.toLong(), secondChosen!!.id.toLong())
         chosen.points = points
         Assert.assertEquals(points.toLong(), chosen.points!!.toLong())
-        Assert.assertTrue(db.updateEntryProgress(chosen))
+        db.updateEntryProgress(chosen)
         Assert.assertEquals("table points", chosen.points!!.toLong(), db.getEntryPoints(chosen).toLong())
         val thirdChosen: VEntry? = db.getRandomTrainerEntry(tbl, null, settings, false)
         Assert.assertNotNull(thirdChosen)
         Assert.assertNotEquals("selected entry with reached points", chosen.id.toLong(), thirdChosen!!.id.toLong())
         thirdChosen.points = points
-        Assert.assertTrue(db.updateEntryProgress(thirdChosen))
+        db.updateEntryProgress(thirdChosen)
         val fourthChosen: VEntry? = db.getRandomTrainerEntry(tbl, null, settings, false)
         Assert.assertNull(fourthChosen)
     }

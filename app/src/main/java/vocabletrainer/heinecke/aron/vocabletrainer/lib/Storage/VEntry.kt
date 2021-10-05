@@ -26,7 +26,7 @@ data class VEntry(
      *
      * @return
      */
-    var addition: String?,
+    private var _addition: String?,
     var id: Long,
     var points: Int? = null,
     /**
@@ -61,6 +61,7 @@ data class VEntry(
         set(AMeanings) {
             meaningA = AMeanings
             isChanged = true
+            changed = Date(System.currentTimeMillis())
         }
 
     /**
@@ -73,6 +74,7 @@ data class VEntry(
         set(BMeanings) {
             meaningB = BMeanings
             isChanged = true
+            changed = Date(System.currentTimeMillis())
         }
 
     var tip: String?
@@ -80,6 +82,15 @@ data class VEntry(
         set(value) {
             _tip = value
             isChanged = true
+            changed = Date(System.currentTimeMillis())
+        }
+
+    var addition: String?
+        get() = _addition
+        set(value) {
+            _addition = value
+            isChanged = true
+            changed = Date(System.currentTimeMillis())
         }
 
     override fun toString(): String {
@@ -167,7 +178,7 @@ data class VEntry(
                 meaningA = ArrayList(1),
                 meaningB = ArrayList(1),
                 uuid = null,
-                addition = "",
+                _addition = "",
                 last_used = null
             ).apply {
                 meaningA.add(A)
@@ -206,7 +217,7 @@ data class VEntry(
                 meaningA = meaningA,
                 meaningB = meaningB,
                 uuid = uuid,
-                addition = addition,
+                _addition = addition,
                 last_used = null
             )
         }

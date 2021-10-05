@@ -379,10 +379,9 @@ public class Trainer implements Parcelable {
     /**
      * Update cVocable points
      *
-     * @return true on success
      */
-    private boolean updateVocable() {
-        return db.updateEntryProgress(cVocable);
+    private void updateVocable() {
+        db.updateEntryProgress(cVocable);
     }
 
     /**
@@ -390,10 +389,7 @@ public class Trainer implements Parcelable {
      */
     private void getNext() {
         if (cVocable != null) {
-            if (!updateVocable()) {
-                Log.e(TAG, "unable to update vocable!");
-                return;
-            }
+            updateVocable();
             lastAddition = cVocable.getAddition();
         }
         showedSolution = false;

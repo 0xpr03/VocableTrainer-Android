@@ -17,6 +17,10 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList
 import java.sql.Date
 import java.sql.SQLException
 import java.util.*
+import android.R.id
+
+
+
 
 
 /**
@@ -74,8 +78,8 @@ class Database {
                 +"WHERE tVoc.$KEY_ENTRY = ?", arrayOf(vocID.toString())).use { cV ->
             return if (cV.moveToNext()) {
                 val list = VList(
-                    _id = cV.getLong(6), name = cV.getString(9),
-                    nameA = cV.getString(7), nameB = cV.getString(8),
+                    _id = cV.getLong(6), _name = cV.getString(9),
+                    _nameA = cV.getString(7), _nameB = cV.getString(8),
                     created = Date(cV.getLong(10)), uuid = parseUUID(cV.getStringOrNull(12)),
                     changed = Date(cV.getLong(13))
                 )
@@ -83,7 +87,7 @@ class Database {
                 val meaningB: MutableList<String> = ArrayList()
                 val vocable = VEntry(
                     meaningA = meaningA, meaningB = meaningB, _tip = cV.getString(0),
-                    addition = cV.getString(1), id = vocID, list = list,
+                    _addition = cV.getString(1), id = vocID, list = list,
                     points = if (cV.isNull(11)) 0 else cV.getInt(11),
                     last_used = Date(cV.getLong(2)), created = Date(cV.getLong(3)),
                     changed = Date(cV.getLong(14)), correct = cV.getInt(4),
@@ -108,7 +112,7 @@ class Database {
      */
     private fun getVocableMeanings(table: String, vocable: VEntry, list: MutableList<String>) {
         db!!.query(table, arrayOf(KEY_MEANING),
-                "$KEY_LIST = ? AND $KEY_ENTRY = ?", arrayOf(vocable.list!!.id.toString(), vocable.id.toString()),
+                "$KEY_ENTRY = ?", arrayOf(vocable.id.toString()),
                 null, null, null).use { cM ->
             while (cM.moveToNext()) {
                 list.add(cM.getString(0))
@@ -166,7 +170,7 @@ class Database {
                             val meaningB: MutableList<String> = ArrayList()
                             val vocable = VEntry(
                                 meaningA = meaningA, meaningB = meaningB,
-                                _tip = cV.getString(0), addition = cV.getString(1),
+                                _tip = cV.getString(0), _addition = cV.getString(1),
                                 id = cV.getLong(6), list = list,
                                 last_used = Date(cV.getLong(2)),
                                 created = Date(cV.getLong(3)),
@@ -245,9 +249,9 @@ class Database {
                     }
                     val entry = VList(
                         _id = cursor.getLong(0),
-                        nameA = cursor.getString(1),
-                        nameB = cursor.getString(2),
-                        name = cursor.getString(3),
+                        _nameA = cursor.getString(1),
+                        _nameB = cursor.getString(2),
+                        _name = cursor.getString(3),
                         created = Date(cursor.getLong(4)),
                         changed = Date(cursor.getLong(5)),
                         uuid = parseUUID(cursor.getStringOrNull(6))
@@ -482,25 +486,16 @@ class Database {
      * @param entry VEntry to update
      * @return true on success
      */
-    fun updateEntryProgress(entry: VEntry): Boolean {
-        try {
-            db!!.compileStatement("INSERT OR REPLACE INTO $TBL_SESSION ( $KEY_LIST,$KEY_ENTRY,$KEY_POINTS )VALUES (?,?,?)").use { updStm ->
-                Log.d(TAG, entry.toString())
-                //TODO: update date
-                updStm.bindLong(1, entry.list!!.id)
-                updStm.bindLong(2, entry.id)
-                updStm.bindLong(3, entry.points!!.toLong())
-                return if (updStm.executeInsert() > 0) { // possible problem ( insert / update..)
-                    Log.d(TAG, "updated voc points")
-                    true
-                } else {
-                    Log.e(TAG, "Inserted < 1 columns!")
-                    false
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "", e)
-            return false
+    fun updateEntryProgress(entry: VEntry) {
+        db!!.compileStatement("INSERT OR REPLACE INTO $TBL_SESSION ( $KEY_ENTRY,$KEY_POINTS )VALUES (?,?)").use { updStm ->
+            Log.d(TAG, entry.toString())
+            //TODO: update date
+            updStm.bindLong(1, entry.id)
+            updStm.bindLong(2, entry.points!!.toLong())
+            assert(updStm.executeInsert() > 0)
+            val values = ContentValues()
+            values.put(KEY_LAST_USED, entry.last_used!!.time)
+            db!!.update(TBL_ENTRIES,values,"$KEY_ENTRY = ?", arrayOf(entry.id.toString()))
         }
     }
 
@@ -550,9 +545,9 @@ class Database {
                         lst.add(
                             VList(
                                 _id = cursor.getLong(0),
-                                nameA = cursor.getString(1),
-                                nameB = cursor.getString(2),
-                                name = cursor.getString(3),
+                                _nameA = cursor.getString(1),
+                                _nameB = cursor.getString(2),
+                                _name = cursor.getString(3),
                                 created = Date(cursor.getLong(4)),
                                 changed = Date(cursor.getLong(5)),
                                 uuid = parseUUID(cursor.getStringOrNull(6))
@@ -591,33 +586,30 @@ class Database {
      * @return true on success
      */
     fun getSessionTableData(lists: List<VList>, unfinishedLists: MutableList<VList?>, settings: TrainerSettings): Boolean {
-        require(!(lists == null || unfinishedLists == null || lists.size == 0))
+        require(lists.isNotEmpty())
         unfinishedLists.clear()
         for (list in lists) {
-            try {
-                db!!.rawQuery("SELECT COUNT(*) FROM $TBL_ENTRIES WHERE $KEY_LIST  = ?", arrayOf(list.id.toString())).use { curLeng ->
-                    db!!.rawQuery("SELECT COUNT(*) FROM $TBL_SESSION WHERE $KEY_LIST  = ? AND $KEY_POINTS >= ?", arrayOf(list.id.toString(), settings.timesToSolve.toString())).use { curFinished ->
-                        if (!curLeng.moveToNext()) return false
-                        list.totalVocs = curLeng.getInt(0)
-                        if (!curFinished.moveToNext()) return false
-                        val unfinished = list.totalVocs - curFinished.getInt(0)
-                        list.unfinishedVocs = unfinished
-                        if (unfinished > 0) {
-                            unfinishedLists.add(list)
-                        }
-                        Log.d(TAG, list.toString())
+            db!!.rawQuery("SELECT COUNT(*) FROM $TBL_ENTRIES WHERE $KEY_LIST  = ?", arrayOf(list.id.toString())).use { curLeng ->
+                db!!.rawQuery("SELECT COUNT(*) FROM $TBL_SESSION s "
+                    +"JOIN $TBL_ENTRIES e ON e.$KEY_ENTRY = s.$KEY_ENTRY "
+                    +"WHERE $KEY_LIST  = ? AND $KEY_POINTS >= ?", arrayOf(list.id.toString(), settings.timesToSolve.toString())).use { curFinished ->
+                    if (!curLeng.moveToNext()) return false
+                    list.totalVocs = curLeng.getInt(0)
+                    if (!curFinished.moveToNext()) return false
+                    val unfinished = list.totalVocs - curFinished.getInt(0)
+                    list.unfinishedVocs = unfinished
+                    if (unfinished > 0) {
+                        unfinishedLists.add(list)
                     }
+                    Log.d(TAG, list.toString())
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "", e)
-                return false
             }
         }
         return true
     }
 
     /**
-     * Returns a random entry from the specified table, which matche the trainer settings criteria<br></br>
+     * Returns a random entry from the specified table, which matches the trainer settings<br></br>
      * The VEntry is guaranteed to be not the "lastEntry" provided here
      *
      * @param list
@@ -630,45 +622,40 @@ class Database {
         var lastID = MIN_ID_TRESHOLD - 1
         if (lastEntry != null && lastEntry.list!!.id == list.id && !allowRepetition) lastID = lastEntry.id
         val arg = arrayOf(list.id.toString(), lastID.toString(), ts.timesToSolve.toString())
-        Log.v(TAG, Arrays.toString(arg))
-        try {
-            db!!.rawQuery(
-                    "SELECT $KEY_TIP, $KEY_ADDITION, $KEY_LAST_USED, tbl.$KEY_CREATED, $KEY_TIMES_CORRECT,"
-                            + "$KEY_TIMES_WRONG, tbl.$KEY_ENTRY, $KEY_POINTS, tbl.$KEY_CHANGED, $KEY_ENTRY_UUID"
-                            + "FROM $TBL_ENTRIES tbl "
-                            + "LEFT JOIN  $TBL_SESSION ses ON tbl.$KEY_ENTRY = ses.$KEY_ENTRY AND tbl.$KEY_LIST = ses.$KEY_LIST "
-                            + "WHERE tbl.$KEY_LIST = ? AND tbl.$KEY_ENTRY != ? AND ( $KEY_POINTS IS NULL OR $KEY_POINTS < ? ) "
-                            + "ORDER BY RANDOM() LIMIT 1", arg).use { cV ->
-                return if (cV.moveToNext()) {
-                    val meaningA: MutableList<String> = ArrayList()
-                    val meaningB: MutableList<String> = ArrayList()
-                    val points = if(cV.isNull(7)) { 0 } else cV.getInt(7)
-                    val vocable = VEntry(
-                        meaningA = meaningA,
-                        meaningB = meaningB,
-                        _tip = cV.getString(0),
-                        addition = cV.getString(1),
-                        id = cV.getLong(6),
-                        list = list,
-                        points = points,
-                        last_used = Date(cV.getLong(2)),
-                        created = Date(cV.getLong(3)),
-                        correct = cV.getInt(4),
-                        wrong = cV.getInt(5),
-                        uuid = parseUUID(cV.getStringOrNull(9)),
-                        changed = Date(cV.getLong(8))
-                    )
-                    getVocableMeanings(TBL_WORDS_A, vocable, meaningA)
-                    getVocableMeanings(TBL_WORDS_B, vocable, meaningB)
-                    vocable
-                } else {
-                    Log.w(TAG, "no entries found!")
-                    null
-                }
+        Log.v(TAG, arg.contentToString())
+        db!!.rawQuery(
+                "SELECT $KEY_TIP, $KEY_ADDITION, $KEY_LAST_USED, tbl.$KEY_CREATED, $KEY_TIMES_CORRECT,"
+                        + "$KEY_TIMES_WRONG, tbl.$KEY_ENTRY, $KEY_POINTS, tbl.$KEY_CHANGED"
+                        + "FROM $TBL_ENTRIES tbl "
+                        + "LEFT JOIN  $TBL_SESSION ses ON tbl.$KEY_ENTRY = ses.$KEY_ENTRY "
+                        + "WHERE tbl.$KEY_LIST = ? AND tbl.$KEY_ENTRY != ? AND ( $KEY_POINTS IS NULL OR $KEY_POINTS < ? ) "
+                        + "ORDER BY RANDOM() LIMIT 1", arg).use { cV ->
+            return if (cV.moveToNext()) {
+                val meaningA: MutableList<String> = ArrayList()
+                val meaningB: MutableList<String> = ArrayList()
+                val points = if(cV.isNull(7)) { 0 } else cV.getInt(7)
+                val vocable = VEntry(
+                    meaningA = meaningA,
+                    meaningB = meaningB,
+                    _tip = cV.getString(0),
+                    _addition = cV.getString(1),
+                    id = cV.getLong(6),
+                    list = list,
+                    points = points,
+                    last_used = Date(cV.getLong(2)),
+                    created = Date(cV.getLong(3)),
+                    correct = cV.getInt(4),
+                    wrong = cV.getInt(5),
+                    uuid = null, // leave empty
+                    changed = Date(cV.getLong(8))
+                )
+                getVocableMeanings(TBL_WORDS_A, vocable, meaningA)
+                getVocableMeanings(TBL_WORDS_B, vocable, meaningB)
+                vocable
+            } else {
+                Log.w(TAG, "no entries found!")
+                null
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "", e)
-            return null
         }
     }
 

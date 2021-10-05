@@ -28,9 +28,9 @@ data class VEntry(
      */
     private var _addition: String?,
     var id: Long,
-    var points: Int? = null,
+    private var _points: Int? = null,
     /**
-     * Can be null if never used in training
+     * Can be null if never used in training or light data retrieval
      */
     var last_used: Date?,
     var created: Date,
@@ -42,8 +42,6 @@ data class VEntry(
      */
     var changed: Date,
     private var uuid: UUID?,
-    var correct: Int,
-    var wrong: Int,
     private var meaningA: MutableList<String>,
     private var meaningB: MutableList<String>,
     var isDelete: Boolean = false,
@@ -93,6 +91,13 @@ data class VEntry(
             changed = Date(System.currentTimeMillis())
         }
 
+    var points: Int?
+        get() = _points
+        set(value) {
+            _points = value
+            last_used = Date(System.currentTimeMillis())
+        }
+
     override fun toString(): String {
         return if (list != null)  {
             aString + " " + bString + " ID:" + id + " List:" + list.id + " P:" + points
@@ -125,15 +130,7 @@ data class VEntry(
      * @return true if the ID is valid
      */
     val isExisting: Boolean
-        get() = VList.Companion.isIDValid(id)
-
-    fun incrCorrect() {
-        correct++
-    }
-
-    fun incrWrong() {
-        wrong++
-    }
+        get() = VList.isIDValid(id)
 
     val aString: String
         get() = TextUtils.join(CONCAT, meaningA!!)
@@ -171,8 +168,6 @@ data class VEntry(
                 _tip = tip,
                 created = time,
                 changed = time,
-                wrong = 0,
-                correct = 0,
                 id = fID,
                 list = null,
                 meaningA = ArrayList(1),
@@ -210,8 +205,6 @@ data class VEntry(
                 _tip = tip,
                 created = time,
                 changed = time,
-                wrong = 0,
-                correct = 0,
                 id = MIN_ID_TRESHOLD-1,
                 list = list,
                 meaningA = meaningA,

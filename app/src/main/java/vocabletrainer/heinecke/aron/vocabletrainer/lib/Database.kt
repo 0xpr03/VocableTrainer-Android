@@ -67,8 +67,8 @@ class Database {
      */
     fun getVocable(vocID: Long): VEntry? {
         db!!.rawQuery(
-                "SELECT $KEY_TIP, $KEY_ADDITION, $KEY_LAST_USED, tVoc.$KEY_CREATED, $KEY_TIMES_CORRECT,"
-                +"$KEY_TIMES_WRONG, tVoc.$KEY_LIST, $KEY_NAME_A, $KEY_NAME_B, $KEY_NAME_LIST,"
+                "SELECT $KEY_TIP, $KEY_ADDITION, $KEY_LAST_USED, tVoc.$KEY_CREATED, "
+                +"tVoc.$KEY_LIST, $KEY_NAME_A, $KEY_NAME_B, $KEY_NAME_LIST,"
                 +"tList.$KEY_CREATED, $KEY_POINTS, $KEY_LIST_UUID, tList.$KEY_CHANGED, tVoc.$KEY_CHANGED,"
                 +"tVoc.$KEY_ENTRY_UUID"
                 +"FROM $TBL_ENTRIES tVoc "
@@ -78,20 +78,19 @@ class Database {
                 +"WHERE tVoc.$KEY_ENTRY = ?", arrayOf(vocID.toString())).use { cV ->
             return if (cV.moveToNext()) {
                 val list = VList(
-                    _id = cV.getLong(6), _name = cV.getString(9),
-                    _nameA = cV.getString(7), _nameB = cV.getString(8),
-                    created = Date(cV.getLong(10)), uuid = parseUUID(cV.getStringOrNull(12)),
-                    changed = Date(cV.getLong(13))
+                    _id = cV.getLong(4), _name = cV.getString(7),
+                    _nameA = cV.getString(5), _nameB = cV.getString(6),
+                    created = Date(cV.getLong(8)), uuid = parseUUID(cV.getStringOrNull(10)),
+                    changed = Date(cV.getLong(11))
                 )
                 val meaningA: MutableList<String> = ArrayList()
                 val meaningB: MutableList<String> = ArrayList()
                 val vocable = VEntry(
                     meaningA = meaningA, meaningB = meaningB, _tip = cV.getString(0),
                     _addition = cV.getString(1), id = vocID, list = list,
-                    points = if (cV.isNull(11)) 0 else cV.getInt(11),
+                    _points = if (cV.isNull(9)) 0 else cV.getInt(9),
                     last_used = Date(cV.getLong(2)), created = Date(cV.getLong(3)),
-                    changed = Date(cV.getLong(14)), correct = cV.getInt(4),
-                    wrong = cV.getInt(5), uuid = parseUUID(cV.getStringOrNull(15))
+                    changed = Date(cV.getLong(12)),uuid = parseUUID(cV.getStringOrNull(13))
                 )
                 getVocableMeanings(TBL_WORDS_A, vocable, meaningA)
                 getVocableMeanings(TBL_WORDS_B, vocable, meaningB)
@@ -151,8 +150,8 @@ class Database {
                 +"JOIN $TBL_ENTRIES e ON e.$KEY_ENTRY = m.$KEY_ENTRY "
                 + "WHERE e.$KEY_LIST = ? ORDER BY voc")
         db!!.rawQuery(
-            "SELECT $KEY_TIP, $KEY_ADDITION, $KEY_LAST_USED, $KEY_CREATED,"
-                    + "$KEY_TIMES_CORRECT,$KEY_TIMES_WRONG,e.$KEY_ENTRY,$KEY_ENTRY_UUID,$KEY_CHANGED "
+            "SELECT $KEY_TIP, $KEY_ADDITION, $KEY_CREATED,"
+                    + "e.$KEY_ENTRY,$KEY_ENTRY_UUID,$KEY_CHANGED "
                     + "FROM $TBL_ENTRIES e LEFT JOIN $TBL_ENTRY_SYNC s ON s.$KEY_ENTRY = e.$KEY_ENTRY "
                     + "WHERE $KEY_LIST = ?", arrayOf(list.id.toString())
         ).use { cV ->
@@ -171,12 +170,11 @@ class Database {
                             val vocable = VEntry(
                                 meaningA = meaningA, meaningB = meaningB,
                                 _tip = cV.getString(0), _addition = cV.getString(1),
-                                id = cV.getLong(6), list = list,
-                                last_used = Date(cV.getLong(2)),
-                                created = Date(cV.getLong(3)),
-                                changed = Date(cV.getLong(8)),
-                                correct = cV.getInt(4), wrong = cV.getInt(5),
-                                uuid = parseUUID(cV.getStringOrNull(7))
+                                id = cV.getLong(3), list = list,
+                                last_used = null,
+                                created = Date(cV.getLong(2)),
+                                changed = Date(cV.getLong(5)),
+                                uuid = parseUUID(cV.getStringOrNull(4))
                             )
                             mapA.put(vocable.id, meaningA)
                             mapB.put(vocable.id, meaningB)
@@ -218,9 +216,11 @@ class Database {
      */
     @Deprecated("")
     fun getEntryPoints(ent: VEntry): Int {
-        db!!.rawQuery("SELECT $KEY_POINTS "
-                + "FROM $TBL_SESSION WHERE $KEY_LIST = ? AND $KEY_ENTRY = ?",
-                arrayOf(ent.list!!.id.toString(), ent.id.toString())).use { cursor -> return if (cursor.moveToNext()) cursor.getInt(0) else -1 }
+        db!!.rawQuery(
+            "SELECT $KEY_POINTS "
+                    + "FROM $TBL_SESSION WHERE $KEY_ENTRY = ?",
+            arrayOf(ent.id.toString())
+        ).use { cursor -> return if (cursor.moveToNext()) cursor.getInt(0) else -1 }
     }
 
     /**
@@ -327,7 +327,7 @@ class Database {
         try {
             db!!.compileStatement("DELETE FROM $TBL_ENTRIES WHERE $KEY_ENTRY = ?").use { delStm ->
                 db!!.compileStatement("UPDATE $TBL_ENTRIES SET $KEY_ADDITION = ?,$KEY_TIP = ?, $KEY_CHANGED = ? WHERE $KEY_ENTRY = ?").use { updStm ->
-                    db!!.compileStatement("INSERT INTO $TBL_ENTRIES ($KEY_LIST,$KEY_TIP,$KEY_ADDITION,$KEY_CREATED,$KEY_TIMES_CORRECT,$KEY_TIMES_WRONG,$KEY_CHANGED) VALUES (?,?,?,?,?,?,?)").use { insStm ->
+                    db!!.compileStatement("INSERT INTO $TBL_ENTRIES ($KEY_LIST,$KEY_TIP,$KEY_ADDITION,$KEY_CREATED,$KEY_CHANGED) VALUES (?,?,?,?,?)").use { insStm ->
                         db!!.compileStatement("INSERT INTO $TBL_WORDS_A($KEY_ENTRY,$KEY_MEANING) VALUES (?,?)").use { insMeanA ->
                             db!!.compileStatement("INSERT INTO $TBL_WORDS_B($KEY_ENTRY,$KEY_MEANING) VALUES (?,?)").use { insMeanB ->
                                 val whereDelMeaning = "$KEY_ENTRY = ?"
@@ -364,9 +364,7 @@ class Database {
                                         insStm.bindString(2, entry.tip)
                                         insStm.bindString(3, entry.addition)
                                         insStm.bindLong(4, entry.created.time)
-                                        insStm.bindLong(5, entry.correct.toLong())
-                                        insStm.bindLong(6, entry.wrong.toLong())
-                                        insStm.bindLong(7, entry.changed.time)
+                                        insStm.bindLong(5, entry.changed.time)
                                         entry.id = insStm.executeInsert()
                                         insertMeanings = true
                                     }
@@ -489,13 +487,13 @@ class Database {
     fun updateEntryProgress(entry: VEntry) {
         db!!.compileStatement("INSERT OR REPLACE INTO $TBL_SESSION ( $KEY_ENTRY,$KEY_POINTS )VALUES (?,?)").use { updStm ->
             Log.d(TAG, entry.toString())
-            //TODO: update date
             updStm.bindLong(1, entry.id)
             updStm.bindLong(2, entry.points!!.toLong())
             assert(updStm.executeInsert() > 0)
             val values = ContentValues()
+            values.put(KEY_ENTRY, entry.id)
             values.put(KEY_LAST_USED, entry.last_used!!.time)
-            db!!.update(TBL_ENTRIES,values,"$KEY_ENTRY = ?", arrayOf(entry.id.toString()))
+            assert(db!!.replace(TBL_ENTRIES_USED,null,values) > -1)
         }
     }
 
@@ -624,8 +622,8 @@ class Database {
         val arg = arrayOf(list.id.toString(), lastID.toString(), ts.timesToSolve.toString())
         Log.v(TAG, arg.contentToString())
         db!!.rawQuery(
-                "SELECT $KEY_TIP, $KEY_ADDITION, $KEY_LAST_USED, tbl.$KEY_CREATED, $KEY_TIMES_CORRECT,"
-                        + "$KEY_TIMES_WRONG, tbl.$KEY_ENTRY, $KEY_POINTS, tbl.$KEY_CHANGED"
+                "SELECT $KEY_TIP, $KEY_ADDITION, tbl.$KEY_CREATED,"
+                        + "tbl.$KEY_ENTRY, $KEY_POINTS, tbl.$KEY_CHANGED"
                         + "FROM $TBL_ENTRIES tbl "
                         + "LEFT JOIN  $TBL_SESSION ses ON tbl.$KEY_ENTRY = ses.$KEY_ENTRY "
                         + "WHERE tbl.$KEY_LIST = ? AND tbl.$KEY_ENTRY != ? AND ( $KEY_POINTS IS NULL OR $KEY_POINTS < ? ) "
@@ -633,21 +631,19 @@ class Database {
             return if (cV.moveToNext()) {
                 val meaningA: MutableList<String> = ArrayList()
                 val meaningB: MutableList<String> = ArrayList()
-                val points = if(cV.isNull(7)) { 0 } else cV.getInt(7)
+                val points = if(cV.isNull(4)) { 0 } else cV.getInt(4)
                 val vocable = VEntry(
                     meaningA = meaningA,
                     meaningB = meaningB,
                     _tip = cV.getString(0),
                     _addition = cV.getString(1),
-                    id = cV.getLong(6),
+                    id = cV.getLong(3),
                     list = list,
-                    points = points,
-                    last_used = Date(cV.getLong(2)),
-                    created = Date(cV.getLong(3)),
-                    correct = cV.getInt(4),
-                    wrong = cV.getInt(5),
+                    _points = points,
+                    last_used = null,
+                    created = Date(cV.getLong(2)),
                     uuid = null, // leave empty
-                    changed = Date(cV.getLong(8))
+                    changed = Date(cV.getLong(5))
                 )
                 getVocableMeanings(TBL_WORDS_A, vocable, meaningA)
                 getVocableMeanings(TBL_WORDS_B, vocable, meaningB)
@@ -774,15 +770,15 @@ class Database {
                 + KEY_ENTRY + " INTEGER PRIMARY KEY,"
                 + KEY_TIP + " TEXT,"
                 + KEY_ADDITION + "TEXT,"
-                + KEY_LAST_USED + " INTEGER,"
                 + KEY_CREATED + " INTEGER NOT NULL,"
-                + KEY_TIMES_CORRECT + " INTEGER NOT NULL,"
-                + KEY_TIMES_WRONG + " INTEGER NOT NULL,"
                 + KEY_CHANGED + " INTEGER NOT NULL )")
         private val sqlEntryIndex = ("CREATE INDEX entryChangedI ON $TBL_ENTRIES ($KEY_CHANGED)")
         private val sqlEntrySync = ("CREATE TABLE "+ TBL_ENTRY_SYNC + " ("
                 + KEY_ENTRY + " INTEGER PRIMARY KEY REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE, "
                 + KEY_ENTRY_UUID + " STRING NOT NULL UNIQUE )")
+        private val sqlEntryUsed = ("CREATE TABLE "+TBL_ENTRIES_USED + "("
+                + KEY_ENTRY + " INTEGER PRIMARY KEY REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE, "
+                + KEY_LAST_USED + " INTEGER NOT NULL )")
         private val sqlWordsA = ("CREATE TABLE " + TBL_WORDS_A + " ("
                 + KEY_ENTRY + " INTEGER NOT NULL REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE,"
                 + KEY_MEANING + " TEXT NOT NULL )")
@@ -809,7 +805,7 @@ class Database {
                 + KEY_ENTRY + " INTEGER REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE,"
                 + KEY_DATE + "INTEGER PRIMARY KEY,"
                 + KEY_TIP_NEEDED + "boolean NOT NULL,"
-                + KEY_TIMES_CORRECT + "boolean NOT NULL )")
+                + KEY_IS_CORRECT + "boolean NOT NULL )")
         private val sqlListCategories = ("CREATE TABLE " + TBL_LIST_CATEGORIES + " ("
                 + KEY_LIST + " INTEGER REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE,"
                 + KEY_CATEGORY + " INTEGER REFERENCES $TBL_CATEGORY($KEY_CATEGORY) ON DELETE CASCADE,"
@@ -884,7 +880,8 @@ class Database {
                 sqlListCategories,
                 sqlCategory,
                 sqlCategoryIndex,
-                sqlCategoriesDeleted
+                sqlCategoriesDeleted,
+                sqlEntryUsed
             )
             var i = 0
             db.beginTransaction()
@@ -939,7 +936,8 @@ class Database {
                 sqlListCategories,
                 sqlCategory,
                 sqlCategoryIndex,
-                sqlCategoriesDeleted
+                sqlCategoriesDeleted,
+                sqlEntryUsed
             )
             for (sql in newTables) db.execSQL(sql)
             val time = System.currentTimeMillis().toString()
@@ -979,8 +977,6 @@ class Database {
                     KEY_ADDITION,
                     KEY_LAST_USED,
                     KEY_CREATED,
-                    KEY_TIMES_CORRECT,
-                    KEY_TIMES_WRONG,
                     KEY_CHANGED
                 ).joinToString(separator = ",")
                 val argsFrom = arrayOf(
@@ -989,9 +985,7 @@ class Database {
                     KEY_TIP,
                     KEY_ADDITION,
                     KEY_LAST_USED,
-                    "oldEntr.$KEY_CREATED",
-                    KEY_CORRECT,
-                    KEY_WRONG
+                    "oldEntr.$KEY_CREATED"
                 ).joinToString(separator = ",")
                 val sqlCpy =
                     "INSERT INTO $TBL_ENTRIES ($argsInto) SELECT lists.$KEY_LIST,$argsFrom,$time FROM $TBL_VOCABLE_V2 oldEntr JOIN $TBL_LISTS lists ON lists.$KEY_TABLE = oldEntr.$KEY_TABLE"
@@ -1191,6 +1185,7 @@ class Database {
         private const val TBL_LIST_CATEGORIES = "`categories`"
         private const val TBL_CATEGORY = "`category_name`"
         private const val TBL_CATEGORIES_DELETED = "`categories_deleted`"
+        private const val TBL_ENTRIES_USED = "`entries_used`"
         private const val KEY_ENTRY = "`entry`"
         private const val KEY_NAME_A = "`name_a`"
         private const val KEY_NAME_B = "`name_b`"
@@ -1201,8 +1196,7 @@ class Database {
         private const val KEY_NAME_LIST = "`list_name`"
         private const val KEY_MEANING = "`meaning`"
         private const val KEY_CREATED = "`created`"
-        private const val KEY_TIMES_CORRECT = "`times_correct`"
-        private const val KEY_TIMES_WRONG = "`times_wrong`"
+        private const val KEY_IS_CORRECT = "`is_correct`"
         @Deprecated("Deprecated DB version")
         private val KEY_CORRECT = "`correct`"
         @Deprecated("Deprecated DB version")

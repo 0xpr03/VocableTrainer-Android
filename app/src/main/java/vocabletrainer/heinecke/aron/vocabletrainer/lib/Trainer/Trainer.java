@@ -282,13 +282,9 @@ public class Trainer implements Parcelable {
         }
 
         if(bSolved) {
-            if(!showedSolution) { // do not count retrieved solution as correct
-                cVocable.incrCorrect();
-            }
             accountVocable(bSolved && !showedSolution);
         } else {
             this.failed++;
-            cVocable.incrWrong();
         }
         return bSolved;
     }
@@ -312,13 +308,9 @@ public class Trainer implements Parcelable {
         Log.d(TAG,"checkSolution");
         boolean bSolved = isSolution(tSolution) != null;
         if(bSolved) {
-            if(!showedSolution) { // do not count retrieved solution as correct
-                cVocable.incrCorrect();
-            }
             accountVocable(bSolved && !showedSolution);
         }else {
             this.failed++;
-            cVocable.incrWrong();
         }
         return bSolved;
     }
@@ -360,9 +352,7 @@ public class Trainer implements Parcelable {
         if(!passed){
             this.failed++;
             timesShowedSolution++;
-            cVocable.incrWrong();
         } else {
-            cVocable.incrCorrect();
         }
         accountVocable(passed);
     }

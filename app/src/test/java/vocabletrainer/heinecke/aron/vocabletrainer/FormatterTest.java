@@ -1,10 +1,10 @@
 package vocabletrainer.heinecke.aron.vocabletrainer;
 
-import org.junit.Test;
-
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Formatter;
 
 import static org.junit.Assert.assertEquals;
+
+import org.junit.jupiter.api.Test;
 
 public class FormatterTest {
     @Test

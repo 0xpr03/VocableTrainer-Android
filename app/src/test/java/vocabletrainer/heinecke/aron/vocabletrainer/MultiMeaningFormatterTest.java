@@ -1,7 +1,7 @@
 package vocabletrainer.heinecke.aron.vocabletrainer;
 
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.ExpectedException;
 
 import java.util.Arrays;
@@ -19,7 +19,7 @@ public class MultiMeaningFormatterTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void importMultiValueFormatTest_Full() {
         CSVCustomFormat format = CSVCustomFormat.DEFAULT;
         MultiMeaningHandler mmh = new MultiMeaningHandler(format);

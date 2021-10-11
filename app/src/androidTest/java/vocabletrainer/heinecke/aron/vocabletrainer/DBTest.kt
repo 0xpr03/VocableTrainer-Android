@@ -1,9 +1,11 @@
 package vocabletrainer.heinecke.aron.vocabletrainer
 
+import android.content.Context
 import android.icu.util.Calendar
 import android.icu.util.TimeZone
-import androidx.test.InstrumentationRegistry
-import androidx.test.runner.AndroidJUnit4
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.RequiresDevice
+import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.*
 import org.junit.runner.RunWith
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database
@@ -26,17 +28,13 @@ import kotlin.random.Random
 @RunWith(AndroidJUnit4::class)
 class DBTest {
 
+    private val context: Context
+        get() = InstrumentationRegistry.getInstrumentation().targetContext
+
     private fun string2List(input: String): MutableList<String> {
         val lst = ArrayList<String>(1)
         lst.add(input)
         return lst
-    }
-
-    @Test
-    fun useAppContext() {
-        // Context of the app under test.
-        val appContext = InstrumentationRegistry.getTargetContext()
-        Assert.assertEquals("vocabletrainer.heinecke.aron.vocabletrainer", appContext.packageName)
     }
 
     //https://medium.com/mobile-app-development-publication/android-sqlite-database-unit-testing-is-easy-a09994701162#.s44tity8x
@@ -79,7 +77,7 @@ class DBTest {
 
     @Test
     fun testDBInsertTable() {
-        val db = Database(InstrumentationRegistry.getTargetContext())
+        val db = Database(context)
         val tbl: VList = table()
         val currentTables: List<VList> = db.tables!!
         db.upsertVList(tbl)
@@ -90,7 +88,7 @@ class DBTest {
 
     @Test
     fun testDBInsertEntries() {
-        val db = Database(InstrumentationRegistry.getTargetContext())
+        val db = Database(context)
         val tbl: VList = table()
         db.upsertVList(tbl)
         val entries: List<VEntry> = getEntries(tbl)
@@ -101,7 +99,7 @@ class DBTest {
 
     @Test
     fun testDBEditEntries() {
-        val db = Database(InstrumentationRegistry.getTargetContext())
+        val db = Database(context)
         val tbl: VList = table()
         db.upsertVList(tbl)
         val entries: List<VEntry> = getEntries(tbl)
@@ -120,7 +118,7 @@ class DBTest {
 
     @Test
     fun testDBDelete() {
-        val db = Database(InstrumentationRegistry.getTargetContext())
+        val db = Database(context)
         val tbl: VList = table()
         db.upsertVList(tbl)
         val entries: List<VEntry> = getEntries(tbl)
@@ -134,7 +132,7 @@ class DBTest {
 
     @Test
     fun testDBRandomSelect() {
-        val db = Database(InstrumentationRegistry.getTargetContext())
+        val db = Database(context)
         val tbl: VList = table()
         db.upsertVList(tbl)
         val entries: List<VEntry> = getEntries(tbl)
@@ -144,7 +142,7 @@ class DBTest {
 
     @Test
     fun testDBEntryPointsInsert() {
-        val db = Database(InstrumentationRegistry.getTargetContext())
+        val db = Database(context)
         val tbl: VList = table()
         db.upsertVList(tbl)
         val entries: List<VEntry> = getEntries(tbl)
@@ -166,7 +164,7 @@ class DBTest {
      */
     @Test
     fun testDbEntryRandomSelect() {
-        val db = Database(InstrumentationRegistry.getTargetContext())
+        val db = Database(context)
         val points = 1
         val tbl: VList = table()
         db.upsertVList(tbl)

@@ -2,7 +2,7 @@ package vocabletrainer.heinecke.aron.vocabletrainer;
 
 import androidx.annotation.NonNull;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;

@@ -41,7 +41,7 @@ data class VEntry(
      * @return
      */
     var changed: Date,
-    private var uuid: UUID?,
+    val uuid: UUID?,
     private var meaningA: MutableList<String>,
     private var meaningB: MutableList<String>,
     var isDelete: Boolean = false,
@@ -113,15 +113,15 @@ data class VEntry(
      * @param entry
      * @return
      */
-    fun equals(entry: VEntry): Boolean {
+    fun equalsId(entry: VEntry): Boolean {
         if (this === entry) return true
         return if (list == null) {
             if (entry.list == null) id == entry.id else false
-        } else id == entry.id && list.equals(entry.list)
+        } else id == entry.id && list.equalsId(entry.list)
     }
 
-    override fun equals(obj: Any?): Boolean {
-        return if (obj is VEntry) equals(obj) else super.equals(obj)
+    fun equalsId(obj: Any?): Boolean {
+        return if (obj is VEntry) equalsId(obj) else super.equals(obj)
     }
 
     /**

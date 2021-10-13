@@ -44,7 +44,7 @@ public class EntryListAdapter extends BaseAdapter {
                 activity.getString(R.string.Editor_Hint_Tip),
                 ID_RESERVED_SKIP);
         // don't re-add header double on instance restore
-        if(dataItems.size() == 0 || !dataItems.get(0).equals(header)) {
+        if(dataItems.size() == 0 || !dataItems.get(0).equalsId(header)) {
             dataItems.add(0, header);
         }
 

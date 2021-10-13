@@ -287,13 +287,21 @@ class Database {
                 throw SQLException("Update error, updated: $updated expected 1")
             }
         } else {
-            val values = ContentValues()
-            values.put(KEY_NAME_A, tbl.nameA)
-            values.put(KEY_NAME_B, tbl.nameB)
-            values.put(KEY_NAME_LIST, tbl.name)
-            values.put(KEY_CREATED, tbl.created.time)
-            values.put(KEY_CHANGED, tbl.changed.time)
-            tbl.id = db!!.insertOrThrow(TBL_LISTS, null, values)
+            ContentValues().apply {
+                put(KEY_NAME_A, tbl.nameA)
+                put(KEY_NAME_B, tbl.nameB)
+                put(KEY_NAME_LIST, tbl.name)
+                put(KEY_CREATED, tbl.created.time)
+                put(KEY_CHANGED, tbl.changed.time)
+                tbl.id = db!!.insertOrThrow(TBL_LISTS, null, this)
+            }
+            tbl.uuid?.let {
+                ContentValues().apply {
+                    put(KEY_LIST, tbl.id)
+                    put(KEY_LIST_UUID, uuidToString(it))
+                    db!!.insertOrThrow(TBL_LIST_SYNC, null, this)
+                }
+            }
         }
     }
 
@@ -323,7 +331,7 @@ class Database {
      * @param lst
      * @return true on success
      */
-    fun upsertEntries(lst: List<VEntry>): Boolean {
+    fun upsertEntries(lst: List<VEntry>) {
         try {
             db!!.compileStatement("DELETE FROM $TBL_ENTRIES WHERE $KEY_ENTRY = ?").use { delStm ->
                 db!!.compileStatement("UPDATE $TBL_ENTRIES SET $KEY_ADDITION = ?,$KEY_TIP = ?, $KEY_CHANGED = ? WHERE $KEY_ENTRY = ?").use { updStm ->
@@ -335,8 +343,10 @@ class Database {
                                 var insertMeanings: Boolean
                                 for (entry in lst) {
                                     //Log.d(TAG, "processing " + entry + " of " + entry.getList());
-                                    if (entry.id == ID_RESERVED_SKIP) // skip spacer
+                                    if (entry.id == ID_RESERVED_SKIP) {
+                                        // skip spacer, but not "invalid" -> new entries
                                         continue
+                                    }
                                     insertMeanings = false
                                     if (entry.isExisting) {
                                         if (entry.isDelete || entry.isChanged()) {
@@ -358,7 +368,7 @@ class Database {
                                                 insertMeanings = true
                                             }
                                         }
-                                    } else if (!entry.isDelete) { // vocable created & deleted in editor
+                                    } else if (!entry.isDelete) { // avoid vocable created & deleted in editor
                                         insStm.clearBindings()
                                         insStm.bindLong(1, entry.list!!.id)
                                         insStm.bindString(2, entry.tip)
@@ -366,6 +376,13 @@ class Database {
                                         insStm.bindLong(4, entry.created.time)
                                         insStm.bindLong(5, entry.changed.time)
                                         entry.id = insStm.executeInsert()
+                                        entry.uuid?.let {
+                                            ContentValues().apply {
+                                                put(KEY_ENTRY, entry.id)
+                                                put(KEY_ENTRY_UUID, uuidToString(it))
+                                                db!!.insertOrThrow(TBL_ENTRY_SYNC, null, this)
+                                            }
+                                        }
                                         insertMeanings = true
                                     }
                                     if (insertMeanings) {
@@ -386,7 +403,6 @@ class Database {
                                     }
                                 }
                                 db!!.setTransactionSuccessful()
-                                return true
                             }
                         }
                     }

@@ -1,17 +1,10 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage
 
 import android.os.Parcelable
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry
-import android.text.TextUtils
-import android.os.Parcel
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.ParcableTools
-import android.os.Parcelable.Creator
 import kotlinx.android.parcel.Parcelize
 import java.sql.Date
 import java.util.*
-import kotlin.jvm.JvmOverloads
 
 /**
  * DB Vocable List entry
@@ -58,15 +51,15 @@ data class VList(
      * @param list
      * @return true when list IDs are equal
      */
-    fun equals(list: VList?): Boolean {
+    fun equalsId(list: VList?): Boolean {
         return if (this === list) {
             true
         } else id == list!!.id
     }
 
-    override fun equals(obj: Any?): Boolean {
+    fun equalsId(obj: Any?): Boolean {
         return if (obj is VList) {
-            equals(obj as VList?)
+            equalsId(obj as VList?)
         } else super.equals(obj)
     }
 

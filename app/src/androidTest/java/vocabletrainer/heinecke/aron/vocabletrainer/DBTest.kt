@@ -4,7 +4,6 @@ import android.content.Context
 import android.icu.util.Calendar
 import android.icu.util.TimeZone
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.filters.RequiresDevice
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.*
 import org.junit.runner.RunWith
@@ -13,6 +12,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer.Trainer
+import java.sql.Date
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.random.Random
@@ -39,12 +39,16 @@ class DBTest {
 
     //https://medium.com/mobile-app-development-publication/android-sqlite-database-unit-testing-is-easy-a09994701162#.s44tity8x
     //https://github.com/elye/demo_simpledb_test/blob/master/app/src/test/java/com/elyeproj/simpledb/ExampleUnitTest.kt
-    private fun table(): VList {
+    private fun table(withUUID: Boolean = false): VList {
         val id = Random.nextInt()
-        return VList.blank("Test Column A $id", "Test Column B $id","Test List $id")
+        val lst = VList.blank("Test Column A $id", "Test Column B $id","Test List $id")
+        if (withUUID) {
+            lst.uuid = Database.uuid()
+        }
+        return lst
     }
 
-    private fun getEntries(tbl: VList): List<VEntry> {
+    private fun generateEntries(tbl: VList): List<VEntry> {
         val entries: MutableList<VEntry> = ArrayList<VEntry>(100)
         for (i in 0..99) {
             entries.add(VEntry.importer("A$i", "B$i", "C$i", "D$i",tbl))
@@ -70,31 +74,57 @@ class DBTest {
     @Test
     fun testUTC() {
         val time = System.currentTimeMillis()
-        val utc = Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTimeInMillis();
-        Assert.assertTrue(utc-time <2)
+        val utc = Calendar.getInstance(TimeZone.getTimeZone("UTC")).timeInMillis;
+        val diff = utc-time
+        Assert.assertTrue("time vs Calendar-UTC has a difference of $diff",diff <2)
         Assert.assertEquals(utc.toString(),java.lang.Long.toString(utc))
+        val date = Date(time)
+        Assert.assertEquals("System.currentTimeMillis isn't equal Date.time created from it",time,date.time)
     }
 
     @Test
-    fun testDBInsertTable() {
+    fun testDBInsertList() {
+        _testDBInsertList(false)
+        _testDBInsertList(true)
+    }
+
+    fun _testDBInsertList(withUUID: Boolean) {
         val db = Database(context)
-        val tbl: VList = table()
-        val currentTables: List<VList> = db.tables!!
-        db.upsertVList(tbl)
-        val tblsNew: List<VList> = db.tables!!
-        Assert.assertEquals("Invalid amount of entries", currentTables.size+1, tblsNew.size)
-        Assert.assertTrue("Cannot find table after insert", tblsNew.contains(tbl))
+        val list: VList = table(withUUID)
+        val curLists: List<VList> = db.tables!!
+        db.upsertVList(list)
+        Assert.assertTrue(list.isExisting)
+        val listsNew: List<VList> = db.tables!!
+        Assert.assertEquals("Invalid amount of entries", curLists.size+1, listsNew.size)
+        //Log.d(this::class.simpleName,"list id: $list.id")
+        Assert.assertFalse("list existed pre-insertion",curLists.map { v -> v.id }.contains(list.id))
+        Assert.assertTrue("list missing after insertion",listsNew.map { v -> v.id }.contains(list.id))
+        listsNew.find { v -> v.id == list.id }!!.apply {
+            Assert.assertEquals("retrieved list != original list", list,this)
+            Assert.assertEquals(withUUID,this.uuid != null)
+        }
+        Assert.assertTrue("Cannot find table after insert", listsNew.contains(list))
     }
 
     @Test
     fun testDBInsertEntries() {
+        _testDBInsertEntries(false)
+        _testDBInsertEntries(true)
+    }
+    fun _testDBInsertEntries(withUUID: Boolean) {
         val db = Database(context)
-        val tbl: VList = table()
+        val tbl: VList = table(withUUID)
         db.upsertVList(tbl)
-        val entries: List<VEntry> = getEntries(tbl)
-        Assert.assertTrue("UpsertEntries", db.upsertEntries(entries))
+        val entries: List<VEntry> = generateEntries(tbl)
+        Assert.assertTrue(entries.size > 1)
+        db.upsertEntries(entries)
         val result: List<VEntry> = db.getVocablesOfTable(tbl)
         Assert.assertEquals("invalid amount of entries", entries.size.toLong(), result.size.toLong())
+        for (entry in entries) {
+            val ie = result.find { v -> v.id == entry.id }!!
+            Assert.assertEquals("Inserted element not equal to original",entry,ie)
+            Assert.assertEquals(withUUID,ie.uuid != null)
+        }
     }
 
     @Test
@@ -102,13 +132,13 @@ class DBTest {
         val db = Database(context)
         val tbl: VList = table()
         db.upsertVList(tbl)
-        val entries: List<VEntry> = getEntries(tbl)
-        Assert.assertTrue("UpsertEntries", db.upsertEntries(entries))
+        val entries: List<VEntry> = generateEntries(tbl)
+        db.upsertEntries(entries)
         val result: List<VEntry> = db.getVocablesOfTable(tbl)
         Assert.assertEquals("invalid amount of entries", entries.size.toLong(), result.size.toLong())
         result[20].aMeanings = string2List("New Word")
         result[30].isDelete = true
-        Assert.assertTrue("UpsertEntries", db.upsertEntries(result))
+        db.upsertEntries(result)
         val edited: List<VEntry> = db.getVocablesOfTable(tbl)
         Assert.assertEquals("invalid amount of entries", (entries.size - 1).toLong(), edited.size.toLong())
         Assert.assertEquals("invalid entry data", result[20].aString, edited[20].aString)
@@ -121,12 +151,29 @@ class DBTest {
         val db = Database(context)
         val tbl: VList = table()
         db.upsertVList(tbl)
-        val entries: List<VEntry> = getEntries(tbl)
-        Assert.assertTrue("UpsertEntries", db.upsertEntries(entries))
-        Assert.assertEquals("invalid amount entries", entries.size.toLong(), db.getVocablesOfTable(tbl).size.toLong())
+        val entries: List<VEntry> = generateEntries(tbl)
+        db.upsertEntries(entries)
+        Assert.assertEquals("invalid amount entries", entries.size, db.getVocablesOfTable(tbl).size)
         val lists = db.tables!!
         db.deleteList(tbl)
-        Assert.assertEquals("invalid amount entries", 0, db.getVocablesOfTable(tbl).size.toLong())
+        Assert.assertEquals("invalid amount entries", 0, db.getVocablesOfTable(tbl).size)
+        Assert.assertEquals("invalid amount lists", lists.size-1, db.tables!!.size)
+    }
+
+    @Test
+    fun testDBDeleteUUID() {
+        val db = Database(context)
+        val tbl: VList = table(true)
+        Assert.assertNotNull("missing UUID for list",tbl.uuid)
+        db.upsertVList(tbl)
+        val entries: List<VEntry> = generateEntries(tbl)
+        db.upsertEntries(entries)
+        for (e in entries)
+            Assert.assertNotNull("missing UUID for entry",e.uuid)
+        Assert.assertEquals("invalid amount entries", entries.size, db.getVocablesOfTable(tbl).size)
+        val lists = db.tables!!
+        db.deleteList(tbl)
+        Assert.assertEquals("invalid amount entries", 0, db.getVocablesOfTable(tbl).size)
         Assert.assertEquals("invalid amount lists", lists.size-1, db.tables!!.size)
     }
 
@@ -135,8 +182,8 @@ class DBTest {
         val db = Database(context)
         val tbl: VList = table()
         db.upsertVList(tbl)
-        val entries: List<VEntry> = getEntries(tbl)
-        Assert.assertTrue("UpsertEntries", db.upsertEntries(entries))
+        val entries: List<VEntry> = generateEntries(tbl)
+        db.upsertEntries(entries)
         Assert.assertNotNull(db.getRandomTrainerEntry(tbl, null, TrainerSettings(2, Trainer.TEST_MODE.RANDOM, true, true, true, false), true))
     }
 
@@ -145,8 +192,8 @@ class DBTest {
         val db = Database(context)
         val tbl: VList = table()
         db.upsertVList(tbl)
-        val entries: List<VEntry> = getEntries(tbl)
-        Assert.assertTrue("UpsertEntries", db.upsertEntries(entries))
+        val entries: List<VEntry> = generateEntries(tbl)
+        db.upsertEntries(entries)
         val ent: VEntry = entries[0]
         ent.points = 2
         Assert.assertEquals(2, ent.points!!.toLong())
@@ -168,10 +215,10 @@ class DBTest {
         val points = 1
         val tbl: VList = table()
         db.upsertVList(tbl)
-        var entries: List<VEntry> = getEntries(tbl)
+        var entries: List<VEntry> = generateEntries(tbl)
         entries = entries.subList(0, 2)
         Assert.assertEquals(2, entries.size.toLong())
-        Assert.assertTrue("UpsertEntries", db.upsertEntries(entries))
+        db.upsertEntries(entries)
         val settings = TrainerSettings(points, Trainer.TEST_MODE.RANDOM, true, true, true, false)
         val chosen: VEntry? = db.getRandomTrainerEntry(tbl, null, settings, false)
         Assert.assertNotNull(chosen)

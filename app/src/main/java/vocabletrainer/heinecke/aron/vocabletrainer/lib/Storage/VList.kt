@@ -34,7 +34,8 @@ data class VList(
     var unfinishedVocs: Int = -1,
     private var _id: Long,
     var uuid: UUID?,
-    var isSelected: Boolean = false
+    var isSelected: Boolean = false,
+    var categories: MutableList<Category> = mutableListOf()
 ) : Parcelable {
 
     /**

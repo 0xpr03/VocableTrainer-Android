@@ -3,12 +3,12 @@ package vocabletrainer.heinecke.aron.vocabletrainer
 import android.content.Context
 import android.icu.util.Calendar
 import android.icu.util.TimeZone
-import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.*
 import org.junit.runner.RunWith
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Category
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList
@@ -40,7 +40,7 @@ class DBTest {
 
     //https://medium.com/mobile-app-development-publication/android-sqlite-database-unit-testing-is-easy-a09994701162#.s44tity8x
     //https://github.com/elye/demo_simpledb_test/blob/master/app/src/test/java/com/elyeproj/simpledb/ExampleUnitTest.kt
-    private fun table(withUUID: Boolean = false): VList {
+    private fun genList(withUUID: Boolean = false): VList {
         val id = Random.nextInt()
         val lst = VList.blank("Test Column A $id", "Test Column B $id","Test List $id")
         if (withUUID) {
@@ -55,6 +55,10 @@ class DBTest {
             entries.add(VEntry.importer("A$i", "B$i", "C$i", "D$i",tbl))
         }
         return entries
+    }
+
+    private fun genCategory(): Category {
+        return Category.new("Category ${Random.nextInt()}")
     }
 
     @Before
@@ -91,7 +95,7 @@ class DBTest {
 
     fun _testDBInsertList(withUUID: Boolean) {
         val db = Database(context)
-        val list: VList = table(withUUID)
+        val list: VList = genList(withUUID)
         val curLists: List<VList> = db.tables
         db.upsertVList(list)
         Assert.assertTrue(list.isExisting)
@@ -116,7 +120,7 @@ class DBTest {
     @Suppress("TestFunctionName")
     private fun _testDBInsertEntries(withUUID: Boolean) {
         val db = Database(context)
-        val tbl: VList = table(withUUID)
+        val tbl: VList = genList(withUUID)
         db.upsertVList(tbl)
         val entries: List<VEntry> = generateEntries(tbl)
         Assert.assertTrue(entries.size > 1)
@@ -133,7 +137,7 @@ class DBTest {
     @Test
     fun testDBEditEntries() {
         val db = Database(context)
-        val tbl: VList = table()
+        val tbl: VList = genList()
         db.upsertVList(tbl)
         val entries: List<VEntry> = generateEntries(tbl)
         db.upsertEntries(entries)
@@ -158,13 +162,15 @@ class DBTest {
     @Suppress("TestFunctionName")
     private fun _testDBDelete(uuid: Boolean) {
         val db = Database(context)
-        val list: VList = table(uuid)
-        Assert.assertNotNull("missing UUID for list",list.uuid)
+        val list: VList = genList(uuid)
+        if (uuid)
+            Assert.assertNotNull("missing UUID for list",list.uuid)
         db.upsertVList(list)
         val entries: List<VEntry> = generateEntries(list)
         db.upsertEntries(entries)
-        for (e in entries)
-            Assert.assertNotNull("missing UUID for entry",e.uuid)
+        if (uuid)
+            for (e in entries)
+                Assert.assertNotNull("missing UUID for entry",e.uuid)
         Assert.assertEquals("invalid amount entries", entries.size, db.getVocablesOfTable(list).size)
         val listsPre = db.tables
         val deletionTime = Date(System.currentTimeMillis())
@@ -172,7 +178,7 @@ class DBTest {
         val listsPost = db.tables
         Assert.assertEquals("invalid amount entries", 0, db.getVocablesOfTable(list).size)
         Assert.assertEquals("invalid amount lists", listsPre.size-1, listsPost.size)
-        Assert.assertNull(listsPost.find { v -> v.id == list.id })
+        Assert.assertNull("found deleted list",listsPost.find { v -> v.id == list.id })
         if (uuid) {
             val deletedLists = db.deletedLists(deletionTime)
             val found = deletedLists.find { v -> v.uuid == list.uuid }
@@ -189,7 +195,7 @@ class DBTest {
     @Test
     fun testDBRandomSelect() {
         val db = Database(context)
-        val tbl: VList = table()
+        val tbl: VList = genList()
         db.upsertVList(tbl)
         val entries: List<VEntry> = generateEntries(tbl)
         db.upsertEntries(entries)
@@ -199,7 +205,7 @@ class DBTest {
     @Test
     fun testDBEntryPointsInsert() {
         val db = Database(context)
-        val tbl: VList = table()
+        val tbl: VList = genList()
         db.upsertVList(tbl)
         val entries: List<VEntry> = generateEntries(tbl)
         db.upsertEntries(entries)
@@ -222,7 +228,7 @@ class DBTest {
     fun testDbEntryRandomSelect() {
         val db = Database(context)
         val points = 1
-        val tbl: VList = table()
+        val tbl: VList = genList()
         db.upsertVList(tbl)
         var entries: List<VEntry> = generateEntries(tbl)
         entries = entries.subList(0, 2)
@@ -245,5 +251,45 @@ class DBTest {
         db.updateEntryProgress(thirdChosen)
         val fourthChosen: VEntry? = db.getRandomTrainerEntry(tbl, null, settings, false)
         Assert.assertNull(fourthChosen)
+    }
+
+    @Test
+    fun testCategoryInsert() {
+        val db = Database(context)
+        val cat = genCategory()
+        db.upsertCategory(cat)
+        val categories = db.categories
+        val found = categories.find { v -> v.id == cat.id }
+        Assert.assertNotNull("inserted category not found",found)
+        Assert.assertEquals(cat,found)
+    }
+
+    @Test
+    fun testCategoryDelete() {
+        val db = Database(context)
+        val cat = genCategory()
+        db.upsertCategory(cat)
+        val delTime = System.currentTimeMillis()
+        db.deleteCategory(cat)
+        Assert.assertNull("found deleted category",db.categories.find { v -> v.id == cat.id })
+        val deleted = db.deletedCategories(Date(delTime))
+        val tombstone = deleted.find { v -> v.uuid == cat.uuid }
+        Assert.assertNotNull("no tombstone for deleted category",tombstone)
+        val diff = delTime - tombstone!!.created.time
+        Assert.assertTrue("deletion time diff is $diff", diff < 5)
+    }
+
+    @Test
+    fun testCategoryEdit() {
+        val db = Database(context)
+        val origin = genCategory()
+        db.upsertCategory(origin)
+        val cat = db.categories.find { v -> v.id == origin.id }
+        Assert.assertEquals(origin,cat)
+        cat!!.name = "asdasdasd"
+        db.upsertCategory(cat)
+        val found = db.categories.find { v -> v.id == origin.id }
+        Assert.assertEquals(cat,found)
+        Assert.assertNotEquals(origin.changed,found!!.changed)
     }
 }

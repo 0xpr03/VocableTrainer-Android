@@ -11,14 +11,11 @@ import android.util.Log
 import androidx.collection.LongSparseArray
 import androidx.core.database.getStringOrNull
 import androidx.lifecycle.LiveData
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList
 import java.sql.Date
 import java.sql.SQLException
 import java.util.*
 import android.R.id
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Tombstone
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.*
 
 
 /**
@@ -180,7 +177,7 @@ class Database {
                         }
                         handleMeaningData(cMA, mapA)
                         handleMeaningData(cMB, mapB)
-                        Log.d(TAG,"Loaded list: $lst")
+                        //Log.d(TAG,"Loaded list: $lst")
                         return lst
                     }
                 }
@@ -256,6 +253,58 @@ class Database {
                 list.add(entry)
             }
             return list
+        }
+    }
+
+    /**
+     * All available categories
+     */
+    val categories: List<Category>
+        get() {
+            val column = listOf(KEY_CATEGORY_NAME, KEY_CATEGORY, KEY_CHANGED, KEY_CATEGORY_UUID)
+            db!!.rawQuery("SELECT ${column.joinToString (separator = ",")} FROM $TBL_CATEGORY", null).use { cursor ->
+                val list: MutableList<Category> = ArrayList()
+                while (cursor.moveToNext()) {
+                    val entry = Category(
+                        _name = cursor.getString(0),
+                        id = cursor.getLong(1),
+                        changed = cursor.getLong(2),
+                        uuid = parseUUID(cursor.getString(3))!!
+                    )
+                    list.add(entry)
+                }
+                return list
+            }
+        }
+
+    /**
+     * Delete category
+     */
+    fun deleteCategory(cat: Category) {
+        db!!.delete(TBL_CATEGORY, "$KEY_CATEGORY = ?", arrayOf(cat.id.toString()))
+        ContentValues().apply {
+            put(KEY_CREATED, System.currentTimeMillis())
+            put(KEY_CATEGORY_UUID, uuidToString(cat.uuid))
+            db!!.insertOrThrow(TBL_CATEGORIES_DELETED, null, this)
+        }
+    }
+
+    /**
+     * Upsert category, setting a ID if not existing
+     */
+    fun upsertCategory(cat: Category) {
+        if(cat.isExisting) {
+            val values = ContentValues()
+            values.put(KEY_CATEGORY_NAME, cat.name)
+            values.put(KEY_CHANGED, cat.changed)
+            db!!.update(TBL_CATEGORY,values,"$KEY_CATEGORY = ?", arrayOf(cat.id.toString()))
+        } else {
+            ContentValues().apply {
+                put(KEY_CATEGORY_NAME, cat.name)
+                put(KEY_CATEGORY_UUID, uuidToString(cat.uuid))
+                put(KEY_CHANGED, cat.changed)
+                cat.id = db!!.insertOrThrow(TBL_CATEGORY, null, this)
+            }
         }
     }
 

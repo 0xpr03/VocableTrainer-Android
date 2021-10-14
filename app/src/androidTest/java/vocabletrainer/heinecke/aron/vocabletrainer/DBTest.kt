@@ -3,6 +3,7 @@ package vocabletrainer.heinecke.aron.vocabletrainer
 import android.content.Context
 import android.icu.util.Calendar
 import android.icu.util.TimeZone
+import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.*
@@ -76,7 +77,7 @@ class DBTest {
         val time = System.currentTimeMillis()
         val utc = Calendar.getInstance(TimeZone.getTimeZone("UTC")).timeInMillis;
         val diff = utc-time
-        Assert.assertTrue("time vs Calendar-UTC has a difference of $diff",diff <2)
+        Assert.assertTrue("time vs Calendar-UTC has a difference of $diff",diff < 5)
         Assert.assertEquals(utc.toString(),java.lang.Long.toString(utc))
         val date = Date(time)
         Assert.assertEquals("System.currentTimeMillis isn't equal Date.time created from it",time,date.time)
@@ -91,10 +92,10 @@ class DBTest {
     fun _testDBInsertList(withUUID: Boolean) {
         val db = Database(context)
         val list: VList = table(withUUID)
-        val curLists: List<VList> = db.tables!!
+        val curLists: List<VList> = db.tables
         db.upsertVList(list)
         Assert.assertTrue(list.isExisting)
-        val listsNew: List<VList> = db.tables!!
+        val listsNew: List<VList> = db.tables
         Assert.assertEquals("Invalid amount of entries", curLists.size+1, listsNew.size)
         //Log.d(this::class.simpleName,"list id: $list.id")
         Assert.assertFalse("list existed pre-insertion",curLists.map { v -> v.id }.contains(list.id))
@@ -111,7 +112,9 @@ class DBTest {
         _testDBInsertEntries(false)
         _testDBInsertEntries(true)
     }
-    fun _testDBInsertEntries(withUUID: Boolean) {
+
+    @Suppress("TestFunctionName")
+    private fun _testDBInsertEntries(withUUID: Boolean) {
         val db = Database(context)
         val tbl: VList = table(withUUID)
         db.upsertVList(tbl)
@@ -148,33 +151,39 @@ class DBTest {
 
     @Test
     fun testDBDelete() {
-        val db = Database(context)
-        val tbl: VList = table()
-        db.upsertVList(tbl)
-        val entries: List<VEntry> = generateEntries(tbl)
-        db.upsertEntries(entries)
-        Assert.assertEquals("invalid amount entries", entries.size, db.getVocablesOfTable(tbl).size)
-        val lists = db.tables!!
-        db.deleteList(tbl)
-        Assert.assertEquals("invalid amount entries", 0, db.getVocablesOfTable(tbl).size)
-        Assert.assertEquals("invalid amount lists", lists.size-1, db.tables!!.size)
+        _testDBDelete(false)
+        _testDBDelete(true)
     }
 
-    @Test
-    fun testDBDeleteUUID() {
+    @Suppress("TestFunctionName")
+    private fun _testDBDelete(uuid: Boolean) {
         val db = Database(context)
-        val tbl: VList = table(true)
-        Assert.assertNotNull("missing UUID for list",tbl.uuid)
-        db.upsertVList(tbl)
-        val entries: List<VEntry> = generateEntries(tbl)
+        val list: VList = table(uuid)
+        Assert.assertNotNull("missing UUID for list",list.uuid)
+        db.upsertVList(list)
+        val entries: List<VEntry> = generateEntries(list)
         db.upsertEntries(entries)
         for (e in entries)
             Assert.assertNotNull("missing UUID for entry",e.uuid)
-        Assert.assertEquals("invalid amount entries", entries.size, db.getVocablesOfTable(tbl).size)
-        val lists = db.tables!!
-        db.deleteList(tbl)
-        Assert.assertEquals("invalid amount entries", 0, db.getVocablesOfTable(tbl).size)
-        Assert.assertEquals("invalid amount lists", lists.size-1, db.tables!!.size)
+        Assert.assertEquals("invalid amount entries", entries.size, db.getVocablesOfTable(list).size)
+        val listsPre = db.tables
+        val deletionTime = Date(System.currentTimeMillis())
+        db.deleteList(list)
+        val listsPost = db.tables
+        Assert.assertEquals("invalid amount entries", 0, db.getVocablesOfTable(list).size)
+        Assert.assertEquals("invalid amount lists", listsPre.size-1, listsPost.size)
+        Assert.assertNull(listsPost.find { v -> v.id == list.id })
+        if (uuid) {
+            val deletedLists = db.deletedLists(deletionTime)
+            val found = deletedLists.find { v -> v.uuid == list.uuid }
+            Assert.assertNotNull("deleted list has no tombstone",found)
+            val diff = deletionTime.time - found!!.created.time
+            Assert.assertTrue("deletion time diff is $diff", diff < 5)
+            val deletedEntries = db.deletedEntries(deletionTime)
+            for (entry in entries) {
+                Assert.assertNull("unnecessary entry deletion for deleted list",deletedEntries.find { v -> v.uuid == entry.uuid })
+            }
+        }
     }
 
     @Test

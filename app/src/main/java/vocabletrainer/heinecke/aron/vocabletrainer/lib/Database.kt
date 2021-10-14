@@ -18,9 +18,7 @@ import java.sql.Date
 import java.sql.SQLException
 import java.util.*
 import android.R.id
-
-
-
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Tombstone
 
 
 /**
@@ -224,11 +222,11 @@ class Database {
     }
 
     /**
-     * Get a list of all lists
+     * Get a list of all lists, non-cancelable
      *
      * @return ArrayList<\VList>
      */
-    val tables: List<VList>?
+    val tables: List<VList>
         get() = getTables(null)
 
     /**
@@ -236,33 +234,28 @@ class Database {
      * @param cancelHandle Handle for cancel, null for cancel disable, value has to be set
      * @return ArrayList<\VList>
      */
-    fun getTables(cancelHandle: LiveData<Boolean>?): List<VList>? {
+    fun getTables(cancelHandle: LiveData<Boolean>?): List<VList> {
         val column = listOf(KEY_LIST, KEY_NAME_A, KEY_NAME_B, KEY_NAME_LIST, KEY_CREATED,
             KEY_CHANGED, KEY_LIST_UUID)
-        try {
-            db!!.rawQuery("SELECT l.${column.joinToString (separator = ",")} FROM $TBL_LISTS l LEFT JOIN $TBL_LIST_SYNC s " +
-                    "ON s.$KEY_LIST = l.$KEY_LIST", null).use { cursor ->
-                val list: MutableList<VList> = ArrayList()
-                while (cursor.moveToNext()) {
-                    if (cancelHandle != null && cancelHandle.value!!) {
-                        break
-                    }
-                    val entry = VList(
-                        _id = cursor.getLong(0),
-                        _nameA = cursor.getString(1),
-                        _nameB = cursor.getString(2),
-                        _name = cursor.getString(3),
-                        created = Date(cursor.getLong(4)),
-                        changed = Date(cursor.getLong(5)),
-                        uuid = parseUUID(cursor.getStringOrNull(6))
-                    )
-                    list.add(entry)
+        db!!.rawQuery("SELECT l.${column.joinToString (separator = ",")} FROM $TBL_LISTS l LEFT JOIN $TBL_LIST_SYNC s " +
+                "ON s.$KEY_LIST = l.$KEY_LIST", null).use { cursor ->
+            val list: MutableList<VList> = ArrayList()
+            while (cursor.moveToNext()) {
+                if (cancelHandle != null && cancelHandle.value!!) {
+                    break
                 }
-                return list
+                val entry = VList(
+                    _id = cursor.getLong(0),
+                    _nameA = cursor.getString(1),
+                    _nameB = cursor.getString(2),
+                    _name = cursor.getString(3),
+                    created = Date(cursor.getLong(4)),
+                    changed = Date(cursor.getLong(5)),
+                    uuid = parseUUID(cursor.getStringOrNull(6))
+                )
+                list.add(entry)
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "", e)
-            return null
+            return list
         }
     }
 
@@ -416,6 +409,55 @@ class Database {
     }
 
     /**
+     * Returns entry UUIDs that are deleted. Optionally all entries after the specified date.
+     */
+    fun deletedEntries(since: Date? = null): List<Tombstone> {
+        return queryDeleted(since, TBL_ENTRIES_DELETED, KEY_ENTRY_UUID)
+    }
+
+    /**
+     * Returns list UUIDs that are deleted. Optionally all lists after the specified date.
+     */
+    fun deletedLists(since: Date? = null): List<Tombstone> {
+        return queryDeleted(since, TBL_LISTS_DELETED, KEY_LIST_UUID)
+    }
+
+    /**
+     * Returns category UUIDs that are deleted. Optionally all categories after the specified date.
+     */
+    fun deletedCategories(since: Date? = null): List<Tombstone> {
+        return queryDeleted(since, TBL_CATEGORIES_DELETED, KEY_CATEGORY_UUID)
+    }
+
+    /**
+     * Internal helper for deletedX functions
+     */
+    private fun queryDeleted(since: Date? = null, tbl: String, key: String): List<Tombstone> {
+        val selection = since?.let {
+            "$KEY_CREATED >= ?"
+        }
+        val selArgs = since?.let {
+            arrayOf(since.time.toString())
+        } ?: arrayOf()
+        val list = mutableListOf<Tombstone>()
+        db!!.query(
+            tbl, arrayOf(key, KEY_CREATED),
+            selection, selArgs,
+            null, null, null
+        ).use { cursor ->
+            while (cursor.moveToNext()) {
+                list.add(
+                    Tombstone(
+                        uuid = parseUUID(cursor.getString(0))!!,
+                        created = Date(cursor.getLong(1))
+                    )
+                )
+            }
+        }
+        return list
+    }
+
+    /**
      * Returns the ID of a table with the exact same naming <br></br>
      * this also updates the VList element itself to contain the right ID
      *
@@ -453,6 +495,13 @@ class Database {
         try {
             db!!.beginTransaction()
             db!!.delete(TBL_LISTS, "$KEY_LIST = ?", arrayOf(list.id.toString()))
+            list.uuid?.let {
+                ContentValues().apply {
+                    put(KEY_LIST_UUID, uuidToString(it))
+                    put(KEY_CREATED,System.currentTimeMillis())
+                    db!!.insertOrThrow(TBL_LISTS_DELETED, null, this)
+                }
+            }
             db!!.setTransactionSuccessful()
         } finally {
             if (db!!.inTransaction()) {
@@ -811,9 +860,13 @@ class Database {
         private val sqlSessionEntries = ("CREATE TABLE " + TBL_SESSION_ENTRIES + " ("
                 + KEY_ENTRY + " INTEGER PRIMARY KEY REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE )")
         private val sqlListsDeleted = ("CREATE TABLE " + TBL_LISTS_DELETED + " ("
-                + KEY_LIST_UUID + " text NOT NULL PRIMARY KEY )")
+                + KEY_LIST_UUID + " text NOT NULL PRIMARY KEY,"
+                + KEY_CREATED + "INTEGER NOT NULL )")
+        private val sqlListDeletedIndex = ("CREATE INDEX listDeletedI ON $TBL_LISTS_DELETED ($KEY_CREATED)")
         private val sqlEntriesDeleted = ("CREATE TABLE " + TBL_ENTRIES_DELETED + " ("
-                + KEY_ENTRY_UUID + " text NOT NULL PRIMARY KEY )")
+                + KEY_ENTRY_UUID + " text NOT NULL PRIMARY KEY,"
+                + KEY_CREATED + "INTEGER NOT NULL )")
+        private val sqlEntryDeletedIndex = ("CREATE INDEX entryDeletedI ON $TBL_ENTRIES_DELETED ($KEY_CREATED)")
         private val sqlEntryStats = ("CREATE TABLE " + TBL_ENTRY_STATS + " ("
                 + KEY_ENTRY + " INTEGER REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE,"
                 + KEY_DATE + "INTEGER PRIMARY KEY,"
@@ -830,7 +883,9 @@ class Database {
                 + KEY_CHANGED + " INTEGER NOT NULL )")
         private val sqlCategoryIndex = ("CREATE INDEX categoryChangedI ON $TBL_CATEGORY ($KEY_CHANGED)")
         private val sqlCategoriesDeleted = ("CREATE TABLE " + TBL_CATEGORIES_DELETED + " ("
-                + KEY_CATEGORY_UUID + " text NOT NULL PRIMARY KEY )")
+                + KEY_CATEGORY_UUID + " text NOT NULL PRIMARY KEY,"
+                + KEY_CREATED + "INTEGER NOT NULL )")
+        private val sqlCategoryDeletedIndex = ("CREATE INDEX categoryDeletedI ON $TBL_CATEGORIES_DELETED ($KEY_CREATED)")
 
         override fun onOpen(db: SQLiteDatabase?) {
             super.onOpen(db)
@@ -888,12 +943,15 @@ class Database {
                 sqlSessionLists,
                 sqlSessionEntries,
                 sqlListsDeleted,
+                sqlListDeletedIndex,
                 sqlEntriesDeleted,
+                sqlEntryDeletedIndex,
                 sqlEntryStats,
                 sqlListCategories,
                 sqlCategory,
                 sqlCategoryIndex,
                 sqlCategoriesDeleted,
+                sqlCategoryDeletedIndex,
                 sqlEntryUsed,
                 sqlEntryUsedIndex
             )
@@ -945,12 +1003,15 @@ class Database {
                 sqlSessionLists,
                 sqlSessionEntries,
                 sqlListsDeleted,
+                sqlListDeletedIndex,
                 sqlEntriesDeleted,
+                sqlEntryDeletedIndex,
                 sqlEntryStats,
                 sqlListCategories,
                 sqlCategory,
                 sqlCategoryIndex,
                 sqlCategoriesDeleted,
+                sqlCategoryDeletedIndex,
                 sqlEntryUsed,
                 sqlEntryUsedIndex
             )

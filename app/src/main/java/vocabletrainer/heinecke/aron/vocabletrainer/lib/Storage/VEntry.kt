@@ -6,7 +6,6 @@ import android.text.TextUtils
 import kotlinx.android.parcel.Parcelize
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.Companion.MIN_ID_TRESHOLD
 import java.io.Serializable
-import java.sql.Date
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -32,15 +31,15 @@ data class VEntry(
     /**
      * Can be null if never used in training or light data retrieval
      */
-    var last_used: Date?,
-    var created: Date,
+    var last_used: Long?,
+    var created: Long,
 
     /**
      * Returns whether the Data of this VEntry was changed
      *
      * @return
      */
-    var changed: Date,
+    var changed: Long,
     val uuid: UUID?,
     private var meaningA: MutableList<String>,
     private var meaningB: MutableList<String>,
@@ -59,7 +58,7 @@ data class VEntry(
         set(AMeanings) {
             meaningA = AMeanings
             isChanged = true
-            changed = Date(System.currentTimeMillis())
+            changed = System.currentTimeMillis()
         }
 
     /**
@@ -72,7 +71,7 @@ data class VEntry(
         set(BMeanings) {
             meaningB = BMeanings
             isChanged = true
-            changed = Date(System.currentTimeMillis())
+            changed = System.currentTimeMillis()
         }
 
     var tip: String?
@@ -80,7 +79,7 @@ data class VEntry(
         set(value) {
             _tip = value
             isChanged = true
-            changed = Date(System.currentTimeMillis())
+            changed = System.currentTimeMillis()
         }
 
     var addition: String?
@@ -88,14 +87,14 @@ data class VEntry(
         set(value) {
             _addition = value
             isChanged = true
-            changed = Date(System.currentTimeMillis())
+            changed = System.currentTimeMillis()
         }
 
     var points: Int?
         get() = _points
         set(value) {
             _points = value
-            last_used = Date(System.currentTimeMillis())
+            last_used = System.currentTimeMillis()
         }
 
     override fun toString(): String {
@@ -163,7 +162,7 @@ data class VEntry(
             if(VList.isIDValid(fID)){
                 throw IllegalArgumentException("no valid ID allowed!");
             }
-            val time = Date(System.currentTimeMillis())
+            val time = System.currentTimeMillis()
             return VEntry(
                 _tip = tip,
                 created = time,
@@ -195,7 +194,7 @@ data class VEntry(
          * Creates a new VEntry with 0 points, ID < MIN_ID_TRESHOLD & current Date & 0 correct, wrong
          */
         fun predefined(meaningA: MutableList<String>,meaningB: MutableList<String>,tip: String,addition: String,list: VList?): VEntry {
-            val time = Date(System.currentTimeMillis())
+            val time = System.currentTimeMillis()
             val uuid = if (list?.uuid != null) {
                 Database.uuid()
             } else {

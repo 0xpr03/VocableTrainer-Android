@@ -75,8 +75,8 @@ class Database {
                 val list = VList(
                     _id = cV.getLong(4), _name = cV.getString(7),
                     _nameA = cV.getString(5), _nameB = cV.getString(6),
-                    created = Date(cV.getLong(8)), uuid = parseUUID(cV.getStringOrNull(10)),
-                    changed = Date(cV.getLong(11))
+                    created = cV.getLong(8), uuid = parseUUID(cV.getStringOrNull(10)),
+                    changed = cV.getLong(11)
                 )
                 val meaningA: MutableList<String> = ArrayList()
                 val meaningB: MutableList<String> = ArrayList()
@@ -84,8 +84,8 @@ class Database {
                     meaningA = meaningA, meaningB = meaningB, _tip = cV.getString(0),
                     _addition = cV.getString(1), id = vocID, list = list,
                     _points = if (cV.isNull(9)) 0 else cV.getInt(9),
-                    last_used = Date(cV.getLong(2)), created = Date(cV.getLong(3)),
-                    changed = Date(cV.getLong(12)),uuid = parseUUID(cV.getStringOrNull(13))
+                    last_used = cV.getLong(2), created = cV.getLong(3),
+                    changed = cV.getLong(12),uuid = parseUUID(cV.getStringOrNull(13))
                 )
                 getVocableMeanings(TBL_WORDS_A, vocable, meaningA)
                 getVocableMeanings(TBL_WORDS_B, vocable, meaningB)
@@ -167,8 +167,8 @@ class Database {
                                 _tip = cV.getString(0), _addition = cV.getString(1),
                                 id = cV.getLong(3), list = list,
                                 last_used = null,
-                                created = Date(cV.getLong(2)),
-                                changed = Date(cV.getLong(5)),
+                                created = cV.getLong(2),
+                                changed = cV.getLong(5),
                                 uuid = parseUUID(cV.getStringOrNull(4))
                             )
                             mapA.put(vocable.id, meaningA)
@@ -246,8 +246,8 @@ class Database {
                     _nameA = cursor.getString(1),
                     _nameB = cursor.getString(2),
                     _name = cursor.getString(3),
-                    created = Date(cursor.getLong(4)),
-                    changed = Date(cursor.getLong(5)),
+                    created = cursor.getLong(4),
+                    changed = cursor.getLong(5),
                     uuid = parseUUID(cursor.getStringOrNull(6))
                 )
                 list.add(entry)
@@ -322,7 +322,7 @@ class Database {
             values.put(KEY_NAME_LIST, tbl.name)
             values.put(KEY_NAME_A, tbl.nameA)
             values.put(KEY_NAME_B, tbl.nameB)
-            values.put(KEY_CHANGED, tbl.changed.time)
+            values.put(KEY_CHANGED, tbl.changed)
             val updated = db!!.update(TBL_LISTS, values, KEY_LIST + " = ?",
                 args)
             if (updated != 1) {
@@ -333,8 +333,8 @@ class Database {
                 put(KEY_NAME_A, tbl.nameA)
                 put(KEY_NAME_B, tbl.nameB)
                 put(KEY_NAME_LIST, tbl.name)
-                put(KEY_CREATED, tbl.created.time)
-                put(KEY_CHANGED, tbl.changed.time)
+                put(KEY_CREATED, tbl.created)
+                put(KEY_CHANGED, tbl.changed)
                 tbl.id = db!!.insertOrThrow(TBL_LISTS, null, this)
             }
             tbl.uuid?.let {
@@ -404,7 +404,7 @@ class Database {
                                                 updStm.clearBindings()
                                                 updStm.bindString(1, entry.addition)
                                                 updStm.bindString(2, entry.tip)
-                                                updStm.bindLong(3, entry.changed.time)
+                                                updStm.bindLong(3, entry.changed)
                                                 updStm.bindLong(4, entry.id)
                                                 updStm.execute()
                                                 insertMeanings = true
@@ -415,8 +415,8 @@ class Database {
                                         insStm.bindLong(1, entry.list!!.id)
                                         insStm.bindString(2, entry.tip)
                                         insStm.bindString(3, entry.addition)
-                                        insStm.bindLong(4, entry.created.time)
-                                        insStm.bindLong(5, entry.changed.time)
+                                        insStm.bindLong(4, entry.created)
+                                        insStm.bindLong(5, entry.changed)
                                         entry.id = insStm.executeInsert()
                                         entry.uuid?.let {
                                             ContentValues().apply {
@@ -656,8 +656,8 @@ class Database {
                                 _nameA = cursor.getString(1),
                                 _nameB = cursor.getString(2),
                                 _name = cursor.getString(3),
-                                created = Date(cursor.getLong(4)),
-                                changed = Date(cursor.getLong(5)),
+                                created = cursor.getLong(4),
+                                changed = cursor.getLong(5),
                                 uuid = null,
                             )
                         )
@@ -751,9 +751,9 @@ class Database {
                     list = list,
                     _points = points,
                     last_used = null,
-                    created = Date(cV.getLong(2)),
+                    created = cV.getLong(2),
                     uuid = null, // leave empty
-                    changed = Date(cV.getLong(5))
+                    changed = cV.getLong(5)
                 )
                 getVocableMeanings(TBL_WORDS_A, vocable, meaningA)
                 getVocableMeanings(TBL_WORDS_B, vocable, meaningB)

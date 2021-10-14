@@ -1,9 +1,8 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage
 
 import android.os.Parcelable
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database
 import kotlinx.android.parcel.Parcelize
-import java.sql.Date
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database
 import java.util.*
 
 /**
@@ -14,8 +13,8 @@ data class VList(
     private var _nameA: String,
     private var _nameB: String,
     private var _name: String,
-    var created: Date,
-    var changed: Date,
+    var created: Long,
+    var changed: Long,
 
     /**
      * Returns the amount of vocables this table has<br></br>
@@ -68,21 +67,21 @@ data class VList(
         get() = _name
         set(value) {
             _name = value
-            changed = Date(System.currentTimeMillis())
+            changed = System.currentTimeMillis()
         }
 
     var nameA: String
         get() = _nameA
         set(value) {
             _nameA = value
-            changed = Date(System.currentTimeMillis())
+            changed = System.currentTimeMillis()
         }
 
     var nameB: String
         get() = _nameB
         set(value) {
             _nameB = value
-            changed = Date(System.currentTimeMillis())
+            changed = System.currentTimeMillis()
         }
 
     var id: Long
@@ -116,7 +115,7 @@ data class VList(
          * Create a blank VList missing a valid ID and just naming
          */
         fun blank(nameA: String, nameB: String,name: String): VList {
-            val time = Date(System.currentTimeMillis())
+            val time = System.currentTimeMillis()
             return VList(
                 _name = name, _nameB = nameB, _nameA = nameA, _id = Database.MIN_ID_TRESHOLD - 1,
                 changed = time,
@@ -132,7 +131,7 @@ data class VList(
          * @param nameB Name for B Column
          */
         fun withId(id: Long, name: String, nameA: String, nameB: String): VList {
-            val time = Date(System.currentTimeMillis())
+            val time = System.currentTimeMillis()
             return VList(
                 _name = name, _nameB = nameB, _nameA = nameA, _id = id,
                 changed = time,

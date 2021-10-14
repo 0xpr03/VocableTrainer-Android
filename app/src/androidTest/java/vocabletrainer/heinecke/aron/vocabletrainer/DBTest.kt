@@ -96,10 +96,10 @@ class DBTest {
     fun _testDBInsertList(withUUID: Boolean) {
         val db = Database(context)
         val list: VList = genList(withUUID)
-        val curLists: List<VList> = db.tables
+        val curLists: List<VList> = db.lists
         db.upsertVList(list)
         Assert.assertTrue(list.isExisting)
-        val listsNew: List<VList> = db.tables
+        val listsNew: List<VList> = db.lists
         Assert.assertEquals("Invalid amount of entries", curLists.size+1, listsNew.size)
         //Log.d(this::class.simpleName,"list id: $list.id")
         Assert.assertFalse("list existed pre-insertion",curLists.map { v -> v.id }.contains(list.id))
@@ -172,10 +172,10 @@ class DBTest {
             for (e in entries)
                 Assert.assertNotNull("missing UUID for entry",e.uuid)
         Assert.assertEquals("invalid amount entries", entries.size, db.getVocablesOfTable(list).size)
-        val listsPre = db.tables
+        val listsPre = db.lists
         val deletionTime = Date(System.currentTimeMillis())
         db.deleteList(list)
-        val listsPost = db.tables
+        val listsPost = db.lists
         Assert.assertEquals("invalid amount entries", 0, db.getVocablesOfTable(list).size)
         Assert.assertEquals("invalid amount lists", listsPre.size-1, listsPost.size)
         Assert.assertNull("found deleted list",listsPost.find { v -> v.id == list.id })

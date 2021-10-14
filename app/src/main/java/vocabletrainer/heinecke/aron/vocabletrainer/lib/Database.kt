@@ -14,7 +14,6 @@ import androidx.lifecycle.LiveData
 import java.sql.Date
 import java.sql.SQLException
 import java.util.*
-import android.R.id
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.*
 
 
@@ -219,19 +218,19 @@ class Database {
     }
 
     /**
-     * Get a list of all lists, non-cancelable
+     * Get all lists, non-cancelable
      *
      * @return ArrayList<\VList>
      */
-    val tables: List<VList>
-        get() = getTables(null)
+    val lists: List<VList>
+        get() = getLists(null)
 
     /**
-     * Get a list of all lists
+     * Get all lists
      * @param cancelHandle Handle for cancel, null for cancel disable, value has to be set
      * @return ArrayList<\VList>
      */
-    fun getTables(cancelHandle: LiveData<Boolean>?): List<VList> {
+    fun getLists(cancelHandle: LiveData<Boolean>?): List<VList> {
         val column = listOf(KEY_LIST, KEY_NAME_A, KEY_NAME_B, KEY_NAME_LIST, KEY_CREATED,
             KEY_CHANGED, KEY_LIST_UUID)
         db!!.rawQuery("SELECT l.${column.joinToString (separator = ",")} FROM $TBL_LISTS l LEFT JOIN $TBL_LIST_SYNC s " +

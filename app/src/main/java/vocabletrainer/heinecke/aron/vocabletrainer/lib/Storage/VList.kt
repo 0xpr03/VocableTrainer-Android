@@ -37,7 +37,7 @@ data class VList(
     /**
      * Null if not used
      */
-    var categories: MutableList<Category>? = null
+    private var _categories: MutableList<Category>? = null
 ) : Parcelable {
 
     /**
@@ -86,6 +86,34 @@ data class VList(
             _nameB = value
             changed = System.currentTimeMillis()
         }
+
+    var categories: MutableList<Category>?
+        get() = _categories
+        set(value) {
+            _categories = value
+            changed = System.currentTimeMillis()
+        }
+    fun addCategory(cat: Category) {
+        if(_categories != null) {
+            if(!_categories!!.contains(cat)) {
+                _categories!!.add(cat)
+                changed = System.currentTimeMillis()
+            }
+        } else {
+            _categories = mutableListOf(cat)
+            changed = System.currentTimeMillis()
+        }
+    }
+
+    fun removeCategory(cat: Category) {
+        _categories?.run {
+            if(this.contains(cat)) {
+                this.remove(cat)
+                changed = System.currentTimeMillis()
+            }
+        }
+
+    }
 
     var id: Long
         get() = _id

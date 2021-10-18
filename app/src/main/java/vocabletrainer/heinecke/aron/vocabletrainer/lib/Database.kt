@@ -264,7 +264,7 @@ class Database {
                     created = cursor.getLong(4),
                     changed = cursor.getLong(5),
                     uuid = parseUUID(cursor.getStringOrNull(6)),
-                    categories = entryCategories.get(cursor.getLong(0))
+                    _categories = entryCategories.get(cursor.getLong(0))
                 )
                 listsList.add(entry)
             }

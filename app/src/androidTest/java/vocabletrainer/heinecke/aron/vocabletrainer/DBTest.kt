@@ -256,10 +256,12 @@ class DBTest {
     @Test
     fun testCategoryInsert() {
         val db = Database(context)
+        val sizePrev = db.categories().size()
         val cat = genCategory()
         db.upsertCategory(cat)
-        val categories = db.categories
-        val found = categories.find { v -> v.id == cat.id }
+        val categories = db.categories()
+        Assert.assertEquals(sizePrev+1,categories.size())
+        val found = categories.get(cat.id)
         Assert.assertNotNull("inserted category not found",found)
         Assert.assertEquals(cat,found)
     }
@@ -271,7 +273,7 @@ class DBTest {
         db.upsertCategory(cat)
         val delTime = System.currentTimeMillis()
         db.deleteCategory(cat)
-        Assert.assertNull("found deleted category",db.categories.find { v -> v.id == cat.id })
+        Assert.assertNull("found deleted category",db.categories().get(cat.id))
         val deleted = db.deletedCategories(Date(delTime))
         val tombstone = deleted.find { v -> v.uuid == cat.uuid }
         Assert.assertNotNull("no tombstone for deleted category",tombstone)
@@ -284,12 +286,30 @@ class DBTest {
         val db = Database(context)
         val origin = genCategory()
         db.upsertCategory(origin)
-        val cat = db.categories.find { v -> v.id == origin.id }
+        val cat = db.categories().get(origin.id)
         Assert.assertEquals(origin,cat)
         cat!!.name = "asdasdasd"
         db.upsertCategory(cat)
-        val found = db.categories.find { v -> v.id == origin.id }
+        val found = db.categories().get(origin.id)
         Assert.assertEquals(cat,found)
         Assert.assertNotEquals(origin.changed,found!!.changed)
+    }
+
+    @Test
+    fun testCategoryRetrieval() {
+        val db = Database(context)
+        val cat = genCategory()
+        db.upsertCategory(cat)
+        val list = genList(true)
+        list.categories = mutableListOf(cat)
+        val entries = generateEntries(list)
+        db.upsertVList(list)
+        db.upsertEntries(entries)
+
+        val listT = db.lists.find { v -> v.id == list.id }
+        Assert.assertNotNull(listT)
+        Assert.assertNotNull(listT!!.categories)
+        val catT = listT.categories!![0]
+        Assert.assertEquals(cat,catT)
     }
 }

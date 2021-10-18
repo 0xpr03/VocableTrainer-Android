@@ -42,7 +42,7 @@ class EditorActivity : AppCompatActivity(), EditorDialogDataProvider, ListEditor
     private var entries: ArrayList<VEntry>? = null
     private var adapter: EntryListAdapter? = null
     private var listView: ListView? = null
-    private var db: Database? = null
+    private lateinit var db: Database
     private var sortSetting = 0
     private var cComp: GenEntryComparator? = null
     private var compA: GenEntryComparator? = null
@@ -116,7 +116,7 @@ class EditorActivity : AppCompatActivity(), EditorDialogDataProvider, ListEditor
             if (tbl != null) {
                 list = tbl
                 // do not call updateColumnNames as we've to wait for onCreateOptionsMenu, calling it
-                entries!!.addAll(db!!.getVocablesOfTable(list!!))
+                entries!!.addAll(db.getVocablesOfTable(list!!))
                 adapter!!.updateSorting(cComp)
                 Log.d(TAG, "edit list mode")
             } else {
@@ -229,7 +229,7 @@ class EditorActivity : AppCompatActivity(), EditorDialogDataProvider, ListEditor
             if (!isExisting) {
                 adapter!!.addEntryUnrendered(it)
             }
-            db!!.upsertEntries(lst)
+            db.upsertEntries(lst)
             adapter!!.notifyDataSetChanged()
             if (!isExisting) {
                 addEntry()
@@ -393,7 +393,7 @@ class EditorActivity : AppCompatActivity(), EditorDialogDataProvider, ListEditor
         }
         listEditorDialog!!.setOkAction {
             try {
-                db!!.upsertVList(list!!)
+                db.upsertVList(list!!)
                 title = list!!.name
                 updateColumnNames()
             } catch (e: SQLException) {

@@ -45,7 +45,7 @@ public class Importer implements ImportHandler {
         // raw data or single list with create flag
         if (previewParser.isRawData() || (!previewParser.isMultiList() && mode == IMPORT_LIST_MODE.CREATE)) {
             currentList = overrideList;
-            db.upsertVList(currentList);
+            db.upsertVList(currentList,false);
         }
     }
 
@@ -64,7 +64,7 @@ public class Importer implements ImportHandler {
                     ignoreEntries = true;
                 }
             } else {
-                db.upsertVList(tbl);
+                db.upsertVList(tbl,false);
             }
 
             currentList = tbl;

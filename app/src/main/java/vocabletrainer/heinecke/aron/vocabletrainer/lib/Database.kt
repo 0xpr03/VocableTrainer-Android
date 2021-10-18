@@ -22,7 +22,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.*
  * Doing all relevant DB stuff
  */
 class Database {
-    private var db: SQLiteDatabase? = null // pointer to DB used in this class
+    private var db: SQLiteDatabase // pointer to DB used in this class
     private var helper: internalDB? = null
     /**
      * Database object, using internal storage for this App (default DB file)
@@ -42,14 +42,14 @@ class Database {
             helper = internalDB(context)
             dbIntern = helper!!.writableDatabase
         }
-        db = dbIntern
+        db = dbIntern!!
     }
 
     /**
      * Close DB, all calls afterwards are UB!
      */
     fun close() {
-        db!!.close();
+        db.close();
     }
 
     /**
@@ -60,7 +60,7 @@ class Database {
      * Null on failure
      */
     fun getVocable(vocID: Long): VEntry? {
-        db!!.rawQuery(
+        db.rawQuery(
                 "SELECT $KEY_TIP, $KEY_ADDITION, $KEY_LAST_USED, tVoc.$KEY_CREATED, "
                 +"tVoc.$KEY_LIST, $KEY_NAME_A, $KEY_NAME_B, $KEY_NAME_LIST,"
                 +"tList.$KEY_CREATED, $KEY_POINTS, $KEY_LIST_UUID, tList.$KEY_CHANGED, tVoc.$KEY_CHANGED,"
@@ -104,7 +104,7 @@ class Database {
      * @param list List in which to insert
      */
     private fun getVocableMeanings(table: String, vocable: VEntry, list: MutableList<String>) {
-        db!!.query(table, arrayOf(KEY_MEANING),
+        db.query(table, arrayOf(KEY_MEANING),
                 "$KEY_ENTRY = ?", arrayOf(vocable.id.toString()),
                 null, null, null).use { cM ->
             while (cM.moveToNext()) {
@@ -123,7 +123,7 @@ class Database {
      */
     fun wipeSessionPoints(): Boolean {
         return try {
-            db!!.delete(TBL_SESSION + "", null, null)
+            db.delete(TBL_SESSION + "", null, null)
             true
         } catch (e: Exception) {
             Log.e(TAG, "", e)
@@ -143,15 +143,15 @@ class Database {
         val sqlMeaning = ("SELECT $KEY_MEANING,m.$KEY_ENTRY voc FROM %s m "
                 +"JOIN $TBL_ENTRIES e ON e.$KEY_ENTRY = m.$KEY_ENTRY "
                 + "WHERE e.$KEY_LIST = ? ORDER BY voc")
-        db!!.rawQuery(
+        db.rawQuery(
             "SELECT $KEY_TIP, $KEY_ADDITION, $KEY_CREATED,"
                     + "e.$KEY_ENTRY,$KEY_ENTRY_UUID,$KEY_CHANGED "
                     + "FROM $TBL_ENTRIES e LEFT JOIN $TBL_ENTRY_SYNC s ON s.$KEY_ENTRY = e.$KEY_ENTRY "
                     + "WHERE $KEY_LIST = ?", arrayOf(list.id.toString())
         ).use { cV ->
-            db!!.rawQuery(String.format(sqlMeaning, TBL_WORDS_A), arrayOf(list.id.toString()))
+            db.rawQuery(String.format(sqlMeaning, TBL_WORDS_A), arrayOf(list.id.toString()))
                 .use { cMA ->
-                    db!!.rawQuery(
+                    db.rawQuery(
                         String.format(sqlMeaning, TBL_WORDS_B),
                         arrayOf(list.id.toString())
                     ).use { cMB ->
@@ -210,7 +210,7 @@ class Database {
      */
     @Deprecated("")
     fun getEntryPoints(ent: VEntry): Int {
-        db!!.rawQuery(
+        db.rawQuery(
             "SELECT $KEY_POINTS "
                     + "FROM $TBL_SESSION WHERE $KEY_ENTRY = ?",
             arrayOf(ent.id.toString())
@@ -233,12 +233,28 @@ class Database {
     fun getLists(cancelHandle: LiveData<Boolean>?): List<VList> {
         val column = listOf(KEY_LIST, KEY_NAME_A, KEY_NAME_B, KEY_NAME_LIST, KEY_CREATED,
             KEY_CHANGED, KEY_LIST_UUID)
-        db!!.rawQuery("SELECT l.${column.joinToString (separator = ",")} FROM $TBL_LISTS l LEFT JOIN $TBL_LIST_SYNC s " +
+        val listsList: MutableList<VList> = ArrayList()
+
+        // load categories and create a list-id -> list<category> mapping
+        val categories = categories()
+        val entryCategories = LongSparseArray<MutableList<Category>>()
+        db.query(TBL_LIST_CATEGORIES, arrayOf(KEY_LIST, KEY_CATEGORY),null,null,null,null, KEY_LIST).use {cursor ->
+            while(cursor.moveToNext()) {
+                val listId = cursor.getLong(0)
+                var list = entryCategories.get(listId)
+                if (list == null) {
+                    list = mutableListOf()
+                    entryCategories.append(listId,list)
+                }
+                list.add(categories.get(cursor.getLong(1))!!)
+            }
+        }
+
+        db.rawQuery("SELECT l.${column.joinToString (separator = ",")} FROM $TBL_LISTS l LEFT JOIN $TBL_LIST_SYNC s " +
                 "ON s.$KEY_LIST = l.$KEY_LIST", null).use { cursor ->
-            val list: MutableList<VList> = ArrayList()
             while (cursor.moveToNext()) {
                 if (cancelHandle != null && cancelHandle.value!!) {
-                    break
+                    return listsList
                 }
                 val entry = VList(
                     _id = cursor.getLong(0),
@@ -247,102 +263,151 @@ class Database {
                     _name = cursor.getString(3),
                     created = cursor.getLong(4),
                     changed = cursor.getLong(5),
-                    uuid = parseUUID(cursor.getStringOrNull(6))
+                    uuid = parseUUID(cursor.getStringOrNull(6)),
+                    categories = entryCategories.get(cursor.getLong(0))
                 )
-                list.add(entry)
+                listsList.add(entry)
+            }
+        }
+        return listsList
+    }
+
+    /**
+     * All available categories
+     */
+    fun categories(): LongSparseArray<Category>{
+        val column = listOf(KEY_CATEGORY_NAME, KEY_CATEGORY, KEY_CHANGED, KEY_CATEGORY_UUID)
+        db.rawQuery("SELECT ${column.joinToString (separator = ",")} FROM $TBL_CATEGORY", null).use { cursor ->
+            val list: LongSparseArray<Category> = LongSparseArray()
+            while (cursor.moveToNext()) {
+                val entry = Category(
+                    _name = cursor.getString(0),
+                    id = cursor.getLong(1),
+                    changed = cursor.getLong(2),
+                    uuid = parseUUID(cursor.getString(3))!!
+                )
+                list.append(entry.id,entry)
             }
             return list
         }
     }
 
     /**
-     * All available categories
-     */
-    val categories: List<Category>
-        get() {
-            val column = listOf(KEY_CATEGORY_NAME, KEY_CATEGORY, KEY_CHANGED, KEY_CATEGORY_UUID)
-            db!!.rawQuery("SELECT ${column.joinToString (separator = ",")} FROM $TBL_CATEGORY", null).use { cursor ->
-                val list: MutableList<Category> = ArrayList()
-                while (cursor.moveToNext()) {
-                    val entry = Category(
-                        _name = cursor.getString(0),
-                        id = cursor.getLong(1),
-                        changed = cursor.getLong(2),
-                        uuid = parseUUID(cursor.getString(3))!!
-                    )
-                    list.add(entry)
-                }
-                return list
-            }
-        }
-
-    /**
      * Delete category
      */
-    fun deleteCategory(cat: Category) {
-        db!!.delete(TBL_CATEGORY, "$KEY_CATEGORY = ?", arrayOf(cat.id.toString()))
-        ContentValues().apply {
-            put(KEY_CREATED, System.currentTimeMillis())
-            put(KEY_CATEGORY_UUID, uuidToString(cat.uuid))
-            db!!.insertOrThrow(TBL_CATEGORIES_DELETED, null, this)
+    fun deleteCategory(cat: Category, useTransaction: Boolean = true) {
+        if (useTransaction) {
+            db.beginTransaction()
+        }
+        try {
+            db.delete(TBL_CATEGORY, "$KEY_CATEGORY = ?", arrayOf(cat.id.toString()))
+            ContentValues().apply {
+                put(KEY_CREATED, System.currentTimeMillis())
+                put(KEY_CATEGORY_UUID, uuidToString(cat.uuid))
+                db.insertOrThrow(TBL_CATEGORIES_DELETED, null, this)
+            }
+            db.setTransactionSuccessful()
+        } finally {
+            if (useTransaction) {
+                db.endTransaction()
+            }
         }
     }
 
     /**
      * Upsert category, setting a ID if not existing
      */
-    fun upsertCategory(cat: Category) {
-        if(cat.isExisting) {
-            val values = ContentValues()
-            values.put(KEY_CATEGORY_NAME, cat.name)
-            values.put(KEY_CHANGED, cat.changed)
-            db!!.update(TBL_CATEGORY,values,"$KEY_CATEGORY = ?", arrayOf(cat.id.toString()))
-        } else {
-            ContentValues().apply {
-                put(KEY_CATEGORY_NAME, cat.name)
-                put(KEY_CATEGORY_UUID, uuidToString(cat.uuid))
-                put(KEY_CHANGED, cat.changed)
-                cat.id = db!!.insertOrThrow(TBL_CATEGORY, null, this)
+    fun upsertCategory(cat: Category,useTransaction: Boolean = true) {
+        if(useTransaction)
+            db.beginTransaction()
+        try {
+            if (cat.isExisting) {
+                val values = ContentValues()
+                values.put(KEY_CATEGORY_NAME, cat.name)
+                values.put(KEY_CHANGED, cat.changed)
+                assert(
+                    1 == db.update(
+                        TBL_CATEGORY,
+                        values,
+                        "$KEY_CATEGORY = ?",
+                        arrayOf(cat.id.toString())
+                    )
+                )
+            } else {
+                ContentValues().apply {
+                    put(KEY_CATEGORY_NAME, cat.name)
+                    put(KEY_CATEGORY_UUID, uuidToString(cat.uuid))
+                    put(KEY_CHANGED, cat.changed)
+                    cat.id = db.insertOrThrow(TBL_CATEGORY, null, this)
+                }
             }
+            if(useTransaction)
+                db.setTransactionSuccessful()
+        } finally {
+            if(useTransaction)
+                db.endTransaction()
         }
     }
 
     /**
      * Update or insert the provided VList data
      *
-     * @param tbl
+     * @param list
      * @return true on succuess
      */
-    fun upsertVList(tbl: VList) {
+    fun upsertVList(list: VList, useTransaction: Boolean = true) {
         Log.v(TAG, "upsertVList")
-        if (tbl.isExisting) {
-            val args = arrayOf(tbl.id.toString())
-            val values = ContentValues()
-            values.put(KEY_NAME_LIST, tbl.name)
-            values.put(KEY_NAME_A, tbl.nameA)
-            values.put(KEY_NAME_B, tbl.nameB)
-            values.put(KEY_CHANGED, tbl.changed)
-            val updated = db!!.update(TBL_LISTS, values, KEY_LIST + " = ?",
-                args)
-            if (updated != 1) {
-                throw SQLException("Update error, updated: $updated expected 1")
+        try {
+            if (useTransaction) {
+                db.beginTransaction()
             }
-        } else {
-            ContentValues().apply {
-                put(KEY_NAME_A, tbl.nameA)
-                put(KEY_NAME_B, tbl.nameB)
-                put(KEY_NAME_LIST, tbl.name)
-                put(KEY_CREATED, tbl.created)
-                put(KEY_CHANGED, tbl.changed)
-                tbl.id = db!!.insertOrThrow(TBL_LISTS, null, this)
-            }
-            tbl.uuid?.let {
+            if (list.isExisting) {
+                val args = arrayOf(list.id.toString())
+                val values = ContentValues()
+                values.put(KEY_NAME_LIST, list.name)
+                values.put(KEY_NAME_A, list.nameA)
+                values.put(KEY_NAME_B, list.nameB)
+                values.put(KEY_CHANGED, list.changed)
+                val updated = db.update(
+                    TBL_LISTS, values, KEY_LIST + " = ?",
+                    args
+                )
+                if (updated != 1) {
+                    throw SQLException("Update error, updated: $updated expected 1")
+                }
+            } else {
                 ContentValues().apply {
-                    put(KEY_LIST, tbl.id)
-                    put(KEY_LIST_UUID, uuidToString(it))
-                    db!!.insertOrThrow(TBL_LIST_SYNC, null, this)
+                    put(KEY_NAME_A, list.nameA)
+                    put(KEY_NAME_B, list.nameB)
+                    put(KEY_NAME_LIST, list.name)
+                    put(KEY_CREATED, list.created)
+                    put(KEY_CHANGED, list.changed)
+                    list.id = db.insertOrThrow(TBL_LISTS, null, this)
+                }
+                list.uuid?.let {
+                    ContentValues().apply {
+                        put(KEY_LIST, list.id)
+                        put(KEY_LIST_UUID, uuidToString(it))
+                        db.insertOrThrow(TBL_LIST_SYNC, null, this)
+                    }
                 }
             }
+            db.delete(TBL_LIST_CATEGORIES, "$KEY_LIST = ?", arrayOf(list.id.toString()))
+            list.categories?.run {
+                db.compileStatement("INSERT INTO $TBL_LIST_CATEGORIES ($KEY_LIST, $KEY_CATEGORY) VALUES (?,?)").use { ins ->
+                    for (e in this) {
+                        ins.clearBindings()
+                        ins.bindLong(1,list.id)
+                        ins.bindLong(2,e.id)
+                        ins.executeInsert()
+                    }
+                }
+            }
+            if (useTransaction)
+                db.setTransactionSuccessful()
+        } finally {
+            if(useTransaction)
+                db.endTransaction()
         }
     }
 
@@ -365,22 +430,22 @@ class Database {
     }
 
     /**
-     * Update and/or insert all Entries<br></br>
-     * This function uses delete and changed flags in entries<br></br>
-     * <u>Does not update vocable metadata such as last used etc on changed flag.</u>
+     * Update and/or insert all Entries.<br></br>
+     * This function uses delete and changed flags in entries.<br></br>
+     * <u>Does not update vocable metadata such as last used etc on changed flag!</u>
      *
      * @param lst
      * @return true on success
      */
     fun upsertEntries(lst: List<VEntry>) {
         try {
-            db!!.compileStatement("DELETE FROM $TBL_ENTRIES WHERE $KEY_ENTRY = ?").use { delStm ->
-                db!!.compileStatement("UPDATE $TBL_ENTRIES SET $KEY_ADDITION = ?,$KEY_TIP = ?, $KEY_CHANGED = ? WHERE $KEY_ENTRY = ?").use { updStm ->
-                    db!!.compileStatement("INSERT INTO $TBL_ENTRIES ($KEY_LIST,$KEY_TIP,$KEY_ADDITION,$KEY_CREATED,$KEY_CHANGED) VALUES (?,?,?,?,?)").use { insStm ->
-                        db!!.compileStatement("INSERT INTO $TBL_WORDS_A($KEY_ENTRY,$KEY_MEANING) VALUES (?,?)").use { insMeanA ->
-                            db!!.compileStatement("INSERT INTO $TBL_WORDS_B($KEY_ENTRY,$KEY_MEANING) VALUES (?,?)").use { insMeanB ->
+            db.compileStatement("DELETE FROM $TBL_ENTRIES WHERE $KEY_ENTRY = ?").use { delStm ->
+                db.compileStatement("UPDATE $TBL_ENTRIES SET $KEY_ADDITION = ?,$KEY_TIP = ?, $KEY_CHANGED = ? WHERE $KEY_ENTRY = ?").use { updStm ->
+                    db.compileStatement("INSERT INTO $TBL_ENTRIES ($KEY_LIST,$KEY_TIP,$KEY_ADDITION,$KEY_CREATED,$KEY_CHANGED) VALUES (?,?,?,?,?)").use { insStm ->
+                        db.compileStatement("INSERT INTO $TBL_WORDS_A($KEY_ENTRY,$KEY_MEANING) VALUES (?,?)").use { insMeanA ->
+                            db.compileStatement("INSERT INTO $TBL_WORDS_B($KEY_ENTRY,$KEY_MEANING) VALUES (?,?)").use { insMeanB ->
                                 val whereDelMeaning = "$KEY_ENTRY = ?"
-                                db!!.beginTransaction()
+                                db.beginTransaction()
                                 var insertMeanings: Boolean
                                 for (entry in lst) {
                                     //Log.d(TAG, "processing " + entry + " of " + entry.getList());
@@ -393,8 +458,8 @@ class Database {
                                         if (entry.isDelete || entry.isChanged()) {
                                             // we can clear meanings anyway
                                             val args = arrayOf(entry.id.toString())
-                                            db!!.delete(TBL_WORDS_B, whereDelMeaning, args)
-                                            db!!.delete(TBL_WORDS_A, whereDelMeaning, args)
+                                            db.delete(TBL_WORDS_B, whereDelMeaning, args)
+                                            db.delete(TBL_WORDS_A, whereDelMeaning, args)
                                             if (entry.isDelete) {
                                                 delStm.clearBindings()
                                                 delStm.bindLong(1, entry.id)
@@ -421,7 +486,7 @@ class Database {
                                             ContentValues().apply {
                                                 put(KEY_ENTRY, entry.id)
                                                 put(KEY_ENTRY_UUID, uuidToString(it))
-                                                db!!.insertOrThrow(TBL_ENTRY_SYNC, null, this)
+                                                db.insertOrThrow(TBL_ENTRY_SYNC, null, this)
                                             }
                                         }
                                         insertMeanings = true
@@ -443,15 +508,15 @@ class Database {
                                         }
                                     }
                                 }
-                                db!!.setTransactionSuccessful()
+                                db.setTransactionSuccessful()
                             }
                         }
                     }
                 }
             }
         } finally {
-            if (db!!.inTransaction()) {
-                db!!.endTransaction()
+            if (db.inTransaction()) {
+                db.endTransaction()
             }
         }
     }
@@ -488,7 +553,7 @@ class Database {
             arrayOf(since.time.toString())
         } ?: arrayOf()
         val list = mutableListOf<Tombstone>()
-        db!!.query(
+        db.query(
             tbl, arrayOf(key, KEY_CREATED),
             selection, selArgs,
             null, null, null
@@ -518,7 +583,7 @@ class Database {
         }
         val args = arrayOf(tbl.name, tbl.nameA, tbl.nameB)
         try {
-            db!!.rawQuery("SELECT $KEY_LIST FROM $TBL_LISTS "
+            db.rawQuery("SELECT $KEY_LIST FROM $TBL_LISTS "
                     + "WHERE $KEY_NAME_LIST = ? AND $KEY_NAME_A = ? AND $KEY_NAME_B  = ? LIMIT 1", args).use { cursor ->
                 var id = -1L
                 if (cursor.moveToNext()) {
@@ -541,19 +606,19 @@ class Database {
      */
     fun deleteList(list: VList) {
         try {
-            db!!.beginTransaction()
-            db!!.delete(TBL_LISTS, "$KEY_LIST = ?", arrayOf(list.id.toString()))
+            db.beginTransaction()
+            db.delete(TBL_LISTS, "$KEY_LIST = ?", arrayOf(list.id.toString()))
             list.uuid?.let {
                 ContentValues().apply {
                     put(KEY_LIST_UUID, uuidToString(it))
                     put(KEY_CREATED,System.currentTimeMillis())
-                    db!!.insertOrThrow(TBL_LISTS_DELETED, null, this)
+                    db.insertOrThrow(TBL_LISTS_DELETED, null, this)
                 }
             }
-            db!!.setTransactionSuccessful()
+            db.setTransactionSuccessful()
         } finally {
-            if (db!!.inTransaction()) {
-                db!!.endTransaction()
+            if (db.inTransaction()) {
+                db.endTransaction()
             }
         }
     }
@@ -566,11 +631,11 @@ class Database {
      */
     fun truncateList(tbl: VList) {
         try {
-            db!!.beginTransaction()
-            db!!.delete(KEY_ENTRY,"$KEY_LIST = ?", arrayOf(tbl.id.toString()))
-            db!!.setTransactionSuccessful()
+            db.beginTransaction()
+            db.delete(KEY_ENTRY,"$KEY_LIST = ?", arrayOf(tbl.id.toString()))
+            db.setTransactionSuccessful()
         } finally {
-            if (db!!.inTransaction()) db!!.endTransaction()
+            if (db.inTransaction()) db.endTransaction()
         }
     }
 
@@ -580,14 +645,14 @@ class Database {
      * @return
      */
     fun deleteSession() {
-        db!!.beginTransaction()
+        db.beginTransaction()
         try {
-            db!!.delete(TBL_SESSION, null, null)
-            db!!.delete(TBL_SESSION_META, null, null)
-            db!!.delete(TBL_SESSION_LISTS, null, null)
-            db!!.setTransactionSuccessful()
+            db.delete(TBL_SESSION, null, null)
+            db.delete(TBL_SESSION_META, null, null)
+            db.delete(TBL_SESSION_LISTS, null, null)
+            db.setTransactionSuccessful()
         } finally {
-            if (db!!.inTransaction()) db!!.endTransaction()
+            if (db.inTransaction()) db.endTransaction()
         }
     }
 
@@ -598,7 +663,7 @@ class Database {
      * @return true on success
      */
     fun updateEntryProgress(entry: VEntry) {
-        db!!.compileStatement("INSERT OR REPLACE INTO $TBL_SESSION ( $KEY_ENTRY,$KEY_POINTS )VALUES (?,?)").use { updStm ->
+        db.compileStatement("INSERT OR REPLACE INTO $TBL_SESSION ( $KEY_ENTRY,$KEY_POINTS )VALUES (?,?)").use { updStm ->
             Log.d(TAG, entry.toString())
             updStm.bindLong(1, entry.id)
             updStm.bindLong(2, entry.points!!.toLong())
@@ -606,7 +671,7 @@ class Database {
             val values = ContentValues()
             values.put(KEY_ENTRY, entry.id)
             values.put(KEY_LAST_USED, System.currentTimeMillis())
-            assert(db!!.replace(TBL_ENTRIES_USED,null,values) > -1)
+            assert(db.replace(TBL_ENTRIES_USED,null,values) > -1)
         }
     }
 
@@ -619,9 +684,9 @@ class Database {
      */
     fun createSession(lists: Collection<VList>) {
         Log.d(TAG, "entry createSession")
-        db!!.beginTransaction()
+        db.beginTransaction()
         try {
-            db!!.compileStatement("INSERT INTO $TBL_SESSION_LISTS ($KEY_LIST) VALUES (?)").use { insStm ->
+            db.compileStatement("INSERT INTO $TBL_SESSION_LISTS ($KEY_LIST) VALUES (?)").use { insStm ->
                 for (tbl in lists) {
                     insStm.clearBindings()
                     insStm.bindLong(1, tbl.id.toLong())
@@ -629,11 +694,11 @@ class Database {
                         Log.wtf(TAG, "no new table inserted")
                     }
                 }
-                db!!.setTransactionSuccessful()
+                db.setTransactionSuccessful()
                 Log.d(TAG, "exit createSession")
             }
         } finally {
-            if (db!!.inTransaction()) db!!.endTransaction()
+            if (db.inTransaction()) db.endTransaction()
         }
     }
 
@@ -646,7 +711,7 @@ class Database {
         get() {
             val lst = ArrayList<VList>(10)
             try {
-                db!!.rawQuery("SELECT ses.$KEY_LIST tbl,$KEY_NAME_A,$KEY_NAME_B,$KEY_NAME_LIST,$KEY_CREATED,$KEY_CHANGED "
+                db.rawQuery("SELECT ses.$KEY_LIST tbl,$KEY_NAME_A,$KEY_NAME_B,$KEY_NAME_LIST,$KEY_CREATED,$KEY_CHANGED "
                         + "FROM $TBL_SESSION_LISTS ses JOIN $TBL_LISTS tbls ON tbls.$KEY_LIST == ses.$KEY_LIST", null).use { cursor ->
                     while (cursor.moveToNext()) {
                         lst.add(
@@ -671,7 +736,7 @@ class Database {
         get() {
             Log.d(TAG, "entry isSessionStored")
             try {
-                db!!.rawQuery("SELECT COUNT(*) FROM $TBL_SESSION_LISTS WHERE 1", null).use { cursor ->
+                db.rawQuery("SELECT COUNT(*) FROM $TBL_SESSION_LISTS WHERE 1", null).use { cursor ->
                     cursor.moveToNext()
                     if (cursor.getInt(0) > 0) {
                         Log.d(TAG, "found session")
@@ -696,8 +761,8 @@ class Database {
         require(lists.isNotEmpty())
         unfinishedLists.clear()
         for (list in lists) {
-            db!!.rawQuery("SELECT COUNT(*) FROM $TBL_ENTRIES WHERE $KEY_LIST  = ?", arrayOf(list.id.toString())).use { curLeng ->
-                db!!.rawQuery("SELECT COUNT(*) FROM $TBL_SESSION s "
+            db.rawQuery("SELECT COUNT(*) FROM $TBL_ENTRIES WHERE $KEY_LIST  = ?", arrayOf(list.id.toString())).use { curLeng ->
+                db.rawQuery("SELECT COUNT(*) FROM $TBL_SESSION s "
                     +"JOIN $TBL_ENTRIES e ON e.$KEY_ENTRY = s.$KEY_ENTRY "
                     +"WHERE $KEY_LIST  = ? AND $KEY_POINTS >= ?", arrayOf(list.id.toString(), settings.timesToSolve.toString())).use { curFinished ->
                     if (!curLeng.moveToNext()) return false
@@ -730,7 +795,7 @@ class Database {
         if (lastEntry != null && lastEntry.list!!.id == list.id && !allowRepetition) lastID = lastEntry.id
         val arg = arrayOf(list.id.toString(), lastID.toString(), ts.timesToSolve.toString())
         Log.v(TAG, arg.contentToString())
-        db!!.rawQuery(
+        db.rawQuery(
                 "SELECT $KEY_TIP, $KEY_ADDITION, tbl.$KEY_CREATED,"
                         + "tbl.$KEY_ENTRY, $KEY_POINTS, tbl.$KEY_CHANGED"
                         + "FROM $TBL_ENTRIES tbl "
@@ -773,7 +838,7 @@ class Database {
     fun getSessionMetaValue(key: String?): String? {
         requireNotNull(key)
         try {
-            db!!.rawQuery("SELECT $KEY_MVALUE FROM $TBL_SESSION_META WHERE $KEY_MKEY = ?", arrayOf(key.toString())).use { cursor ->
+            db.rawQuery("SELECT $KEY_MVALUE FROM $TBL_SESSION_META WHERE $KEY_MKEY = ?", arrayOf(key.toString())).use { cursor ->
                 return if (cursor.moveToNext()) {
                     cursor.getString(1)
                 } else {
@@ -796,7 +861,7 @@ class Database {
      */
     fun setSessionMetaValue(key: String?, value: String?): Boolean {
         try {
-            db!!.compileStatement("INSERT OR REPLACE INTO $TBL_SESSION_META ( $KEY_MKEY,$KEY_MVALUE ) VALUES (?,?)").use { updStm ->
+            db.compileStatement("INSERT OR REPLACE INTO $TBL_SESSION_META ( $KEY_MKEY,$KEY_MVALUE ) VALUES (?,?)").use { updStm ->
                 updStm.bindString(1, key)
                 updStm.bindString(2, value)
                 return if (updStm.executeInsert() > 0) { // possible problem ( insert / update..)
@@ -819,25 +884,25 @@ class Database {
      */
     val sessionInsertStm: SQLiteStatement
         get() {
-            db!!.beginTransaction()
-            return db!!.compileStatement("INSERT OR REPLACE INTO $TBL_SESSION_META ($KEY_MKEY,$KEY_MVALUE) VALUES (?,?)")
+            db.beginTransaction()
+            return db.compileStatement("INSERT OR REPLACE INTO $TBL_SESSION_META ($KEY_MKEY,$KEY_MVALUE) VALUES (?,?)")
         }
 
     /**
      * Start Transaction
      */
     fun startTransaction() {
-        db!!.beginTransaction()
+        db.beginTransaction()
     }
 
     /**
      * Ends a transaction created by the getSessionInsert Statement
      */
     fun endTransaction(success: Boolean) {
-        check(db!!.inTransaction()) { "No transaction ongoing!" }
+        check(db.inTransaction()) { "No transaction ongoing!" }
         Log.d(TAG, "transaction success: $success")
-        if (success) db!!.setTransactionSuccessful()
-        db!!.endTransaction()
+        if (success) db.setTransactionSuccessful()
+        db.endTransaction()
     }
 
     /**
@@ -850,7 +915,7 @@ class Database {
             Log.d(TAG, "entry getSessionData")
             val map = HashMap<String, String>(10)
             try {
-                db!!.rawQuery("SELECT $KEY_MKEY, $KEY_MVALUE FROM $TBL_SESSION_META WHERE 1", null).use { cursor ->
+                db.rawQuery("SELECT $KEY_MKEY, $KEY_MVALUE FROM $TBL_SESSION_META WHERE 1", null).use { cursor ->
                     while (cursor.moveToNext()) {
                         map[cursor.getString(0)] = cursor.getString(1)
                     }

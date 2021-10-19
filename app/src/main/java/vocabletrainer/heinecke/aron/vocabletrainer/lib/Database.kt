@@ -973,6 +973,30 @@ class Database {
             }
         }
 
+    /**
+     * Set settings k-v
+     */
+    fun setSetting(key: String,value: String) {
+        ContentValues().apply {
+            put(KEY_CHANGED, System.currentTimeMillis())
+            put(KEY_SETTINGS_VALUE, value)
+            put(KEY_SETTINGS_KEY, key)
+            db.replaceOrThrow(TBL_SETTINGS,null,this)
+        }
+    }
+
+    /**
+     * Return settings value for key or null
+     */
+    fun getSetting(key: String): String? {
+        db.query(TBL_SETTINGS, arrayOf(KEY_SETTINGS_VALUE),"$KEY_SETTINGS_KEY = ?", arrayOf(key),null,null,null).use {
+            if (it.moveToNext())
+                return it.getString(0)
+            else
+                return null
+        }
+    }
+
     internal inner class internalDB(context: Context?) : SQLiteOpenHelper(context, DB_NAME_PRODUCTION, null, Companion.DATABASE_VERSION) {
         private val sqlLists = ("CREATE TABLE " + TBL_LISTS + " ("
                 + KEY_NAME_LIST + " TEXT NOT NULL,"
@@ -1043,6 +1067,10 @@ class Database {
                 + KEY_CATEGORY_UUID + " text NOT NULL PRIMARY KEY,"
                 + KEY_CREATED + "INTEGER NOT NULL )")
         private val sqlCategoryDeletedIndex = ("CREATE INDEX categoryDeletedI ON $TBL_CATEGORIES_DELETED ($KEY_CREATED)")
+        private val sqlSettings = ("CREATE TABLE " + TBL_SETTINGS + " ("
+                + KEY_SETTINGS_KEY + " text NOT NULL PRIMARY KEY,"
+                + KEY_SETTINGS_VALUE + " text NOT NULL,"
+                + KEY_CHANGED + " INTEGER NOT NULL )")
 
         override fun onOpen(db: SQLiteDatabase?) {
             super.onOpen(db)
@@ -1109,7 +1137,8 @@ class Database {
                 sqlCategoriesDeleted,
                 sqlCategoryDeletedIndex,
                 sqlEntryUsed,
-                sqlEntryUsedIndex
+                sqlEntryUsedIndex,
+                sqlSettings
             )
             var i = 0
             db.beginTransaction()
@@ -1168,7 +1197,8 @@ class Database {
                 sqlCategoriesDeleted,
                 sqlCategoryDeletedIndex,
                 sqlEntryUsed,
-                sqlEntryUsedIndex
+                sqlEntryUsedIndex,
+                sqlSettings
             )
             for (sql in newTables) db.execSQL(sql)
             val time = System.currentTimeMillis().toString()
@@ -1416,6 +1446,7 @@ class Database {
         private const val TBL_CATEGORY = "`category_name`"
         private const val TBL_CATEGORIES_DELETED = "`categories_deleted`"
         private const val TBL_ENTRIES_USED = "`entries_used`"
+        private const val TBL_SETTINGS = "`settings`"
         private const val KEY_ENTRY = "`entry`"
         private const val KEY_NAME_A = "`name_a`"
         private const val KEY_NAME_B = "`name_b`"
@@ -1442,6 +1473,9 @@ class Database {
         private const val KEY_CATEGORY = "`category`"
         private const val KEY_CATEGORY_NAME = "`name`"
         private const val KEY_CATEGORY_UUID = "`uuid_cat`"
+        private const val KEY_SETTINGS_VALUE = "`settings_v`"
+        private const val KEY_SETTINGS_KEY = "`settings_k`"
+
         private var dbIntern: SQLiteDatabase? = null // DB to internal file, 99% of the time used
 
         private const val DATABASE_VERSION = 3

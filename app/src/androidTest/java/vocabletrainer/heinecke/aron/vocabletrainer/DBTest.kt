@@ -11,8 +11,10 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.*
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer.Trainer
 import java.sql.Date
+import java.util.*
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.collections.ArrayList
 import kotlin.random.Random
 
 /**
@@ -44,6 +46,10 @@ class DBTest {
             lst.uuid = Database.uuid()
         }
         return lst
+    }
+
+    private fun genSetting(): Pair<String,String> {
+        return Pair(UUID.randomUUID().toString(),UUID.randomUUID().toString())
     }
 
     private fun generateEntries(tbl: VList): List<VEntry> {
@@ -336,5 +342,14 @@ class DBTest {
         val found = stats.find { v -> v.date == insTime }
         Assert.assertNotNull(found)
         Assert.assertEquals(EntryStat(entryUUID = entries[0].uuid!!,tipNeeded = true,isCorrect = false,date = insTime),found)
+    }
+
+    @Test
+    fun testSettings() {
+        val db = Database(context)
+        val setting = genSetting()
+        Assert.assertNull(db.getSetting(setting.first))
+        db.setSetting(setting.first,setting.second)
+        Assert.assertEquals(setting.second,db.getSetting(setting.first))
     }
 }

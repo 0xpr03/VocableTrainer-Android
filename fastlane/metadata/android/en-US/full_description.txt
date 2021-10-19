@@ -1,5 +1,6 @@
 Vocabulary and word trainer to memorize foreign languages and remember definitions
 
+* Flashcard like system
 * training progress based on correct and incorrect answers
 * multiple meanings per entry
 * dark mode (android 8.1+)

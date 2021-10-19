@@ -1,0 +1,30 @@
+Data Synchronisation
+ 
+Features:
+You can setup data synchronisation from your current device with the default or other sync servers. This allows for
+- sharing lists with others "live": no import/export required
+- editing lists collaborative
+- sharing your lists between multiple of your devices
+- editing lists from your PC without manual import/export
+
+Terms of Service:
+This service is provided without any warranty or liability for free. 
+While the author will try to prevent the service and your data to be deleted without any notice, it can not be guaranteed.
+This service is subject to international, European and German law.
+
+Privacy:
+No account data will be sold or used in any other way than providing account synchronization.
+No email or passwords are stored, except if you explicitely set them up for authentication.
+The authors service instance does store your IP for 30 days to defend against malicious actors.
+Your IP will not be linked to your account or lists.
+Full data erasure can be requested at any time, as long as you still have your account identity to authenticate.
+
+The following data will be used for synchronisation:
+    - lists, entries and categories
+    - last change date of each of them
+    - training sessions
+
+As always: Please do not store any sensitive data on someones elses PC if you are not fully encrypting it. Which this service does not.
+
+3rd Party:
+No guarantees can be made at all for 3rd party sync instances. Malicious actors can do the reverse of above things. Please select your provider carefully.

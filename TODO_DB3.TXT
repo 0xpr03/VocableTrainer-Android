@@ -1,0 +1,21 @@
+
+UUID für trainer verlauf immer setzen ?
+UUID für lists/entries setzen bei create
+    => list UUID forcen wenn flag?
+
+trainer: eintrag in TBL_ENTRY_STATS machen    
+
+tests auf lokaler DB / DB cleanen vorher ?
+
+categories: auslesen in VList umsetzen
+
+Crash mehrfach import -> delete function
+
+###
+future:
+read-only/shared flag
+maybe use https://developer.android.com/training/testing/unit-testing/instrumented-unit-tests
+better testing systems for the UI
+lazy loading für listen ansicht
+lazy loading einträge -> braucht aktives editieren
+suche

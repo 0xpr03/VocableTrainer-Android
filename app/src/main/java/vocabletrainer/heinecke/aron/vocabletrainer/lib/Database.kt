@@ -64,7 +64,7 @@ class Database {
                 "SELECT $KEY_TIP, $KEY_ADDITION, $KEY_LAST_USED, tVoc.$KEY_CREATED, "
                 +"tVoc.$KEY_LIST, $KEY_NAME_A, $KEY_NAME_B, $KEY_NAME_LIST,"
                 +"tList.$KEY_CREATED, $KEY_POINTS, $KEY_LIST_UUID, tList.$KEY_CHANGED, tVoc.$KEY_CHANGED,"
-                +"tVoc.$KEY_ENTRY_UUID"
+                +"tVoc.$KEY_ENTRY_UUID, $KEY_SHARED"
                 +"FROM $TBL_ENTRIES tVoc "
                 +"JOIN $TBL_LISTS tList ON tVoc.$KEY_LIST = tList.$KEY_LIST "
                 +"LEFT JOIN $TBL_SESSION ses ON tVoc.$KEY_ENTRY = ses.$KEY_ENTRY"
@@ -75,7 +75,7 @@ class Database {
                     _id = cV.getLong(4), _name = cV.getString(7),
                     _nameA = cV.getString(5), _nameB = cV.getString(6),
                     created = cV.getLong(8), uuid = parseUUID(cV.getStringOrNull(10)),
-                    changed = cV.getLong(11)
+                    changed = cV.getLong(11), shared = cV.getInt(14)
                 )
                 val meaningA: MutableList<String> = ArrayList()
                 val meaningB: MutableList<String> = ArrayList()
@@ -232,7 +232,7 @@ class Database {
      */
     fun getLists(cancelHandle: LiveData<Boolean>?): List<VList> {
         val column = listOf(KEY_LIST, KEY_NAME_A, KEY_NAME_B, KEY_NAME_LIST, KEY_CREATED,
-            KEY_CHANGED, KEY_LIST_UUID)
+            KEY_CHANGED, KEY_LIST_UUID, KEY_SHARED)
         val listsList: MutableList<VList> = ArrayList()
 
         // load categories and create a list-id -> list<category> mapping
@@ -264,7 +264,8 @@ class Database {
                     created = cursor.getLong(4),
                     changed = cursor.getLong(5),
                     uuid = parseUUID(cursor.getStringOrNull(6)),
-                    _categories = entryCategories.get(cursor.getLong(0))
+                    _categories = entryCategories.get(cursor.getLong(0)),
+                    shared = cursor.getInt(7)
                 )
                 listsList.add(entry)
             }
@@ -425,6 +426,7 @@ class Database {
                     put(KEY_NAME_LIST, list.name)
                     put(KEY_CREATED, list.created)
                     put(KEY_CHANGED, list.changed)
+                    put(KEY_SHARED, list.shared)
                     list.id = db.insertOrThrow(TBL_LISTS, null, this)
                 }
                 list.uuid?.let {
@@ -757,7 +759,7 @@ class Database {
         get() {
             val lst = ArrayList<VList>(10)
             try {
-                db.rawQuery("SELECT ses.$KEY_LIST tbl,$KEY_NAME_A,$KEY_NAME_B,$KEY_NAME_LIST,$KEY_CREATED,$KEY_CHANGED "
+                db.rawQuery("SELECT ses.$KEY_LIST tbl,$KEY_NAME_A,$KEY_NAME_B,$KEY_NAME_LIST,$KEY_CREATED,$KEY_CHANGED,$KEY_SHARED "
                         + "FROM $TBL_SESSION_LISTS ses JOIN $TBL_LISTS tbls ON tbls.$KEY_LIST == ses.$KEY_LIST", null).use { cursor ->
                     while (cursor.moveToNext()) {
                         lst.add(
@@ -769,6 +771,7 @@ class Database {
                                 created = cursor.getLong(4),
                                 changed = cursor.getLong(5),
                                 uuid = null,
+                                shared = cursor.getInt(6)
                             )
                         )
                     }
@@ -1004,7 +1007,8 @@ class Database {
                 + KEY_NAME_A + " TEXT NOT NULL,"
                 + KEY_NAME_B + " TEXT NOT NULL,"
                 + KEY_CREATED + " INTEGER NOT NULL,"
-                + KEY_CHANGED + " INTEGER NOT NULL )")
+                + KEY_CHANGED + " INTEGER NOT NULL,"
+                + KEY_SHARED + "INTEGER NOT NULL )")
         private val sqlListsIndex = ("CREATE INDEX listChangedI ON $TBL_LISTS ($KEY_CHANGED)")
         private val sqlListSync = ("CREATE TABLE "+ TBL_LIST_SYNC + " ("
                 + KEY_LIST + " INTEGER PRIMARY KEY REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE,"
@@ -1458,6 +1462,7 @@ class Database {
         private const val KEY_MEANING = "`meaning`"
         private const val KEY_CREATED = "`created`"
         private const val KEY_IS_CORRECT = "`is_correct`"
+        private const val KEY_SHARED = "`shared`"
         @Deprecated("Deprecated DB version")
         private val KEY_CORRECT = "`correct`"
         @Deprecated("Deprecated DB version")

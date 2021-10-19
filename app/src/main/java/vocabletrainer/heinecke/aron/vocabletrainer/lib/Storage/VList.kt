@@ -37,7 +37,8 @@ data class VList(
     /**
      * Null if not used
      */
-    private var _categories: MutableList<Category>? = null
+    private var _categories: MutableList<Category>? = null,
+    var shared: Int,
 ) : Parcelable {
 
     /**
@@ -142,6 +143,11 @@ data class VList(
             return id >= Database.MIN_ID_TRESHOLD
         }
 
+        // see VList.shared
+        private const val SHARED_OWNED = 1
+        // see VList.shared
+        private const val SHARED_REMOTE = 2
+
         /**
          * Create a blank VList missing a valid ID and just naming
          */
@@ -150,7 +156,7 @@ data class VList(
             return VList(
                 _name = name, _nameB = nameB, _nameA = nameA, _id = Database.MIN_ID_TRESHOLD - 1,
                 changed = time,
-                uuid = null, created = time
+                uuid = null, created = time, shared = 0
             )
         }
 
@@ -166,7 +172,8 @@ data class VList(
             return VList(
                 _name = name, _nameB = nameB, _nameA = nameA, _id = id,
                 changed = time,
-                uuid = null, created = time
+                uuid = null, created = time,
+                shared = 0,
             )
         }
     }

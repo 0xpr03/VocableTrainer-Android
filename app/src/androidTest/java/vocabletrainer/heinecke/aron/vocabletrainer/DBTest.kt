@@ -99,6 +99,7 @@ class DBTest {
     fun _testDBInsertList(withUUID: Boolean) {
         val db = Database(context)
         val list: VList = genList(withUUID)
+        list.shared = Random.nextInt(0,2)
         val curLists: List<VList> = db.lists
         db.upsertVList(list)
         Assert.assertTrue(list.isExisting)

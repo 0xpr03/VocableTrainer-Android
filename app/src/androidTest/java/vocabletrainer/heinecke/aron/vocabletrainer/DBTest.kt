@@ -91,6 +91,23 @@ class DBTest {
     }
 
     @Test
+    fun testGetVocable() {
+        val db = Database(context)
+        val lst: VList = genList(false)
+        db.upsertVList(lst)
+        val entries: List<VEntry> = generateEntries(lst)
+        Assert.assertTrue(entries.size > 1)
+        db.upsertEntries(entries)
+
+        for (i in 0..10) {
+            val expected = entries.get(Random.nextInt(0,entries.size-1))
+            val got = db.getVocable(expected.id)!!
+            Assert.assertEquals(expected.id,got.id)
+            Assert.assertEquals(expected.aMeanings,got.aMeanings)
+        }
+    }
+
+    @Test
     fun testDBInsertList() {
         _testDBInsertList(false)
         _testDBInsertList(true)
@@ -142,7 +159,7 @@ class DBTest {
         Assert.assertTrue(entries.size > 1)
         db.upsertEntries(entries)
         val result: List<VEntry> = db.getVocablesOfTable(tbl)
-        Assert.assertEquals("invalid amount of entries", entries.size.toLong(), result.size.toLong())
+        Assert.assertEquals("invalid amount of entries for $tbl", entries.size.toLong(), result.size.toLong())
         for (entry in entries) {
             val ie = result.find { v -> v.id == entry.id }!!
             Assert.assertEquals("Inserted element not equal to original",entry,ie)

@@ -61,7 +61,7 @@ class Database {
      */
     fun getVocable(vocID: Long): VEntry? {
         db.rawQuery(
-                "SELECT $KEY_TIP, $KEY_ADDITION, $KEY_LAST_USED, tVoc.$KEY_CREATED, "
+                "SELECT $KEY_TIP, $KEY_ADDITION, tVoc.$KEY_CREATED, "
                 +"tVoc.$KEY_LIST, $KEY_NAME_A, $KEY_NAME_B, $KEY_NAME_LIST,"
                 +"tList.$KEY_CREATED, $KEY_POINTS, $KEY_LIST_UUID, tList.$KEY_CHANGED, tVoc.$KEY_CHANGED,"
                 +"tVoc.$KEY_ENTRY_UUID, $KEY_SHARED"
@@ -72,19 +72,19 @@ class Database {
                 +"WHERE tVoc.$KEY_ENTRY = ?", arrayOf(vocID.toString())).use { cV ->
             return if (cV.moveToNext()) {
                 val list = VList(
-                    _id = cV.getLong(4), _name = cV.getString(7),
-                    _nameA = cV.getString(5), _nameB = cV.getString(6),
-                    created = cV.getLong(8), uuid = parseUUID(cV.getStringOrNull(10)),
-                    changed = cV.getLong(11), shared = cV.getInt(14)
+                    _id = cV.getLong(3), _name = cV.getString(6),
+                    _nameA = cV.getString(4), _nameB = cV.getString(5),
+                    created = cV.getLong(7), uuid = parseUUID(cV.getStringOrNull(9)),
+                    changed = cV.getLong(10), shared = cV.getInt(13)
                 )
                 val meaningA: MutableList<String> = ArrayList()
                 val meaningB: MutableList<String> = ArrayList()
                 val vocable = VEntry(
                     meaningA = meaningA, meaningB = meaningB, _tip = cV.getString(0),
                     _addition = cV.getString(1), id = vocID, list = list,
-                    _points = if (cV.isNull(9)) 0 else cV.getInt(9),
-                    last_used = cV.getLong(2), created = cV.getLong(3),
-                    changed = cV.getLong(12),uuid = parseUUID(cV.getStringOrNull(13))
+                    _points = if (cV.isNull(8)) 0 else cV.getInt(8),
+                    last_used = null, created = cV.getLong(2),
+                    changed = cV.getLong(11),uuid = parseUUID(cV.getStringOrNull(12))
                 )
                 getVocableMeanings(TBL_WORDS_A, vocable, meaningA)
                 getVocableMeanings(TBL_WORDS_B, vocable, meaningB)

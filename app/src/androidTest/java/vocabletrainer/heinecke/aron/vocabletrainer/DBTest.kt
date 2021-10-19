@@ -8,10 +8,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.*
 import org.junit.runner.RunWith
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.Category
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.*
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer.Trainer
 import java.sql.Date
 import java.util.concurrent.locks.Lock
@@ -123,7 +120,7 @@ class DBTest {
         Assert.assertEquals(entries.size,db.getVocablesOfTable(lst).size)
         db.truncateList(lst)
         Assert.assertEquals(0,db.getVocablesOfTable(lst).size)
-        val deleted = db.deletedEntries(Date(delTime))
+        val deleted = db.deletedEntries(delTime)
         for (e in entries) {
             Assert.assertNotNull("Can't find tombstone for $e",deleted.find { v -> v.uuid == e.uuid })
         }
@@ -185,7 +182,7 @@ class DBTest {
                 Assert.assertNotNull("missing UUID for entry",e.uuid)
         Assert.assertEquals("invalid amount entries", entries.size, db.getVocablesOfTable(list).size)
         val listsPre = db.lists
-        val deletionTime = Date(System.currentTimeMillis())
+        val deletionTime = System.currentTimeMillis()
         db.deleteList(list)
         val listsPost = db.lists
         Assert.assertEquals("invalid amount entries", 0, db.getVocablesOfTable(list).size)
@@ -195,7 +192,7 @@ class DBTest {
             val deletedLists = db.deletedLists(deletionTime)
             val found = deletedLists.find { v -> v.uuid == list.uuid }
             Assert.assertNotNull("deleted list has no tombstone",found)
-            val diff = deletionTime.time - found!!.created.time
+            val diff = deletionTime - found!!.created.time
             Assert.assertTrue("deletion time diff is $diff", diff < 5)
             val deletedEntries = db.deletedEntries(deletionTime)
             for (entry in entries) {
@@ -286,7 +283,7 @@ class DBTest {
         val delTime = System.currentTimeMillis()
         db.deleteCategory(cat)
         Assert.assertNull("found deleted category",db.categories().get(cat.id))
-        val deleted = db.deletedCategories(Date(delTime))
+        val deleted = db.deletedCategories(delTime)
         val tombstone = deleted.find { v -> v.uuid == cat.uuid }
         Assert.assertNotNull("no tombstone for deleted category",tombstone)
         val diff = delTime - tombstone!!.created.time
@@ -323,5 +320,21 @@ class DBTest {
         Assert.assertNotNull(listT!!.categories)
         val catT = listT.categories!![0]
         Assert.assertEquals(cat,catT)
+    }
+
+    @Test
+    fun testTrainingDataInsert() {
+        val db = Database(context)
+        val list = genList(true)
+        val entries = generateEntries(list)
+        val insTime = System.currentTimeMillis()
+        db.upsertVList(list)
+        db.upsertEntries(entries)
+
+        db.insertEntryStat(insTime,entries[0],true,false)
+        val stats = db.entryStats(insTime)
+        val found = stats.find { v -> v.date == insTime }
+        Assert.assertNotNull(found)
+        Assert.assertEquals(EntryStat(entryUUID = entries[0].uuid!!,tipNeeded = true,isCorrect = false,date = insTime),found)
     }
 }

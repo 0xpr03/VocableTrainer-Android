@@ -350,6 +350,49 @@ class Database {
     }
 
     /**
+     * Create new entry training statistic entry.
+     */
+    fun insertEntryStat(date: Long, entry: VEntry, tip: Boolean, correct: Boolean) {
+        ContentValues().apply {
+            put(KEY_ENTRY,entry.id)
+            put(KEY_DATE,date)
+            put(KEY_TIP_NEEDED,tip)
+            put(KEY_IS_CORRECT,correct)
+            db.insertOrThrow(TBL_ENTRY_STATS,null,this)
+        }
+    }
+
+    /**
+     * All EntryStat entries, optional specified [since]
+     */
+    fun entryStats(since: Long?): List<EntryStat> {
+        val column = listOf(KEY_ENTRY_UUID, KEY_DATE, KEY_TIP_NEEDED, KEY_IS_CORRECT)
+        val limitClause = since?.run {
+            "WHERE $KEY_DATE >= ?"
+        } ?: ""
+        val args = since?.run {
+            arrayOf(since.toString())
+        } ?: arrayOf()
+        db.rawQuery(
+            "SELECT ${column.joinToString(separator = ",")} FROM $TBL_ENTRY_STATS stat "
+                    + "JOIN $TBL_ENTRIES e ON e.$KEY_ENTRY = stat.$KEY_ENTRY $limitClause", args
+        ).use { cursor ->
+            val list: MutableList<EntryStat> = mutableListOf()
+            while (cursor.moveToNext()) {
+                list.add(
+                    EntryStat(
+                        date = cursor.getLong(1),
+                        entryUUID = parseUUID(cursor.getString(0))!!,
+                        tipNeeded = cursor.getInt(2) == 1,
+                        isCorrect = cursor.getInt(3) == 1
+                    )
+                )
+            }
+            return list
+        }
+    }
+
+    /**
      * Update or insert the provided VList data
      *
      * @param list
@@ -518,33 +561,33 @@ class Database {
     /**
      * Returns entry UUIDs that are deleted. Optionally all entries after the specified date.
      */
-    fun deletedEntries(since: Date? = null): List<Tombstone> {
+    fun deletedEntries(since: Long? = null): List<Tombstone> {
         return queryDeleted(since, TBL_ENTRIES_DELETED, KEY_ENTRY_UUID)
     }
 
     /**
      * Returns list UUIDs that are deleted. Optionally all lists after the specified date.
      */
-    fun deletedLists(since: Date? = null): List<Tombstone> {
+    fun deletedLists(since: Long? = null): List<Tombstone> {
         return queryDeleted(since, TBL_LISTS_DELETED, KEY_LIST_UUID)
     }
 
     /**
      * Returns category UUIDs that are deleted. Optionally all categories after the specified date.
      */
-    fun deletedCategories(since: Date? = null): List<Tombstone> {
+    fun deletedCategories(since: Long? = null): List<Tombstone> {
         return queryDeleted(since, TBL_CATEGORIES_DELETED, KEY_CATEGORY_UUID)
     }
 
     /**
      * Internal helper for deletedX functions
      */
-    private fun queryDeleted(since: Date? = null, tbl: String, key: String): List<Tombstone> {
+    private fun queryDeleted(since: Long? = null, tbl: String, key: String): List<Tombstone> {
         val selection = since?.let {
             "$KEY_CREATED >= ?"
         }
         val selArgs = since?.let {
-            arrayOf(since.time.toString())
+            arrayOf(since.toString())
         } ?: arrayOf()
         val list = mutableListOf<Tombstone>()
         db.query(

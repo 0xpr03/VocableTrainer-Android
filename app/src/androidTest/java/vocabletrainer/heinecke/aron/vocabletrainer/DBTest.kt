@@ -112,15 +112,27 @@ class DBTest {
     }
 
     @Test
-    fun testDBInsertEntries() {
-        _testDBInsertEntries(false)
-        _testDBInsertEntries(true)
+    fun testTruncateList() {
+        val db = Database(context)
+        val lst: VList = genList(false)
+        db.upsertVList(lst)
+        val delTime = System.currentTimeMillis()
+        val entries: List<VEntry> = generateEntries(lst)
+        Assert.assertTrue(entries.size > 1)
+        db.upsertEntries(entries)
+        Assert.assertEquals(entries.size,db.getVocablesOfTable(lst).size)
+        db.truncateList(lst)
+        Assert.assertEquals(0,db.getVocablesOfTable(lst).size)
+        val deleted = db.deletedEntries(Date(delTime))
+        for (e in entries) {
+            Assert.assertNotNull("Can't find tombstone for $e",deleted.find { v -> v.uuid == e.uuid })
+        }
     }
 
-    @Suppress("TestFunctionName")
-    private fun _testDBInsertEntries(withUUID: Boolean) {
+    @Test
+    fun testDBInsertEntries() {
         val db = Database(context)
-        val tbl: VList = genList(withUUID)
+        val tbl: VList = genList(false)
         db.upsertVList(tbl)
         val entries: List<VEntry> = generateEntries(tbl)
         Assert.assertTrue(entries.size > 1)
@@ -130,7 +142,7 @@ class DBTest {
         for (entry in entries) {
             val ie = result.find { v -> v.id == entry.id }!!
             Assert.assertEquals("Inserted element not equal to original",entry,ie)
-            Assert.assertEquals(withUUID,ie.uuid != null)
+            Assert.assertNotNull(ie.uuid)
         }
     }
 

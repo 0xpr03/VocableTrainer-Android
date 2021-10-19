@@ -59,7 +59,7 @@ public class Importer implements ImportHandler {
         } else if (previewParser.isMultiList() || mode != IMPORT_LIST_MODE.CREATE) {
             if (VList.isIDValid(db.getSetTableID(tbl))) {
                 if (mode == IMPORT_LIST_MODE.REPLACE) {
-                    db.truncateList(tbl);
+                    db.truncateList(tbl,false);
                 } else if (mode == IMPORT_LIST_MODE.IGNORE) {
                     ignoreEntries = true;
                 }

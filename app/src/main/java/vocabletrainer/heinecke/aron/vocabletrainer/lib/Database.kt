@@ -145,8 +145,8 @@ class Database {
                 + "WHERE e.$KEY_LIST = ? ORDER BY voc")
         db.rawQuery(
             "SELECT $KEY_TIP, $KEY_ADDITION, $KEY_CREATED,"
-                    + "e.$KEY_ENTRY,$KEY_ENTRY_UUID,$KEY_CHANGED "
-                    + "FROM $TBL_ENTRIES e LEFT JOIN $TBL_ENTRY_SYNC s ON s.$KEY_ENTRY = e.$KEY_ENTRY "
+                    + "$KEY_ENTRY,$KEY_ENTRY_UUID,$KEY_CHANGED "
+                    + "FROM $TBL_ENTRIES "
                     + "WHERE $KEY_LIST = ?", arrayOf(list.id.toString())
         ).use { cV ->
             db.rawQuery(String.format(sqlMeaning, TBL_WORDS_A), arrayOf(list.id.toString()))
@@ -441,7 +441,7 @@ class Database {
         try {
             db.compileStatement("DELETE FROM $TBL_ENTRIES WHERE $KEY_ENTRY = ?").use { delStm ->
                 db.compileStatement("UPDATE $TBL_ENTRIES SET $KEY_ADDITION = ?,$KEY_TIP = ?, $KEY_CHANGED = ? WHERE $KEY_ENTRY = ?").use { updStm ->
-                    db.compileStatement("INSERT INTO $TBL_ENTRIES ($KEY_LIST,$KEY_TIP,$KEY_ADDITION,$KEY_CREATED,$KEY_CHANGED) VALUES (?,?,?,?,?)").use { insStm ->
+                    db.compileStatement("INSERT INTO $TBL_ENTRIES ($KEY_LIST,$KEY_TIP,$KEY_ADDITION,$KEY_CREATED,$KEY_CHANGED,$KEY_ENTRY_UUID) VALUES (?,?,?,?,?,?)").use { insStm ->
                         db.compileStatement("INSERT INTO $TBL_WORDS_A($KEY_ENTRY,$KEY_MEANING) VALUES (?,?)").use { insMeanA ->
                             db.compileStatement("INSERT INTO $TBL_WORDS_B($KEY_ENTRY,$KEY_MEANING) VALUES (?,?)").use { insMeanB ->
                                 val whereDelMeaning = "$KEY_ENTRY = ?"
@@ -481,14 +481,8 @@ class Database {
                                         insStm.bindString(3, entry.addition)
                                         insStm.bindLong(4, entry.created)
                                         insStm.bindLong(5, entry.changed)
+                                        insStm.bindString(6, uuidToString(entry.uuid!!))
                                         entry.id = insStm.executeInsert()
-                                        entry.uuid?.let {
-                                            ContentValues().apply {
-                                                put(KEY_ENTRY, entry.id)
-                                                put(KEY_ENTRY_UUID, uuidToString(it))
-                                                db.insertOrThrow(TBL_ENTRY_SYNC, null, this)
-                                            }
-                                        }
                                         insertMeanings = true
                                     }
                                     if (insertMeanings) {
@@ -629,13 +623,22 @@ class Database {
      * @param tbl
      * @return
      */
-    fun truncateList(tbl: VList) {
+    fun truncateList(tbl: VList, useTransaction: Boolean = true) {
         try {
-            db.beginTransaction()
-            db.delete(KEY_ENTRY,"$KEY_LIST = ?", arrayOf(tbl.id.toString()))
-            db.setTransactionSuccessful()
+            if (useTransaction)
+                db.beginTransaction()
+            val args = arrayOf(tbl.id.toString())
+            db.execSQL(
+                "INSERT INTO $TBL_ENTRIES_DELETED ($KEY_ENTRY_UUID,$KEY_CREATED)"
+                        + " SELECT $KEY_ENTRY_UUID,$KEY_CREATED FROM $TBL_ENTRIES WHERE $KEY_LIST = ?",
+                args
+            )
+            db.delete(TBL_ENTRIES, "$KEY_LIST = ?", args)
+            if (useTransaction)
+                db.setTransactionSuccessful()
         } finally {
-            if (db.inTransaction()) db.endTransaction()
+            if (useTransaction)
+                db.endTransaction()
         }
     }
 
@@ -945,11 +948,9 @@ class Database {
                 + KEY_TIP + " TEXT,"
                 + KEY_ADDITION + "TEXT,"
                 + KEY_CREATED + " INTEGER NOT NULL,"
-                + KEY_CHANGED + " INTEGER NOT NULL )")
-        private val sqlEntryIndex = ("CREATE INDEX entryChangedI ON $TBL_ENTRIES ($KEY_CHANGED)")
-        private val sqlEntrySync = ("CREATE TABLE "+ TBL_ENTRY_SYNC + " ("
-                + KEY_ENTRY + " INTEGER PRIMARY KEY REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE, "
+                + KEY_CHANGED + " INTEGER NOT NULL,"
                 + KEY_ENTRY_UUID + " STRING NOT NULL UNIQUE )")
+        private val sqlEntryIndex = ("CREATE INDEX entryChangedI ON $TBL_ENTRIES ($KEY_CHANGED)")
         private val sqlEntryUsed = ("CREATE TABLE "+TBL_ENTRIES_USED + "("
                 + KEY_ENTRY + " INTEGER PRIMARY KEY REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE, "
                 + KEY_LAST_USED + " INTEGER NOT NULL )")
@@ -1046,7 +1047,6 @@ class Database {
                 sqlListSync,
                 sqlEntries,
                 sqlEntryIndex,
-                sqlEntrySync,
                 sqlWordsA,
                 sqlWordsAIndex,
                 sqlWordsB,
@@ -1107,7 +1107,6 @@ class Database {
                 sqlListSync,
                 sqlEntries,
                 sqlEntryIndex,
-                sqlEntrySync,
                 sqlWordsA,
                 sqlWordsAIndex,
                 sqlWordsB,
@@ -1352,7 +1351,7 @@ class Database {
                 UUID.fromString(it)
             }
         }
-        fun uuidToString(input: UUID?): String? = input?.toString()
+        fun uuidToString(input: UUID): String = input.toString()
 
         private const val TAG = "Database"
         const val DB_NAME_PRODUCTION = "voc.db"
@@ -1361,7 +1360,6 @@ class Database {
         private const val TBL_LISTS = "`lists`"
         private const val TBL_LIST_SYNC = "`list_sync`"
         private const val TBL_ENTRIES = "`entries`"
-        private const val TBL_ENTRY_SYNC = "`entry_sync`"
         private const val TBL_SESSION = "`session2`"
         private const val TBL_SESSION_META = "`session_meta`"
         private const val TBL_SESSION_LISTS = "`session_lists`"

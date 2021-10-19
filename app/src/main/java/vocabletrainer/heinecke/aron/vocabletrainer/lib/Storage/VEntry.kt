@@ -195,11 +195,7 @@ data class VEntry(
          */
         fun predefined(meaningA: MutableList<String>,meaningB: MutableList<String>,tip: String,addition: String,list: VList?): VEntry {
             val time = System.currentTimeMillis()
-            val uuid = if (list?.uuid != null) {
-                Database.uuid()
-            } else {
-                null
-            }
+            val uuid = Database.uuid()
             return VEntry(
                 _tip = tip,
                 created = time,

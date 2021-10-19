@@ -1179,10 +1179,10 @@ class Database {
         fun upgrade2to3(db: SQLiteDatabase) {
             val newTables = arrayOf(
                 sqlLists,
-                sqlListsIndex,
+                //sqlListsIndex, postpone to later
                 sqlListSync,
                 sqlEntries,
-                sqlEntryIndex,
+                //sqlEntryIndex, postpone to later
                 sqlWordsA,
                 sqlWordsAIndex,
                 sqlWordsB,
@@ -1290,9 +1290,21 @@ class Database {
             // drop old ID system
             //db.execSQL("ALTER TABLE $TBL_ENTRIES DROP COLUMN $KEY_TABLE")
             //db.execSQL("ALTER TABLE $TBL_ENTRIES DROP COLUMN $KEY_VOC")
-            dropColumns(db, TBL_ENTRIES.replace("`",""), listOf(KEY_TABLE.replace("`",""),KEY_VOC.replace("`","")))
+            //dropColumns(db, TBL_ENTRIES.replace("`",""), listOf(KEY_TABLE.replace("`",""),KEY_VOC.replace("`","")))
+            /*db.execSQL("ALTER TABLE $TBL_ENTRIES RENAME TO migration_temp_old")
+            db.execSQL(sqlEntries)
+            db.execSQL(sqlEntryIndex)
+            val migrationColumnsEntries = arrayOf(KEY_ENTRY,KEY_TIP,KEY_ADDITION,KEY_CREATED,KEY_CHANGED,KEY_ENTRY_UUID).joinToString(separator = ",")
+            db.execSQL("INSERT INTO $TBL_ENTRIES ($migrationColumnsEntries) SELECT ($migrationColumnsEntries) FROM migration_temp_old")
+            db.execSQL("DROP TABLE migration_temp_old")
             //db.execSQL("ALTER TABLE $TBL_LISTS DROP COLUMN $KEY_TABLE")
-            dropColumns(db, TBL_LISTS.replace("`",""), listOf(KEY_TABLE.replace("`","")))
+            db.execSQL("ALTER TABLE $TBL_LISTS RENAME TO migration_temp_old")
+            db.execSQL(sqlLists)
+            db.execSQL(sqlListsIndex)
+            val migrationColumnsLists = arrayOf(KEY_NAME_LIST,KEY_LIST,KEY_NAME_A,KEY_NAME_B,KEY_CREATED,KEY_CHANGED,KEY_SHARED).joinToString(separator = ",")
+            db.execSQL("INSERT INTO $TBL_ENTRIES ($migrationColumnsLists) SELECT ($migrationColumnsLists) FROM migration_temp_old")
+            db.execSQL("DROP TABLE migration_temp_old")*/
+            //dropColumns(db, TBL_LISTS.replace("`",""), listOf(KEY_TABLE.replace("`","")))
 
             // drop old tables
             db.execSQL("DROP TABLE $TBL_TABLES_V2")

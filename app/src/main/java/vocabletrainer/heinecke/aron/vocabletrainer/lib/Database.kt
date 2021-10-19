@@ -1208,8 +1208,10 @@ class Database {
             val time = System.currentTimeMillis().toString()
             // transfer lists, keep old refs for new auto id mapping
             db.execSQL("ALTER TABLE $TBL_LISTS ADD COLUMN $KEY_TABLE INTEGER")
+
             run {
                 val argsInto = arrayOf(
+                    KEY_SHARED,
                     KEY_NAME_LIST,
                     KEY_TABLE,
                     KEY_NAME_A,
@@ -1225,13 +1227,25 @@ class Database {
                     KEY_CREATED
                 ).joinToString(separator = ",")
                 val sqlCpy =
-                    "INSERT INTO $TBL_LISTS ($argsInto) SELECT $argsFrom,$time FROM $TBL_TABLES_V2"
+                    "INSERT INTO $TBL_LISTS ($argsInto) SELECT 0,$argsFrom,$time FROM $TBL_TABLES_V2"
                 db.execSQL(sqlCpy)
             }
 
             // add legacy mapping for entry foreign tables
             db.execSQL("ALTER TABLE $TBL_ENTRIES ADD COLUMN $KEY_TABLE INTEGER")
             db.execSQL("ALTER TABLE $TBL_ENTRIES ADD COLUMN $KEY_VOC INTEGER")
+            // add UUID column and populate for later
+            db.execSQL("ALTER TABLE $TBL_VOCABLE_V2 ADD COLUMN $KEY_ENTRY_UUID text")
+            val iter = db.query(TBL_VOCABLE_V2, arrayOf(KEY_TABLE, KEY_VOC),null,null,null,null,null)
+            db.compileStatement("UPDATE $TBL_VOCABLE_V2 SET $KEY_ENTRY_UUID = ? WHERE $KEY_TABLE = ? AND $KEY_VOC = ?").use {
+                while (iter.moveToNext()) {
+                    it.bindString(1, uuid().toString())
+                    it.bindLong(2,iter.getLong(0))
+                    it.bindLong(3,iter.getLong(1))
+                    assert(it.executeUpdateDelete() > 0)
+                }
+            }
+
             run {
                 // transfer entries using legacy ID mapping
                 val argsInto = arrayOf(
@@ -1240,8 +1254,8 @@ class Database {
                     KEY_VOC,
                     KEY_TIP,
                     KEY_ADDITION,
-                    KEY_LAST_USED,
                     KEY_CREATED,
+                    KEY_ENTRY_UUID,
                     KEY_CHANGED
                 ).joinToString(separator = ",")
                 val argsFrom = arrayOf(
@@ -1249,8 +1263,8 @@ class Database {
                     KEY_VOC,
                     KEY_TIP,
                     KEY_ADDITION,
-                    KEY_LAST_USED,
-                    "oldEntr.$KEY_CREATED"
+                    "oldEntr.$KEY_CREATED",
+                    KEY_ENTRY_UUID
                 ).joinToString(separator = ",")
                 val sqlCpy =
                     "INSERT INTO $TBL_ENTRIES ($argsInto) SELECT lists.$KEY_LIST,$argsFrom,$time FROM $TBL_VOCABLE_V2 oldEntr JOIN $TBL_LISTS lists ON lists.$KEY_TABLE = oldEntr.$KEY_TABLE"
@@ -1261,6 +1275,7 @@ class Database {
                 val sqlMA = "INSERT INTO $TBL_WORDS_A ($KEY_ENTRY,$KEY_MEANING) SELECT entries.$KEY_ENTRY,$KEY_MEANING FROM $TBL_MEANING_A_V2 oldM JOIN $TBL_ENTRIES entries ON entries.$KEY_TABLE = oldM.$KEY_TABLE AND entries.$KEY_VOC = oldM.$KEY_VOC"
                 Log.v(TAG, "sql: $sqlMA")
                 db.execSQL(sqlMA)
+                // now for TBL_WORDS_B
                 val sqlMB = sqlMA.replace(TBL_MEANING_A_V2, TBL_MEANING_B_V2).replace(TBL_WORDS_A,
                     TBL_WORDS_B)
                 db.execSQL(sqlMB)

@@ -1179,10 +1179,10 @@ class Database {
         fun upgrade2to3(db: SQLiteDatabase) {
             val newTables = arrayOf(
                 sqlLists,
-                sqlListsIndex,
+                //sqlListsIndex, postpone to later
                 sqlListSync,
                 sqlEntries,
-                sqlEntryIndex,
+                //sqlEntryIndex, postpone to later
                 sqlWordsA,
                 sqlWordsAIndex,
                 sqlWordsB,
@@ -1287,12 +1287,10 @@ class Database {
             // transfer single session entries used (shouldn't be in use at this point)
             db.execSQL("INSERT INTO $TBL_SESSION_ENTRIES ($KEY_ENTRY) SELECT entries.$KEY_ENTRY FROM $TBL_SESSION_VOC oldSesE JOIN $TBL_ENTRIES entries ON entries.$KEY_TABLE = oldSesE.$KEY_TABLE AND entries.$KEY_VOC = oldSesE.$KEY_VOC")
 
-            // drop old ID system
-            //db.execSQL("ALTER TABLE $TBL_ENTRIES DROP COLUMN $KEY_TABLE")
-            //db.execSQL("ALTER TABLE $TBL_ENTRIES DROP COLUMN $KEY_VOC")
-            dropColumns(db, TBL_ENTRIES.replace("`",""), listOf(KEY_TABLE.replace("`",""),KEY_VOC.replace("`","")))
-            //db.execSQL("ALTER TABLE $TBL_LISTS DROP COLUMN $KEY_TABLE")
-            dropColumns(db, TBL_LISTS.replace("`",""), listOf(KEY_TABLE.replace("`","")))
+            // dropping old columns is a pain, we either have to use helper functions that can't
+            // handle references or try a rename,create,insert-select which fails due to "row value misused"
+            // so we don't drop the old ID transition columns
+            // see f27b407a
 
             // drop old tables
             db.execSQL("DROP TABLE $TBL_TABLES_V2")
@@ -1377,62 +1375,6 @@ class Database {
                 db.execSQL("DROP TABLE $TBL_TABLES_V1")
             }
             run { checkForIllegalIds(db) }
-        }
-
-        // adopted from https://stackoverflow.com/a/51587449/3332686
-        // we don't have DROP COLUMN support until sqlite 3.35.0 from 2021-03-12, so never in android terms
-        // no transaction handling, left to caller
-        fun dropColumns(
-            database: SQLiteDatabase,
-            tableName: String,
-            columnsToRemove: Collection<String?>
-        ) {
-            val columnNames: MutableList<String?> = ArrayList()
-            val columnNamesWithType: MutableList<String?> = ArrayList()
-            val primaryKeys: MutableList<String?> = ArrayList()
-            val query = "pragma table_info($tableName);"
-            val cursor = database.rawQuery(query, null)
-            while (cursor.moveToNext()) {
-                val columnName = cursor.getString(cursor.getColumnIndex("name"))
-                if (columnsToRemove.contains(columnName)) {
-                    continue
-                }
-                val columnType = cursor.getString(cursor.getColumnIndex("type"))
-                val isNotNull = cursor.getInt(cursor.getColumnIndex("notnull")) == 1
-                val isPk = cursor.getInt(cursor.getColumnIndex("pk")) == 1
-                columnNames.add(columnName)
-                var tmp = "`$columnName` $columnType "
-                if (isNotNull) {
-                    tmp += " NOT NULL "
-                }
-                val defaultValueType = cursor.getType(cursor.getColumnIndex("dflt_value"))
-                if (defaultValueType == Cursor.FIELD_TYPE_STRING) {
-                    tmp += " DEFAULT " + "\"" + cursor.getString(cursor.getColumnIndex("dflt_value")) + "\" "
-                } else if (defaultValueType == Cursor.FIELD_TYPE_INTEGER) {
-                    tmp += " DEFAULT " + cursor.getInt(cursor.getColumnIndex("dflt_value")) + " "
-                } else if (defaultValueType == Cursor.FIELD_TYPE_FLOAT) {
-                    tmp += " DEFAULT " + cursor.getFloat(cursor.getColumnIndex("dflt_value")) + " "
-                }
-                columnNamesWithType.add(tmp)
-                if (isPk) {
-                    primaryKeys.add("`$columnName`")
-                }
-            }
-            cursor.close()
-            val columnNamesSeparated = TextUtils.join(", ", columnNames)
-            if (primaryKeys.size > 0) {
-                columnNamesWithType.add("PRIMARY KEY(" + TextUtils.join(", ", primaryKeys) + ")")
-            }
-            val columnNamesWithTypeSeparated = TextUtils.join(", ", columnNamesWithType)
-            database.execSQL("PRAGMA foreign_keys=OFF")
-            database.execSQL("ALTER TABLE " + tableName + " RENAME TO " + tableName + "_old;")
-            database.execSQL("CREATE TABLE $tableName ($columnNamesWithTypeSeparated);")
-            database.execSQL(
-                "INSERT INTO " + tableName + " (" + columnNamesSeparated + ") SELECT "
-                        + columnNamesSeparated + " FROM " + tableName + "_old;"
-            )
-            database.execSQL("DROP TABLE " + tableName + "_old;")
-            database.execSQL("PRAGMA foreign_keys=ON")
         }
     }
 

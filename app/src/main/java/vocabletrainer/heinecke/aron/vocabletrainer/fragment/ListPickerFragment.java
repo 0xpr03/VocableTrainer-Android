@@ -109,7 +109,7 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
                                 case DISMISS_EVENT_SWIPE: // swiped away
                                     Log.d(TAG,"deleting list");
                                     Database db = new Database(getContext());
-                                    db.deleteTable(entry);
+                                    db.deleteList(entry);
                                 break;
                             }
                         }

@@ -44,9 +44,9 @@ public class TableListAdapter extends ArrayAdapter<VList> {
     public TableListAdapter(Context context, @NonNull ArrayList<VList> lists, final boolean displayCheckbox) {
         super(context, R.layout.list_recycler_item, lists);
         this.dataItem = lists;
-        header = new VList(ID_RESERVED_SKIP,context.getString(R.string.Editor_Hint_Column_A), context.getString(R.string.Editor_Hint_Column_B), context.getString(R.string.Editor_Hint_List_Name),null);
+        header = VList.Companion.withId(ID_RESERVED_SKIP,context.getString(R.string.Editor_Hint_Column_A), context.getString(R.string.Editor_Hint_Column_B), context.getString(R.string.Editor_Hint_List_Name));
         // don't re-add header on restore
-        if(dataItem.size() == 0 || !dataItem.get(0).equals(header))
+        if(dataItem.size() == 0 || !dataItem.get(0).equalsId(header))
             dataItem.add(STARTING_ITEM - 1, header);
         resLayout = R.layout.list_recycler_item;
         this.context = context;

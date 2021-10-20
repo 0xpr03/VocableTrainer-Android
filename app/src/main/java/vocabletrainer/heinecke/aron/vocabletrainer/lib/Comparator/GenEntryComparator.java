@@ -8,7 +8,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
  * can't handle more than one head entry
  */
 public class GenEntryComparator extends GenericComparator<VEntry, String> {
-    private final int headID;
+    private final long headID;
 
     /**
      * Generic VEntry Comparator
@@ -17,7 +17,7 @@ public class GenEntryComparator extends GenericComparator<VEntry, String> {
      *                   passed array order defines the comparision priority
      * @param headID     ID of entry to set on top
      */
-    public GenEntryComparator(ValueRetriever[] retrievers, final int headID) {
+    public GenEntryComparator(ValueRetriever[] retrievers, final long headID) {
         super(retrievers);
         this.headID = headID;
     }

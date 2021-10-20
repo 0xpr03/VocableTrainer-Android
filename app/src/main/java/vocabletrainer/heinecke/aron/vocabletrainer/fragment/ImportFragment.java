@@ -477,7 +477,7 @@ public class ImportFragment extends BaseFragment implements VListEditorDialog.Li
     public void selectList() {
         if (importListMode == Importer.IMPORT_LIST_MODE.CREATE) {
             if(targetList == null || targetList.isExisting()) { // could be existing list from "merge"
-                targetList = new VList("", "", "");
+                targetList = VList.Companion.blank("", "", "");
                 etList.setText("");
             }
             listEditorDialog = VListEditorDialog.newInstance(true);

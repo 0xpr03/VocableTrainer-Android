@@ -110,7 +110,7 @@ public class ListPickerViewModel extends ViewModel {
         loading.setValue(true);
         loaderTask = new Thread(() -> {
             Database db = new Database(context);
-            lists.postValue(db.getTables(cancelLoading));
+            lists.postValue(db.getLists(cancelLoading));
             dataInvalidated = false;
             loading.postValue(false);
         });

@@ -3,17 +3,12 @@ package vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV;
 import androidx.lifecycle.MutableLiveData;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
 import org.apache.commons.csv.CSVPrinter;
 
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.List;
@@ -90,7 +85,7 @@ public class Exporter extends AsyncTask<Integer, Integer, String> {
                     printer.print(list.getNameB());
                     printer.println();
                 }
-                List<VEntry> vocables = db.getVocablesOfTable(list);
+                List<VEntry> vocables = db.getEntriesOfList(list);
 
                 for (VEntry ent : vocables) {
                     if(isCancelled()) {

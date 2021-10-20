@@ -35,6 +35,7 @@ public class Trainer implements Parcelable {
     private int failed;
     private int timesToSolve;
     private int timesShowedSolution;
+    private boolean showedTip;
     private boolean showedSolution;
     private Database db;
     private TrainerSettings settings;
@@ -122,7 +123,7 @@ public class Trainer implements Parcelable {
      * Retrieve information from DB
      */
     private void getTableData() {
-        db.getSessionTableData(lists, unsolvedLists, settings);
+        db.getSessionListData(lists, unsolvedLists, settings);
     }
 
     /**
@@ -282,13 +283,9 @@ public class Trainer implements Parcelable {
         }
 
         if(bSolved) {
-            if(!showedSolution) { // do not count retrieved solution as correct
-                cVocable.incrCorrect();
-            }
             accountVocable(bSolved && !showedSolution);
         } else {
             this.failed++;
-            cVocable.incrWrong();
         }
         return bSolved;
     }
@@ -312,13 +309,9 @@ public class Trainer implements Parcelable {
         Log.d(TAG,"checkSolution");
         boolean bSolved = isSolution(tSolution) != null;
         if(bSolved) {
-            if(!showedSolution) { // do not count retrieved solution as correct
-                cVocable.incrCorrect();
-            }
             accountVocable(bSolved && !showedSolution);
         }else {
             this.failed++;
-            cVocable.incrWrong();
         }
         return bSolved;
     }
@@ -333,6 +326,7 @@ public class Trainer implements Parcelable {
             Log.e(TAG, "Null vocable!");
             return;
         }
+        db.insertEntryStat(System.currentTimeMillis(),this.cVocable,showedTip,correct);
         if (correct)
             this.cVocable.setPoints(this.cVocable.getPoints() + 1);
         if (cVocable.getPoints() >= timesToSolve) {
@@ -360,9 +354,7 @@ public class Trainer implements Parcelable {
         if(!passed){
             this.failed++;
             timesShowedSolution++;
-            cVocable.incrWrong();
         } else {
-            cVocable.incrCorrect();
         }
         accountVocable(passed);
     }
@@ -379,10 +371,9 @@ public class Trainer implements Parcelable {
     /**
      * Update cVocable points
      *
-     * @return true on success
      */
-    private boolean updateVocable() {
-        return db.updateEntryProgress(cVocable);
+    private void updateVocable() {
+        db.updateEntryProgress(cVocable);
     }
 
     /**
@@ -390,14 +381,11 @@ public class Trainer implements Parcelable {
      */
     private void getNext() {
         if (cVocable != null) {
-            if (!updateVocable()) {
-                Log.e(TAG, "unable to update vocable!");
-                return;
-            }
+            updateVocable();
             lastAddition = cVocable.getAddition();
         }
         showedSolution = false;
-
+        showedTip = false;
         if (unsolvedLists.size() == 0) {
             Log.d(TAG, "no unsolved lists remaining!");
         } else {
@@ -463,7 +451,7 @@ public class Trainer implements Parcelable {
     public String getTip() {
         if (this.cVocable == null)
             return "";
-
+        this.showedTip = true;
         this.tips++;
         return cVocable.getTip();
     }
@@ -537,6 +525,7 @@ public class Trainer implements Parcelable {
         timesToSolve = in.readInt();
         timesShowedSolution = in.readInt();
         showedSolution = readParcableBool(in);
+        showedTip = readParcableBool(in);
         settings = in.readParcelable(TrainerSettings.class.getClassLoader());
         firstTimeVocLoad = readParcableBool(in);
         lastAddition = in.readString();
@@ -559,6 +548,7 @@ public class Trainer implements Parcelable {
         parcel.writeInt(timesToSolve);
         parcel.writeInt(timesShowedSolution);
         writeParcableBool(parcel,showedSolution);
+        writeParcableBool(parcel,showedTip);
         parcel.writeParcelable(settings,0);
         // ssm
         // db

@@ -1,2 +1,11 @@
-Vocabulary Trainer with multiple training modes and import/export from/to spreadsheet CSV Files.
-Supports multi meaning vocables. Training progress is based on correct/incorrect answers.
+Vocabulary and word trainer to memorize foreign languages and remember definitions
+
+* training progress based on correct and incorrect answers
+* multiple meanings per entry
+* dark mode (android 8.1+)
+* training mode for entering one meaning
+* training mode for entering all meaings
+* training mode for writing down on real paper
+* import and export to spreadsheet CSV files with full utf-8 support
+
+Internet access is used only for one OPT-IN survey.

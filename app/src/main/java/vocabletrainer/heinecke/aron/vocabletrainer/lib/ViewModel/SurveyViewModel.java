@@ -20,6 +20,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import info.guardianproject.netcipher.NetCipher;
+import vocabletrainer.heinecke.aron.vocabletrainer.BuildConfig;
 
 /**
  * ViewModel for survey, doing survey submit
@@ -45,12 +46,16 @@ public class SurveyViewModel extends ViewModel {
         System.setProperty("http.keepAlive", "false");
 
         final String url;
-        // allow tls 1.0
-        // can't be tested fully due to different device libraries
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            url = "https://vct.badssl.proctet.net/data/add/api";
+        if (BuildConfig.BUILD_TYPE.equals("debug")) {
+            url = "localhost";
         } else {
-            url = "https://vct.proctet.net/data/add/api";
+            // allow tls 1.0
+            // can't be tested fully due to different device libraries
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                url = "https://vct.badssl.proctet.net/data/add/api";
+            } else {
+                url = "https://vct.proctet.net/data/add/api";
+            }
         }
 
         runner = new Thread(() -> {

@@ -23,7 +23,6 @@ public class SessionStorageManager {
     private final static String KEY_FAILED = "t_failed";
     private final static String KEY_CASE_SENSITIVE = "t_case_sensitive";
     private final static String KEY_VOCABLE_ID = "t_last_voc_id";
-    private final static String KEY_VOCABLE_LST_ID = "t_last_lst_id";
     private final static String KEY_TRIM_SPACES = "t_trim_spaces";
     private final static String KEY_ADDITION_AUTO = "t_addition_auto";
 
@@ -79,8 +78,8 @@ public class SessionStorageManager {
      * @param lists
      * @return true on success
      */
-    public boolean saveSessionTbls(Collection<VList> lists){
-        return db.createSession(lists);
+    public void saveSessionTbls(Collection<VList> lists){
+        db.createSession(lists);
     }
 
     /**
@@ -88,7 +87,7 @@ public class SessionStorageManager {
      * @return
      */
     public ArrayList<VList> loadSessionTbls(){
-        return db.getSessionTables();
+        return db.getSessionLists();
     }
 
     /**
@@ -126,10 +125,9 @@ public class SessionStorageManager {
             boolean trimSpaces = getBoolean(KEY_TRIM_SPACES);
             boolean additionAuto = getBoolean(KEY_ADDITION_AUTO);
             VEntry entry = null;
-            if(map.containsKey(KEY_VOCABLE_ID) && map.containsKey(KEY_VOCABLE_LST_ID)){
-                int vocID = getInt(KEY_VOCABLE_ID);
-                int lstID = getInt(KEY_VOCABLE_LST_ID);
-                entry = db.getVocable(vocID,lstID);
+            if(map.containsKey(KEY_VOCABLE_ID)){
+                long vocID = getLong(KEY_VOCABLE_ID);
+                entry = db.getEntry(vocID);
             }
 
             return new TrainerSettings(timesToSolve, mode, allowTips,tips,failed,caseSensitive,entry,trimSpaces, additionAuto);
@@ -142,6 +140,15 @@ public class SessionStorageManager {
          */
         private int getInt(String key){
             return Integer.parseInt(map.get(key));
+        }
+
+        /**
+         * Get long from map
+         * @param key
+         * @return
+         */
+        private long getLong(String key){
+            return Long.parseLong(map.get(key));
         }
 
         /**
@@ -240,8 +247,7 @@ public class SessionStorageManager {
          */
         private boolean writeVocable_(final VEntry entry){
             if (entry != null){
-                if(exec(KEY_VOCABLE_ID,entry.getId())) return false;
-                if(exec(KEY_VOCABLE_LST_ID,entry.getList().getId())) return false;
+                return !exec(KEY_VOCABLE_ID, entry.getId());
             }
             return true;
         }
@@ -263,6 +269,16 @@ public class SessionStorageManager {
          * @return
          */
         private boolean exec(final String key, final int value) {
+            return exec(key, String.valueOf(value));
+        }
+
+        /**
+         * @see {exec}
+         * @param key
+         * @param value
+         * @return
+         */
+        private boolean exec(final String key, final long value) {
             return exec(key, String.valueOf(value));
         }
 

@@ -2,8 +2,6 @@ package vocabletrainer.heinecke.aron.vocabletrainer;
 
 import androidx.annotation.NonNull;
 
-import org.junit.Test;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -11,6 +9,8 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVCustomFormat;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.MultiMeaningHandler;
 
 import static org.junit.Assert.*;
+
+import org.junit.Test;
 
 /**
  * Tests for multi-meaning parsing

@@ -7,22 +7,21 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.database.sqlite.SQLiteStatement
 import android.util.Log
-import android.util.SparseArray
+import androidx.collection.LongSparseArray
+import androidx.core.database.getStringOrNull
 import androidx.lifecycle.LiveData
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.TrainerSettings
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList
-import java.io.File
 import java.sql.Date
 import java.sql.SQLException
 import java.util.*
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.*
+
 
 /**
  * Database manager<br></br>
  * Doing all relevant DB stuff
  */
 class Database {
-    private var db: SQLiteDatabase? = null // pointer to DB used in this class
+    private var db: SQLiteDatabase // pointer to DB used in this class
     private var helper: internalDB? = null
     /**
      * Database object, using internal storage for this App (default DB file)
@@ -42,44 +41,52 @@ class Database {
             helper = internalDB(context)
             dbIntern = helper!!.writableDatabase
         }
-        db = dbIntern
+        db = dbIntern!!
     }
 
     /**
      * Close DB, all calls afterwards are UB!
      */
     fun close() {
-        db!!.close();
+        db.close();
     }
 
     /**
-     * Retrieve vocable by ID & list ID
+     * Retrieve vocable by ID
      * @param vocID
      * @param listID
      * @return VEntry with set List<br></br>
      * Null on failure
      */
-    fun getVocable(vocID: Int, listID: Int): VEntry? {
-        db!!.rawQuery(
-                "SELECT $KEY_TIP,$KEY_ADDITION,$KEY_LAST_USED,tVoc.$KEY_CREATED,$KEY_CORRECT,"
-                +"$KEY_WRONG,tVoc.$KEY_TABLE,$KEY_NAME_A,$KEY_NAME_B,$KEY_NAME_TBL,tList.$KEY_CREATED,"
-                +"$KEY_POINTS "
-                +"FROM $TBL_VOCABLE tVoc "
-                +"JOIN $TBL_TABLES tList ON tVoc.$KEY_TABLE = tList.$KEY_TABLE "
-                +"LEFT JOIN $TBL_SESSION ses ON tVoc.$KEY_TABLE = ses.$KEY_TABLE AND tVoc.$KEY_VOC = ses.$KEY_VOC"
-                +"WHERE tVoc.$KEY_TABLE = ? AND tVoc.$KEY_VOC = ?", arrayOf(listID.toString(), vocID.toString())).use { cV ->
+    fun getEntry(vocID: Long): VEntry? {
+        db.rawQuery(
+                "SELECT $KEY_TIP, $KEY_ADDITION, tVoc.$KEY_CREATED, "
+                +"tVoc.$KEY_LIST, $KEY_NAME_A, $KEY_NAME_B, $KEY_NAME_LIST,"
+                +"tList.$KEY_CREATED, $KEY_POINTS, $KEY_LIST_UUID, tList.$KEY_CHANGED, tVoc.$KEY_CHANGED,"
+                +"tVoc.$KEY_ENTRY_UUID, $KEY_SHARED"
+                +"FROM $TBL_ENTRIES tVoc "
+                +"JOIN $TBL_LISTS tList ON tVoc.$KEY_LIST = tList.$KEY_LIST "
+                +"LEFT JOIN $TBL_SESSION ses ON tVoc.$KEY_ENTRY = ses.$KEY_ENTRY"
+                +"LEFT JOIN $TBL_LIST_SYNC listSync ON tVoc.$KEY_LIST = listSync.$KEY_LIST"
+                +"WHERE tVoc.$KEY_ENTRY = ?", arrayOf(vocID.toString())).use { cV ->
             return if (cV.moveToNext()) {
-                val list = VList(listID, cV.getString(7), cV.getString(8),
-                        cV.getString(9), Date(cV.getLong(10)))
-                val meaningA: MutableList<String> = LinkedList()
-                val meaningB: MutableList<String> = LinkedList()
-                val vocable = VEntry(meaningA, meaningB, cV.getString(0),
-                        cV.getString(1), vocID, list,
-                        if (cV.isNull(11)) 0 else cV.getInt(11),
-                        Date(cV.getLong(2)), Date(cV.getLong(3)),
-                        cV.getInt(4), cV.getInt(5))
-                getVocableMeanings(TBL_MEANING_A, vocable, meaningA)
-                getVocableMeanings(TBL_MEANING_B, vocable, meaningB)
+                val list = VList(
+                    _id = cV.getLong(3), _name = cV.getString(6),
+                    _nameA = cV.getString(4), _nameB = cV.getString(5),
+                    created = cV.getLong(7), uuid = parseUUID(cV.getStringOrNull(9)),
+                    changed = cV.getLong(10), shared = cV.getInt(13)
+                )
+                val meaningA: MutableList<String> = ArrayList()
+                val meaningB: MutableList<String> = ArrayList()
+                val vocable = VEntry(
+                    meaningA = meaningA, meaningB = meaningB, _tip = cV.getString(0),
+                    _addition = cV.getString(1), id = vocID, list = list,
+                    _points = if (cV.isNull(8)) 0 else cV.getInt(8),
+                    last_used = null, created = cV.getLong(2),
+                    changed = cV.getLong(11),uuid = parseUUID(cV.getStringOrNull(12))
+                )
+                getVocableMeanings(TBL_WORDS_A, vocable, meaningA)
+                getVocableMeanings(TBL_WORDS_B, vocable, meaningB)
                 vocable
             } else {
                 Log.w(TAG, "vocable not found by ID!")
@@ -96,8 +103,8 @@ class Database {
      * @param list List in which to insert
      */
     private fun getVocableMeanings(table: String, vocable: VEntry, list: MutableList<String>) {
-        db!!.query(table, arrayOf(KEY_MEANING),
-                "$KEY_TABLE = ? AND $KEY_VOC = ?", arrayOf(Integer.toString(vocable.list.id), Integer.toString(vocable.id)),
+        db.query(table, arrayOf(KEY_MEANING),
+                "$KEY_ENTRY = ?", arrayOf(vocable.id.toString()),
                 null, null, null).use { cM ->
             while (cM.moveToNext()) {
                 list.add(cM.getString(0))
@@ -115,7 +122,7 @@ class Database {
      */
     fun wipeSessionPoints(): Boolean {
         return try {
-            db!!.delete(TBL_SESSION + "", null, null)
+            db.delete(TBL_SESSION + "", null, null)
             true
         } catch (e: Exception) {
             Log.e(TAG, "", e)
@@ -124,40 +131,54 @@ class Database {
     }
 
     /**
-     * Retruns a List of Entries for the specified list<br></br>
+     * Returns a List of Entries for the specified list<br></br>
      * <u>No point data is being loaded</u>
      *
      * @param list VList for which all entries should be retrieved
      * @return List<VEntry>
     </VEntry> */
-    fun getVocablesOfTable(list: VList): List<VEntry> {
-        val sqlMeaning = ("SELECT $KEY_MEANING,$KEY_VOC voc FROM %s WHERE "
-                + "$KEY_TABLE = ? ORDER BY voc")
-        db!!.rawQuery("SELECT $KEY_TIP,$KEY_ADDITION,$KEY_LAST_USED"
-                + ",$KEY_CREATED,$KEY_CORRECT,$KEY_WRONG"
-                + ",$KEY_VOC"
-                + " FROM $TBL_VOCABLE WHERE $KEY_TABLE = ?", arrayOf(list.id.toString())).use { cV ->
-            db!!.rawQuery(String.format(sqlMeaning, TBL_MEANING_A), arrayOf(Integer.toString(list.id))).use { cMA ->
-                db!!.rawQuery(String.format(sqlMeaning, TBL_MEANING_B), arrayOf(Integer.toString(list.id))).use { cMB ->
-                    val lst: MutableList<VEntry> = ArrayList()
-                    val mapA = SparseArray<MutableList<String>>()
-                    val mapB = SparseArray<MutableList<String>>()
-                    while (cV.moveToNext()) {
-                        val meaningA: MutableList<String> = LinkedList()
-                        val meaningB: MutableList<String> = LinkedList()
-                        val vocable = VEntry(meaningA, meaningB, cV.getString(0),
-                                cV.getString(1), cV.getInt(6), list,
-                                Date(cV.getLong(2)), Date(cV.getLong(3)),
-                                cV.getInt(4), cV.getInt(5))
-                        mapA.put(vocable.id, meaningA)
-                        mapB.put(vocable.id, meaningB)
-                        lst.add(vocable)
+    fun getEntriesOfList(list: VList): List<VEntry> {
+        // we read all the meanings for this table, then sort them to their entry
+        val sqlMeaning = ("SELECT $KEY_MEANING,m.$KEY_ENTRY voc FROM %s m "
+                +"JOIN $TBL_ENTRIES e ON e.$KEY_ENTRY = m.$KEY_ENTRY "
+                + "WHERE e.$KEY_LIST = ? ORDER BY voc")
+        db.rawQuery(
+            "SELECT $KEY_TIP, $KEY_ADDITION, $KEY_CREATED,"
+                    + "$KEY_ENTRY,$KEY_ENTRY_UUID,$KEY_CHANGED "
+                    + "FROM $TBL_ENTRIES "
+                    + "WHERE $KEY_LIST = ?", arrayOf(list.id.toString())
+        ).use { cV ->
+            db.rawQuery(String.format(sqlMeaning, TBL_WORDS_A), arrayOf(list.id.toString()))
+                .use { cMA ->
+                    db.rawQuery(
+                        String.format(sqlMeaning, TBL_WORDS_B),
+                        arrayOf(list.id.toString())
+                    ).use { cMB ->
+                        val lst: MutableList<VEntry> = ArrayList()
+                        val mapA = LongSparseArray<MutableList<String>>()
+                        val mapB = LongSparseArray<MutableList<String>>()
+                        while (cV.moveToNext()) {
+                            val meaningA: MutableList<String> = ArrayList()
+                            val meaningB: MutableList<String> = ArrayList()
+                            val vocable = VEntry(
+                                meaningA = meaningA, meaningB = meaningB,
+                                _tip = cV.getString(0), _addition = cV.getString(1),
+                                id = cV.getLong(3), list = list,
+                                last_used = null,
+                                created = cV.getLong(2),
+                                changed = cV.getLong(5),
+                                uuid = parseUUID(cV.getStringOrNull(4))
+                            )
+                            mapA.put(vocable.id, meaningA)
+                            mapB.put(vocable.id, meaningB)
+                            lst.add(vocable)
+                        }
+                        handleMeaningData(cMA, mapA)
+                        handleMeaningData(cMB, mapB)
+                        //Log.d(TAG,"Loaded list: $lst")
+                        return lst
                     }
-                    handleMeaningData(cMA, mapA)
-                    handleMeaningData(cMB, mapB)
-                    return lst
                 }
-            }
         }
     }
 
@@ -167,11 +188,11 @@ class Database {
      * @param cursor expected as [0] = String meaning, [1] = int ID
      * @param map
      */
-    private fun handleMeaningData(cursor: Cursor, map: SparseArray<MutableList<String>>) {
+    private fun handleMeaningData(cursor: Cursor, map: LongSparseArray<MutableList<String>>) {
         var lst: MutableList<String>? = null
         var lastID = ID_RESERVED_SKIP
         while (cursor.moveToNext()) {
-            val id = cursor.getInt(1)
+            val id = cursor.getLong(1)
             if (id == ID_RESERVED_SKIP) Log.wtf(TAG, "ID is -1!")
             if (id != lastID || lst == null) {
                 lst = map[id]
@@ -188,231 +209,413 @@ class Database {
      */
     @Deprecated("")
     fun getEntryPoints(ent: VEntry): Int {
-        db!!.rawQuery("SELECT $KEY_POINTS "
-                + "FROM $TBL_SESSION WHERE $KEY_TABLE = ? AND $KEY_VOC = ?",
-                arrayOf(ent.list.id.toString(), ent.id.toString())).use { cursor -> return if (cursor.moveToNext()) cursor.getInt(0) else -1 }
+        db.rawQuery(
+            "SELECT $KEY_POINTS "
+                    + "FROM $TBL_SESSION WHERE $KEY_ENTRY = ?",
+            arrayOf(ent.id.toString())
+        ).use { cursor -> return if (cursor.moveToNext()) cursor.getInt(0) else -1 }
     }
 
     /**
-     * Get a list of all lists
+     * Get all lists, non-cancelable
      *
      * @return ArrayList<\VList>
      */
-    val tables: List<VList>?
-        get() = getTables(null)
+    val lists: List<VList>
+        get() = getLists(null)
 
     /**
-     * Get a list of all lists
+     * Get all lists
      * @param cancelHandle Handle for cancel, null for cancel disable, value has to be set
      * @return ArrayList<\VList>
      */
-    fun getTables(cancelHandle: LiveData<Boolean>?): List<VList>? {
-        val column = arrayOf(KEY_TABLE, KEY_NAME_A, KEY_NAME_B, KEY_NAME_TBL, KEY_CREATED)
-        try {
-            db!!.query(TBL_TABLES, column, null, null, null, null, null).use { cursor ->
-                val list: MutableList<VList> = ArrayList()
-                while (cursor.moveToNext()) {
-                    if (cancelHandle != null && cancelHandle.value!!) {
-                        break
-                    }
-                    val entry = VList(cursor.getInt(0), cursor.getString(1),
-                            cursor.getString(2), cursor.getString(3),
-                            Date(cursor.getLong(4)))
-                    list.add(entry)
+    fun getLists(cancelHandle: LiveData<Boolean>?): List<VList> {
+        val column = listOf(KEY_LIST, KEY_NAME_A, KEY_NAME_B, KEY_NAME_LIST, KEY_CREATED,
+            KEY_CHANGED, KEY_LIST_UUID, KEY_SHARED)
+        val listsList: MutableList<VList> = ArrayList()
+
+        // load categories and create a list-id -> list<category> mapping
+        val categories = categories()
+        val entryCategories = LongSparseArray<MutableList<Category>>()
+        db.query(TBL_LIST_CATEGORIES, arrayOf(KEY_LIST, KEY_CATEGORY),null,null,null,null, KEY_LIST).use {cursor ->
+            while(cursor.moveToNext()) {
+                val listId = cursor.getLong(0)
+                var list = entryCategories.get(listId)
+                if (list == null) {
+                    list = mutableListOf()
+                    entryCategories.append(listId,list)
                 }
-                return list
+                list.add(categories.get(cursor.getLong(1))!!)
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "", e)
-            return null
+        }
+
+        db.rawQuery("SELECT l.${column.joinToString (separator = ",")} FROM $TBL_LISTS l LEFT JOIN $TBL_LIST_SYNC s " +
+                "ON s.$KEY_LIST = l.$KEY_LIST", null).use { cursor ->
+            while (cursor.moveToNext()) {
+                if (cancelHandle != null && cancelHandle.value!!) {
+                    return listsList
+                }
+                val entry = VList(
+                    _id = cursor.getLong(0),
+                    _nameA = cursor.getString(1),
+                    _nameB = cursor.getString(2),
+                    _name = cursor.getString(3),
+                    created = cursor.getLong(4),
+                    changed = cursor.getLong(5),
+                    uuid = parseUUID(cursor.getStringOrNull(6)),
+                    _categories = entryCategories.get(cursor.getLong(0)),
+                    shared = cursor.getInt(7)
+                )
+                listsList.add(entry)
+            }
+        }
+        return listsList
+    }
+
+    /**
+     * All available categories
+     */
+    fun categories(): LongSparseArray<Category>{
+        val column = listOf(KEY_CATEGORY_NAME, KEY_CATEGORY, KEY_CHANGED, KEY_CATEGORY_UUID)
+        db.rawQuery("SELECT ${column.joinToString (separator = ",")} FROM $TBL_CATEGORY", null).use { cursor ->
+            val list: LongSparseArray<Category> = LongSparseArray()
+            while (cursor.moveToNext()) {
+                val entry = Category(
+                    _name = cursor.getString(0),
+                    id = cursor.getLong(1),
+                    changed = cursor.getLong(2),
+                    uuid = parseUUID(cursor.getString(3))!!
+                )
+                list.append(entry.id,entry)
+            }
+            return list
+        }
+    }
+
+    /**
+     * Delete category
+     */
+    fun deleteCategory(cat: Category, useTransaction: Boolean = true) {
+        if (useTransaction) {
+            db.beginTransaction()
+        }
+        try {
+            db.delete(TBL_CATEGORY, "$KEY_CATEGORY = ?", arrayOf(cat.id.toString()))
+            ContentValues().apply {
+                put(KEY_CREATED, System.currentTimeMillis())
+                put(KEY_CATEGORY_UUID, uuidToString(cat.uuid))
+                db.insertOrThrow(TBL_CATEGORIES_DELETED, null, this)
+            }
+            db.setTransactionSuccessful()
+        } finally {
+            if (useTransaction) {
+                db.endTransaction()
+            }
+        }
+    }
+
+    /**
+     * Upsert category, setting a ID if not existing
+     */
+    fun upsertCategory(cat: Category,useTransaction: Boolean = true) {
+        if(useTransaction)
+            db.beginTransaction()
+        try {
+            if (cat.isExisting) {
+                val values = ContentValues()
+                values.put(KEY_CATEGORY_NAME, cat.name)
+                values.put(KEY_CHANGED, cat.changed)
+                assert(
+                    1 == db.update(
+                        TBL_CATEGORY,
+                        values,
+                        "$KEY_CATEGORY = ?",
+                        arrayOf(cat.id.toString())
+                    )
+                )
+            } else {
+                ContentValues().apply {
+                    put(KEY_CATEGORY_NAME, cat.name)
+                    put(KEY_CATEGORY_UUID, uuidToString(cat.uuid))
+                    put(KEY_CHANGED, cat.changed)
+                    cat.id = db.insertOrThrow(TBL_CATEGORY, null, this)
+                }
+            }
+            if(useTransaction)
+                db.setTransactionSuccessful()
+        } finally {
+            if(useTransaction)
+                db.endTransaction()
+        }
+    }
+
+    /**
+     * Create new entry training statistic entry.
+     */
+    fun insertEntryStat(date: Long, entry: VEntry, tip: Boolean, correct: Boolean) {
+        ContentValues().apply {
+            put(KEY_ENTRY,entry.id)
+            put(KEY_DATE,date)
+            put(KEY_TIP_NEEDED,tip)
+            put(KEY_IS_CORRECT,correct)
+            db.insertOrThrow(TBL_ENTRY_STATS,null,this)
+        }
+    }
+
+    /**
+     * All EntryStat entries, optional specified [since]
+     */
+    fun entryStats(since: Long?): List<EntryStat> {
+        val column = listOf(KEY_ENTRY_UUID, KEY_DATE, KEY_TIP_NEEDED, KEY_IS_CORRECT)
+        val limitClause = since?.run {
+            "WHERE $KEY_DATE >= ?"
+        } ?: ""
+        val args = since?.run {
+            arrayOf(since.toString())
+        } ?: arrayOf()
+        db.rawQuery(
+            "SELECT ${column.joinToString(separator = ",")} FROM $TBL_ENTRY_STATS stat "
+                    + "JOIN $TBL_ENTRIES e ON e.$KEY_ENTRY = stat.$KEY_ENTRY $limitClause", args
+        ).use { cursor ->
+            val list: MutableList<EntryStat> = mutableListOf()
+            while (cursor.moveToNext()) {
+                list.add(
+                    EntryStat(
+                        date = cursor.getLong(1),
+                        entryUUID = parseUUID(cursor.getString(0))!!,
+                        tipNeeded = cursor.getInt(2) == 1,
+                        isCorrect = cursor.getInt(3) == 1
+                    )
+                )
+            }
+            return list
         }
     }
 
     /**
      * Update or insert the provided VList data
      *
-     * @param tbl
+     * @param list
      * @return true on succuess
      */
-    fun upsertVList(tbl: VList): Boolean {
+    fun upsertVList(list: VList, useTransaction: Boolean = true) {
         Log.v(TAG, "upsertVList")
-        return if (tbl.isExisting) {
-            try {
-                val args = arrayOf(tbl.id.toString())
-                val values = ContentValues()
-                values.put(KEY_NAME_TBL, tbl.name)
-                values.put(KEY_NAME_A, tbl.nameA)
-                values.put(KEY_NAME_B, tbl.nameB)
-                val updated = db!!.update(TBL_TABLES, values, KEY_TABLE + " = ?",
-                        args)
-                if (updated != 1) {
-                    throw SQLException("Update error, updated: $updated")
-                }
-                true
-            } catch (e: Exception) {
-                Log.e(TAG, "", e)
-                false
-            }
-        } else {
-            try {
-                val tbl_id = getHighestTableID(db) + 1
-                Log.d(TAG, "highest TBL ID: $tbl_id")
-                val values = ContentValues()
-                values.put(KEY_TABLE, tbl_id)
-                values.put(KEY_NAME_A, tbl.nameA)
-                values.put(KEY_NAME_B, tbl.nameB)
-                values.put(KEY_NAME_TBL, tbl.name)
-                values.put(KEY_CREATED, tbl.created.time)
-                db!!.insertOrThrow(TBL_TABLES, null, values)
-                tbl.id = tbl_id
-                true
-            } catch (e: Exception) {
-                Log.wtf(TAG, "", e)
-                false
-            }
-        }
-    }
-
-    /**
-     * Test is table exists
-     *
-     * @param db  Writeable database
-     * @param tbl VList
-     * @return true if it exists
-     */
-    private fun testTableExists(db: SQLiteDatabase?, tbl: VList): Boolean {
-        requireNotNull(db) { "illegal sql db" }
-        if (tbl.isExisting) return false
         try {
-            db.rawQuery("SELECT 1 FROM $TBL_TABLES WHERE $KEY_TABLE = ?", arrayOf(tbl.id.toString())).use { cursor -> return cursor.moveToNext() }
-        } catch (e: Exception) {
-            Log.e(TAG, "", e)
-            return false
+            if (useTransaction) {
+                db.beginTransaction()
+            }
+            if (list.isExisting) {
+                val args = arrayOf(list.id.toString())
+                val values = ContentValues()
+                values.put(KEY_NAME_LIST, list.name)
+                values.put(KEY_NAME_A, list.nameA)
+                values.put(KEY_NAME_B, list.nameB)
+                values.put(KEY_CHANGED, list.changed)
+                val updated = db.update(
+                    TBL_LISTS, values, KEY_LIST + " = ?",
+                    args
+                )
+                if (updated != 1) {
+                    throw SQLException("Update error, updated: $updated expected 1")
+                }
+            } else {
+                ContentValues().apply {
+                    put(KEY_NAME_A, list.nameA)
+                    put(KEY_NAME_B, list.nameB)
+                    put(KEY_NAME_LIST, list.name)
+                    put(KEY_CREATED, list.created)
+                    put(KEY_CHANGED, list.changed)
+                    put(KEY_SHARED, list.shared)
+                    list.id = db.insertOrThrow(TBL_LISTS, null, this)
+                }
+                list.uuid?.let {
+                    ContentValues().apply {
+                        put(KEY_LIST, list.id)
+                        put(KEY_LIST_UUID, uuidToString(it))
+                        db.insertOrThrow(TBL_LIST_SYNC, null, this)
+                    }
+                }
+            }
+            db.delete(TBL_LIST_CATEGORIES, "$KEY_LIST = ?", arrayOf(list.id.toString()))
+            list.categories?.run {
+                db.compileStatement("INSERT INTO $TBL_LIST_CATEGORIES ($KEY_LIST, $KEY_CATEGORY) VALUES (?,?)").use { ins ->
+                    for (e in this) {
+                        ins.clearBindings()
+                        ins.bindLong(1,list.id)
+                        ins.bindLong(2,e.id)
+                        ins.executeInsert()
+                    }
+                }
+            }
+            if (useTransaction)
+                db.setTransactionSuccessful()
+        } finally {
+            if(useTransaction)
+                db.endTransaction()
         }
     }
 
     /**
-     * Update and/or insert all Entries<br></br>
-     * This function uses delete and changed flags in entries<br></br>
-     * <u>Does not update vocable metadata such as last used etc on changed flag.</u>
+     * Update and/or insert all Entries.<br></br>
+     * This function uses delete and changed flags in entries.<br></br>
+     * <u>Does not update vocable metadata such as last used etc on changed flag!</u>
      *
      * @param lst
      * @return true on success
      */
-    fun upsertEntries(lst: List<VEntry>): Boolean {
+    fun upsertEntries(lst: List<VEntry>) {
         try {
-            db!!.compileStatement("DELETE FROM $TBL_VOCABLE WHERE $KEY_VOC = ? AND $KEY_TABLE = ?").use { delStm ->
-                db!!.compileStatement("UPDATE $TBL_VOCABLE SET $KEY_ADDITION = ?,$KEY_TIP = ? WHERE $KEY_TABLE= ? AND $KEY_VOC = ?").use { updStm ->
-                    db!!.compileStatement("INSERT INTO $TBL_VOCABLE ($KEY_TABLE,$KEY_VOC,$KEY_TIP,$KEY_ADDITION,$KEY_CREATED,$KEY_CORRECT,$KEY_WRONG) VALUES (?,?,?,?,?,?,?)").use { insStm ->
-                        db!!.compileStatement("INSERT INTO $TBL_MEANING_A($KEY_TABLE,$KEY_VOC,$KEY_MEANING) VALUES (?,?,?)").use { insMeanA ->
-                            db!!.compileStatement("INSERT INTO $TBL_MEANING_B($KEY_TABLE,$KEY_VOC,$KEY_MEANING) VALUES (?,?,?)").use { insMeanB ->
-                                val whereDelMeaning = "$KEY_TABLE = ? AND $KEY_VOC = ?"
-                                db!!.beginTransaction()
-                                var lastTableID = -1
-                                var lastID = -1
+            db.compileStatement("DELETE FROM $TBL_ENTRIES WHERE $KEY_ENTRY = ?").use { delStm ->
+                db.compileStatement("UPDATE $TBL_ENTRIES SET $KEY_ADDITION = ?,$KEY_TIP = ?, $KEY_CHANGED = ? WHERE $KEY_ENTRY = ?").use { updStm ->
+                    db.compileStatement("INSERT INTO $TBL_ENTRIES ($KEY_LIST,$KEY_TIP,$KEY_ADDITION,$KEY_CREATED,$KEY_CHANGED,$KEY_ENTRY_UUID) VALUES (?,?,?,?,?,?)").use { insStm ->
+                        db.compileStatement("INSERT INTO $TBL_WORDS_A($KEY_ENTRY,$KEY_MEANING) VALUES (?,?)").use { insMeanA ->
+                            db.compileStatement("INSERT INTO $TBL_WORDS_B($KEY_ENTRY,$KEY_MEANING) VALUES (?,?)").use { insMeanB ->
+                                val whereDelMeaning = "$KEY_ENTRY = ?"
+                                db.beginTransaction()
                                 var insertMeanings: Boolean
                                 for (entry in lst) {
                                     //Log.d(TAG, "processing " + entry + " of " + entry.getList());
-                                    if (entry.id == ID_RESERVED_SKIP) // skip spacer
+                                    if (entry.id == ID_RESERVED_SKIP) {
+                                        // skip spacer, but not "invalid" -> new entries
                                         continue
+                                    }
                                     insertMeanings = false
                                     if (entry.isExisting) {
-                                        if (entry.isDelete || entry.isChanged) {
-                                            // we need to clear meanings anyway
-                                            val args = arrayOf(Integer.toString(entry.list.id), Integer.toString(entry.id))
-                                            db!!.delete(TBL_MEANING_B, whereDelMeaning, args)
-                                            db!!.delete(TBL_MEANING_A, whereDelMeaning, args)
+                                        if (entry.isDelete || entry.isChanged()) {
+                                            // we can clear meanings anyway
+                                            val args = arrayOf(entry.id.toString())
+                                            db.delete(TBL_WORDS_B, whereDelMeaning, args)
+                                            db.delete(TBL_WORDS_A, whereDelMeaning, args)
                                             if (entry.isDelete) {
+                                                ContentValues().apply {
+                                                    put(KEY_ENTRY_UUID, uuidToString(entry.uuid!!))
+                                                    put(KEY_CREATED,System.currentTimeMillis())
+                                                    put(KEY_LIST,entry.list!!.id)
+                                                    db.insertOrThrow(TBL_ENTRIES_DELETED, null, this)
+                                                }
                                                 delStm.clearBindings()
-                                                delStm.bindLong(1, entry.id.toLong())
-                                                delStm.bindLong(2, entry.list.id.toLong())
+                                                delStm.bindLong(1, entry.id)
                                                 delStm.execute()
-                                            } else if (entry.isChanged) {
+                                            } else if (entry.isChanged()) {
                                                 updStm.clearBindings()
                                                 updStm.bindString(1, entry.addition)
                                                 updStm.bindString(2, entry.tip)
-                                                updStm.bindLong(3, entry.list.id.toLong())
-                                                updStm.bindLong(4, entry.id.toLong())
+                                                updStm.bindLong(3, entry.changed)
+                                                updStm.bindLong(4, entry.id)
                                                 updStm.execute()
                                                 insertMeanings = true
                                             }
                                         }
-                                    } else if (!entry.isDelete) { // vocable created & deleted in editor
-                                        if (entry.list.id != lastTableID || lastID < MIN_ID_TRESHOLD) {
-                                            lastTableID = entry.list.id
-                                            Log.d(TAG, "lastTableID: $lastTableID lastID: $lastID")
-                                            lastID = getHighestVocID(db, lastTableID)
-                                        }
-                                        lastID++ // make last ID to new ID
+                                    } else if (!entry.isDelete) { // avoid vocable created & deleted in editor
                                         insStm.clearBindings()
-                                        insStm.bindLong(1, entry.list.id.toLong())
-                                        insStm.bindLong(2, lastID.toLong())
-                                        insStm.bindString(3, entry.tip)
-                                        insStm.bindString(4, entry.addition)
-                                        insStm.bindLong(5, entry.created.time)
-                                        insStm.bindLong(6, entry.correct.toLong())
-                                        insStm.bindLong(7, entry.wrong.toLong())
-                                        insStm.execute()
+                                        insStm.bindLong(1, entry.list!!.id)
+                                        insStm.bindString(2, entry.tip)
+                                        insStm.bindString(3, entry.addition)
+                                        insStm.bindLong(4, entry.created)
+                                        insStm.bindLong(5, entry.changed)
+                                        insStm.bindString(6, uuidToString(entry.uuid!!))
+                                        entry.id = insStm.executeInsert()
                                         insertMeanings = true
-                                        entry.id = lastID
                                     }
                                     if (insertMeanings) {
-                                        insMeanA.bindLong(1, entry.list.id.toLong())
-                                        insMeanA.bindLong(2, entry.id.toLong())
+                                        insMeanA.bindLong(1, entry.id)
                                         for (meaning in entry.aMeanings) {
-                                            insMeanA.bindString(3, meaning)
+                                            insMeanA.bindString(2, meaning)
                                             if (insMeanA.executeInsert() == -1L) {
                                                 throw Exception("unable to insert meaning")
                                             }
                                         }
-                                        insMeanB.bindLong(1, entry.list.id.toLong())
-                                        insMeanB.bindLong(2, entry.id.toLong())
+                                        insMeanB.bindLong(1, entry.id)
                                         for (meaning in entry.bMeanings) {
-                                            insMeanB.bindString(3, meaning)
+                                            insMeanB.bindString(2, meaning)
                                             if (insMeanB.executeInsert() == -1L) {
                                                 throw Exception("unable to insert meaning")
                                             }
                                         }
                                     }
                                 }
-                                db!!.setTransactionSuccessful()
-                                return true
+                                db.setTransactionSuccessful()
                             }
                         }
                     }
                 }
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "", e)
-            return false
         } finally {
-            if (db!!.inTransaction()) {
-                Log.d(TAG, "in transaction")
-                db!!.endTransaction()
+            if (db.inTransaction()) {
+                db.endTransaction()
             }
         }
     }
 
     /**
+     * Returns entry UUIDs that are deleted. Optionally all entries after the specified date.
+     */
+    fun deletedEntries(since: Long? = null): List<Tombstone> {
+        return queryDeleted(since, TBL_ENTRIES_DELETED, KEY_ENTRY_UUID)
+    }
+
+    /**
+     * Returns list UUIDs that are deleted. Optionally all lists after the specified date.
+     */
+    fun deletedLists(since: Long? = null): List<Tombstone> {
+        return queryDeleted(since, TBL_LISTS_DELETED, KEY_LIST_UUID)
+    }
+
+    /**
+     * Returns category UUIDs that are deleted. Optionally all categories after the specified date.
+     */
+    fun deletedCategories(since: Long? = null): List<Tombstone> {
+        return queryDeleted(since, TBL_CATEGORIES_DELETED, KEY_CATEGORY_UUID)
+    }
+
+    /**
+     * Internal helper for deletedX functions
+     */
+    private fun queryDeleted(since: Long? = null, table: String, key: String): List<Tombstone> {
+        val selection = since?.let {
+            "$KEY_CREATED >= ?"
+        }
+        val selArgs = since?.let {
+            arrayOf(since.toString())
+        } ?: arrayOf()
+        val list = mutableListOf<Tombstone>()
+        db.query(
+            table, arrayOf(key, KEY_CREATED),
+            selection, selArgs,
+            null, null, null
+        ).use { cursor ->
+            while (cursor.moveToNext()) {
+                list.add(
+                    Tombstone(
+                        uuid = parseUUID(cursor.getString(0))!!,
+                        created = Date(cursor.getLong(1))
+                    )
+                )
+            }
+        }
+        return list
+    }
+
+    /**
      * Returns the ID of a table with the exact same naming <br></br>
-     * this also updates the VList element itself to contains the right ID
+     * this also updates the VList element itself to contain the right ID
      *
-     * @param tbl VList to be used a search source
+     * @param list VList to be used a search source
      * @return ID or  -1 if not found, -2 if an error occurred
      */
-    fun getSetTableID(tbl: VList): Int {
-        if (tbl.id > -1) {
-            return tbl.id
+    fun getListID(list: VList): Long {
+        if (list.id > -1) {
+            return list.id
         }
-        val args = arrayOf(tbl.name, tbl.nameA, tbl.nameB)
+        val args = arrayOf(list.name, list.nameA, list.nameB)
         try {
-            db!!.rawQuery("SELECT $KEY_TABLE FROM $TBL_TABLES "
-                    + "WHERE $KEY_NAME_TBL = ? AND $KEY_NAME_A = ? AND $KEY_NAME_B  = ? LIMIT 1", args).use { cursor ->
-                var id = -1
+            db.rawQuery("SELECT $KEY_LIST FROM $TBL_LISTS "
+                    + "WHERE $KEY_NAME_LIST = ? AND $KEY_NAME_A = ? AND $KEY_NAME_B  = ? LIMIT 1", args).use { cursor ->
+                var id = -1L
                 if (cursor.moveToNext()) {
-                    id = cursor.getInt(0)
+                    id = cursor.getLong(0)
                 }
-                tbl.id = id
+                list.id = id
                 return id
             }
         } catch (e: Exception) {
@@ -422,101 +625,52 @@ class Database {
     }
 
     /**
-     * Returns the highest vocable ID for the specified table
-     *
-     * @param db
-     * @param table table ID<br></br>
-     * This is on purpose no VList object
-     * @return highest ID **or -1 if none is found**
-     */
-    private fun getHighestVocID(db: SQLiteDatabase?, table: Int): Int {
-        if (VList.isIDValid(table)) {
-            db!!.rawQuery("SELECT MAX($KEY_VOC) FROM $TBL_VOCABLE WHERE $KEY_TABLE = ? ", arrayOf(table.toString())).use { cursor ->
-                return if (cursor.moveToNext()) {
-                    cursor.getInt(0)
-                } else {
-                    MIN_ID_TRESHOLD - 1
-                }
-            }
-        } else {
-            throw IllegalArgumentException("invalid table ID!")
-        }
-    }
-
-    /**
-     * Returns the highest table ID
-     *
-     * @param db
-     * @return highest ID,  **-1 is none if found**
-     */
-    private fun getHighestTableID(db: SQLiteDatabase?): Int {
-        requireNotNull(db) { "invalid DB" }
-        db.rawQuery("SELECT MAX($KEY_TABLE) FROM $TBL_TABLES", arrayOf()).use { cursor ->
-            return if (cursor.moveToNext()) {
-                Log.d(TAG, Arrays.toString(cursor.columnNames))
-                cursor.getInt(0)
-            } else {
-                MIN_ID_TRESHOLD - 1
-            }
-        }
-    }
-
-    /**
      * Deletes the given table and all its vocables
      *
-     * @param tbl VList to delete
+     * @param list VList to delete
      * @return true on success
      */
-    fun deleteTable(tbl: VList): Boolean {
-        return try {
-            db!!.beginTransaction()
-            val arg = arrayOf(tbl.id.toString())
-            emptyList_(arg)
-            db!!.delete(TBL_TABLES, KEY_TABLE + " = ?", arg)
-            db!!.setTransactionSuccessful()
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "", e)
-            false
+    fun deleteList(list: VList) {
+        try {
+            db.beginTransaction()
+            db.delete(TBL_LISTS, "$KEY_LIST = ?", arrayOf(list.id.toString()))
+            list.uuid?.let {
+                ContentValues().apply {
+                    put(KEY_LIST_UUID, uuidToString(it))
+                    put(KEY_CREATED,System.currentTimeMillis())
+                    db.insertOrThrow(TBL_LISTS_DELETED, null, this)
+                }
+            }
+            db.setTransactionSuccessful()
         } finally {
-            if (db!!.inTransaction()) {
-                db!!.endTransaction()
+            if (db.inTransaction()) {
+                db.endTransaction()
             }
         }
-    }
-
-    /**
-     * directly calls table empty SQL<br></br>
-     * <u>does not handle any transactions</u>
-     *
-     * @param arg String array containing the tbl ID at [0]
-     */
-    private fun emptyList_(arg: Array<String>) {
-        db!!.delete(TBL_SESSION, "$KEY_TABLE = ?", arg)
-        db!!.delete(TBL_SESSION_TABLES, "$KEY_TABLE = ?", arg)
-        db!!.delete(TBL_SESSION_VOC, "$KEY_TABLE = ?", arg)
-        db!!.delete(TBL_VOCABLE, "$KEY_TABLE = ?", arg)
-        db!!.delete(TBL_MEANING_B, "$KEY_TABLE = ?", arg)
-        db!!.delete(TBL_MEANING_A, "$KEY_TABLE = ?", arg)
     }
 
     /**
      * Clear vocable list from all entries
      *
-     * @param tbl
+     * @param list
      * @return
      */
-    fun emptyList(tbl: VList): Boolean {
-        return try {
-            db!!.beginTransaction()
-            emptyList_(arrayOf(tbl.id.toString()))
-            db!!.setTransactionSuccessful()
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "", e)
-            false
+    fun truncateList(list: VList, useTransaction: Boolean = true) {
+        try {
+            if (useTransaction)
+                db.beginTransaction()
+            val args = arrayOf(list.id.toString())
+            db.execSQL(
+                "INSERT INTO $TBL_ENTRIES_DELETED ($KEY_ENTRY_UUID,$KEY_CREATED,$KEY_LIST)"
+                        + " SELECT $KEY_ENTRY_UUID,$KEY_CREATED,$KEY_LIST FROM $TBL_ENTRIES WHERE $KEY_LIST = ?",
+                args
+            )
+            db.delete(TBL_ENTRIES, "$KEY_LIST = ?", args)
+            if (useTransaction)
+                db.setTransactionSuccessful()
         } finally {
-            if (db!!.inTransaction()) db!!.endTransaction()
+            if (useTransaction)
+                db.endTransaction()
         }
     }
 
@@ -525,23 +679,16 @@ class Database {
      *
      * @return
      */
-    fun deleteSession(): Boolean {
-        Log.d(TAG, "entry deleteSession")
-        db!!.beginTransaction()
+    fun deleteSession() {
+        db.beginTransaction()
         try {
-            db!!.delete(TBL_SESSION, null, null)
-            db!!.delete(TBL_SESSION_META, null, null)
-            db!!.delete(TBL_SESSION_TABLES, null, null)
-            db!!.delete(TBL_SESSION_VOC, null, null)
-            db!!.setTransactionSuccessful()
-        } catch (e: Exception) {
-            Log.e(TAG, "", e)
-            return false
+            db.delete(TBL_SESSION, null, null)
+            db.delete(TBL_SESSION_META, null, null)
+            db.delete(TBL_SESSION_LISTS, null, null)
+            db.setTransactionSuccessful()
         } finally {
-            if (db!!.inTransaction()) db!!.endTransaction()
+            if (db.inTransaction()) db.endTransaction()
         }
-        Log.d(TAG, "exit deleteSession")
-        return true
     }
 
     /**
@@ -550,25 +697,16 @@ class Database {
      * @param entry VEntry to update
      * @return true on success
      */
-    fun updateEntryProgress(entry: VEntry): Boolean {
-        try {
-            db!!.compileStatement("INSERT OR REPLACE INTO $TBL_SESSION ( $KEY_TABLE,$KEY_VOC,$KEY_POINTS )VALUES (?,?,?)").use { updStm ->
-                Log.d(TAG, entry.toString())
-                //TODO: update date
-                updStm.bindLong(1, entry.list.id.toLong())
-                updStm.bindLong(2, entry.id.toLong())
-                updStm.bindLong(3, entry.points.toLong())
-                return if (updStm.executeInsert() > 0) { // possible problem ( insert / update..)
-                    Log.d(TAG, "updated voc points")
-                    true
-                } else {
-                    Log.e(TAG, "Inserted < 1 columns!")
-                    false
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "", e)
-            return false
+    fun updateEntryProgress(entry: VEntry) {
+        db.compileStatement("INSERT OR REPLACE INTO $TBL_SESSION ( $KEY_ENTRY,$KEY_POINTS )VALUES (?,?)").use { updStm ->
+            Log.d(TAG, entry.toString())
+            updStm.bindLong(1, entry.id)
+            updStm.bindLong(2, entry.points!!.toLong())
+            assert(updStm.executeInsert() > 0)
+            val values = ContentValues()
+            values.put(KEY_ENTRY, entry.id)
+            values.put(KEY_LAST_USED, System.currentTimeMillis())
+            assert(db.replace(TBL_ENTRIES_USED,null,values) > -1)
         }
     }
 
@@ -579,11 +717,11 @@ class Database {
      * @param lists The VList to use for this sessions
      * @return true on success
      */
-    fun createSession(lists: Collection<VList>): Boolean {
+    fun createSession(lists: Collection<VList>) {
         Log.d(TAG, "entry createSession")
-        db!!.beginTransaction()
+        db.beginTransaction()
         try {
-            db!!.compileStatement("INSERT INTO $TBL_SESSION_TABLES ($KEY_TABLE) VALUES (?)").use { insStm ->
+            db.compileStatement("INSERT INTO $TBL_SESSION_LISTS ($KEY_LIST) VALUES (?)").use { insStm ->
                 for (tbl in lists) {
                     insStm.clearBindings()
                     insStm.bindLong(1, tbl.id.toLong())
@@ -591,15 +729,11 @@ class Database {
                         Log.wtf(TAG, "no new table inserted")
                     }
                 }
-                db!!.setTransactionSuccessful()
+                db.setTransactionSuccessful()
                 Log.d(TAG, "exit createSession")
-                return true
             }
-        } catch (e: Exception) {
-            Log.wtf(TAG, "", e)
-            return false
         } finally {
-            if (db!!.inTransaction()) db!!.endTransaction()
+            if (db.inTransaction()) db.endTransaction()
         }
     }
 
@@ -608,16 +742,25 @@ class Database {
      *
      * @return never null
      */
-    val sessionTables: ArrayList<VList>
+    val sessionLists: ArrayList<VList>
         get() {
             val lst = ArrayList<VList>(10)
             try {
-                db!!.rawQuery("SELECT ses.$KEY_TABLE tbl,$KEY_NAME_A,$KEY_NAME_B,$KEY_NAME_TBL,$KEY_CREATED "
-                        + "FROM $TBL_SESSION_TABLES ses JOIN $TBL_TABLES tbls ON tbls.$KEY_TABLE == ses.$KEY_TABLE", null).use { cursor ->
+                db.rawQuery("SELECT ses.$KEY_LIST tbl,$KEY_NAME_A,$KEY_NAME_B,$KEY_NAME_LIST,$KEY_CREATED,$KEY_CHANGED,$KEY_SHARED "
+                        + "FROM $TBL_SESSION_LISTS ses JOIN $TBL_LISTS tbls ON tbls.$KEY_LIST == ses.$KEY_LIST", null).use { cursor ->
                     while (cursor.moveToNext()) {
-                        lst.add(VList(cursor.getInt(0), cursor.getString(1),
-                                cursor.getString(2), cursor.getString(3),
-                                Date(cursor.getLong(4))))
+                        lst.add(
+                            VList(
+                                _id = cursor.getLong(0),
+                                _nameA = cursor.getString(1),
+                                _nameB = cursor.getString(2),
+                                _name = cursor.getString(3),
+                                created = cursor.getLong(4),
+                                changed = cursor.getLong(5),
+                                uuid = null,
+                                shared = cursor.getInt(6)
+                            )
+                        )
                     }
                 }
             } catch (e: Exception) {
@@ -629,7 +772,7 @@ class Database {
         get() {
             Log.d(TAG, "entry isSessionStored")
             try {
-                db!!.rawQuery("SELECT COUNT(*) FROM $TBL_SESSION_TABLES WHERE 1", null).use { cursor ->
+                db.rawQuery("SELECT COUNT(*) FROM $TBL_SESSION_LISTS WHERE 1", null).use { cursor ->
                     cursor.moveToNext()
                     if (cursor.getInt(0) > 0) {
                         Log.d(TAG, "found session")
@@ -650,34 +793,31 @@ class Database {
      * @param settings         TrainerSettings, used for points threshold etc
      * @return true on success
      */
-    fun getSessionTableData(lists: List<VList>, unfinishedLists: MutableList<VList?>, settings: TrainerSettings): Boolean {
-        require(!(lists == null || unfinishedLists == null || lists.size == 0))
+    fun getSessionListData(lists: List<VList>, unfinishedLists: MutableList<VList?>, settings: TrainerSettings): Boolean {
+        require(lists.isNotEmpty())
         unfinishedLists.clear()
         for (list in lists) {
-            try {
-                db!!.rawQuery("SELECT COUNT(*) FROM $TBL_VOCABLE WHERE $KEY_TABLE  = ?", arrayOf(list.id.toString())).use { curLeng ->
-                    db!!.rawQuery("SELECT COUNT(*) FROM $TBL_SESSION WHERE $KEY_TABLE  = ? AND $KEY_POINTS >= ?", arrayOf(list.id.toString(), settings.timesToSolve.toString())).use { curFinished ->
-                        if (!curLeng.moveToNext()) return false
-                        list.totalVocs = curLeng.getInt(0)
-                        if (!curFinished.moveToNext()) return false
-                        val unfinished = list.totalVocs - curFinished.getInt(0)
-                        list.unfinishedVocs = unfinished
-                        if (unfinished > 0) {
-                            unfinishedLists.add(list)
-                        }
-                        Log.d(TAG, list.toString())
+            db.rawQuery("SELECT COUNT(*) FROM $TBL_ENTRIES WHERE $KEY_LIST  = ?", arrayOf(list.id.toString())).use { curLeng ->
+                db.rawQuery("SELECT COUNT(*) FROM $TBL_SESSION s "
+                    +"JOIN $TBL_ENTRIES e ON e.$KEY_ENTRY = s.$KEY_ENTRY "
+                    +"WHERE $KEY_LIST  = ? AND $KEY_POINTS >= ?", arrayOf(list.id.toString(), settings.timesToSolve.toString())).use { curFinished ->
+                    if (!curLeng.moveToNext()) return false
+                    list.totalVocs = curLeng.getInt(0)
+                    if (!curFinished.moveToNext()) return false
+                    val unfinished = list.totalVocs - curFinished.getInt(0)
+                    list.unfinishedVocs = unfinished
+                    if (unfinished > 0) {
+                        unfinishedLists.add(list)
                     }
+                    Log.d(TAG, list.toString())
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "", e)
-                return false
             }
         }
         return true
     }
 
     /**
-     * Returns a random entry from the specified table, which matche the trainer settings criteria<br></br>
+     * Returns a random entry from the specified table, which matches the trainer settings<br></br>
      * The VEntry is guaranteed to be not the "lastEntry" provided here
      *
      * @param list
@@ -688,35 +828,40 @@ class Database {
     fun getRandomTrainerEntry(list: VList, lastEntry: VEntry?, ts: TrainerSettings, allowRepetition: Boolean): VEntry? {
         Log.d(TAG, "getRandomTrainerEntry")
         var lastID = MIN_ID_TRESHOLD - 1
-        if (lastEntry != null && lastEntry.list.id == list.id && !allowRepetition) lastID = lastEntry.id
+        if (lastEntry != null && lastEntry.list!!.id == list.id && !allowRepetition) lastID = lastEntry.id
         val arg = arrayOf(list.id.toString(), lastID.toString(), ts.timesToSolve.toString())
-        Log.v(TAG, Arrays.toString(arg))
-        try {
-            db!!.rawQuery(
-                    "SELECT $KEY_TIP,$KEY_ADDITION,$KEY_LAST_USED,tbl.$KEY_CREATED,$KEY_CORRECT,$KEY_WRONG,tbl.$KEY_VOC,$KEY_POINTS "
-                            + "FROM $TBL_VOCABLE tbl "
-                            + "LEFT JOIN  $TBL_SESSION ses ON tbl.$KEY_VOC = ses.$KEY_VOC AND tbl.$KEY_TABLE = ses.$KEY_TABLE "
-                            + "WHERE tbl.$KEY_TABLE = ? AND tbl.$KEY_VOC != ? AND ( $KEY_POINTS IS NULL OR $KEY_POINTS < ? ) "
-                            + "ORDER BY RANDOM() LIMIT 1", arg).use { cV ->
-                return if (cV.moveToNext()) {
-                    val meaningA: MutableList<String> = LinkedList()
-                    val meaningB: MutableList<String> = LinkedList()
-                    val vocable = VEntry(meaningA, meaningB, cV.getString(0),
-                            cV.getString(1), cV.getInt(6), list,
-                            if (cV.isNull(7)) 0 else cV.getInt(7),
-                            Date(cV.getLong(2)), Date(cV.getLong(3)),
-                            cV.getInt(4), cV.getInt(5))
-                    getVocableMeanings(TBL_MEANING_A, vocable, meaningA)
-                    getVocableMeanings(TBL_MEANING_B, vocable, meaningB)
-                    vocable
-                } else {
-                    Log.w(TAG, "no entries found!")
-                    null
-                }
+        Log.v(TAG, arg.contentToString())
+        db.rawQuery(
+                "SELECT $KEY_TIP, $KEY_ADDITION, tbl.$KEY_CREATED,"
+                        + "tbl.$KEY_ENTRY, $KEY_POINTS, tbl.$KEY_CHANGED"
+                        + "FROM $TBL_ENTRIES tbl "
+                        + "LEFT JOIN  $TBL_SESSION ses ON tbl.$KEY_ENTRY = ses.$KEY_ENTRY "
+                        + "WHERE tbl.$KEY_LIST = ? AND tbl.$KEY_ENTRY != ? AND ( $KEY_POINTS IS NULL OR $KEY_POINTS < ? ) "
+                        + "ORDER BY RANDOM() LIMIT 1", arg).use { cV ->
+            return if (cV.moveToNext()) {
+                val meaningA: MutableList<String> = ArrayList()
+                val meaningB: MutableList<String> = ArrayList()
+                val points = if(cV.isNull(4)) { 0 } else cV.getInt(4)
+                val vocable = VEntry(
+                    meaningA = meaningA,
+                    meaningB = meaningB,
+                    _tip = cV.getString(0),
+                    _addition = cV.getString(1),
+                    id = cV.getLong(3),
+                    list = list,
+                    _points = points,
+                    last_used = null,
+                    created = cV.getLong(2),
+                    uuid = null, // leave empty
+                    changed = cV.getLong(5)
+                )
+                getVocableMeanings(TBL_WORDS_A, vocable, meaningA)
+                getVocableMeanings(TBL_WORDS_B, vocable, meaningB)
+                vocable
+            } else {
+                Log.w(TAG, "no entries found!")
+                null
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "", e)
-            return null
         }
     }
 
@@ -729,7 +874,7 @@ class Database {
     fun getSessionMetaValue(key: String?): String? {
         requireNotNull(key)
         try {
-            db!!.rawQuery("SELECT $KEY_MVALUE FROM $TBL_SESSION_META WHERE $KEY_MKEY = ?", arrayOf(key.toString())).use { cursor ->
+            db.rawQuery("SELECT $KEY_MVALUE FROM $TBL_SESSION_META WHERE $KEY_MKEY = ?", arrayOf(key.toString())).use { cursor ->
                 return if (cursor.moveToNext()) {
                     cursor.getString(1)
                 } else {
@@ -752,7 +897,7 @@ class Database {
      */
     fun setSessionMetaValue(key: String?, value: String?): Boolean {
         try {
-            db!!.compileStatement("INSERT OR REPLACE INTO $TBL_SESSION_META ( $KEY_MKEY,$KEY_MVALUE ) VALUES (?,?)").use { updStm ->
+            db.compileStatement("INSERT OR REPLACE INTO $TBL_SESSION_META ( $KEY_MKEY,$KEY_MVALUE ) VALUES (?,?)").use { updStm ->
                 updStm.bindString(1, key)
                 updStm.bindString(2, value)
                 return if (updStm.executeInsert() > 0) { // possible problem ( insert / update..)
@@ -775,25 +920,25 @@ class Database {
      */
     val sessionInsertStm: SQLiteStatement
         get() {
-            db!!.beginTransaction()
-            return db!!.compileStatement("INSERT OR REPLACE INTO $TBL_SESSION_META ($KEY_MKEY,$KEY_MVALUE) VALUES (?,?)")
+            db.beginTransaction()
+            return db.compileStatement("INSERT OR REPLACE INTO $TBL_SESSION_META ($KEY_MKEY,$KEY_MVALUE) VALUES (?,?)")
         }
 
     /**
      * Start Transaction
      */
     fun startTransaction() {
-        db!!.beginTransaction()
+        db.beginTransaction()
     }
 
     /**
      * Ends a transaction created by the getSessionInsert Statement
      */
     fun endTransaction(success: Boolean) {
-        check(db!!.inTransaction()) { "No transaction ongoing!" }
+        check(db.inTransaction()) { "No transaction ongoing!" }
         Log.d(TAG, "transaction success: $success")
-        if (success) db!!.setTransactionSuccessful()
-        db!!.endTransaction()
+        if (success) db.setTransactionSuccessful()
+        db.endTransaction()
     }
 
     /**
@@ -806,7 +951,7 @@ class Database {
             Log.d(TAG, "entry getSessionData")
             val map = HashMap<String, String>(10)
             try {
-                db!!.rawQuery("SELECT $KEY_MKEY, $KEY_MVALUE FROM $TBL_SESSION_META WHERE 1", null).use { cursor ->
+                db.rawQuery("SELECT $KEY_MKEY, $KEY_MVALUE FROM $TBL_SESSION_META WHERE 1", null).use { cursor ->
                     while (cursor.moveToNext()) {
                         map[cursor.getString(0)] = cursor.getString(1)
                     }
@@ -818,50 +963,116 @@ class Database {
             }
         }
 
+    /**
+     * Set settings k-v
+     */
+    fun setSetting(key: String,value: String) {
+        ContentValues().apply {
+            put(KEY_CHANGED, System.currentTimeMillis())
+            put(KEY_SETTINGS_VALUE, value)
+            put(KEY_SETTINGS_KEY, key)
+            db.replaceOrThrow(TBL_SETTINGS,null,this)
+        }
+    }
+
+    /**
+     * Return settings value for key or null
+     */
+    fun getSetting(key: String): String? {
+        db.query(TBL_SETTINGS, arrayOf(KEY_SETTINGS_VALUE),"$KEY_SETTINGS_KEY = ?", arrayOf(key),null,null,null).use {
+            if (it.moveToNext())
+                return it.getString(0)
+            else
+                return null
+        }
+    }
+
     internal inner class internalDB(context: Context?) : SQLiteOpenHelper(context, DB_NAME_PRODUCTION, null, Companion.DATABASE_VERSION) {
-        private val sql_a = ("CREATE TABLE " + TBL_TABLES + " ("
-                + KEY_NAME_TBL + " TEXT NOT NULL,"
-                + KEY_TABLE + " INTEGER PRIMARY KEY,"
+        private val sqlLists = ("CREATE TABLE " + TBL_LISTS + " ("
+                + KEY_NAME_LIST + " TEXT NOT NULL,"
+                + KEY_LIST + " INTEGER PRIMARY KEY,"
                 + KEY_NAME_A + " TEXT NOT NULL,"
                 + KEY_NAME_B + " TEXT NOT NULL,"
-                + KEY_CREATED + " INTEGER NOT NULL )")
-        private val sql_b = ("CREATE TABLE " + TBL_VOCABLE + " ("
-                + KEY_TABLE + " INTEGER NOT NULL, "
-                + KEY_VOC + " INTEGER NOT NULL,"
+                + KEY_CREATED + " INTEGER NOT NULL,"
+                + KEY_CHANGED + " INTEGER NOT NULL,"
+                + KEY_SHARED + "INTEGER NOT NULL )")
+        private val sqlListsIndex = ("CREATE INDEX listChangedI ON $TBL_LISTS ($KEY_CHANGED)")
+        private val sqlListSync = ("CREATE TABLE "+ TBL_LIST_SYNC + " ("
+                + KEY_LIST + " INTEGER PRIMARY KEY REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE,"
+                + KEY_LIST_UUID + " STRING NOT NULL UNIQUE )")
+        private val sqlEntries = ("CREATE TABLE " + TBL_ENTRIES + " ("
+                + KEY_LIST + " INTEGER NOT NULL REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE, "
+                + KEY_ENTRY + " INTEGER PRIMARY KEY,"
                 + KEY_TIP + " TEXT,"
                 + KEY_ADDITION + "TEXT,"
-                + KEY_LAST_USED + " INTEGER,"
                 + KEY_CREATED + " INTEGER NOT NULL,"
-                + KEY_CORRECT + " INTEGER NOT NULL,"
-                + KEY_WRONG + " INTEGER NOT NULL,"
-                + "PRIMARY KEY (" + KEY_TABLE + "," + KEY_VOC + ") )")
-        private val sql_c = ("CREATE TABLE " + TBL_MEANING_A + " ("
-                + KEY_TABLE + " INTEGER NOT NULL,"
-                + KEY_VOC + " INTEGER NOT NULL,"
+                + KEY_CHANGED + " INTEGER NOT NULL,"
+                + KEY_ENTRY_UUID + " STRING NOT NULL UNIQUE )")
+        private val sqlEntryIndex = ("CREATE INDEX entryChangedI ON $TBL_ENTRIES ($KEY_CHANGED)")
+        private val sqlEntryUsed = ("CREATE TABLE "+TBL_ENTRIES_USED + "("
+                + KEY_ENTRY + " INTEGER PRIMARY KEY REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE, "
+                + KEY_LAST_USED + " INTEGER NOT NULL )")
+        private val sqlEntryUsedIndex = ("CREATE INDEX entryUsedI ON $TBL_ENTRIES_USED ($KEY_LAST_USED)")
+        private val sqlWordsA = ("CREATE TABLE " + TBL_WORDS_A + " ("
+                + KEY_ENTRY + " INTEGER NOT NULL REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE,"
                 + KEY_MEANING + " TEXT NOT NULL )")
-        private val sql_d = ("CREATE TABLE " + TBL_MEANING_B + " ("
-                + KEY_TABLE + " INTEGER NOT NULL,"
-                + KEY_VOC + " INTEGER NOT NULL,"
+        private val sqlWordsB = ("CREATE TABLE " + TBL_WORDS_B + " ("
+                + KEY_ENTRY + " INTEGER NOT NULL REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE,"
                 + KEY_MEANING + " TEXT NOT NULL )")
-        private val sql_e = ("CREATE INDEX primA ON " + TBL_MEANING_A
-                + "( " + KEY_TABLE + "," + KEY_VOC + " )")
-        private val sql_f = ("CREATE INDEX primB ON " + TBL_MEANING_B
-                + "( " + KEY_TABLE + "," + KEY_VOC + " )")
-        private val sql_g = ("CREATE TABLE " + TBL_SESSION + " ("
-                + KEY_TABLE + " INTEGER NOT NULL,"
-                + KEY_VOC + " INTEGER NOT NULL,"
-                + KEY_POINTS + " INTEGER NOT NULL,"
-                + "PRIMARY KEY (" + KEY_TABLE + "," + KEY_VOC + "))")
-        private val sql_h = ("CREATE TABLE " + TBL_SESSION_META + " ("
-                + KEY_MKEY + " TEXT NOT NULL,"
-                + KEY_MVALUE + " TEXT NOT NULL,"
-                + "PRIMARY KEY (" + KEY_MKEY + "," + KEY_MVALUE + "))")
-        private val sql_i = ("CREATE TABLE " + TBL_SESSION_TABLES + " ("
-                + KEY_TABLE + " INTEGER PRIMARY KEY )")
-        private val sql_j = ("CREATE TABLE " + TBL_SESSION_VOC + " ("
-                + KEY_TABLE + " INTEGER NOT NULL,"
-                + KEY_VOC + " INTEGER NOT NULL,"
-                + "PRIMARY KEY (" + KEY_TABLE + "," + KEY_VOC + "))")
+        private val sqlWordsAIndex = ("CREATE INDEX wordsAI ON $TBL_WORDS_A ($KEY_ENTRY)")
+        private val sqlWordsBIndex = ("CREATE INDEX wordsBI ON $TBL_WORDS_B ($KEY_ENTRY)")
+        private val sqlSession = ("CREATE TABLE " + TBL_SESSION + " ("
+                + KEY_ENTRY + " INTEGER PRIMARY KEY REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE,"
+                + KEY_POINTS + " INTEGER NOT NULL )")
+        private val sqlSessionMeta = ("CREATE TABLE " + TBL_SESSION_META + " ("
+                + KEY_MKEY + " TEXT NOT NULL PRIMARY KEY,"
+                + KEY_MVALUE + " TEXT NOT NULL )") // TODO: replace ?, previously combined primary ?!
+        private val sqlSessionLists = ("CREATE TABLE " + TBL_SESSION_LISTS + " ("
+                + KEY_LIST + " INTEGER PRIMARY KEY REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE )")
+        private val sqlSessionEntries = ("CREATE TABLE " + TBL_SESSION_ENTRIES + " ("
+                + KEY_ENTRY + " INTEGER PRIMARY KEY REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE )")
+        private val sqlListsDeleted = ("CREATE TABLE " + TBL_LISTS_DELETED + " ("
+                + KEY_LIST_UUID + " text NOT NULL PRIMARY KEY,"
+                + KEY_CREATED + "INTEGER NOT NULL )")
+        private val sqlListDeletedIndex = ("CREATE INDEX listDeletedI ON $TBL_LISTS_DELETED ($KEY_CREATED)")
+        private val sqlEntriesDeleted = ("CREATE TABLE " + TBL_ENTRIES_DELETED + " ("
+                + KEY_ENTRY_UUID + " text NOT NULL PRIMARY KEY,"
+                + KEY_LIST + " INTEGER NOT NULL REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE,"
+                + KEY_CREATED + "INTEGER NOT NULL )")
+        private val sqlEntryDeletedIndex = ("CREATE INDEX entryDeletedI ON $TBL_ENTRIES_DELETED ($KEY_CREATED)")
+        private val sqlEntryStats = ("CREATE TABLE " + TBL_ENTRY_STATS + " ("
+                + KEY_ENTRY + " INTEGER NOT NULL REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE,"
+                + KEY_DATE + "INTEGER PRIMARY KEY,"
+                + KEY_TIP_NEEDED + "boolean NOT NULL,"
+                + KEY_IS_CORRECT + "boolean NOT NULL )")
+        private val sqlListCategories = ("CREATE TABLE " + TBL_LIST_CATEGORIES + " ("
+                + KEY_LIST + " INTEGER NOT NULL REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE,"
+                + KEY_CATEGORY + " INTEGER NOT NULL REFERENCES $TBL_CATEGORY($KEY_CATEGORY) ON DELETE CASCADE,"
+                + "PRIMARY KEY ($KEY_LIST ,$KEY_CATEGORY ))")
+        private val sqlCategory = ("CREATE TABLE "+ TBL_CATEGORY + " ("
+                + KEY_CATEGORY + " INTEGER PRIMARY KEY,"
+                + KEY_CATEGORY_NAME + " STRING NOT NULL,"
+                + KEY_CATEGORY_UUID + " STRING NOT NULL UNIQUE,"
+                + KEY_CHANGED + " INTEGER NOT NULL )")
+        private val sqlCategoryIndex = ("CREATE INDEX categoryChangedI ON $TBL_CATEGORY ($KEY_CHANGED)")
+        private val sqlCategoriesDeleted = ("CREATE TABLE " + TBL_CATEGORIES_DELETED + " ("
+                + KEY_CATEGORY_UUID + " text NOT NULL PRIMARY KEY,"
+                + KEY_CREATED + "INTEGER NOT NULL )")
+        private val sqlCategoryDeletedIndex = ("CREATE INDEX categoryDeletedI ON $TBL_CATEGORIES_DELETED ($KEY_CREATED)")
+        private val sqlSettings = ("CREATE TABLE " + TBL_SETTINGS + " ("
+                + KEY_SETTINGS_KEY + " text NOT NULL PRIMARY KEY,"
+                + KEY_SETTINGS_VALUE + " text NOT NULL,"
+                + KEY_CHANGED + " INTEGER NOT NULL )")
+
+        override fun onOpen(db: SQLiteDatabase?) {
+            super.onOpen(db)
+            db?.run {
+                if (!this.isReadOnly) {
+                    this.setForeignKeyConstraintsEnabled(true)
+                }
+            }
+
+        }
 
         /**
          * Check for illegal ID entries below the threshold
@@ -881,19 +1092,46 @@ class Database {
 
         fun checkForIllegalIds(db: SQLiteDatabase) {
             Log.d(TAG, "checking for illegal IDs")
-            checkIllegalIDs(db, KEY_VOC, TBL_VOCABLE)
-            checkIllegalIDs(db, KEY_TABLE, TBL_VOCABLE)
-            checkIllegalIDs(db, KEY_TABLE, TBL_TABLES)
-            checkIllegalIDs(db, KEY_VOC, TBL_MEANING_A)
-            checkIllegalIDs(db, KEY_TABLE, TBL_MEANING_A)
-            checkIllegalIDs(db, KEY_VOC, TBL_MEANING_B)
-            checkIllegalIDs(db, KEY_TABLE, TBL_MEANING_B)
+            checkIllegalIDs(db, KEY_ENTRY, TBL_ENTRIES)
+            checkIllegalIDs(db, KEY_LIST, TBL_ENTRIES)
+            checkIllegalIDs(db, KEY_LIST, TBL_LISTS)
+            checkIllegalIDs(db, KEY_ENTRY, TBL_WORDS_A)
+            checkIllegalIDs(db, KEY_LIST, TBL_WORDS_A)
+            checkIllegalIDs(db, KEY_ENTRY, TBL_WORDS_B)
+            checkIllegalIDs(db, KEY_LIST, TBL_WORDS_B)
             Log.d(TAG, "check passed")
         }
 
         override fun onCreate(db: SQLiteDatabase) {
             Log.d(TAG, "creating db")
-            val tables = arrayOf(sql_a, sql_b, sql_c, sql_d, sql_e, sql_f, sql_g, sql_h, sql_i, sql_j)
+            val tables = arrayOf(
+                sqlLists,
+                sqlListsIndex,
+                sqlListSync,
+                sqlEntries,
+                sqlEntryIndex,
+                sqlWordsA,
+                sqlWordsAIndex,
+                sqlWordsB,
+                sqlWordsBIndex,
+                sqlSession,
+                sqlSessionMeta,
+                sqlSessionLists,
+                sqlSessionEntries,
+                sqlListsDeleted,
+                sqlListDeletedIndex,
+                sqlEntriesDeleted,
+                sqlEntryDeletedIndex,
+                sqlEntryStats,
+                sqlListCategories,
+                sqlCategory,
+                sqlCategoryIndex,
+                sqlCategoriesDeleted,
+                sqlCategoryDeletedIndex,
+                sqlEntryUsed,
+                sqlEntryUsedIndex,
+                sqlSettings
+            )
             var i = 0
             db.beginTransaction()
             try {
@@ -915,83 +1153,316 @@ class Database {
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
             Log.d(TAG, "db upgrade triggered old:$oldVersion new:$newVersion")
+            val start = System.currentTimeMillis()
             if (oldVersion < 2) {
-                val newTables = arrayOf(sql_a, sql_b, sql_c, sql_d, sql_e, sql_f, sql_j)
-                for (sql in newTables) db.execSQL(sql)
-                val time = java.lang.Long.toString(System.currentTimeMillis())
-                run {
-                    db.execSQL("ALTER TABLE $TBL_VOCABLE_V1 ADD COLUMN $KEY_ADDITION TEXT")
-                    db.execSQL("ALTER TABLE $TBL_VOCABLE_V1 ADD COLUMN $KEY_CORRECT INTEGER NOT NULL DEFAULT 0")
-                    db.execSQL("ALTER TABLE $TBL_VOCABLE_V1 ADD COLUMN $KEY_WRONG INTEGER NOT NULL DEFAULT 0")
-                    db.execSQL("ALTER TABLE $TBL_VOCABLE_V1 ADD COLUMN $KEY_CREATED INTEGER NOT NULL DEFAULT $time")
-                    val args = arrayOf(KEY_TABLE, KEY_VOC, KEY_TIP, KEY_ADDITION, KEY_LAST_USED,
-                            KEY_CREATED, KEY_CORRECT, KEY_WRONG).joinToString(separator = ",")
-                    val sqlCpy = "INSERT INTO $TBL_VOCABLE ($args) SELECT $args FROM $TBL_VOCABLE_V1"
-                    db.execSQL(sqlCpy)
-                    val colMA = arrayOf(KEY_TABLE, KEY_VOC, KEY_MEANING).joinToString(separator = ",")
-                    val selMA = arrayOf(KEY_TABLE, KEY_VOC, KEY_WORD_A).joinToString(separator = ",")
-                    val sqlMeaningA = "INSERT INTO $TBL_MEANING_A ($colMA) SELECT $selMA FROM $TBL_VOCABLE_V1"
-                    db.execSQL(sqlMeaningA)
-                    val sqlMeaningB = sqlMeaningA.replace(KEY_WORD_A.toRegex(), KEY_WORD_B)
-                            .replace(TBL_MEANING_A.toRegex(), TBL_MEANING_B)
-                    db.execSQL(sqlMeaningB)
-                    db.execSQL("DROP TABLE $TBL_VOCABLE_V1")
-                }
-                run {
-                    db.execSQL("ALTER TABLE $TBL_TABLES_V1 ADD COLUMN $KEY_CREATED INTEGER NOT NULL DEFAULT $time")
-                    val args = arrayOf(KEY_NAME_TBL, KEY_TABLE, KEY_NAME_A, KEY_NAME_B, KEY_CREATED).joinToString(separator = ",")
-                    val sqlCpy = "INSERT INTO $TBL_TABLES ($args) SELECT $args FROM $TBL_TABLES_V1"
-                    db.execSQL(sqlCpy)
-                    db.execSQL("DROP TABLE $TBL_TABLES_V1")
-                }
-                run { checkForIllegalIds(db) }
+                upgrade1to2(db)
             }
-            Log.v(TAG, "upgrade end")
+            if (oldVersion < 3) {
+                upgrade2to3(db)
+            }
+            val duration = System.currentTimeMillis() - start
+            Log.v(TAG, "upgrade end in $duration ms")
+        }
+
+        fun upgrade2to3(db: SQLiteDatabase) {
+            val newTables = arrayOf(
+                sqlLists,
+                //sqlListsIndex, postpone to later
+                sqlListSync,
+                sqlEntries,
+                //sqlEntryIndex, postpone to later
+                sqlWordsA,
+                sqlWordsAIndex,
+                sqlWordsB,
+                sqlWordsBIndex,
+                sqlSession,
+                sqlSessionLists,
+                sqlSessionEntries,
+                sqlListsDeleted,
+                sqlListDeletedIndex,
+                sqlEntriesDeleted,
+                sqlEntryDeletedIndex,
+                sqlEntryStats,
+                sqlListCategories,
+                sqlCategory,
+                sqlCategoryIndex,
+                sqlCategoriesDeleted,
+                sqlCategoryDeletedIndex,
+                sqlEntryUsed,
+                sqlEntryUsedIndex,
+                sqlSettings
+            )
+            for (sql in newTables) db.execSQL(sql)
+            val time = System.currentTimeMillis().toString()
+            // transfer lists, keep old refs for new auto id mapping
+            db.execSQL("ALTER TABLE $TBL_LISTS ADD COLUMN $KEY_TABLE INTEGER")
+
+            run {
+                val argsInto = arrayOf(
+                    KEY_SHARED,
+                    KEY_NAME_LIST,
+                    KEY_TABLE,
+                    KEY_NAME_A,
+                    KEY_NAME_B,
+                    KEY_CREATED,
+                    KEY_CHANGED
+                ).joinToString(separator = ",")
+                val argsFrom = arrayOf(
+                    KEY_NAME_TBL,
+                    KEY_TABLE,
+                    KEY_NAME_A,
+                    KEY_NAME_B,
+                    KEY_CREATED
+                ).joinToString(separator = ",")
+                val sqlCpy =
+                    "INSERT INTO $TBL_LISTS ($argsInto) SELECT 0,$argsFrom,$time FROM $TBL_TABLES_V2"
+                db.execSQL(sqlCpy)
+            }
+
+            // add legacy mapping for entry foreign tables
+            db.execSQL("ALTER TABLE $TBL_ENTRIES ADD COLUMN $KEY_TABLE INTEGER")
+            db.execSQL("ALTER TABLE $TBL_ENTRIES ADD COLUMN $KEY_VOC INTEGER")
+            // add UUID column and populate for later
+            db.execSQL("ALTER TABLE $TBL_VOCABLE_V2 ADD COLUMN $KEY_ENTRY_UUID text")
+            val iter = db.query(TBL_VOCABLE_V2, arrayOf(KEY_TABLE, KEY_VOC),null,null,null,null,null)
+            db.compileStatement("UPDATE $TBL_VOCABLE_V2 SET $KEY_ENTRY_UUID = ? WHERE $KEY_TABLE = ? AND $KEY_VOC = ?").use {
+                while (iter.moveToNext()) {
+                    it.bindString(1, uuid().toString())
+                    it.bindLong(2,iter.getLong(0))
+                    it.bindLong(3,iter.getLong(1))
+                    assert(it.executeUpdateDelete() > 0)
+                }
+            }
+
+            run {
+                // transfer entries using legacy ID mapping
+                val argsInto = arrayOf(
+                    KEY_LIST,
+                    KEY_TABLE,
+                    KEY_VOC,
+                    KEY_TIP,
+                    KEY_ADDITION,
+                    KEY_CREATED,
+                    KEY_ENTRY_UUID,
+                    KEY_CHANGED
+                ).joinToString(separator = ",")
+                val argsFrom = arrayOf(
+                    "oldEntr.$KEY_TABLE",
+                    KEY_VOC,
+                    KEY_TIP,
+                    KEY_ADDITION,
+                    "oldEntr.$KEY_CREATED",
+                    KEY_ENTRY_UUID
+                ).joinToString(separator = ",")
+                val sqlCpy =
+                    "INSERT INTO $TBL_ENTRIES ($argsInto) SELECT lists.$KEY_LIST,$argsFrom,$time FROM $TBL_VOCABLE_V2 oldEntr JOIN $TBL_LISTS lists ON lists.$KEY_TABLE = oldEntr.$KEY_TABLE"
+                db.execSQL(sqlCpy)
+            }
+            run {
+                // now use the legacy mapping for entry based stuff
+                val sqlMA = "INSERT INTO $TBL_WORDS_A ($KEY_ENTRY,$KEY_MEANING) SELECT entries.$KEY_ENTRY,$KEY_MEANING FROM $TBL_MEANING_A_V2 oldM JOIN $TBL_ENTRIES entries ON entries.$KEY_TABLE = oldM.$KEY_TABLE AND entries.$KEY_VOC = oldM.$KEY_VOC"
+                Log.v(TAG, "sql: $sqlMA")
+                db.execSQL(sqlMA)
+                // now for TBL_WORDS_B
+                val sqlMB = sqlMA.replace(TBL_MEANING_A_V2, TBL_MEANING_B_V2).replace(TBL_WORDS_A,
+                    TBL_WORDS_B)
+                db.execSQL(sqlMB)
+            }
+            // transfer session entry points
+            db.execSQL("INSERT INTO $TBL_SESSION ($KEY_ENTRY,$KEY_POINTS) SELECT entries.$KEY_ENTRY,$KEY_POINTS FROM $TBL_SESSION_V2 oldSes JOIN $TBL_ENTRIES entries ON entries.$KEY_TABLE = oldSes.$KEY_TABLE AND entries.$KEY_VOC = oldSes.$KEY_VOC")
+            // transfer session tables used
+            db.execSQL("INSERT INTO $TBL_SESSION_LISTS ($KEY_LIST) SELECT lists.$KEY_LIST FROM $TBL_SESSION_TABLES oldSes JOIN $TBL_LISTS lists ON lists.$KEY_TABLE = oldSes.$KEY_TABLE")
+            // transfer single session entries used (shouldn't be in use at this point)
+            db.execSQL("INSERT INTO $TBL_SESSION_ENTRIES ($KEY_ENTRY) SELECT entries.$KEY_ENTRY FROM $TBL_SESSION_VOC oldSesE JOIN $TBL_ENTRIES entries ON entries.$KEY_TABLE = oldSesE.$KEY_TABLE AND entries.$KEY_VOC = oldSesE.$KEY_VOC")
+
+            // dropping old columns is a pain, we either have to use helper functions that can't
+            // handle references or try a rename,create,insert-select which fails due to "row value misused"
+            // so we don't drop the old ID transition columns
+            // see f27b407a
+
+            // drop old tables
+            db.execSQL("DROP TABLE $TBL_TABLES_V2")
+            db.execSQL("DROP TABLE $TBL_VOCABLE_V2")
+            db.execSQL("DROP TABLE $TBL_MEANING_A_V2")
+            db.execSQL("DROP TABLE $TBL_MEANING_B_V2")
+            db.execSQL("DROP TABLE $TBL_SESSION_V2")
+            db.execSQL("DROP TABLE $TBL_SESSION_TABLES")
+            db.execSQL("DROP TABLE $TBL_SESSION_VOC")
+        }
+
+        fun upgrade1to2(db: SQLiteDatabase) {
+            val sqlOld_a = ("CREATE TABLE " + TBL_TABLES_V2 + " ("
+                    + KEY_NAME_TBL + " TEXT NOT NULL,"
+                    + KEY_TABLE + " INTEGER PRIMARY KEY,"
+                    + KEY_NAME_A + " TEXT NOT NULL,"
+                    + KEY_NAME_B + " TEXT NOT NULL,"
+                    + KEY_CREATED + " INTEGER NOT NULL )")
+            val sqlOld_b = ("CREATE TABLE " + TBL_VOCABLE_V2 + " ("
+                    + KEY_TABLE + " INTEGER NOT NULL, "
+                    + KEY_VOC + " INTEGER PRIMARY KEY,"
+                    + KEY_TIP + " TEXT,"
+                    + KEY_ADDITION + "TEXT,"
+                    + KEY_LAST_USED + " INTEGER,"
+                    + KEY_CREATED + " INTEGER NOT NULL,"
+                    + KEY_CORRECT + " INTEGER NOT NULL,"
+                    + KEY_WRONG + " INTEGER NOT NULL )")
+            val sqlOld_c = ("CREATE TABLE " + TBL_MEANING_A_V2 + " ("
+                    + KEY_TABLE + " INTEGER NOT NULL,"
+                    + KEY_VOC + " INTEGER NOT NULL,"
+                    + KEY_MEANING + " TEXT NOT NULL )")
+            val sqlOld_d = ("CREATE TABLE " + TBL_MEANING_B_V2 + " ("
+                    + KEY_TABLE + " INTEGER NOT NULL,"
+                    + KEY_VOC + " INTEGER NOT NULL,"
+                    + KEY_MEANING + " TEXT NOT NULL )")
+            val sqlOld_e = ("CREATE INDEX primA ON " + TBL_MEANING_A_V2
+                    + "( " + KEY_TABLE + "," + KEY_VOC + " )")
+            val sqlOld_f = ("CREATE INDEX primB ON " + TBL_MEANING_B_V2
+                    + "( " + KEY_TABLE + "," + KEY_VOC + " )")
+            // already correct in v1
+//            val sqlOld_g = ("CREATE TABLE " + TBL_SESSION_V2 + " ("
+//                    + KEY_TABLE + " INTEGER NOT NULL,"
+//                    + KEY_VOC + " INTEGER NOT NULL,"
+//                    + KEY_POINTS + " INTEGER NOT NULL,"
+//                    + "PRIMARY KEY (" + KEY_LIST + "," + KEY_ENTRY + "))")
+//            val sqlOld_h = ("CREATE TABLE " + TBL_SESSION_META + " ("
+//                    + KEY_MKEY + " TEXT NOT NULL,"
+//                    + KEY_MVALUE + " TEXT NOT NULL,"
+//                    + "PRIMARY KEY (" + KEY_MKEY + "," + KEY_MVALUE + "))")
+//            val sqlOld_i = ("CREATE TABLE " + TBL_SESSION_TABLES + " ("
+//                    + KEY_TABLE + " INTEGER PRIMARY KEY )")
+            val sqlOld_j = ("CREATE TABLE " + TBL_SESSION_VOC + " ("
+                    + KEY_TABLE + " INTEGER NOT NULL,"
+                    + KEY_VOC + " INTEGER NOT NULL,"
+                    + "PRIMARY KEY (" + KEY_TABLE + "," + KEY_VOC + "))")
+            val newTables = arrayOf(sqlOld_a, sqlOld_b, sqlOld_c, sqlOld_d, sqlOld_e, sqlOld_f, sqlOld_j)
+            for (sql in newTables) db.execSQL(sql)
+            val time = System.currentTimeMillis().toString()
+            run {
+                db.execSQL("ALTER TABLE $TBL_VOCABLE_V1 ADD COLUMN $KEY_ADDITION TEXT")
+                db.execSQL("ALTER TABLE $TBL_VOCABLE_V1 ADD COLUMN $KEY_CORRECT INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE $TBL_VOCABLE_V1 ADD COLUMN $KEY_WRONG INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE $TBL_VOCABLE_V1 ADD COLUMN $KEY_CREATED INTEGER NOT NULL DEFAULT $time")
+                val args = arrayOf(KEY_TABLE, KEY_VOC, KEY_TIP, KEY_ADDITION, KEY_LAST_USED,
+                    KEY_CREATED, KEY_CORRECT, KEY_WRONG).joinToString(separator = ",")
+                val sqlCpy = "INSERT INTO $TBL_VOCABLE_V2 ($args) SELECT $args FROM $TBL_VOCABLE_V1"
+                db.execSQL(sqlCpy)
+                val colMA = arrayOf(KEY_TABLE, KEY_VOC, KEY_MEANING).joinToString(separator = ",")
+                val selMA = arrayOf(KEY_TABLE, KEY_VOC, KEY_WORD_A).joinToString(separator = ",")
+                val sqlMeaningA = "INSERT INTO $TBL_MEANING_A_V2 ($colMA) SELECT $selMA FROM $TBL_VOCABLE_V1"
+                db.execSQL(sqlMeaningA)
+                val sqlMeaningB = sqlMeaningA.replace(KEY_WORD_A.toRegex(), KEY_WORD_B)
+                    .replace(TBL_MEANING_A_V2.toRegex(), TBL_MEANING_B_V2)
+                db.execSQL(sqlMeaningB)
+                db.execSQL("DROP TABLE $TBL_VOCABLE_V1")
+            }
+            run {
+                db.execSQL("ALTER TABLE $TBL_TABLES_V1 ADD COLUMN $KEY_CREATED INTEGER NOT NULL DEFAULT $time")
+                val args = arrayOf(KEY_NAME_TBL, KEY_TABLE, KEY_NAME_A, KEY_NAME_B, KEY_CREATED).joinToString(separator = ",")
+                val sqlCpy = "INSERT INTO $TBL_TABLES_V2 ($args) SELECT $args FROM $TBL_TABLES_V1"
+                db.execSQL(sqlCpy)
+                db.execSQL("DROP TABLE $TBL_TABLES_V1")
+            }
+            run { checkForIllegalIds(db) }
         }
     }
 
     companion object {
+        fun uuid(): UUID = UUID.randomUUID()
+        fun parseUUID(input: String?): UUID? {
+            return input?.let {
+                UUID.fromString(it)
+            }
+        }
+        fun uuidToString(input: UUID): String = input.toString()
+
         private const val TAG = "Database"
         const val DB_NAME_PRODUCTION = "voc.db"
-        const val MIN_ID_TRESHOLD = 0
-        const val ID_RESERVED_SKIP = -2
-        private const val TBL_VOCABLE = "`vocables2`"
-        private const val TBL_TABLES = "`voc_tables2`"
-        private const val TBL_SESSION = "`session`"
+        const val MIN_ID_TRESHOLD = 0L
+        const val ID_RESERVED_SKIP = -2L
+        private const val TBL_LISTS = "`lists`"
+        private const val TBL_LIST_SYNC = "`list_sync`"
+        private const val TBL_ENTRIES = "`entries`"
+        private const val TBL_SESSION = "`session2`"
         private const val TBL_SESSION_META = "`session_meta`"
-        private const val TBL_SESSION_TABLES = "`session_tables`"
-        private const val TBL_MEANING_A = "`meaning_a`"
-        private const val TBL_MEANING_B = "`meaning_b`"
-        private const val TBL_SESSION_VOC = "`session_voc`"
-        private const val KEY_VOC = "`voc`"
+        private const val TBL_SESSION_LISTS = "`session_lists`"
+        private const val TBL_WORDS_A = "`words_a`"
+        private const val TBL_WORDS_B = "`words_b`"
+        private const val TBL_SESSION_ENTRIES = "`session_entries`"
+        private const val TBL_LISTS_DELETED = "`lists_deleted`"
+        private const val TBL_ENTRIES_DELETED = "`entries_deleted`"
+        private const val TBL_ENTRY_STATS = "`entry_stats`"
+        private const val TBL_LIST_CATEGORIES = "`categories`"
+        private const val TBL_CATEGORY = "`category_name`"
+        private const val TBL_CATEGORIES_DELETED = "`categories_deleted`"
+        private const val TBL_ENTRIES_USED = "`entries_used`"
+        private const val TBL_SETTINGS = "`settings`"
+        private const val KEY_ENTRY = "`entry`"
         private const val KEY_NAME_A = "`name_a`"
         private const val KEY_NAME_B = "`name_b`"
         private const val KEY_TIP = "`tip`"
-        private const val KEY_TABLE = "`table`"
+        private const val KEY_TIP_NEEDED = "`tip_needed`"
+        private const val KEY_LIST = "`list`"
         private const val KEY_LAST_USED = "`last_used`"
-        private const val KEY_NAME_TBL = "`name`"
+        private const val KEY_NAME_LIST = "`list_name`"
         private const val KEY_MEANING = "`meaning`"
         private const val KEY_CREATED = "`created`"
-        private const val KEY_CORRECT = "`correct`"
-        private const val KEY_WRONG = "`wrong`"
+        private const val KEY_IS_CORRECT = "`is_correct`"
+        private const val KEY_SHARED = "`shared`"
+        @Deprecated("Deprecated DB version")
+        private val KEY_CORRECT = "`correct`"
+        @Deprecated("Deprecated DB version")
+        private val KEY_WRONG = "`wrong`"
         private const val KEY_ADDITION = "`addition`"
         private const val KEY_POINTS = "`points`"
         private const val KEY_MKEY = "`key`"
         private const val KEY_MVALUE = "`value`"
+        private const val KEY_LIST_UUID = "`uuid_list`"
+        private const val KEY_ENTRY_UUID = "`uuid_voc`"
+        private const val KEY_CHANGED = "`changed`"
+        private const val KEY_DATE = "`date`"
+        private const val KEY_CATEGORY = "`category`"
+        private const val KEY_CATEGORY_NAME = "`name`"
+        private const val KEY_CATEGORY_UUID = "`uuid_cat`"
+        private const val KEY_SETTINGS_VALUE = "`settings_v`"
+        private const val KEY_SETTINGS_KEY = "`settings_k`"
+
         private var dbIntern: SQLiteDatabase? = null // DB to internal file, 99% of the time used
 
-        private const val DATABASE_VERSION = 2
+        private const val DATABASE_VERSION = 3
 
-        @Deprecated("")
+        @Deprecated("Deprecated DB version")
         private val TBL_VOCABLE_V1 = "`vocables`"
 
-        @Deprecated("")
+        @Deprecated("Deprecated DB version")
         private val TBL_TABLES_V1 = "`voc_tables`"
 
-        @Deprecated("")
+        @Deprecated("Deprecated DB version")
         private val KEY_WORD_A = "`word_a`"
 
-        @Deprecated("")
+        @Deprecated("Deprecated DB version")
         private val KEY_WORD_B = "`word_b`"
+
+        @Deprecated("Deprecated DB version")
+        private val TBL_VOCABLE_V2 = "`vocables2`"
+
+        @Deprecated("Deprecated DB version")
+        private val TBL_TABLES_V2 = "`voc_tables2`"
+
+        @Deprecated("Deprecated DB version")
+        private val TBL_MEANING_A_V2 = "`meaning_a`"
+        @Deprecated("Deprecated DB version")
+        private val TBL_MEANING_B_V2 = "`meaning_b`"
+        @Deprecated("Deprecated DB version")
+        private val TBL_SESSION_TABLES = "`session_tables`"
+        @Deprecated("Deprecated DB version")
+        private val TBL_SESSION_VOC = "`session_voc`"
+        @Deprecated("Deprecated DB version")
+        private val TBL_SESSION_V2 = "`session`"
+        @Deprecated("Deprecated DB version")
+        private val KEY_NAME_TBL = "`name`"
+        @Deprecated("Deprecated DB version")
+        private val KEY_TABLE = "`table`"
+        @Deprecated("Deprecated DB version")
+        private val KEY_VOC = "`voc`"
     }
 }

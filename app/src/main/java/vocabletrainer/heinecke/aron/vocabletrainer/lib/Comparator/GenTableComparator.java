@@ -9,7 +9,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
  */
 public class GenTableComparator extends GenericComparator<VList, String> {
 
-    private final int headID;
+    private final long headID;
 
     /**
      * Generic VList Comparator
@@ -18,7 +18,7 @@ public class GenTableComparator extends GenericComparator<VList, String> {
      *                   passed array order defines the comparision priority
      * @param headID     ID of table to set on top
      */
-    public GenTableComparator(ValueRetriever[] retrievers, final int headID) {
+    public GenTableComparator(ValueRetriever[] retrievers, final long headID) {
         super(retrievers);
         this.headID = headID;
     }

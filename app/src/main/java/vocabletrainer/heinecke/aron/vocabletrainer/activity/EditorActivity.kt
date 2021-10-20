@@ -116,7 +116,7 @@ class EditorActivity : AppCompatActivity(), EditorDialogDataProvider, ListEditor
             if (tbl != null) {
                 list = tbl
                 // do not call updateColumnNames as we've to wait for onCreateOptionsMenu, calling it
-                entries!!.addAll(db.getVocablesOfTable(list!!))
+                entries!!.addAll(db.getEntriesOfList(list!!))
                 adapter!!.updateSorting(cComp)
                 Log.d(TAG, "edit list mode")
             } else {

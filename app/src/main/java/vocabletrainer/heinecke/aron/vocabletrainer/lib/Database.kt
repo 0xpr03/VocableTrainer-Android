@@ -6,7 +6,6 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.database.sqlite.SQLiteStatement
-import android.text.TextUtils
 import android.util.Log
 import androidx.collection.LongSparseArray
 import androidx.core.database.getStringOrNull
@@ -59,7 +58,7 @@ class Database {
      * @return VEntry with set List<br></br>
      * Null on failure
      */
-    fun getVocable(vocID: Long): VEntry? {
+    fun getEntry(vocID: Long): VEntry? {
         db.rawQuery(
                 "SELECT $KEY_TIP, $KEY_ADDITION, tVoc.$KEY_CREATED, "
                 +"tVoc.$KEY_LIST, $KEY_NAME_A, $KEY_NAME_B, $KEY_NAME_LIST,"
@@ -138,7 +137,7 @@ class Database {
      * @param list VList for which all entries should be retrieved
      * @return List<VEntry>
     </VEntry> */
-    fun getVocablesOfTable(list: VList): List<VEntry> {
+    fun getEntriesOfList(list: VList): List<VEntry> {
         // we read all the meanings for this table, then sort them to their entry
         val sqlMeaning = ("SELECT $KEY_MEANING,m.$KEY_ENTRY voc FROM %s m "
                 +"JOIN $TBL_ENTRIES e ON e.$KEY_ENTRY = m.$KEY_ENTRY "
@@ -457,24 +456,6 @@ class Database {
     }
 
     /**
-     * Test is table exists
-     *
-     * @param db  Writeable database
-     * @param tbl VList
-     * @return true if it exists
-     */
-    private fun testTableExists(db: SQLiteDatabase?, tbl: VList): Boolean {
-        requireNotNull(db) { "illegal sql db" }
-        if (tbl.isExisting) return false
-        try {
-            db.rawQuery("SELECT 1 FROM $TBL_LISTS WHERE $KEY_LIST = ?", arrayOf(tbl.id.toString())).use { cursor -> return cursor.moveToNext() }
-        } catch (e: Exception) {
-            Log.e(TAG, "", e)
-            return false
-        }
-    }
-
-    /**
      * Update and/or insert all Entries.<br></br>
      * This function uses delete and changed flags in entries.<br></br>
      * <u>Does not update vocable metadata such as last used etc on changed flag!</u>
@@ -590,7 +571,7 @@ class Database {
     /**
      * Internal helper for deletedX functions
      */
-    private fun queryDeleted(since: Long? = null, tbl: String, key: String): List<Tombstone> {
+    private fun queryDeleted(since: Long? = null, table: String, key: String): List<Tombstone> {
         val selection = since?.let {
             "$KEY_CREATED >= ?"
         }
@@ -599,7 +580,7 @@ class Database {
         } ?: arrayOf()
         val list = mutableListOf<Tombstone>()
         db.query(
-            tbl, arrayOf(key, KEY_CREATED),
+            table, arrayOf(key, KEY_CREATED),
             selection, selArgs,
             null, null, null
         ).use { cursor ->
@@ -619,14 +600,14 @@ class Database {
      * Returns the ID of a table with the exact same naming <br></br>
      * this also updates the VList element itself to contain the right ID
      *
-     * @param tbl VList to be used a search source
+     * @param list VList to be used a search source
      * @return ID or  -1 if not found, -2 if an error occurred
      */
-    fun getSetTableID(tbl: VList): Long {
-        if (tbl.id > -1) {
-            return tbl.id
+    fun getListID(list: VList): Long {
+        if (list.id > -1) {
+            return list.id
         }
-        val args = arrayOf(tbl.name, tbl.nameA, tbl.nameB)
+        val args = arrayOf(list.name, list.nameA, list.nameB)
         try {
             db.rawQuery("SELECT $KEY_LIST FROM $TBL_LISTS "
                     + "WHERE $KEY_NAME_LIST = ? AND $KEY_NAME_A = ? AND $KEY_NAME_B  = ? LIMIT 1", args).use { cursor ->
@@ -634,7 +615,7 @@ class Database {
                 if (cursor.moveToNext()) {
                     id = cursor.getLong(0)
                 }
-                tbl.id = id
+                list.id = id
                 return id
             }
         } catch (e: Exception) {
@@ -671,14 +652,14 @@ class Database {
     /**
      * Clear vocable list from all entries
      *
-     * @param tbl
+     * @param list
      * @return
      */
-    fun truncateList(tbl: VList, useTransaction: Boolean = true) {
+    fun truncateList(list: VList, useTransaction: Boolean = true) {
         try {
             if (useTransaction)
                 db.beginTransaction()
-            val args = arrayOf(tbl.id.toString())
+            val args = arrayOf(list.id.toString())
             db.execSQL(
                 "INSERT INTO $TBL_ENTRIES_DELETED ($KEY_ENTRY_UUID,$KEY_CREATED,$KEY_LIST)"
                         + " SELECT $KEY_ENTRY_UUID,$KEY_CREATED,$KEY_LIST FROM $TBL_ENTRIES WHERE $KEY_LIST = ?",
@@ -761,7 +742,7 @@ class Database {
      *
      * @return never null
      */
-    val sessionTables: ArrayList<VList>
+    val sessionLists: ArrayList<VList>
         get() {
             val lst = ArrayList<VList>(10)
             try {
@@ -812,7 +793,7 @@ class Database {
      * @param settings         TrainerSettings, used for points threshold etc
      * @return true on success
      */
-    fun getSessionTableData(lists: List<VList>, unfinishedLists: MutableList<VList?>, settings: TrainerSettings): Boolean {
+    fun getSessionListData(lists: List<VList>, unfinishedLists: MutableList<VList?>, settings: TrainerSettings): Boolean {
         require(lists.isNotEmpty())
         unfinishedLists.clear()
         for (list in lists) {
@@ -1020,7 +1001,7 @@ class Database {
                 + KEY_LIST + " INTEGER PRIMARY KEY REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE,"
                 + KEY_LIST_UUID + " STRING NOT NULL UNIQUE )")
         private val sqlEntries = ("CREATE TABLE " + TBL_ENTRIES + " ("
-                + KEY_LIST + " INTEGER REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE, "
+                + KEY_LIST + " INTEGER NOT NULL REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE, "
                 + KEY_ENTRY + " INTEGER PRIMARY KEY,"
                 + KEY_TIP + " TEXT,"
                 + KEY_ADDITION + "TEXT,"
@@ -1056,17 +1037,17 @@ class Database {
         private val sqlListDeletedIndex = ("CREATE INDEX listDeletedI ON $TBL_LISTS_DELETED ($KEY_CREATED)")
         private val sqlEntriesDeleted = ("CREATE TABLE " + TBL_ENTRIES_DELETED + " ("
                 + KEY_ENTRY_UUID + " text NOT NULL PRIMARY KEY,"
-                + KEY_LIST + " INTEGER REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE,"
+                + KEY_LIST + " INTEGER NOT NULL REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE,"
                 + KEY_CREATED + "INTEGER NOT NULL )")
         private val sqlEntryDeletedIndex = ("CREATE INDEX entryDeletedI ON $TBL_ENTRIES_DELETED ($KEY_CREATED)")
         private val sqlEntryStats = ("CREATE TABLE " + TBL_ENTRY_STATS + " ("
-                + KEY_ENTRY + " INTEGER REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE,"
+                + KEY_ENTRY + " INTEGER NOT NULL REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE,"
                 + KEY_DATE + "INTEGER PRIMARY KEY,"
                 + KEY_TIP_NEEDED + "boolean NOT NULL,"
                 + KEY_IS_CORRECT + "boolean NOT NULL )")
         private val sqlListCategories = ("CREATE TABLE " + TBL_LIST_CATEGORIES + " ("
-                + KEY_LIST + " INTEGER REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE,"
-                + KEY_CATEGORY + " INTEGER REFERENCES $TBL_CATEGORY($KEY_CATEGORY) ON DELETE CASCADE,"
+                + KEY_LIST + " INTEGER NOT NULL REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE,"
+                + KEY_CATEGORY + " INTEGER NOT NULL REFERENCES $TBL_CATEGORY($KEY_CATEGORY) ON DELETE CASCADE,"
                 + "PRIMARY KEY ($KEY_LIST ,$KEY_CATEGORY ))")
         private val sqlCategory = ("CREATE TABLE "+ TBL_CATEGORY + " ("
                 + KEY_CATEGORY + " INTEGER PRIMARY KEY,"

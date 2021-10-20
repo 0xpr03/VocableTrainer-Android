@@ -123,7 +123,7 @@ public class Trainer implements Parcelable {
      * Retrieve information from DB
      */
     private void getTableData() {
-        db.getSessionTableData(lists, unsolvedLists, settings);
+        db.getSessionListData(lists, unsolvedLists, settings);
     }
 
     /**

@@ -87,7 +87,7 @@ public class SessionStorageManager {
      * @return
      */
     public ArrayList<VList> loadSessionTbls(){
-        return db.getSessionTables();
+        return db.getSessionLists();
     }
 
     /**
@@ -127,7 +127,7 @@ public class SessionStorageManager {
             VEntry entry = null;
             if(map.containsKey(KEY_VOCABLE_ID)){
                 long vocID = getLong(KEY_VOCABLE_ID);
-                entry = db.getVocable(vocID);
+                entry = db.getEntry(vocID);
             }
 
             return new TrainerSettings(timesToSolve, mode, allowTips,tips,failed,caseSensitive,entry,trimSpaces, additionAuto);

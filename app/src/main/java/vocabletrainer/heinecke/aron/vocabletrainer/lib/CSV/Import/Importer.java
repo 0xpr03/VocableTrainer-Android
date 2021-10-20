@@ -57,7 +57,7 @@ public class Importer implements ImportHandler {
         if (previewParser.isRawData()) {
             Log.w(TAG, "New VList command on raw data list!");
         } else if (previewParser.isMultiList() || mode != IMPORT_LIST_MODE.CREATE) {
-            if (VList.isIDValid(db.getSetTableID(tbl))) {
+            if (VList.isIDValid(db.getListID(tbl))) {
                 if (mode == IMPORT_LIST_MODE.REPLACE) {
                     db.truncateList(tbl,false);
                 } else if (mode == IMPORT_LIST_MODE.IGNORE) {

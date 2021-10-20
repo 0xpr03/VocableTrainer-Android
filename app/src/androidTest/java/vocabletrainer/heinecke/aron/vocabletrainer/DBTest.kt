@@ -101,7 +101,7 @@ class DBTest {
 
         for (i in 0..10) {
             val expected = entries.get(Random.nextInt(0,entries.size-1))
-            val got = db.getVocable(expected.id)!!
+            val got = db.getEntry(expected.id)!!
             Assert.assertEquals(expected.id,got.id)
             Assert.assertEquals(expected.aMeanings,got.aMeanings)
         }
@@ -141,9 +141,9 @@ class DBTest {
         val entries: List<VEntry> = generateEntries(lst)
         Assert.assertTrue(entries.size > 1)
         db.upsertEntries(entries)
-        Assert.assertEquals(entries.size,db.getVocablesOfTable(lst).size)
+        Assert.assertEquals(entries.size,db.getEntriesOfList(lst).size)
         db.truncateList(lst)
-        Assert.assertEquals(0,db.getVocablesOfTable(lst).size)
+        Assert.assertEquals(0,db.getEntriesOfList(lst).size)
         val deleted = db.deletedEntries(delTime)
         for (e in entries) {
             Assert.assertNotNull("Can't find tombstone for $e",deleted.find { v -> v.uuid == e.uuid })
@@ -158,7 +158,7 @@ class DBTest {
         val entries: List<VEntry> = generateEntries(tbl)
         Assert.assertTrue(entries.size > 1)
         db.upsertEntries(entries)
-        val result: List<VEntry> = db.getVocablesOfTable(tbl)
+        val result: List<VEntry> = db.getEntriesOfList(tbl)
         Assert.assertEquals("invalid amount of entries for $tbl", entries.size.toLong(), result.size.toLong())
         for (entry in entries) {
             val ie = result.find { v -> v.id == entry.id }!!
@@ -174,12 +174,12 @@ class DBTest {
         db.upsertVList(tbl)
         val entries: List<VEntry> = generateEntries(tbl)
         db.upsertEntries(entries)
-        val result: List<VEntry> = db.getVocablesOfTable(tbl)
+        val result: List<VEntry> = db.getEntriesOfList(tbl)
         Assert.assertEquals("invalid amount of entries", entries.size.toLong(), result.size.toLong())
         result[20].aMeanings = string2List("New Word")
         result[30].isDelete = true
         db.upsertEntries(result)
-        val edited: List<VEntry> = db.getVocablesOfTable(tbl)
+        val edited: List<VEntry> = db.getEntriesOfList(tbl)
         Assert.assertEquals("invalid amount of entries", (entries.size - 1).toLong(), edited.size.toLong())
         Assert.assertEquals("invalid entry data", result[20].aString, edited[20].aString)
         Assert.assertEquals("invalid entry data", result[20].bString, edited[20].bString)
@@ -187,13 +187,13 @@ class DBTest {
     }
 
     @Test
-    fun testDBDelete() {
-        _testDBDelete(false)
-        _testDBDelete(true)
+    fun testListDelete() {
+        _testListDelete(false)
+        _testListDelete(true)
     }
 
     @Suppress("TestFunctionName")
-    private fun _testDBDelete(uuid: Boolean) {
+    private fun _testListDelete(uuid: Boolean) {
         val db = Database(context)
         val list: VList = genList(uuid)
         if (uuid)
@@ -204,12 +204,12 @@ class DBTest {
         if (uuid)
             for (e in entries)
                 Assert.assertNotNull("missing UUID for entry",e.uuid)
-        Assert.assertEquals("invalid amount entries", entries.size, db.getVocablesOfTable(list).size)
+        Assert.assertEquals("invalid amount entries", entries.size, db.getEntriesOfList(list).size)
         val listsPre = db.lists
         val deletionTime = System.currentTimeMillis()
         db.deleteList(list)
         val listsPost = db.lists
-        Assert.assertEquals("invalid amount entries", 0, db.getVocablesOfTable(list).size)
+        Assert.assertEquals("invalid amount entries", 0, db.getEntriesOfList(list).size)
         Assert.assertEquals("invalid amount lists", listsPre.size-1, listsPost.size)
         Assert.assertNull("found deleted list",listsPost.find { v -> v.id == list.id })
         if (uuid) {

@@ -29,3 +29,14 @@
 -keepclassmembers class * extends androidx.lifecycle.AndroidViewModel {
     <init>(...);
 }
+
+# from https://github.com/jwtk/jjwt#proguard
+-keepattributes InnerClasses
+
+-keep class io.jsonwebtoken.** { *; }
+-keepnames class io.jsonwebtoken.* { *; }
+-keepnames interface io.jsonwebtoken.* { *; }
+
+-keep class org.bouncycastle.** { *; }
+-keepnames class org.bouncycastle.** { *; }
+-dontwarn org.bouncycastle.**

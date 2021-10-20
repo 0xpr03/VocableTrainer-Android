@@ -64,6 +64,15 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.4.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0-alpha03'
 
+    // JJWT
+    api 'io.jsonwebtoken:jjwt-api:0.11.2'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2'
+    runtimeOnly('io.jsonwebtoken:jjwt-orgjson:0.11.2') {
+        exclude group: 'org.json', module: 'json' //provided by Android natively
+    }
+    // Uncomment the next line if you want to use RSASSA-PSS (PS256, PS384, PS512) algorithms:
+    //runtimeOnly 'org.bouncycastle:bcprov-jdk15on:1.60'
+    implementation 'io.jsonwebtoken:jjwt-gson:0.11.2'
 }
 repositories {
     mavenCentral()

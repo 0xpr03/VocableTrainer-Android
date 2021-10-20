@@ -226,6 +226,36 @@ class DBTest {
     }
 
     @Test
+    fun testEntryDelete() {
+        val db = Database(context)
+        val list: VList = genList(false)
+        db.upsertVList(list)
+        val entries = generateEntries(list).toMutableList()
+        db.upsertEntries(entries)
+        val deletedEntries: MutableList<VEntry> = mutableListOf()
+        for (i in 0..5) {
+            val entry = entries[Random.nextInt(0, entries.size-1)]
+            entry.isDelete = true
+            deletedEntries.add(entry)
+        }
+        db.upsertEntries(entries)
+        // ensure deletion of entries
+        val newEntries = db.getEntriesOfList(list)
+        entries.removeAll(deletedEntries)
+        Assert.assertEquals(entries,newEntries)
+        val deleted = db.deletedEntries()
+        for (e in deletedEntries) {
+            Assert.assertNotNull("can't find UUID of deleted entry ${e.uuid}",deleted.find { v -> v.uuid == e.uuid })
+        }
+        // now delete the list, this should remove all entry tombstone
+        db.deleteList(list)
+        val newDeleted = db.deletedEntries()
+        for (e in deletedEntries) {
+            Assert.assertNull(newDeleted.find { v -> v.uuid == e.uuid })
+        }
+    }
+
+    @Test
     fun testDBRandomSelect() {
         val db = Database(context)
         val tbl: VList = genList()

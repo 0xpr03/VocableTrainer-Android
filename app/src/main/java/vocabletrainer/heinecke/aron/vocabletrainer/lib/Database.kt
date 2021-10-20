@@ -506,6 +506,12 @@ class Database {
                                             db.delete(TBL_WORDS_B, whereDelMeaning, args)
                                             db.delete(TBL_WORDS_A, whereDelMeaning, args)
                                             if (entry.isDelete) {
+                                                ContentValues().apply {
+                                                    put(KEY_ENTRY_UUID, uuidToString(entry.uuid!!))
+                                                    put(KEY_CREATED,System.currentTimeMillis())
+                                                    put(KEY_LIST,entry.list!!.id)
+                                                    db.insertOrThrow(TBL_ENTRIES_DELETED, null, this)
+                                                }
                                                 delStm.clearBindings()
                                                 delStm.bindLong(1, entry.id)
                                                 delStm.execute()
@@ -674,8 +680,8 @@ class Database {
                 db.beginTransaction()
             val args = arrayOf(tbl.id.toString())
             db.execSQL(
-                "INSERT INTO $TBL_ENTRIES_DELETED ($KEY_ENTRY_UUID,$KEY_CREATED)"
-                        + " SELECT $KEY_ENTRY_UUID,$KEY_CREATED FROM $TBL_ENTRIES WHERE $KEY_LIST = ?",
+                "INSERT INTO $TBL_ENTRIES_DELETED ($KEY_ENTRY_UUID,$KEY_CREATED,$KEY_LIST)"
+                        + " SELECT $KEY_ENTRY_UUID,$KEY_CREATED,$KEY_LIST FROM $TBL_ENTRIES WHERE $KEY_LIST = ?",
                 args
             )
             db.delete(TBL_ENTRIES, "$KEY_LIST = ?", args)
@@ -1050,6 +1056,7 @@ class Database {
         private val sqlListDeletedIndex = ("CREATE INDEX listDeletedI ON $TBL_LISTS_DELETED ($KEY_CREATED)")
         private val sqlEntriesDeleted = ("CREATE TABLE " + TBL_ENTRIES_DELETED + " ("
                 + KEY_ENTRY_UUID + " text NOT NULL PRIMARY KEY,"
+                + KEY_LIST + " INTEGER REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE,"
                 + KEY_CREATED + "INTEGER NOT NULL )")
         private val sqlEntryDeletedIndex = ("CREATE INDEX entryDeletedI ON $TBL_ENTRIES_DELETED ($KEY_CREATED)")
         private val sqlEntryStats = ("CREATE TABLE " + TBL_ENTRY_STATS + " ("

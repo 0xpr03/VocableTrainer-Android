@@ -1,0 +1,4 @@
+ - Breaking: Minimum API is now 22 which is android 5.1
+ - Fix survey crashes on android apis 29+
+ - Add opt-in crash reporter functionality
+ - Introduce DB 3.0 changing a lot of internals for the upcoming features

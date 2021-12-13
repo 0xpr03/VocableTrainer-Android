@@ -9,7 +9,7 @@ android {
     buildToolsVersion '30.0.2'
     defaultConfig {
         applicationId "vocabletrainer.heinecke.aron.vocabletrainer"
-        minSdkVersion 19
+        minSdkVersion 22
         targetSdkVersion 30
         versionCode 22
         versionName "0.7.4"
@@ -64,6 +64,11 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.4.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0-alpha03'
 
+    // crash reporting
+    def acraVersion = "5.8.4"
+    implementation "ch.acra:acra-http:$acraVersion"
+    implementation "ch.acra:acra-dialog:$acraVersion"
+    implementation "ch.acra:acra-advanced-scheduler:$acraVersion"
 }
 repositories {
     mavenCentral()

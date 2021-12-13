@@ -11,6 +11,25 @@
         android:layout_height="wrap_content">
 
         <Button
+            android:id="@+id/bCrashTest"
+            style="@style/NormalButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginBottom="8dp"
+            android:onClick="crashTest"
+            android:text="Crash Test"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/bImport"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/bImport"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <Button
             android:id="@+id/bLastSession"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

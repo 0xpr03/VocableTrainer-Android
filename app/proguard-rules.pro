@@ -29,3 +29,4 @@
 -keepclassmembers class * extends androidx.lifecycle.AndroidViewModel {
     <init>(...);
 }
+-keep class vocabletrainer.heinecke.aron.vocabletrainer.MyApplication

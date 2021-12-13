@@ -222,4 +222,10 @@
     <!-- Should not be visible, indicates a bug when visible in UI.-->
     <!-- Also serves the purpose of making dynamic elements visible in designer. -->
     <string name="Placeholder" translatable="false"><![CDATA[<Placeholder>]]></string>
+    <string name="crash_dialog_email">optional email</string>
+    <string name="crash_dialog_comment">optional comment what you did</string>
+    <string name="crash_dialog_negative">Cancel Report</string>
+    <string name="crash_dialog_positive">Send crash report</string>
+    <string name="crash_dialog_title">Crash Report</string>
+    <string name="crash_dialog_text">The app crashed, please send a crash report if possible.</string>
 </resources>

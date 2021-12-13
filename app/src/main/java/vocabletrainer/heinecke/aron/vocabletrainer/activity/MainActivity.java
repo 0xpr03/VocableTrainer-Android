@@ -105,6 +105,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Crash test
+     * @param view
+     */
+    public void crashTest(View view) {
+        throw new RuntimeException("Crash test");
+    }
+
+    /**
      * Open edit table intent
      *
      * @param view

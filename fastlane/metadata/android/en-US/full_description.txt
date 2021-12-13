@@ -9,4 +9,5 @@ Vocabulary and word trainer to memorize foreign languages and remember definitio
 * training mode for writing down on real paper
 * import and export to spreadsheet CSV files with full utf-8 support
 
-Internet access is used only for one OPT-IN survey.
+Privacy:
+Internet access is used only for one OPT-IN survey and crash reporting.

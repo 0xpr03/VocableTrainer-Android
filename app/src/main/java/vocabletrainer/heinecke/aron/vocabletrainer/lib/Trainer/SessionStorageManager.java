@@ -13,7 +13,7 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VEntry;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.VList;
 
 /**
- * Manager for sessions, loading saving of settings
+ * Manager for sessions, loading/saving of settings
  */
 public class SessionStorageManager {
     private final static String KEY_SOLVE_TIMES_TO = "t_solve";

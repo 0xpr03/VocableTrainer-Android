@@ -1,6 +1,6 @@
 # VocableTrainer-Android [![Build Status](https://github.com/0xpr03/VocableTrainer-Android/actions/workflows/gradle.yml/badge.svg)](https://github.com/0xpr03/VocableTrainer-Android/actions)
 VocableTrainer-Android is a word and vocable training software for the android platform.
-It provides traning with different modes, sessions and multiple word lists.
+It provides training with different modes, sessions and multiple word lists.
 
 <a href="https://f-droid.org/repository/browse/?fdid=vocabletrainer.heinecke.aron.vocabletrainer" target="_blank">
 <img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80"/></a>

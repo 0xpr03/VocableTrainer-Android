@@ -3,11 +3,11 @@ Vocabulary and word trainer to memorize foreign languages and remember definitio
 * Flashcard like system
 * training progress based on correct and incorrect answers
 * multiple meanings per entry
-* dark mode (android 8.1+)
+* dark mode support (android 8.1+)
 * training mode for entering one meaning
-* training mode for entering all meaings
+* training mode for entering all meanings
 * training mode for writing down on real paper
 * import and export to spreadsheet CSV files with full utf-8 support
 
 Privacy:
-Internet access is used only for one OPT-IN survey and crash reporting.
+Internet access is used only for one OPT-IN survey and OPT-IN crash reporting.

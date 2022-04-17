@@ -6,7 +6,6 @@ plugins {
 
 android {
     compileSdkVersion 31
-    buildToolsVersion '30.0.2'
     defaultConfig {
         applicationId "vocabletrainer.heinecke.aron.vocabletrainer"
         minSdkVersion 22
@@ -28,16 +27,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    lintOptions {
-        disable 'MissingTranslation'
-        abortOnError false
-    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8
+    }
+    lint {
+        abortOnError false
+        disable 'MissingTranslation'
     }
 }
 

@@ -3,6 +3,8 @@ package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
@@ -33,7 +35,6 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.
  * Trainer activity
  */
 public class TrainerActivity extends FragmentActivity implements TrainerModeFragment.TrainingFragmentHolder, ItemPickerDialog.ItemPickerHandler {
-    public static final String PARAM_RESUME_SESSION_FLAG = "resume_session";
     public static final String PARAM_TRAINER_SETTINGS = "trainer_settings";
     private static final String KEY_TRAINER_MODE = "trainer_mode";
     private static final String P_KEY_MODE_DIALOG = "mode_dialog";
@@ -145,7 +146,7 @@ public class TrainerActivity extends FragmentActivity implements TrainerModeFrag
      */
     public void showResultDialog(){
         if(trainer.isFinished()){
-            Callable callable = () -> {
+            Callable<?> callable = () -> {
                 Intent myIntent = new Intent(TrainerActivity.this, MainActivity.class);
                 myIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(myIntent);
@@ -176,51 +177,20 @@ public class TrainerActivity extends FragmentActivity implements TrainerModeFrag
      * Initialize trainer
      */
     private void initTrainer(@Nullable Bundle savedInstanceState) {
+        final Database db = new Database(getBaseContext());
+        ssm = new SessionStorageManager(db);
+        settings = ssm.loadSession();
+        trainer = new Trainer(settings, getBaseContext(), ssm);
         if (savedInstanceState != null){
-            trainer = savedInstanceState.getParcelable(KEY_TRAINER);
-            settings = trainer.getSettings();
             int fragmentNr = savedInstanceState.getInt(KEY_FRAGMENT_NR);
             modeStorage[fragmentNr] = (TrainerModeFragment) getSupportFragmentManager().getFragment(savedInstanceState,KEY_FRAGMENT);
-        } else {
-            final Database db = new Database(getBaseContext());
-            ssm = new SessionStorageManager(db);
-            Intent intent = getIntent();
-            boolean resume = intent.getBooleanExtra(PARAM_RESUME_SESSION_FLAG, false);
-            ArrayList<VList> list;
-            if (resume) {
-                Log.d(TAG, "resuming");
-                settings = ssm.loadSession();
-                list = ssm.loadSessionTbls();
-            } else {
-                Log.d(TAG, "not resuming");
-                list = intent.getParcelableArrayListExtra(PARAM_TABLES);
-                if (list == null) {
-                    Log.wtf(TAG, "Flag for list passed but no list received!");
-                } else {
-                    settings = intent.getParcelableExtra(PARAM_TRAINER_SETTINGS);
-                    if (settings == null) {
-                        Log.wtf(TAG, "No trainer settings passed!");
-                    } else {
-                        Log.d(TAG, "saving new session..");
-                        db.deleteSession();
-                        if (!ssm.saveSession(settings)) {
-                            Log.wtf(TAG, "unable to save session meta");
-                        }
-                        ssm.saveSessionTbls(list);
-                        Log.d(TAG, "saved session");
-                    }
-
-                }
-            }
-            trainer = new Trainer(list, settings, getBaseContext(), !resume, ssm);
         }
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putParcelable(KEY_TRAINER,trainer);
         outState.putInt(KEY_FRAGMENT_NR,trainingMode);
         getSupportFragmentManager().putFragment(outState,KEY_FRAGMENT,cTrainingFragment);
         if(modeDialog != null && modeDialog.isAdded())
@@ -246,15 +216,14 @@ public class TrainerActivity extends FragmentActivity implements TrainerModeFrag
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.tMenu_Tip:
+        int id = item.getItemId();
+        if (id == R.id.tMenu_Tip) {
                 cTrainingFragment.showTip(trainer.getTip());
                 return true;
-            case R.id.tMenu_Mode:
+        } else if (id == R.id.tMenu_Mode) {
                 modeDialog = ItemPickerDialog.newInstance(R.array.training_modes,R.string.Trainer_Menu_Mode);
                 modeDialog.setItemPickerHandler(this);
                 modeDialog.show(getSupportFragmentManager(),P_KEY_MODE_DIALOG);
-                break;
         }
 
         return super.onOptionsItemSelected(item);

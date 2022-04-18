@@ -116,21 +116,6 @@ class Database {
     }
 
     /**
-     * Wipe all session points
-     *
-     * @return
-     */
-    fun wipeSessionPoints(): Boolean {
-        return try {
-            db.delete(TBL_SESSION + "", null, null)
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "", e)
-            false
-        }
-    }
-
-    /**
      * Returns a List of Entries for the specified list<br></br>
      * <u>No point data is being loaded</u>
      *
@@ -350,7 +335,7 @@ class Database {
     }
 
     /**
-     * Create new entry training statistic entry.
+     * Create new entry training statistic entry. Also adds this entry to $TBL_SESSION_HISTORY
      */
     fun insertEntryStat(date: Long, entry: VEntry, tip: Boolean, correct: Boolean) {
         ContentValues().apply {
@@ -359,6 +344,10 @@ class Database {
             put(KEY_TIP_NEEDED,tip)
             put(KEY_IS_CORRECT,correct)
             db.insertOrThrow(TBL_ENTRY_STATS,null,this)
+        }
+        ContentValues().apply {
+            put(KEY_DATE,date)
+            db.insertOrThrow(TBL_SESSION_HISTORY,null,this)
         }
     }
 
@@ -684,7 +673,7 @@ class Database {
         try {
             db.delete(TBL_SESSION, null, null)
             db.delete(TBL_SESSION_META, null, null)
-            db.delete(TBL_SESSION_LISTS, null, null)
+            db.delete(TBL_SESSION_HISTORY, null, null)
             db.setTransactionSuccessful()
         } finally {
             if (db.inTransaction()) db.endTransaction()
@@ -698,11 +687,12 @@ class Database {
      * @return true on success
      */
     fun updateEntryProgress(entry: VEntry) {
-        db.compileStatement("INSERT OR REPLACE INTO $TBL_SESSION ( $KEY_ENTRY,$KEY_POINTS )VALUES (?,?)").use { updStm ->
+        db.compileStatement("UPDATE $TBL_SESSION SET $KEY_POINTS = ? WHERE $KEY_ENTRY = ?").use { updStm ->
             Log.d(TAG, entry.toString())
-            updStm.bindLong(1, entry.id)
-            updStm.bindLong(2, entry.points!!.toLong())
-            assert(updStm.executeInsert() > 0)
+            updStm.bindLong(1, entry.points!!.toLong())
+            updStm.bindLong(2, entry.id)
+            updStm.executeUpdateDelete()
+            //assert(updStm.executeUpdateDelete() > 0)
             val values = ContentValues()
             values.put(KEY_ENTRY, entry.id)
             values.put(KEY_LAST_USED, System.currentTimeMillis())
@@ -721,10 +711,11 @@ class Database {
         Log.d(TAG, "entry createSession")
         db.beginTransaction()
         try {
-            db.compileStatement("INSERT INTO $TBL_SESSION_LISTS ($KEY_LIST) VALUES (?)").use { insStm ->
+            db.compileStatement("INSERT INTO $TBL_SESSION ($KEY_ENTRY,$KEY_POINTS) "
+                +"SELECT $KEY_ENTRY,0 FROM $TBL_ENTRIES WHERE $KEY_LIST = ?").use { insStm ->
                 for (tbl in lists) {
                     insStm.clearBindings()
-                    insStm.bindLong(1, tbl.id.toLong())
+                    insStm.bindLong(1, tbl.id)
                     if (insStm.executeInsert() < 0) {
                         Log.wtf(TAG, "no new table inserted")
                     }
@@ -742,7 +733,7 @@ class Database {
      *
      * @return never null
      */
-    val sessionLists: ArrayList<VList>
+    /*val sessionLists: ArrayList<VList>
         get() {
             val lst = ArrayList<VList>(10)
             try {
@@ -767,54 +758,16 @@ class Database {
                 Log.e(TAG, "", e)
             }
             return lst
-        }
+        }*/
+
+    /**
+     * Returns whether there is an ongoing session
+     */
     val isSessionStored: Boolean
         get() {
             Log.d(TAG, "entry isSessionStored")
-            try {
-                db.rawQuery("SELECT COUNT(*) FROM $TBL_SESSION_LISTS WHERE 1", null).use { cursor ->
-                    cursor.moveToNext()
-                    if (cursor.getInt(0) > 0) {
-                        Log.d(TAG, "found session")
-                        return true
-                    }
-                }
-            } catch (e: Exception) {
-                Log.wtf(TAG, "unable to get session lists row count", e)
-            }
-            return false
+            return this.getSessionTotalEntries() > 0
         }
-
-    /**
-     * Set total and unfinished vocables for each table, generate list of finished
-     *
-     * @param lists           list of VList to process
-     * @param unfinishedLists List into which unfinished VList are added into
-     * @param settings         TrainerSettings, used for points threshold etc
-     * @return true on success
-     */
-    fun getSessionListData(lists: List<VList>, unfinishedLists: MutableList<VList?>, settings: TrainerSettings): Boolean {
-        require(lists.isNotEmpty())
-        unfinishedLists.clear()
-        for (list in lists) {
-            db.rawQuery("SELECT COUNT(*) FROM $TBL_ENTRIES WHERE $KEY_LIST  = ?", arrayOf(list.id.toString())).use { curLeng ->
-                db.rawQuery("SELECT COUNT(*) FROM $TBL_SESSION s "
-                    +"JOIN $TBL_ENTRIES e ON e.$KEY_ENTRY = s.$KEY_ENTRY "
-                    +"WHERE $KEY_LIST  = ? AND $KEY_POINTS >= ?", arrayOf(list.id.toString(), settings.timesToSolve.toString())).use { curFinished ->
-                    if (!curLeng.moveToNext()) return false
-                    list.totalVocs = curLeng.getInt(0)
-                    if (!curFinished.moveToNext()) return false
-                    val unfinished = list.totalVocs - curFinished.getInt(0)
-                    list.unfinishedVocs = unfinished
-                    if (unfinished > 0) {
-                        unfinishedLists.add(list)
-                    }
-                    Log.d(TAG, list.toString())
-                }
-            }
-        }
-        return true
-    }
 
     /**
      * Returns a random entry from the specified table, which matches the trainer settings<br></br>
@@ -825,42 +778,55 @@ class Database {
      * @param allowRepetition set to true to allow selecting the same vocable as lastEntry again
      * @return null on error
      */
-    fun getRandomTrainerEntry(list: VList, lastEntry: VEntry?, ts: TrainerSettings, allowRepetition: Boolean): VEntry? {
+    fun getRandomTrainerEntry(lastEntry: VEntry?, ts: TrainerSettings, allowRepetition: Boolean): VEntry? {
         Log.d(TAG, "getRandomTrainerEntry")
         var lastID = MIN_ID_TRESHOLD - 1
-        if (lastEntry != null && lastEntry.list!!.id == list.id && !allowRepetition) lastID = lastEntry.id
-        val arg = arrayOf(list.id.toString(), lastID.toString(), ts.timesToSolve.toString())
+        // don't repeat last entry
+        if (lastEntry != null && !allowRepetition) lastID = lastEntry.id
+        val arg = arrayOf(lastID.toString(), ts.timesToSolve.toString())
+        // don't show remaining entry all of the time
+        if (lastEntry!= null && allowRepetition && lastEntry.points!! < ts.timesToSolve) {
+            // allow any other voc
+            arg[1] = (ts.timesToSolve + 1).toString()
+        }
         Log.v(TAG, arg.contentToString())
         db.rawQuery(
-                "SELECT $KEY_TIP, $KEY_ADDITION, tbl.$KEY_CREATED,"
-                        + "tbl.$KEY_ENTRY, $KEY_POINTS, tbl.$KEY_CHANGED"
-                        + "FROM $TBL_ENTRIES tbl "
-                        + "LEFT JOIN  $TBL_SESSION ses ON tbl.$KEY_ENTRY = ses.$KEY_ENTRY "
-                        + "WHERE tbl.$KEY_LIST = ? AND tbl.$KEY_ENTRY != ? AND ( $KEY_POINTS IS NULL OR $KEY_POINTS < ? ) "
+                "SELECT $KEY_ENTRY FROM $TBL_SESSION ses "
+                        + "WHERE $KEY_ENTRY != ? AND $KEY_POINTS < ? "
                         + "ORDER BY RANDOM() LIMIT 1", arg).use { cV ->
             return if (cV.moveToNext()) {
-                val meaningA: MutableList<String> = ArrayList()
-                val meaningB: MutableList<String> = ArrayList()
-                val points = if(cV.isNull(4)) { 0 } else cV.getInt(4)
-                val vocable = VEntry(
-                    meaningA = meaningA,
-                    meaningB = meaningB,
-                    _tip = cV.getString(0),
-                    _addition = cV.getString(1),
-                    id = cV.getLong(3),
-                    list = list,
-                    _points = points,
-                    last_used = null,
-                    created = cV.getLong(2),
-                    uuid = null, // leave empty
-                    changed = cV.getLong(5)
-                )
-                getVocableMeanings(TBL_WORDS_A, vocable, meaningA)
-                getVocableMeanings(TBL_WORDS_B, vocable, meaningB)
+                val vocable = getEntry(cV.getLong(0))
                 vocable
             } else {
                 Log.w(TAG, "no entries found!")
                 null
+            }
+        }
+    }
+
+    /**
+     * Returns total amount of entries in current training session
+     */
+    fun getSessionTotalEntries(): Long {
+        db.rawQuery("SELECT COUNT(*) FROM $TBL_SESSION", arrayOf()).use { cursor ->
+            return if (cursor.moveToNext()) {
+                cursor.getLong(0)
+            } else {
+                throw Exception("Missing result for count query")
+            }
+        }
+    }
+
+    /**
+     * Returns the amount of entries that haven't been finished
+     */
+    fun getSessionUnfinishedEntries(expected: Int): Long {
+        db.rawQuery("SELECT COUNT(*) FROM $TBL_SESSION e "
+            +"WHERE e.$KEY_POINTS < ?", arrayOf(expected.toString())).use { cursor ->
+            return if(cursor.moveToNext()) {
+                cursor.getLong(0)
+            } else {
+                throw Exception("Missing result for count query")
             }
         }
     }
@@ -876,7 +842,7 @@ class Database {
         try {
             db.rawQuery("SELECT $KEY_MVALUE FROM $TBL_SESSION_META WHERE $KEY_MKEY = ?", arrayOf(key.toString())).use { cursor ->
                 return if (cursor.moveToNext()) {
-                    cursor.getString(1)
+                    cursor.getString(0)
                 } else {
                     Log.d(TAG, "No value for key $key")
                     null
@@ -1027,10 +993,8 @@ class Database {
         private val sqlSessionMeta = ("CREATE TABLE " + TBL_SESSION_META + " ("
                 + KEY_MKEY + " TEXT NOT NULL PRIMARY KEY,"
                 + KEY_MVALUE + " TEXT NOT NULL )") // TODO: replace ?, previously combined primary ?!
-        private val sqlSessionLists = ("CREATE TABLE " + TBL_SESSION_LISTS + " ("
-                + KEY_LIST + " INTEGER PRIMARY KEY REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE )")
-        private val sqlSessionEntries = ("CREATE TABLE " + TBL_SESSION_ENTRIES + " ("
-                + KEY_ENTRY + " INTEGER PRIMARY KEY REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE )")
+        private val sqlSessionHistory = ("CREATE TABLE " + TBL_SESSION_HISTORY + " ("
+                + KEY_DATE + " INTEGER PRIMARY KEY REFERENCES $TBL_ENTRY_STATS($KEY_DATE) ON DELETE CASCADE )")
         private val sqlListsDeleted = ("CREATE TABLE " + TBL_LISTS_DELETED + " ("
                 + KEY_LIST_UUID + " text NOT NULL PRIMARY KEY,"
                 + KEY_CREATED + "INTEGER NOT NULL )")
@@ -1116,8 +1080,7 @@ class Database {
                 sqlWordsBIndex,
                 sqlSession,
                 sqlSessionMeta,
-                sqlSessionLists,
-                sqlSessionEntries,
+                sqlSessionHistory,
                 sqlListsDeleted,
                 sqlListDeletedIndex,
                 sqlEntriesDeleted,
@@ -1160,11 +1123,43 @@ class Database {
             if (oldVersion < 3) {
                 upgrade2to3(db)
             }
+            if (oldVersion < 4) {
+                upgrade3to4(db);
+            }
             val duration = System.currentTimeMillis() - start
             Log.v(TAG, "upgrade end in $duration ms")
         }
 
+        fun upgrade3to4(db: SQLiteDatabase) {
+            db.execSQL(sqlSession)
+            db.execSQL(sqlSessionHistory)
+            // migrate training sessions to per-entry storage instead of lists
+            db.execSQL("INSERT INTO $TBL_SESSION ($KEY_ENTRY,$KEY_POINTS) "
+                    + "SELECT $KEY_ENTRY,0 FROM $TBL_ENTRIES e "
+                    + "JOIN $TBL_SESSION_LISTS sl ON sl.$KEY_LIST = e.$KEY_LIST")
+            // copy points over from old TBL_SESSION_V3
+            val iter = db.query(TBL_SESSION_V3, arrayOf(KEY_ENTRY, KEY_POINTS),null,null,null,null,null)
+            db.compileStatement("UPDATE $TBL_SESSION SET $KEY_POINTS = ? WHERE $KEY_ENTRY = ?").use {
+                while (iter.moveToNext()) {
+                    it.bindLong(1,iter.getLong(1))
+                    it.bindLong(2,iter.getLong(0))
+                    assert(it.executeUpdateDelete() > 0)
+                }
+            }
+            iter.close()
+
+            db.execSQL("DROP TABLE $TBL_SESSION_LISTS")
+            db.execSQL("DROP TABLE $TBL_SESSION_V3")
+        }
+
         fun upgrade2to3(db: SQLiteDatabase) {
+            val sqlSessionLists = ("CREATE TABLE " + TBL_SESSION_LISTS + " ("
+                    + KEY_LIST + " INTEGER PRIMARY KEY REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE )")
+            val sqlSession2 = ("CREATE TABLE " + TBL_SESSION_V3 + " ("
+                    + KEY_ENTRY + " INTEGER PRIMARY KEY REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE,"
+                    + KEY_POINTS + " INTEGER NOT NULL )")
+            val sqlSessionEntries = ("CREATE TABLE " + TBL_SESSION_ENTRIES + " ("
+                    + KEY_ENTRY + " INTEGER PRIMARY KEY REFERENCES $TBL_ENTRIES($KEY_ENTRY) ON DELETE CASCADE )")
             val newTables = arrayOf(
                 sqlLists,
                 //sqlListsIndex, postpone to later
@@ -1175,7 +1170,7 @@ class Database {
                 sqlWordsAIndex,
                 sqlWordsB,
                 sqlWordsBIndex,
-                sqlSession,
+                sqlSession2,
                 sqlSessionLists,
                 sqlSessionEntries,
                 sqlListsDeleted,
@@ -1233,6 +1228,7 @@ class Database {
                     assert(it.executeUpdateDelete() > 0)
                 }
             }
+            iter.close()
 
             run {
                 // transfer entries using legacy ID mapping
@@ -1269,7 +1265,7 @@ class Database {
                 db.execSQL(sqlMB)
             }
             // transfer session entry points
-            db.execSQL("INSERT INTO $TBL_SESSION ($KEY_ENTRY,$KEY_POINTS) SELECT entries.$KEY_ENTRY,$KEY_POINTS FROM $TBL_SESSION_V2 oldSes JOIN $TBL_ENTRIES entries ON entries.$KEY_TABLE = oldSes.$KEY_TABLE AND entries.$KEY_VOC = oldSes.$KEY_VOC")
+            db.execSQL("INSERT INTO $TBL_SESSION_V3 ($KEY_ENTRY,$KEY_POINTS) SELECT entries.$KEY_ENTRY,$KEY_POINTS FROM $TBL_SESSION_V2 oldSes JOIN $TBL_ENTRIES entries ON entries.$KEY_TABLE = oldSes.$KEY_TABLE AND entries.$KEY_VOC = oldSes.$KEY_VOC")
             // transfer session tables used
             db.execSQL("INSERT INTO $TBL_SESSION_LISTS ($KEY_LIST) SELECT lists.$KEY_LIST FROM $TBL_SESSION_TABLES oldSes JOIN $TBL_LISTS lists ON lists.$KEY_TABLE = oldSes.$KEY_TABLE")
             // transfer single session entries used (shouldn't be in use at this point)
@@ -1382,12 +1378,11 @@ class Database {
         private const val TBL_LISTS = "`lists`"
         private const val TBL_LIST_SYNC = "`list_sync`"
         private const val TBL_ENTRIES = "`entries`"
-        private const val TBL_SESSION = "`session2`"
+        private const val TBL_SESSION = "`session4`"
         private const val TBL_SESSION_META = "`session_meta`"
-        private const val TBL_SESSION_LISTS = "`session_lists`"
         private const val TBL_WORDS_A = "`words_a`"
         private const val TBL_WORDS_B = "`words_b`"
-        private const val TBL_SESSION_ENTRIES = "`session_entries`"
+        private const val TBL_SESSION_HISTORY = "`session_stats_history`"
         private const val TBL_LISTS_DELETED = "`lists_deleted`"
         private const val TBL_ENTRIES_DELETED = "`entries_deleted`"
         private const val TBL_ENTRY_STATS = "`entry_stats`"
@@ -1428,7 +1423,7 @@ class Database {
 
         private var dbIntern: SQLiteDatabase? = null // DB to internal file, 99% of the time used
 
-        private const val DATABASE_VERSION = 3
+        private const val DATABASE_VERSION = 4
 
         @Deprecated("Deprecated DB version")
         private val TBL_VOCABLE_V1 = "`vocables`"
@@ -1464,5 +1459,11 @@ class Database {
         private val KEY_TABLE = "`table`"
         @Deprecated("Deprecated DB version")
         private val KEY_VOC = "`voc`"
+        @Deprecated("Deprecated DB version")
+        private val TBL_SESSION_LISTS = "`session_lists`"
+        @Deprecated("Deprecated DB version")
+        private val TBL_SESSION_V3 = "`session2`"
+        @Deprecated("Deprecated DB version")
+        private val TBL_SESSION_ENTRIES = "`session_entries`"
     }
 }

@@ -100,7 +100,6 @@ public class MainActivity extends AppCompatActivity {
      */
     public void continueSession(View view) {
         Intent myIntent = new Intent(this, TrainerActivity.class);
-        myIntent.putExtra(TrainerActivity.PARAM_RESUME_SESSION_FLAG, true);
         this.startActivity(myIntent);
     }
 

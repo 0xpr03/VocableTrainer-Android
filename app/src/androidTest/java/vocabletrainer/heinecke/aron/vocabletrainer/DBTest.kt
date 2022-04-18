@@ -9,6 +9,7 @@ import org.junit.*
 import org.junit.runner.RunWith
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.*
+import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer.SessionStorageManager
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer.Trainer
 import java.sql.Date
 import java.util.*
@@ -262,16 +263,40 @@ class DBTest {
         db.upsertVList(tbl)
         val entries: List<VEntry> = generateEntries(tbl)
         db.upsertEntries(entries)
-        Assert.assertNotNull(db.getRandomTrainerEntry(tbl, null, TrainerSettings(2, Trainer.TEST_MODE.RANDOM, true, true, true, false), true))
+        Assert.assertNotNull(db.getRandomTrainerEntry( null, TrainerSettings(2, Trainer.TEST_MODE.RANDOM, true, true, true, false), true))
+    }
+
+    /**
+     * Test session start
+     */
+    @Test
+    fun testDbSessionStart() {
+        val db = Database(context)
+        val tbl: VList = genList()
+        db.upsertVList(tbl)
+        var entries: List<VEntry> = generateEntries(tbl)
+        entries = entries.subList(0, 2)
+        Assert.assertEquals(2, entries.size.toLong())
+        db.upsertEntries(entries)
+
+        db.deleteSession()
+        Assert.assertFalse(db.isSessionStored)
+        db.createSession(listOf(tbl))
+        Assert.assertTrue(db.isSessionStored)
+        Assert.assertEquals(db.getSessionUnfinishedEntries(1),entries.size.toLong())
+        Assert.assertEquals(db.getSessionTotalEntries(),entries.size.toLong())
     }
 
     @Test
     fun testDBEntryPointsInsert() {
         val db = Database(context)
+        db.deleteSession()
         val tbl: VList = genList()
         db.upsertVList(tbl)
         val entries: List<VEntry> = generateEntries(tbl)
         db.upsertEntries(entries)
+
+        db.createSession(listOf(tbl))
         val ent: VEntry = entries[0]
         ent.points = 2
         Assert.assertEquals(2, ent.points!!.toLong())
@@ -297,22 +322,27 @@ class DBTest {
         entries = entries.subList(0, 2)
         Assert.assertEquals(2, entries.size.toLong())
         db.upsertEntries(entries)
+        // clear previous
+        db.deleteSession()
         val settings = TrainerSettings(points, Trainer.TEST_MODE.RANDOM, true, true, true, false)
-        val chosen: VEntry? = db.getRandomTrainerEntry(tbl, null, settings, false)
+        // init session with db.createSession underneath
+        SessionStorageManager.CreateSession(db,settings, arrayListOf(tbl))
+
+        val chosen: VEntry? = db.getRandomTrainerEntry(null, settings, false)
         Assert.assertNotNull(chosen)
-        val secondChosen: VEntry? = db.getRandomTrainerEntry(tbl, chosen, settings, false)
+        val secondChosen: VEntry? = db.getRandomTrainerEntry(chosen, settings, false)
         Assert.assertNotNull(secondChosen)
         Assert.assertNotEquals("selected same entry twice", chosen!!.id.toLong(), secondChosen!!.id.toLong())
         chosen.points = points
         Assert.assertEquals(points.toLong(), chosen.points!!.toLong())
         db.updateEntryProgress(chosen)
         Assert.assertEquals("table points", chosen.points!!.toLong(), db.getEntryPoints(chosen).toLong())
-        val thirdChosen: VEntry? = db.getRandomTrainerEntry(tbl, null, settings, false)
+        val thirdChosen: VEntry? = db.getRandomTrainerEntry(null, settings, false)
         Assert.assertNotNull(thirdChosen)
         Assert.assertNotEquals("selected entry with reached points", chosen.id.toLong(), thirdChosen!!.id.toLong())
         thirdChosen.points = points
         db.updateEntryProgress(thirdChosen)
-        val fourthChosen: VEntry? = db.getRandomTrainerEntry(tbl, null, settings, false)
+        val fourthChosen: VEntry? = db.getRandomTrainerEntry(null, settings, false)
         Assert.assertNull(fourthChosen)
     }
 

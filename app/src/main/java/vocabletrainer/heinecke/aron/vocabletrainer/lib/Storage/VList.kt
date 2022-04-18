@@ -23,14 +23,6 @@ data class VList(
      * @return
      */
     var totalVocs: Int = -1,
-
-    /**
-     * Returns the amount of unfinished vocables<br></br>
-     * The value can be -1 when not set!
-     *
-     * @return
-     */
-    var unfinishedVocs: Int = -1,
     private var _id: Long,
     var uuid: UUID?,
     var isSelected: Boolean = false,

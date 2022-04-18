@@ -26,19 +26,17 @@ public class Trainer implements Parcelable {
     private final static String TAG = "Trainer";
     private Random rng;
     private AB_MODE order;
-    private List<VList> lists;
-    private List<VList> unsolvedLists;
     private VEntry cVocable = null;
     private int tips;
-    private int total;
-    private int unsolved;
+    private long total;
+    private long unsolved;
     private int failed;
-    private int timesToSolve;
+    private final int timesToSolve;
     private int timesShowedSolution;
     private boolean showedTip;
     private boolean showedSolution;
     private Database db;
-    private TrainerSettings settings;
+    private final TrainerSettings settings;
     private SessionStorageManager ssm;
     private boolean firstTimeVocLoad;
     private String lastAddition;
@@ -46,32 +44,23 @@ public class Trainer implements Parcelable {
     /**
      * Creates a new Trainer
      *
-     * @param lists     Vocable lists to use
      * @param settings   Trainer settings storage
-     * @param newSession whether this is a new or a continued session
      */
-    public Trainer(final ArrayList<VList> lists, final TrainerSettings settings, final Context context, final boolean newSession,
+    public Trainer(final TrainerSettings settings, final Context context,
                    final SessionStorageManager ssm) {
-        if (lists == null || lists.size() == 0 || settings == null)
+        if (settings == null)
             throw new IllegalArgumentException();
         this.settings = settings;
         this.tips = settings.tipsGiven;
         this.failed = settings.timesFailed;
-        this.lists = lists;
         this.lastAddition = "";
         this.timesToSolve = settings.timesToSolve;
-        this.unsolvedLists = new ArrayList<>();
         this.ssm = ssm;
         this.timesShowedSolution = 0;//todo: load from params
         db = new Database(context);
         rng = new Random();
 
-        if (newSession) {
-            wipeSession();
-        }
-
         firstTimeVocLoad = settings.questioning != null; // load voc from settings.questioning
-        getTableData();
         prepareData();
         this.getNext();
     }
@@ -99,31 +88,11 @@ public class Trainer implements Parcelable {
     }
 
     /**
-     * Wipe DB from (previous) session
-     *
-     * @return true on success
-     */
-    private boolean wipeSession() {
-        return db.wipeSessionPoints();
-    }
-
-    /**
      * Calculate totals etc
      */
     private void prepareData() {
-        total = 0;
-        unsolved = 0;
-        for (VList tbl : lists) {
-            total += tbl.getTotalVocs();
-            unsolved += tbl.getUnfinishedVocs();
-        }
-    }
-
-    /**
-     * Retrieve information from DB
-     */
-    private void getTableData() {
-        db.getSessionListData(lists, unsolvedLists, settings);
+        total = db.getSessionTotalEntries();
+        unsolved = db.getSessionUnfinishedEntries(timesToSolve);
     }
 
     /**
@@ -326,18 +295,16 @@ public class Trainer implements Parcelable {
             Log.e(TAG, "Null vocable!");
             return;
         }
+        // track every input, even de-duplication entries displayed
         db.insertEntryStat(System.currentTimeMillis(),this.cVocable,showedTip,correct);
-        if (correct)
-            this.cVocable.setPoints(this.cVocable.getPoints() + 1);
-        if (cVocable.getPoints() >= timesToSolve) {
-            VList tbl = cVocable.getList();
-            tbl.setUnfinishedVocs(tbl.getUnfinishedVocs() - 1);
-            if (tbl.getUnfinishedVocs() <= 0) {
-                unsolvedLists.remove(tbl);
-
-                if (unsolvedLists.size() == 0) {
-                    db.deleteSession();
-                    Log.d(TAG, "finished");
+        // ignore de-duplication entries, which are already finished
+        if (cVocable.getPoints() < timesToSolve) {
+            if (correct) {
+                this.cVocable.setPoints(this.cVocable.getPoints() + 1);
+                db.updateEntryProgress(cVocable); // this is only required if correct for now
+                if (cVocable.getPoints() >= timesToSolve) {
+                    Log.d(TAG, "finished training entry");
+                    this.unsolved = db.getSessionUnfinishedEntries(timesToSolve);
                 }
             }
         }
@@ -365,15 +332,7 @@ public class Trainer implements Parcelable {
      * @return
      */
     public boolean isFinished() {
-        return unsolvedLists.size() == 0;
-    }
-
-    /**
-     * Update cVocable points
-     *
-     */
-    private void updateVocable() {
-        db.updateEntryProgress(cVocable);
+        return db.getSessionUnfinishedEntries(settings.timesToSolve) == 0;
     }
 
     /**
@@ -381,38 +340,21 @@ public class Trainer implements Parcelable {
      */
     private void getNext() {
         if (cVocable != null) {
-            updateVocable();
             lastAddition = cVocable.getAddition();
         }
         showedSolution = false;
         showedTip = false;
-        if (unsolvedLists.size() == 0) {
-            Log.d(TAG, "no unsolved lists remaining!");
+        Log.d(TAG,"unsolved:"+unsolved);
+        if (unsolved == 0) {
+            Log.d(TAG, "No unsolved entries remaining");
         } else {
-            int selected = rng.nextInt(unsolvedLists.size());
-            VList tbl = unsolvedLists.get(selected);
-            Log.d(TAG,"Tbl: "+tbl);
-            boolean allowRepetition = false;
-            if (cVocable != null) {
-                if (allowRepetition = unsolvedLists.size() == 1 && unsolvedLists.get(0).getUnfinishedVocs() == 1) {
-                    Log.d(TAG, "one left");
-                } else if (tbl.getUnfinishedVocs() == 1 && tbl.getId() == cVocable.getList().getId()) {
-                    // selected table has only one entry left
-                    // prevent repeating last vocable of table
-                    if (selected + 1 >= unsolvedLists.size())
-                        selected--;
-                    else
-                        selected++;
-                    Log.d(TAG, "selectionID:" + selected + " max(-1):" + unsolvedLists.size());
-                    tbl = unsolvedLists.get(selected);
-                }
-            }
-
+            boolean allowRepetition = unsolved == 1;
+            Log.d(TAG,"allowRepetition:"+allowRepetition);
             if(firstTimeVocLoad){
                 firstTimeVocLoad = false;
                 cVocable = settings.questioning;
             }else {
-                cVocable = db.getRandomTrainerEntry(tbl, cVocable, settings, allowRepetition);
+                cVocable = db.getRandomTrainerEntry(cVocable, settings, allowRepetition);
             }
             if (cVocable == null) {
                 Log.wtf(TAG, "New vocable is null!");
@@ -493,14 +435,14 @@ public class Trainer implements Parcelable {
     /**
      * @return remaining vocables
      */
-    public int remaining() {
+    public long remaining() {
         return unsolved;
     }
 
     /**
      * @return solved vocables
      */
-    public int solved() {
+    public long solved() {
         return total - unsolved;
     }
 
@@ -515,13 +457,9 @@ public class Trainer implements Parcelable {
      */
     protected Trainer(Parcel in) {
         order = in.readInt() == 1 ? AB_MODE.A : AB_MODE.B;
-        lists = in.createTypedArrayList(VList.CREATOR);
-        unsolvedLists = in.createTypedArrayList(VList.CREATOR);
         cVocable = in.readParcelable(VEntry.class.getClassLoader());
         tips = in.readInt();
         total = in.readInt();
-        unsolved = in.readInt();
-        failed = in.readInt();
         timesToSolve = in.readInt();
         timesShowedSolution = in.readInt();
         showedSolution = readParcableBool(in);
@@ -538,12 +476,8 @@ public class Trainer implements Parcelable {
     @Override
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeInt(order == AB_MODE.A ? 1 : 0);
-        parcel.writeTypedList(lists);
-        parcel.writeTypedList(unsolvedLists);
         parcel.writeParcelable(cVocable,0);
         parcel.writeInt(tips);
-        parcel.writeInt(total);
-        parcel.writeInt(unsolved);
         parcel.writeInt(failed);
         parcel.writeInt(timesToSolve);
         parcel.writeInt(timesShowedSolution);

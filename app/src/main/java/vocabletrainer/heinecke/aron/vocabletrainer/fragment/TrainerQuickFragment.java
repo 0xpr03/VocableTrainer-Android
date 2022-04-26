@@ -23,10 +23,8 @@ public class TrainerQuickFragment extends TrainerModeFragment {
     private Button bWrong;
     private TextView tSolution;
     private TextView tColumnAnswer;
-    private int guiState = guiStateInit;
     private static final int guiStateSolution = 1;
     private static final int guiStateQuestion = 0;
-    private static final int guiStateInit = -1;
 
     @Nullable
     @Override
@@ -78,7 +76,6 @@ public class TrainerQuickFragment extends TrainerModeFragment {
         bCorrect.setVisibility(showSolution ? View.VISIBLE : View.GONE);
         bWrong.setVisibility(showSolution ? View.VISIBLE : View.GONE);
         bRevolse.setVisibility(showSolution ? View.GONE : View.VISIBLE);
-        guiState = newGuiState;
     }
 
     @Override

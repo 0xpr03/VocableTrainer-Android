@@ -2,6 +2,7 @@ package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -11,6 +12,7 @@ import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -57,6 +59,7 @@ public class TrainerActivity extends FragmentActivity implements TrainerModeFrag
     private int trainingMode = -1;
     private TrainerModeFragment[] modeStorage = new TrainerModeFragment[3];
     private ItemPickerDialog modeDialog;
+    private ProgressBar tTrainerProgressBar;
 
     private static final int modeClassicID = 0;
     private static final int modeQuickID = 1;
@@ -85,6 +88,7 @@ public class TrainerActivity extends FragmentActivity implements TrainerModeFrag
 
         tExercise = findViewById(R.id.tTrainerExercise);
         tColumnQuestion = findViewById(R.id.tTrainerExColumn);
+        tTrainerProgressBar = findViewById(R.id.tTrainerProgressBar);
 
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         trainingMode = -1;
@@ -101,6 +105,12 @@ public class TrainerActivity extends FragmentActivity implements TrainerModeFrag
     public void updateQuestion(){
         tExercise.setText(trainer.getQuestion());
         tColumnQuestion.setText(trainer.getColumnNameExercise());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            tTrainerProgressBar.setProgress((int) trainer.solved(),true);
+        } else {
+            tTrainerProgressBar.setProgress((int) trainer.solved());
+        }
     }
 
     /**
@@ -185,6 +195,7 @@ public class TrainerActivity extends FragmentActivity implements TrainerModeFrag
             int fragmentNr = savedInstanceState.getInt(KEY_FRAGMENT_NR);
             modeStorage[fragmentNr] = (TrainerModeFragment) getSupportFragmentManager().getFragment(savedInstanceState,KEY_FRAGMENT);
         }
+        tTrainerProgressBar.setMax((int) trainer.total());
     }
 
     @Override

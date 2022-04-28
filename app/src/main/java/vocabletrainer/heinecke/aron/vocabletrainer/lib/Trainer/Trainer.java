@@ -440,6 +440,11 @@ public class Trainer implements Parcelable {
     }
 
     /**
+     * @return total vocables, including finished
+     */
+    public long total(){ return total; }
+
+    /**
      * @return solved vocables
      */
     public long solved() {

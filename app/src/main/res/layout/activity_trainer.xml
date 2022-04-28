@@ -18,6 +18,12 @@
             android:background="@color/toolbarBackground"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
+        <ProgressBar
+            android:id="@+id/tTrainerProgressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:id="@+id/cTrainer"

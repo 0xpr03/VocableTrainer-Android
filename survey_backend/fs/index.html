@@ -17,17 +17,19 @@
     <script>
         (function () {
 
-            function json(response) {
+            function json (response) {
                 return response.json();
             }
 
-            function handleErrors(response) {
+            function handleErrors (response) {
                 if (!response.ok) {
                     throw new Error("Request failed " + response.statusText);
                 }
                 return response;
             }
-            fetch("data/get/api", {
+            var i = new Date(new Date().setFullYear(new Date().getFullYear() - 1));
+            var formatedDate = i.getFullYear() + "-" + String(i.getMonth()).padStart(2, '0') + "-" + String(i.getDay()).padStart(2, '0');
+            fetch("data/get/api?from=" + formatedDate, {
                 method: "GET"
             }).then(handleErrors).then(json).then(function (data) {
                 console.log(JSON.stringify(data));

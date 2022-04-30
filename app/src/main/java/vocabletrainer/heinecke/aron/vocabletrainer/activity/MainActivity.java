@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
             if (savedInstanceState != null) {
                 surveyDialog = (SurveyDialog) getSupportFragmentManager().getFragment(savedInstanceState, SurveyDialog.TAG);
             }
-            if (surveyDialog == null && !SurveyDialog.wasSurveyDisplayed(this)) {
+            if (surveyDialog == null && SurveyDialog.shouldDisplaySurvey(this)) {
                 surveyDialog = SurveyDialog.newInstance();
                 surveyDialog.show(getSupportFragmentManager(), SurveyDialog.TAG);
             }

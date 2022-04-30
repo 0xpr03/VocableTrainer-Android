@@ -32,6 +32,7 @@ import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.
 public class SurveyDialog extends DialogFragment {
     public static final String TAG = "SurveyDialog";
     private static final String P_KEY_SURVEY_DIALOG_API= "showedAPISurveyDialog";
+    private static final String P_KEY_SURVEY_DIALOG_API_COUNTER= "APISurveyCounter";
     private ProgressBar progressBar;
     private Button btnCancel;
     private Button btnAccept;
@@ -79,9 +80,17 @@ public class SurveyDialog extends DialogFragment {
         this.setCancelable(false);
     }
 
-    public static boolean wasSurveyDisplayed(Context context) {
+    public static boolean shouldDisplaySurvey(Context context) {
         SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
-        return settings.getBoolean(P_KEY_SURVEY_DIALOG_API,false);
+        if (settings.getBoolean(P_KEY_SURVEY_DIALOG_API,false)) {
+            return false;
+        }
+        // wait 10 times till displaying the dialog
+        int count = settings.getInt(P_KEY_SURVEY_DIALOG_API_COUNTER,10);
+        if(count > 0) {
+            settings.edit().putInt(P_KEY_SURVEY_DIALOG_API_COUNTER,count -1).apply();
+        }
+        return count == 0;
     }
 
     /**

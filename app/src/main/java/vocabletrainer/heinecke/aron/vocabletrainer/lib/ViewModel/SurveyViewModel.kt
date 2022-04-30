@@ -38,7 +38,7 @@ class SurveyViewModel : ViewModel() {
         } else {
             // allow tls 1.0
             // can't be tested fully due to different device libraries
-            "https://vct.proctet.net/data/add/api"
+            "https://stats.vocabletrainer.de/data/add/api"
         }
         runner = Thread {
             val jsonBody: JSONObject

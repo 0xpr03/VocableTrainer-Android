@@ -1,0 +1,3 @@
+ - Fix crash when finishing a resumed training session
+ - Add progress indicator for training sessions
+ - Rework a bunch of training history related things internally

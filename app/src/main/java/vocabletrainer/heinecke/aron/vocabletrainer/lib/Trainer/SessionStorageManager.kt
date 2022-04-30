@@ -17,6 +17,14 @@ class SessionStorageManager
  *
  * @param db Database to use
  */(private val db: Database) {
+
+    /**
+     * Delete session when finished, retains history
+     */
+    fun finishSession() {
+        db.deleteSession(false)
+    }
+
     /**
      * Save session settings
      *

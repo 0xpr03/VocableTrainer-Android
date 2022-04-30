@@ -157,6 +157,7 @@ public class TrainerActivity extends FragmentActivity implements TrainerModeFrag
     public void showResultDialog(){
         if(trainer.isFinished()){
             Callable<?> callable = () -> {
+                ssm.finishSession();
                 Intent myIntent = new Intent(TrainerActivity.this, MainActivity.class);
                 myIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(myIntent);

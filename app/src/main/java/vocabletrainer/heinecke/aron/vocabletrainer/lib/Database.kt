@@ -666,14 +666,16 @@ class Database {
     /**
      * Deletes the current session
      *
+     * @param eraseHistory whether to retrain the last session history or not
      * @return
      */
-    fun deleteSession() {
+    fun deleteSession(eraseHistory: Boolean = true) {
         db.beginTransaction()
         try {
             db.delete(TBL_SESSION, null, null)
             db.delete(TBL_SESSION_META, null, null)
-            db.delete(TBL_SESSION_HISTORY, null, null)
+            if (eraseHistory)
+                db.delete(TBL_SESSION_HISTORY, null, null)
             db.setTransactionSuccessful()
         } finally {
             if (db.inTransaction()) db.endTransaction()

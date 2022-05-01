@@ -6,7 +6,6 @@ import androidx.annotation.NonNull;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 import androidx.preference.DialogPreference;
@@ -22,7 +21,7 @@ import android.widget.Button;
 import android.widget.Spinner;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.GenericSpinnerEntry;
+import vocabletrainer.heinecke.aron.vocabletrainer.eximport.GenericSpinnerEntry;
 
 /**
  * Character Preference Dialog

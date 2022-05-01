@@ -5,8 +5,8 @@ import androidx.annotation.NonNull;
 import java.util.Arrays;
 import java.util.List;
 
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.CSVCustomFormat;
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.CSV.MultiMeaningHandler;
+import vocabletrainer.heinecke.aron.vocabletrainer.eximport.CSV.CSVCustomFormat;
+import vocabletrainer.heinecke.aron.vocabletrainer.eximport.CSV.MultiMeaningHandler;
 
 import static org.junit.Assert.*;
 

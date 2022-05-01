@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:fillViewport="true"
     android:layout_height="match_parent"
-    tools:context="vocabletrainer.heinecke.aron.vocabletrainer.fragment.TrainerSettingsFragment">
+    tools:context="vocabletrainer.heinecke.aron.vocabletrainer.trainer.TrainerSettingsFragment">
 
     <LinearLayout
 

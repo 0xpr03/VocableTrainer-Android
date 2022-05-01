@@ -1,7 +1,5 @@
 package vocabletrainer.heinecke.aron.vocabletrainer.activity;
 
-import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -10,12 +8,15 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
-import vocabletrainer.heinecke.aron.vocabletrainer.dialog.SurveyDialog;
+import vocabletrainer.heinecke.aron.vocabletrainer.editor.ListActivity;
+import vocabletrainer.heinecke.aron.vocabletrainer.survey.SurveyDialog;
+import vocabletrainer.heinecke.aron.vocabletrainer.eximport.ExImportActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Widget.VectorImageHelper;
+import vocabletrainer.heinecke.aron.vocabletrainer.trainer.TrainerActivity;
+import vocabletrainer.heinecke.aron.vocabletrainer.trainer.TrainerSettingsActivity;
 
 /**
  * Main activity

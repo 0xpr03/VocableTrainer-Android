@@ -9,8 +9,9 @@ import org.junit.*
 import org.junit.runner.RunWith
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.*
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer.SessionStorageManager
-import vocabletrainer.heinecke.aron.vocabletrainer.lib.Trainer.Trainer
+import vocabletrainer.heinecke.aron.vocabletrainer.trainer.SessionStorageManager
+import vocabletrainer.heinecke.aron.vocabletrainer.trainer.Trainer
+import vocabletrainer.heinecke.aron.vocabletrainer.trainer.TrainerSettings
 import java.sql.Date
 import java.util.*
 import java.util.concurrent.locks.Lock
@@ -263,7 +264,15 @@ class DBTest {
         db.upsertVList(tbl)
         val entries: List<VEntry> = generateEntries(tbl)
         db.upsertEntries(entries)
-        Assert.assertNotNull(db.getRandomTrainerEntry( null, TrainerSettings(2, Trainer.TEST_MODE.RANDOM, true, true, true, false), true))
+        Assert.assertNotNull(db.getRandomTrainerEntry( null,
+            TrainerSettings(
+                2,
+                Trainer.TEST_MODE.RANDOM,
+                true,
+                true,
+                true,
+                false
+            ), true))
     }
 
     /**
@@ -324,7 +333,15 @@ class DBTest {
         db.upsertEntries(entries)
         // clear previous
         db.deleteSession()
-        val settings = TrainerSettings(points, Trainer.TEST_MODE.RANDOM, true, true, true, false)
+        val settings =
+            TrainerSettings(
+                points,
+                Trainer.TEST_MODE.RANDOM,
+                true,
+                true,
+                true,
+                false
+            )
         // init session with db.createSession underneath
         SessionStorageManager.CreateSession(db,settings, arrayListOf(tbl))
 

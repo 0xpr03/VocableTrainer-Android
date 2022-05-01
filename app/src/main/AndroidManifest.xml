@@ -14,11 +14,11 @@
         android:fullBackupContent="true"
         android:allowBackup="true">
         <activity
-            android:name=".activity.TrainerActivity"
+            android:name=".trainer.TrainerActivity"
             android:parentActivityName=".activity.MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.EditorActivity"
+            android:name=".editor.EditorActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:exported="true" android:name=".activity.MainActivity">
             <intent-filter>
@@ -28,10 +28,10 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.ListActivity"
+            android:name=".editor.ListActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.TrainerSettingsActivity"
+            android:name=".trainer.TrainerSettingsActivity"
             android:parentActivityName=".activity.MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
@@ -40,7 +40,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".activity.PermActivity" />
         <activity
-            android:name=".activity.ExImportActivity"
+            android:name=".eximport.ExImportActivity"
             android:label="@string/title_activity_format"
             android:theme="@style/AppTheme.NoActionBar" />
     </application>

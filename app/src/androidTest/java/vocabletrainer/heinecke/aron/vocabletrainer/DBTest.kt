@@ -229,8 +229,13 @@ class DBTest {
 
     @Test
     fun testEntryDelete() {
+        _testEntryDelete(true)
+        _testEntryDelete(false)
+    }
+
+    fun _testEntryDelete(uuid: Boolean) {
         val db = Database(context)
-        val list: VList = genList(false)
+        val list: VList = genList(uuid)
         db.upsertVList(list)
         val entries = generateEntries(list).toMutableList()
         db.upsertEntries(entries)

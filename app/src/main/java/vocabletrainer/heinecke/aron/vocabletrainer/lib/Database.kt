@@ -6,15 +6,21 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.database.sqlite.SQLiteStatement
+import android.os.Build
 import android.util.Log
 import androidx.collection.LongSparseArray
+import androidx.core.database.getIntOrNull
 import androidx.core.database.getStringOrNull
 import androidx.lifecycle.LiveData
+import com.github.mikephil.charting.data.BarEntry
 import java.sql.Date
 import java.sql.SQLException
 import java.util.*
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.*
 import vocabletrainer.heinecke.aron.vocabletrainer.trainer.TrainerSettings
+import java.util.concurrent.ThreadLocalRandom
+import kotlin.collections.ArrayList
+import kotlin.streams.toList
 
 
 /**
@@ -35,6 +41,72 @@ class Database {
             dbIntern = helper!!.writableDatabase
         }
         db = dbIntern!!
+    }
+
+    /**
+     * Get history statistics for the history fragment
+     */
+    fun getHistoryStats(): ArrayList<BarEntry> {
+        val list = ArrayList<BarEntry>()
+        var i = 0
+        /**
+         *  2022-04-20 0 2
+         *  2022-04-20 1 1
+         */
+        db.rawQuery("WITH t as (SELECT $KEY_DATE,date($KEY_DATE/ 1000,'unixepoch') as d,$KEY_IS_CORRECT, COUNT(*) as c " +
+                "                FROM $TBL_ENTRY_STATS " +
+                "                GROUP BY d, $KEY_IS_CORRECT " +
+                "                ORDER BY $KEY_DATE,$KEY_IS_CORRECT ASC) " +
+                "SELECT t1.$KEY_DATE as d1, t1.c as c1,t2.c FROM t t1 " +
+                "LEFT JOIN t t2 ON t1.d = t2.d AND t2.$KEY_IS_CORRECT = 1 "+
+                "WHERE t1.$KEY_IS_CORRECT = 0 "+
+                "UNION " // now get the correct ones without incorrect
+                +"SELECT t1.$KEY_DATE as d1, 0, t1.c FROM t t1 "
+                +"WHERE t1.$KEY_IS_CORRECT = 1 AND t1.d NOT IN (SELECT d FROM t WHERE $KEY_IS_CORRECT = 0)"
+                +"ORDER BY d1 ASC", arrayOf()).use { cV ->
+            while(cV.moveToNext()) {
+                val date = cV.getLong(0)
+                val cntCorrect: Int = cV.getIntOrNull(2) ?: 0
+                val cntWrong = cV.getLong(1)
+
+                list.add(BarEntry(i.toFloat(), floatArrayOf(cntCorrect.toFloat(),cntWrong.toFloat())))
+                i += 1
+                Log.d(TAG, "$date $cntCorrect $cntWrong")
+            }
+        }
+        return list
+    }
+
+    fun insertFakeHistory(amount: Long, min: Long) {
+        val rand = Random()
+        val times = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            rand.longs(min,System.currentTimeMillis()).limit(amount).toList()
+        } else {
+            var times = mutableListOf<Long>()
+            for(t in 0..amount) {
+                times.add(ThreadLocalRandom.current().nextLong(min, System.currentTimeMillis()))
+            }
+            times
+        }
+        Log.d(TAG,"limit: ${times.size}")
+        var i = 0
+        db.rawQuery("SELECT $KEY_ENTRY FROM $TBL_ENTRIES ORDER BY RANDOM() LIMIT ?", arrayOf(amount.toString())).use { cV ->
+            while(cV.moveToNext()) {
+                ContentValues().apply {
+                    put(KEY_ENTRY, cV.getInt(0))
+                    put(KEY_DATE, times[i])
+                    put(KEY_IS_CORRECT, rand.nextBoolean())
+                    put(KEY_TIP_NEEDED, rand.nextBoolean())
+                    Log.d(TAG,"data $this")
+                    db.insert(TBL_ENTRY_STATS, null, this)
+                    i += 1
+                }
+            }
+        }
+    }
+
+    fun randTimestamp(min: Long): Long {
+        return (min + (Math.random() * ((System.currentTimeMillis() - min) + 1))).toLong();
     }
 
     /**

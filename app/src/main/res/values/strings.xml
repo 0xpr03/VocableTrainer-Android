@@ -15,6 +15,7 @@
     <string name="Main_btn_Resume_Session">Resume Session</string>
     <string name="Main_btn_Import">Import</string>
     <string name="Main_btn_Export">Export</string>
+    <string name="Main_btn_Statistics">Training Stats</string>
     <string name="Trainer_Menu_Mode">Mode</string>
     <string name="Trainer_Mode_Classic">Classic Mode</string>
     <string name="Trainer_Mode_Classic_MM">Classic Multimeaning Mode</string>
@@ -123,7 +124,7 @@
     <string name="Format_Diag_error_Title">Invalid Input</string>
 
     <string name="Survey_Diag_Title">Android Version Survey</string>
-    <string name="Survey_Diag_Msg" ><html>I\'d like to do a survey about the Android versions on which VAT is running.\nIf you take part the following Information will be send to <a href="https://stats.vocabletrainer.de">https://stats.vocabletrainer.de</a> and stored:\n<ul><li>Your Android version</li></ul>\nNothing else will be send, no IP is stored.\nYou can also see the results at above URL.</html></string>
+    <string name="Survey_Diag_Msg"><html>I\'d like to do a survey about the Android versions on which VAT is running.\nIf you take part the following Information will be send to <a href="https://stats.vocabletrainer.de">https://stats.vocabletrainer.de</a> and stored:\n<ul><li>Your Android version</li></ul>\nNothing else will be send, no IP is stored.\nYou can also see the results at above URL.</html></string>
     <string name="Survey_Diag_Accept">Accept Survey</string>
     <string name="Survey_Diag_Decline">Decline</string>
     <string name="Survey_Diag_Error_Toast">Error during survey submit!</string>
@@ -228,4 +229,6 @@
     <string name="crash_dialog_positive">Send crash report</string>
     <string name="crash_dialog_title">Crash Report</string>
     <string name="crash_dialog_text">The app crashed, please send a crash report if possible.</string>
+    <string name="Stats_Tab_History">History</string>
+    <string name="Stats_Title">Training Statistics</string>
 </resources>

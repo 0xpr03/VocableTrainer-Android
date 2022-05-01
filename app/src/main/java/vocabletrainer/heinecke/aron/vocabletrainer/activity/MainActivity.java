@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import vocabletrainer.heinecke.aron.vocabletrainer.R;
 import vocabletrainer.heinecke.aron.vocabletrainer.editor.ListActivity;
+import vocabletrainer.heinecke.aron.vocabletrainer.stats.StatsActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.survey.SurveyDialog;
 import vocabletrainer.heinecke.aron.vocabletrainer.eximport.ExImportActivity;
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Database;
@@ -69,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
         helper.initImageLeft(R.id.bAbout, R.drawable.ic_info_outline_white_24dp);
         helper.initImageLeft(R.id.bExport, R.drawable.ic_file_upload_white_24dp);
         helper.initImageLeft(R.id.bImport, R.drawable.ic_file_download_white_24dp);
+        helper.initImageLeft(R.id.bStatistics, R.drawable.ic_baseline_pie_chart_24);
     }
 
     @Override
@@ -101,6 +103,15 @@ public class MainActivity extends AppCompatActivity {
      */
     public void continueSession(View view) {
         Intent myIntent = new Intent(this, TrainerActivity.class);
+        this.startActivity(myIntent);
+    }
+
+    /**
+     * Open statistics view
+     * @param view
+     */
+    public void showStatistics(View view) {
+        Intent myIntent = new Intent(this, StatsActivity.class);
         this.startActivity(myIntent);
     }
 

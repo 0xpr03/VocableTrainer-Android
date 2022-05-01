@@ -37,6 +37,9 @@ android {
         abortOnError false
         disable 'MissingTranslation'
     }
+    buildFeatures {
+        //viewBinding true
+    }
     namespace 'vocabletrainer.heinecke.aron.vocabletrainer'
 }
 
@@ -51,11 +54,15 @@ dependencies {
     implementation "androidx.legacy:legacy-preference-v14:1.0.0"
     implementation 'androidx.constraintlayout:constraintlayout:2.1.2'
     implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.4.1'
     testImplementation 'junit:junit:4.13.2'
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    
+    // stats graph
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
 
     androidTestImplementation 'androidx.test.ext:junit-ktx:1.1.3'
     androidTestImplementation 'androidx.test:core:1.4.0'
@@ -70,4 +77,5 @@ dependencies {
 }
 repositories {
     mavenCentral()
+    maven { url 'https://jitpack.io' }
 }

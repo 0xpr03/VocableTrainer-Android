@@ -46,6 +46,21 @@
         <!--android:drawableStart="@drawable/ic_play_arrow_white_24dp"-->
 
         <Button
+            android:id="@+id/bStatistics"
+            style="@style/NormalButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginRight="8dp"
+            android:onClick="showStatistics"
+            android:text="@string/Main_btn_Statistics"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/bLastSession" />
+
+        <Button
             android:id="@+id/bTrainerEnter"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -58,7 +73,7 @@
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/bLastSession" />
+            app:layout_constraintTop_toBottomOf="@+id/bStatistics" />
         <!--android:drawableStart="@drawable/ic_send_white_24dp"-->
 
 

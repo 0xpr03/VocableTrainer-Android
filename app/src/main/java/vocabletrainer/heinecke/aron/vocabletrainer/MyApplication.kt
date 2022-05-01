@@ -17,6 +17,7 @@ class MyApplication: Application() {
             //core configuration:
             buildConfigClass = BuildConfig::class.java
             reportFormat = StringFormat.JSON
+            applicationLogFileLines = 500
             //each plugin you chose above can be configured in a block like this:
             dialog {
                 //required

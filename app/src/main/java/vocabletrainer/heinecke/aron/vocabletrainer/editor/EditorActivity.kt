@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
+import org.acra.ACRA
 import vocabletrainer.heinecke.aron.vocabletrainer.R
 import vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity
 import vocabletrainer.heinecke.aron.vocabletrainer.dialog.ItemPickerDialog
@@ -94,6 +95,7 @@ class EditorActivity : AppCompatActivity(), EditorDialogDataProvider, ListEditor
 
         // handle passed params
         var newTable = intent.getBooleanExtra(PARAM_NEW_TABLE, false)
+        ACRA.errorReporter.putCustomData("hasSavedInstanceState","$savedInstanceState");
         if (savedInstanceState != null) {
             newTable = savedInstanceState.getBoolean(PARAM_NEW_TABLE, false)
             listEditorDialog = supportFragmentManager.getFragment(
@@ -101,6 +103,7 @@ class EditorActivity : AppCompatActivity(), EditorDialogDataProvider, ListEditor
                 VListEditorDialog.TAG
             ) as VListEditorDialog?
         }
+        ACRA.errorReporter.putCustomData("newTable","$newTable")
         if (newTable) {
             list = if (savedInstanceState != null) // viewport changed during creation phase
                 savedInstanceState.getParcelable(PARAM_TABLE) else VList.blank(
@@ -112,15 +115,17 @@ class EditorActivity : AppCompatActivity(), EditorDialogDataProvider, ListEditor
             if (savedInstanceState == null) showTableInfoDialog()
         } else {
             val tbl: VList? = intent.getParcelableExtra(PARAM_TABLE)
+            ACRA.errorReporter.putCustomData("intentHasList","$tbl")
             if (tbl != null) {
                 list = tbl
                 // do not call updateColumnNames as we've to wait for onCreateOptionsMenu, calling it
                 entries!!.addAll(db.getEntriesOfList(list!!))
                 adapter!!.updateSorting(cComp)
                 Log.d(TAG, "edit list mode")
-            } else {
-                Log.e(TAG, "Edit VList Flag set without passing a list")
             }
+        }
+        if (list == null) {
+            ACRA.errorReporter.handleException(throw Throwable("List for editor is null"))
         }
         if (listEditorDialog != null) setListEditorActions()
         if (savedInstanceState != null) {

@@ -7,6 +7,8 @@ import android.os.Bundle;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 
+import org.acra.ACRA;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -116,6 +118,7 @@ public class ListActivity extends FragmentActivity implements ListPickerFragment
             ListPickerViewModel listPickerViewModel = ViewModelProviders.of(this).get(ListPickerViewModel.class);
             listPickerViewModel.setDataInvalidated(); // editor changed entry
 
+            ACRA.getErrorReporter().putCustomData("editingList","true");
             Intent myIntent = new Intent(this, EditorActivity.class);
             myIntent.putExtra(EditorActivity.PARAM_NEW_TABLE, false);
             VList lst = selected.get(0);

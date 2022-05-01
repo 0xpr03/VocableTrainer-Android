@@ -39,6 +39,8 @@ import vocabletrainer.heinecke.aron.vocabletrainer.lib.ViewModel.ListPickerViewM
 import static vocabletrainer.heinecke.aron.vocabletrainer.activity.MainActivity.PREFS_NAME;
 import static vocabletrainer.heinecke.aron.vocabletrainer.lib.Database.ID_RESERVED_SKIP;
 
+import org.acra.ACRA;
+
 /**
  * List selector fragment<br>
  *     This can be used externally in other fragments<br>
@@ -239,6 +241,7 @@ public class ListPickerFragment extends PagerFragment implements ListRecyclerAda
         bNewList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                ACRA.getErrorReporter().putCustomData("creatingList","true");
                 Intent myIntent = new Intent(getActivity(), EditorActivity.class);
                 myIntent.putExtra(EditorActivity.PARAM_NEW_TABLE, true);
                 startActivityForResult(myIntent,CODE_NEW_LIST);

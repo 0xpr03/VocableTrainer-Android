@@ -3,7 +3,7 @@ VocableTrainer-Android is a word and vocable training software for the android p
 It provides training with different modes, sessions and multiple word lists.
 
 <a href="https://f-droid.org/repository/browse/?fdid=vocabletrainer.heinecke.aron.vocabletrainer" target="_blank">
-<img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80"/></a>
+<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="80"/></a>
 
 ## Features
 - [X] N:N word support (multiple meanings)

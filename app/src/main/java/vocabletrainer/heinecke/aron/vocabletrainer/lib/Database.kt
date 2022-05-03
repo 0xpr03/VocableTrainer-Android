@@ -25,18 +25,10 @@ class Database {
     private var db: SQLiteDatabase // pointer to DB used in this class
     private var helper: internalDB? = null
     /**
-     * Database object, using internal storage for this App (default DB file)
-     *
-     * @param context
-     * @param dev     set to true for unit tests<br></br>
-     * no data will be saved
-     */
-    /**
      * Database object
      *
      * @param context
      */
-    @JvmOverloads
     constructor(context: Context?) {
         if (dbIntern == null) {
             helper = internalDB(context)
@@ -55,7 +47,6 @@ class Database {
     /**
      * Retrieve vocable by ID
      * @param vocID
-     * @param listID
      * @return VEntry with set List<br></br>
      * Null on failure
      */
@@ -386,7 +377,7 @@ class Database {
      * Update or insert the provided VList data
      *
      * @param list
-     * @return true on succuess
+     * @return true on success
      */
     fun upsertVList(list: VList, useTransaction: Boolean = true) {
         Log.v(TAG, "upsertVList")
@@ -776,7 +767,6 @@ class Database {
      * Returns a random entry from the specified table, which matches the trainer settings<br></br>
      * The VEntry is guaranteed to be not the "lastEntry" provided here
      *
-     * @param list
      * @param ts
      * @param allowRepetition set to true to allow selecting the same vocable as lastEntry again
      * @return null on error
@@ -956,6 +946,7 @@ class Database {
         }
     }
 
+    @Suppress("ClassName")
     internal inner class internalDB(context: Context?) : SQLiteOpenHelper(context, DB_NAME_PRODUCTION, null, Companion.DATABASE_VERSION) {
         private val sqlLists = ("CREATE TABLE " + TBL_LISTS + " ("
                 + KEY_NAME_LIST + " TEXT NOT NULL,"
@@ -1127,12 +1118,13 @@ class Database {
                 upgrade2to3(db)
             }
             if (oldVersion < 4) {
-                upgrade3to4(db);
+                upgrade3to4(db)
             }
             val duration = System.currentTimeMillis() - start
             Log.v(TAG, "upgrade end in $duration ms")
         }
 
+        @Suppress("DEPRECATION")
         fun upgrade3to4(db: SQLiteDatabase) {
             db.execSQL(sqlSession)
             db.execSQL(sqlSessionHistory)
@@ -1155,6 +1147,7 @@ class Database {
             db.execSQL("DROP TABLE $TBL_SESSION_V3")
         }
 
+        @Suppress("DEPRECATION")
         fun upgrade2to3(db: SQLiteDatabase) {
             val sqlSessionLists = ("CREATE TABLE " + TBL_SESSION_LISTS + " ("
                     + KEY_LIST + " INTEGER PRIMARY KEY REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE )")
@@ -1289,6 +1282,7 @@ class Database {
             db.execSQL("DROP TABLE $TBL_SESSION_VOC")
         }
 
+        @Suppress("DEPRECATION")
         fun upgrade1to2(db: SQLiteDatabase) {
             val sqlOld_a = ("CREATE TABLE " + TBL_TABLES_V2 + " ("
                     + KEY_NAME_TBL + " TEXT NOT NULL,"

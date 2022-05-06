@@ -10,8 +10,8 @@ android {
         applicationId "vocabletrainer.heinecke.aron.vocabletrainer"
         minSdkVersion 22
         targetSdkVersion 31
-        versionCode 24
-        versionName "0.8.1"
+        versionCode 25
+        versionName "0.8.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }

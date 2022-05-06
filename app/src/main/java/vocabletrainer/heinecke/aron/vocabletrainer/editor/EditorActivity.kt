@@ -398,6 +398,7 @@ class EditorActivity : AppCompatActivity(), EditorDialogDataProvider, ListEditor
         listEditorDialog!!.setOkAction {
             try {
                 db.upsertVList(list!!)
+                intent.putExtra(PARAM_TABLE, list)
                 title = list!!.name
                 updateColumnNames()
             } catch (e: SQLException) {
@@ -405,6 +406,7 @@ class EditorActivity : AppCompatActivity(), EditorDialogDataProvider, ListEditor
                     this, "Unable to save list!",
                     Toast.LENGTH_LONG
                 ).show()
+                ACRA.errorReporter.handleException(e)
                 finish() // TODO: is this the right place ?
             }
             null

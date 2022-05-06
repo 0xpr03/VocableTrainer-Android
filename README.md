@@ -15,6 +15,9 @@ It provides training with different modes, sessions and multiple word lists.
 - [X] Adjustable amount of word repetition in training
 - [X] Export/Import of lists to/from CSV files with highly configurable CSV format
 
+## Missing Features
+- [Image support](https://github.com/0xpr03/VocableTrainer-Android/issues/81)
+
 ## Features planned
 - [ ] Usage statistics for repetiton of worst vocables
 - [ ] Import/Export of [KVTML](https://edu.kde.org/contrib/kvtml.php) files

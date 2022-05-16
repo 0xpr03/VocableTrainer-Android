@@ -12,12 +12,14 @@ import androidx.collection.LongSparseArray
 import androidx.core.database.getIntOrNull
 import androidx.core.database.getStringOrNull
 import androidx.lifecycle.LiveData
+import com.github.mikephil.charting.components.AxisBase
 import com.github.mikephil.charting.data.BarEntry
 import java.sql.Date
 import java.sql.SQLException
 import java.util.*
 import vocabletrainer.heinecke.aron.vocabletrainer.lib.Storage.*
 import vocabletrainer.heinecke.aron.vocabletrainer.trainer.TrainerSettings
+import java.text.DateFormat
 import java.util.concurrent.ThreadLocalRandom
 import kotlin.collections.ArrayList
 import kotlin.streams.toList
@@ -46,13 +48,12 @@ class Database {
     /**
      * Get history statistics for the history fragment
      */
-    fun getHistoryStats(): ArrayList<BarEntry> {
+    fun getHistoryStats(): Pair<ArrayList<BarEntry>,ArrayList<String>> {
         val list = ArrayList<BarEntry>()
+        val label = ArrayList<String>()
         var i = 0
-        /**
-         *  2022-04-20 0 2
-         *  2022-04-20 1 1
-         */
+        val ms_to_day = 1000*60*60*24
+        val mFormat: DateFormat = DateFormat.getDateInstance();
         db.rawQuery("WITH t as (SELECT $KEY_DATE,date($KEY_DATE/ 1000,'unixepoch') as d,$KEY_IS_CORRECT, COUNT(*) as c " +
                 "                FROM $TBL_ENTRY_STATS " +
                 "                GROUP BY d, $KEY_IS_CORRECT " +
@@ -68,13 +69,12 @@ class Database {
                 val date = cV.getLong(0)
                 val cntCorrect: Int = cV.getIntOrNull(2) ?: 0
                 val cntWrong = cV.getLong(1)
-
-                list.add(BarEntry(i.toFloat(), floatArrayOf(cntCorrect.toFloat(),cntWrong.toFloat())))
-                i += 1
+                list.add(BarEntry((date / ms_to_day).toFloat(), floatArrayOf(cntCorrect.toFloat(),cntWrong.toFloat())))
+                label.add(mFormat.format(java.util.Date(date)))
                 Log.d(TAG, "$date $cntCorrect $cntWrong")
             }
         }
-        return list
+        return Pair(list,label)
     }
 
     fun insertFakeHistory(amount: Long, min: Long) {

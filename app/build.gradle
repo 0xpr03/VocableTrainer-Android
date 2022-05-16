@@ -37,6 +37,7 @@ android {
         abortOnError false
         disable 'MissingTranslation'
     }
+    namespace 'vocabletrainer.heinecke.aron.vocabletrainer'
 }
 
 dependencies {

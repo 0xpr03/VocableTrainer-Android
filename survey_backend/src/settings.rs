@@ -1,5 +1,5 @@
+use anyhow::Result;
 use config::*;
-use failure::Fallible;
 
 #[derive(Debug, Deserialize)]
 pub struct Database {
@@ -35,15 +35,14 @@ pub struct Bind {
 }
 
 impl Settings {
-    pub fn new() -> Fallible<Self> {
-        let mut s = Config::new();
-        s.merge(File::with_name("config/default.toml"))?;
+    pub fn new() -> Result<Self> {
+        let s = Config::builder()
+            .add_source(File::with_name("config/default.toml"))
+            .add_source(File::with_name("config/local.toml").required(false))
+            .add_source(Environment::with_prefix("survey"))
+            .build()?
+            .try_deserialize()?;
 
-        s.merge(File::with_name("config/local.toml").required(false))?;
-
-        s.merge(Environment::with_prefix("survey"))?;
-
-        let s = s.try_into()?;
         Ok(s)
     }
 }

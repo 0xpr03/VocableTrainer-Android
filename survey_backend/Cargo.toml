@@ -2,19 +2,22 @@
 authors = ["Aron Heinecke <aron.heinecke@t-online.de>"]
 edition = "2018"
 name = "survey-backend"
-version = "0.1.1"
+version = "0.2.0"
 
 [dependencies]
-actix = "0.7"
-actix-web = "0.7"
+actix-files = "0.6"
+actix-web = "4"
 chrono = {version = "0.4", features = ["serde"]}
-config = "0.9"
-env_logger = "0.6"
-failure = "0.1"
-futures = "0.1"
+config = "0.13"
+env_logger = "0.9"
+anyhow = "1.0"
 log = "0.4"
-mysql = "15.1"
-num_cpus = "1.10"
+mysql_async = {version = "0.30"}
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
+
+# set chrono dependency to true
+[dependencies.mysql_common]
+features = ["chrono"]
+version = "*"

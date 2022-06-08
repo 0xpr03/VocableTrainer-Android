@@ -1,26 +1,23 @@
-use crate::AppState;
+use crate::db;
 use actix_web::*;
-use futures::Future;
+use mysql_async::Pool;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SurveyPostData {
     pub api: i32,
 }
 
-pub fn api_post(
-    (req, state): (Json<SurveyPostData>, State<AppState>),
-) -> FutureResponse<HttpResponse> {
-    //println!("{:?}", req);
-    state
-        .db
-        .send(req.into_inner())
-        .from_err()
-        .and_then(|res| match res {
-            Ok(v) => Ok(HttpResponse::Ok().json(v)),
-            Err(e) => {
-                error!("{}", e);
-                Ok(HttpResponse::InternalServerError().into())
-            }
-        })
-        .responder()
+#[post("/data/add/api")]
+pub async fn api_post(
+    req: web::Json<SurveyPostData>,
+    state: web::Data<Pool>,
+) -> Result<HttpResponse> {
+    let p: &Pool = &**state;
+    match db::survey_add(p, req.into_inner()).await {
+        Err(e) => {
+            error!("Failed storing survey data: {}", e);
+            Ok(HttpResponse::InternalServerError().finish())
+        }
+        Ok(v) => Ok(HttpResponse::Ok().json(v)),
+    }
 }

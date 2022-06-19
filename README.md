@@ -26,6 +26,8 @@ It provides training with different modes, sessions and multiple word lists.
 ## Bugs, Contribution etc
 Feel free to open an Issue for ideas, bugs, localisation or feature requests. Or even better a PR.
 
+You can also join the matrix channel [#vta:matrix.org](https://matrix.to/#/#vta:matrix.org) to ask questions.
+
 ## FAQ
 - Docs ?!  
   [Docs!](https://github.com/0xpr03/VocableTrainer-Android/wiki)

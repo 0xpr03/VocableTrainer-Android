@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../common/scaffold.dart';
+
 class ListViewWidget extends StatefulWidget {
   static const routeName = '/list';
 
@@ -10,7 +12,13 @@ class ListViewWidget extends StatefulWidget {
 class ListViewWidgetWidgetState extends State<ListViewWidget> {
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
+    return BaseScaffold(
+      child: ListView.builder(
+        itemBuilder: (context, index) {
+          return Text("list");
+        },
+      ),
+      title: Text("list"),
+    );
   }
 }

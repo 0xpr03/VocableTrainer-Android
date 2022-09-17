@@ -3,32 +3,43 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
+import 'package:vocabletrainer/screen/lists.dart';
 
 class BaseScaffold extends StatelessWidget {
   final Widget child;
   final Widget? floatingActionButton;
+  final Widget title;
 
   const BaseScaffold(
-      {super.key, required this.child, this.floatingActionButton});
+      {super.key,
+      required this.child,
+      this.floatingActionButton,
+      required this.title});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Lists')),
+      appBar: AppBar(title: title),
       drawer: Drawer(
           child: ListView(padding: EdgeInsets.zero, children: [
-        const DrawerHeader(
-          decoration: BoxDecoration(
-            color: Colors.deepPurple,
-          ),
+        DrawerHeader(
+          decoration: BoxDecoration(color: Theme.of(context).primaryColor),
           child: Text('Placeholder'),
+        ),
+        ListTile(
+          title: const Text('Lists'),
+          onTap: () {
+            Navigator.pushReplacementNamed(
+                context, ListOverviewWidget.routeName);
+          },
+          leading: const Icon(Icons.list),
         ),
         ListTile(
           title: const Text('Logout'),
           onTap: () {
             //Navigator.pushReplacementNamed(context, LogoutWidget.routeName);
           },
-          trailing: const Icon(Icons.logout),
+          leading: const Icon(Icons.logout),
         ),
       ])),
       body: SafeArea(child: child),

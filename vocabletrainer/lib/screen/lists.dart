@@ -12,18 +12,18 @@ import 'package:vocabletrainer/common/scaffold.dart';
 
 import 'list.dart';
 
-class CoursesOverviewWidget extends StatefulWidget {
+class ListOverviewWidget extends StatefulWidget {
   static const routeName = '/lists';
 
-  const CoursesOverviewWidget({
+  const ListOverviewWidget({
     super.key,
   });
 
   @override
-  CoursesOverviewWidgetState createState() => CoursesOverviewWidgetState();
+  ListOverviewWidgetState createState() => ListOverviewWidgetState();
 }
 
-class CoursesOverviewWidgetState extends State<CoursesOverviewWidget> {
+class ListOverviewWidgetState extends State<ListOverviewWidget> {
   // late Future<ClassesFutureValue> _fetchFuture;
 
   @override
@@ -87,7 +87,7 @@ class CoursesOverviewWidgetState extends State<CoursesOverviewWidget> {
     return BaseScaffold(
       child: ListView.builder(
         itemBuilder: (context, index) {
-          return Text("TODO");
+          return Text("lists");
         },
       ),
       floatingActionButton: FloatingActionButton(
@@ -96,6 +96,7 @@ class CoursesOverviewWidgetState extends State<CoursesOverviewWidget> {
           Navigator.of(context).pushNamed(ListViewWidget.routeName);
         },
       ),
+      title: Text("List overview"),
     );
   }
 }

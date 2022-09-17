@@ -129,7 +129,7 @@ packages:
     source: hosted
     version: "1.0.0"
   path:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: path
       url: "https://pub.dartlang.org"
@@ -178,7 +178,7 @@ packages:
     source: hosted
     version: "4.2.4"
   provider:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: provider
       url: "https://pub.dartlang.org"
@@ -192,7 +192,7 @@ packages:
     source: hosted
     version: "3.1.0"
   shared_preferences:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: shared_preferences
       url: "https://pub.dartlang.org"
@@ -260,7 +260,7 @@ packages:
     source: hosted
     version: "1.9.0"
   sqflite:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: sqflite
       url: "https://pub.dartlang.org"
@@ -316,7 +316,7 @@ packages:
     source: hosted
     version: "0.4.12"
   tuple:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: tuple
       url: "https://pub.dartlang.org"
@@ -337,7 +337,7 @@ packages:
     source: hosted
     version: "3.0.0"
   window_size:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       path: "plugins/window_size"
       ref: HEAD

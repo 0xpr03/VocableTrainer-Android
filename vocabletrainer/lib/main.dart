@@ -2,13 +2,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:vocabletrainer/screen/list.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:vocabletrainer/storage/StateStorage.dart';
 
 import 'common/theme.dart';
+import 'screen/ListView.dart';
 import 'screen/lists.dart';
+import 'storage/StateStorage.dart';
 
 Future<void> main() async {
   runApp(const LoadingScreen());

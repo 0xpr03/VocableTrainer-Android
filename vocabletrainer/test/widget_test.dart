@@ -9,11 +9,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:vocabletrainer/main.dart';
+import 'package:vocabletrainer/storage/StateStorage.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+    StateStorage st = StateStorage();
+    await st.initDb();
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(MyApp(st));
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

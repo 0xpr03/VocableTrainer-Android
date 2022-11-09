@@ -1,38 +1,39 @@
 import 'package:vocabletrainer/storage/CDatabase.dart';
 
-class VList {
-  String name;
-  String nameA;
-  String nameB;
+class VList extends RawVList {
   int id;
   int created;
   int changed;
   int shared;
   VList(
-      {required this.name,
-      required this.nameA,
-      required this.nameB,
+      {required super.name,
+      required super.nameA,
+      required super.nameB,
       required this.id,
       required this.created,
       required this.changed,
       required this.shared});
 
   VList.fromRaw(RawVList raw, this.id, int time)
-      : name = raw.name,
-        nameA = raw.nameA,
-        nameB = raw.nameB,
-        changed = time,
+      : changed = time,
         created = time,
-        shared = 0;
+        shared = 0,
+        super(name: raw.name, nameA: raw.nameA, nameB: raw.nameB);
 
   VList.fromMap(Map<String, dynamic> result)
-      : name = result[KEY_NAME_LIST],
-        id = result[KEY_LIST],
-        nameA = result[KEY_NAME_A],
-        nameB = result[KEY_NAME_B],
+      : id = result[KEY_LIST],
         shared = result[KEY_SHARED],
         created = result[KEY_CREATED],
-        changed = result[KEY_CHANGED];
+        changed = result[KEY_CHANGED],
+        super(
+            name: result[KEY_NAME_LIST],
+            nameA: result[KEY_NAME_A],
+            nameB: result[KEY_NAME_B]);
+
+  @override
+  bool isRaw() {
+    return false;
+  }
 }
 
 /// Raw list for new entries to insert
@@ -48,5 +49,9 @@ class RawVList {
       KEY_NAME_A: nameA,
       KEY_NAME_B: nameB,
     };
+  }
+
+  bool isRaw() {
+    return true;
   }
 }

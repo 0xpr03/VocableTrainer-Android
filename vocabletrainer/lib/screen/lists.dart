@@ -10,6 +10,8 @@ import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:vocabletrainer/common/scaffold.dart';
 
+import '../storage/StateStorage.dart';
+import '../storage/VList.dart';
 import 'list.dart';
 
 class ListOverviewWidget extends StatefulWidget {
@@ -24,14 +26,7 @@ class ListOverviewWidget extends StatefulWidget {
 }
 
 class ListOverviewWidgetState extends State<ListOverviewWidget> {
-  // late Future<ClassesFutureValue> _fetchFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    // _resetSelectedDate();
-    // _fetchFuture = fetch();
-  }
+  List<VList> data = [];
 
   @override
   void dispose() {
@@ -39,64 +34,32 @@ class ListOverviewWidgetState extends State<ListOverviewWidget> {
     super.dispose();
   }
 
-  // Future<ClassesFutureValue> fetch() async {
-  //   final state = Provider.of<AccountState>(context, listen: false);
-  //   var account = state.account!;
-  //   return await fetchClasses(account.accessToken, account.userId,
-  //       account.centerId, widget.httpClient!);
-  // }
-
-  void refreshData() {
-    // reload
-    // setState(() {
-    //   _fetchFuture = fetch();
-    // });
-  }
-
-  // void _resetSelectedDate() {
-  //   _selectedDate = DateTime.now();
-  // }
-
-  // Widget coursesWidget(Map<String, List<Course>> courses) {
-  //   final key = keyDateFormat.format(_selectedDate);
-  //   final dayContent = courses[key];
-
-  //   if (dayContent != null) {
-  //     return courseDayView(dayContent);
-  //   } else {
-  //     return const Center(child: Text('No courses for this day.'));
-  //   }
-  // }
-
-  // Widget courseDayView(List<Course> courses) {
-  //   return ListView.builder(
-  //       physics:
-  //           const AlwaysScrollableScrollPhysics(), // allow refresh with 0 elements
-  //       itemCount: courses.length,
-  //       itemBuilder: (context, index) {
-  //         return CourseWidget(
-  //           course: courses[index],
-  //         );
-  //       });
-  // }
-
   @override
   Widget build(BuildContext context) {
-    //var state = context.watch<AccountState>();
+    var cache = Provider.of<StateStorage>(context); //Zugriff auf Uebungsliste
+    cache.getLists().then((value) => setState(() {
+          data = value;
+        }));
 
     return BaseScaffold(
-      child: ListView.builder(
-        itemBuilder: (context, index) {
-          return Text("lists");
-        },
-      ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () {
           Navigator.of(context).pushNamed(ListViewWidget.routeName);
         },
       ),
-      title: Text("List overview"),
+      title: const Text("Lists"),
+      child: ListView.builder(
+        itemCount: data.length,
+        itemBuilder: (context, index) {
+          VList item = data[index];
+          return Card(
+              child: ListTile(
+            title: Text(item.name),
+            subtitle: Text("${item.nameA}/${item.nameB}"),
+          ));
+        },
+      ),
     );
   }
 }

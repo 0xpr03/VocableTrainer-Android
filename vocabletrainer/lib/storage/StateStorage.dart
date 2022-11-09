@@ -10,13 +10,26 @@ class StateStorage with ChangeNotifier {
   late Database _db;
 
   StateStorage() {
-    initDatabase().then((value) => _db = value);
+    initDatabase().then((value) {
+      print("DB initialized");
+      _db = value;
+    });
+  }
+
+  Future<void> initDb() {
+    return initDatabase().then(
+      (value) {
+        print("DB initialized");
+        _db = value;
+      },
+    );
   }
 
   Future<VList> createList(RawVList raw) async {
+    int time = DateTime.now().millisecondsSinceEpoch;
     int id = await _db.insert(TBL_LISTS, raw.toMap(),
         conflictAlgorithm: ConflictAlgorithm.rollback);
-    return VList.fromRaw(raw, id);
+    return VList.fromRaw(raw, id, time);
   }
 
   Future<VEntry> createEntry(RawVEntry raw) async {
@@ -46,5 +59,10 @@ class StateStorage with ChangeNotifier {
       },
     );
     return VEntry.fromRaw(raw, id!, time);
+  }
+
+  Future<List<VList>> getLists() async {
+    var res = await _db.query(TBL_LISTS);
+    return res.map((e) => VList.fromMap(e)).toList();
   }
 }

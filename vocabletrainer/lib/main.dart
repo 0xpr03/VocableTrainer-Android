@@ -1,38 +1,80 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:vocabletrainer/screen/list.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:vocabletrainer/storage/StateStorage.dart';
 
 import 'common/theme.dart';
 import 'screen/lists.dart';
 
-void main() {
+Future<void> main() async {
+  runApp(const LoadingScreen());
   if (Platform.isWindows || Platform.isLinux) {
     // Initialize FFI and use it on Windows and linux
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
-  runApp(const MyApp());
+  var storage = StateStorage();
+  await storage.initDb();
+  runApp(MyApp(storage));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class LoadingScreen extends StatelessWidget {
+  const LoadingScreen({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: appTheme,
-      darkTheme: ThemeData.dark(),
-      themeMode: ThemeMode.system,
-      routes: {
-        ListViewWidget.routeName: (context) => ListViewWidget(),
-        ListOverviewWidget.routeName: (context) => ListOverviewWidget(),
-      },
-      initialRoute: ListOverviewWidget.routeName,
-    );
+        theme: appTheme,
+        darkTheme: ThemeData.dark(),
+        themeMode: ThemeMode.system,
+        home: Scaffold(
+            body: Center(
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: const [
+              CircularProgressIndicator(),
+              Text("Loading DB")
+            ]))));
   }
 }
+
+class MyApp extends StatelessWidget {
+  final StateStorage storage;
+  const MyApp(this.storage, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(
+        providers: [
+          ChangeNotifierProvider<StateStorage>(
+            create: (context) => storage,
+          )
+        ],
+        child: MaterialApp(
+          title: 'VTA',
+          theme: appTheme,
+          darkTheme: ThemeData.dark(),
+          themeMode: ThemeMode.system,
+          routes: {
+            ListViewWidget.routeName: (context) => ListViewWidget(),
+            ListOverviewWidget.routeName: (context) => ListOverviewWidget(),
+          },
+          initialRoute: ListOverviewWidget.routeName,
+        ));
+  }
+}
+
+// class MyApp extends StatelessWidget {
+//   const MyApp({super.key});
+
+//   // This widget is the root of your application.
+//   @override
+//   Widget build(BuildContext context) {
+   
+//   }
+// }

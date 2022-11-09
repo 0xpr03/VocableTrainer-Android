@@ -1,12 +1,17 @@
 // ignore_for_file: constant_identifier_names
 
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 Future<Database> initDatabase() async {
-  String path = await getDatabasesPath();
+  String path = join(await getDatabasesPath(), "voc.db");
+  print("Debug Mode: $kDebugMode");
+  if (kDebugMode) {
+    print("DB Path: $path");
+  }
   Database db = await openDatabase(
-    join(path, "voc.db"),
+    path,
     version: 4,
     onCreate: (db, version) async {
       // clean init
@@ -37,9 +42,11 @@ Future<Database> initDatabase() async {
         _sqlEntryUsedIndex,
         _sqlSettings
       ];
-      await Future.forEach(steps, (element) async {
-        await db.execute(element);
-      });
+      var b = db.batch();
+      for (var sql in steps) {
+        b.execute(sql);
+      }
+      b.commit();
     },
     onUpgrade: (db, oldVersion, newVersion) {
       // upgrade path TODO
@@ -113,7 +120,7 @@ const String _sqlEntryStats = """CREATE TABLE $TBL_ENTRY_STATS (
 const String _sqlListCategories = """CREATE TABLE $TBL_LIST_CATEGORIES (
     $KEY_LIST INTEGER NOT NULL REFERENCES $TBL_LISTS($KEY_LIST) ON DELETE CASCADE,
     $KEY_CATEGORY INTEGER NOT NULL REFERENCES $TBL_CATEGORY($KEY_CATEGORY) ON DELETE CASCADE,
-    "PRIMARY KEY ($KEY_LIST ,$KEY_CATEGORY ))""";
+    PRIMARY KEY ($KEY_LIST ,$KEY_CATEGORY ))""";
 const String _sqlCategory = """CREATE TABLE $TBL_CATEGORY (
     $KEY_CATEGORY INTEGER PRIMARY KEY,
     $KEY_CATEGORY_NAME STRING NOT NULL,

@@ -6,7 +6,7 @@ import 'package:sqflite/sqflite.dart';
 Future<Database> initDatabase() async {
   String path = await getDatabasesPath();
   Database db = await openDatabase(
-    join(path, "new.db"),
+    join(path, "voc.db"),
     version: 4,
     onCreate: (db, version) async {
       // clean init

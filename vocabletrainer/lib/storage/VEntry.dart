@@ -28,6 +28,14 @@ class VEntry {
         addition = raw.addition,
         created = time,
         changed = time;
+  VEntry.withoutMeanings(Map<String, dynamic> result, this.list)
+      : meaningsA = [],
+        meaningsB = [],
+        id = result[KEY_ENTRY],
+        tip = result[KEY_TIP],
+        addition = result[KEY_ADDITION],
+        created = result[KEY_CREATED],
+        changed = result[KEY_CHANGED];
 }
 
 /// Raw list entry for insertion

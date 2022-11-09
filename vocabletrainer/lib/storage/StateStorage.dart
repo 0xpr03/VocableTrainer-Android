@@ -65,4 +65,24 @@ class StateStorage with ChangeNotifier {
     var res = await _db.query(TBL_LISTS);
     return res.map((e) => VList.fromMap(e)).toList();
   }
+
+  Future<List<VEntry>> getEntries(VList list) async {
+    var res = await _db
+        .query(KEY_ENTRY, where: "$KEY_LIST = ?", whereArgs: [list.id]);
+    var entries = res.map((e) => VEntry.withoutMeanings(e, list)).toList();
+
+    for (var entry in entries) {
+      var mA = await _db.query(TBL_WORDS_A,
+          columns: [KEY_MEANING],
+          where: "$KEY_ENTRY = ?",
+          whereArgs: [entry.id]);
+      var mB = await _db.query(TBL_WORDS_B,
+          columns: [KEY_MEANING],
+          where: "$KEY_ENTRY = ?",
+          whereArgs: [entry.id]);
+      entry.meaningsA = mA.map((e) => e[0] as String).toList();
+      entry.meaningsA = mB.map((e) => e[0] as String).toList();
+    }
+    return entries;
+  }
 }

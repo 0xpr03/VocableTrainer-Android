@@ -12,7 +12,7 @@ import 'package:vocabletrainer/common/scaffold.dart';
 
 import '../storage/StateStorage.dart';
 import '../storage/VList.dart';
-import 'list.dart';
+import 'ListView.dart';
 
 class ListOverviewWidget extends StatefulWidget {
   static const routeName = '/lists';
@@ -45,7 +45,8 @@ class ListOverviewWidgetState extends State<ListOverviewWidget> {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () {
-          Navigator.of(context).pushNamed(ListViewWidget.routeName);
+          Navigator.of(context).pushNamed(ListViewWidget.routeName,
+              arguments: ListViewArguments(null));
         },
       ),
       title: const Text("Lists"),

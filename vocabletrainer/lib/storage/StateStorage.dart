@@ -21,7 +21,11 @@ class StateStorage with ChangeNotifier {
 
   Future<VList> createList(RawVList raw) async {
     int time = DateTime.now().millisecondsSinceEpoch;
-    int id = await _db.insert(TBL_LISTS, raw.toMap(),
+    var data = raw.toMap();
+    data[KEY_CREATED] = time;
+    data[KEY_CHANGED] = time;
+    data[KEY_SHARED] = 0;
+    int id = await _db.insert(TBL_LISTS, data,
         conflictAlgorithm: ConflictAlgorithm.rollback);
     return VList.fromRaw(raw, id, time);
   }
@@ -78,5 +82,13 @@ class StateStorage with ChangeNotifier {
       entry.meaningsA = mB.map((e) => e[0] as String).toList();
     }
     return entries;
+  }
+
+  /// Update list, also updates timestamps
+  Future<void> updateList(VList list) async {
+    int time = DateTime.now().millisecondsSinceEpoch;
+    list.changed = time;
+    await _db.update(TBL_LISTS, list.toMap(),
+        where: '$KEY_LIST = ?', whereArgs: [list.id]);
   }
 }

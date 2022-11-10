@@ -80,9 +80,15 @@ class _ListEditDialogState extends State<ListEditDialog> {
               widget.list.nameA = _nameA;
               widget.list.nameB = _nameB;
               var cache = Provider.of<StateStorage>(context, listen: false);
-
-              // TODO: save back with spinner info
-              Navigator.of(context).pop(widget.list);
+              if (widget.list.isRaw()) {
+                VList list = await cache.createList(widget.list);
+                if (!mounted) return;
+                Navigator.of(context).pop(list);
+              } else {
+                await cache.updateList(widget.list as VList);
+                if (!mounted) return;
+                Navigator.of(context).pop(widget.list);
+              }
             }
           },
         ),

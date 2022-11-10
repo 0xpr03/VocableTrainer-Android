@@ -31,6 +31,19 @@ class VList extends RawVList {
             nameB: result[KEY_NAME_B]);
 
   @override
+  Map<String, Object?> toMap() {
+    return {
+      KEY_NAME_LIST: name,
+      KEY_NAME_A: nameA,
+      KEY_NAME_B: nameB,
+      KEY_LIST: id,
+      KEY_SHARED: shared,
+      KEY_CREATED: created,
+      KEY_CHANGED: changed,
+    };
+  }
+
+  @override
   bool isRaw() {
     return false;
   }

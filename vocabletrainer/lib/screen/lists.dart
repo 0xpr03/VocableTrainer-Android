@@ -56,6 +56,9 @@ class ListOverviewWidgetState extends State<ListOverviewWidget> {
           VList item = data[index];
           return Card(
               child: ListTile(
+            onTap: () => Navigator.of(context).pushNamed(
+                ListViewWidget.routeName,
+                arguments: ListViewArguments(item)),
             title: Text(item.name),
             subtitle: Text("${item.nameA}/${item.nameB}"),
           ));

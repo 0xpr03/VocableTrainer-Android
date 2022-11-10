@@ -9,17 +9,11 @@ import 'VList.dart';
 class StateStorage with ChangeNotifier {
   late Database _db;
 
-  StateStorage() {
-    initDatabase().then((value) {
-      print("DB initialized");
-      _db = value;
-    });
-  }
+  StateStorage();
 
   Future<void> initDb() {
     return initDatabase().then(
       (value) {
-        print("DB initialized");
         _db = value;
       },
     );

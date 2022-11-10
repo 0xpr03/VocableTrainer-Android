@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:vocabletrainer/storage/StateStorage.dart';
+import 'package:vocabletrainer/storage/VEntry.dart';
+import 'package:vocabletrainer/storage/VList.dart';
 
 class ListEditDialog extends StatefulWidget {
   /// Attriute, if set for editing
-  final Attribute? attribute;
+  final RawVList list;
 
-  const ListEditDialog({super.key, required this.attribute});
+  const ListEditDialog({super.key, required this.list});
 
   @override
   State<ListEditDialog> createState() => _ListEditDialogState();
@@ -13,19 +16,19 @@ class ListEditDialog extends StatefulWidget {
 
 class _ListEditDialogState extends State<ListEditDialog> {
   final _formAddAttributeKey = GlobalKey<FormState>();
-  String _attributeName = '';
-  String _attributeUnit = '';
+  String _listName = '';
+  String _nameA = '';
+  String _nameB = '';
 
   @override
   Widget build(BuildContext context) {
-    if (widget.attribute != null) {
-      _attributeName = widget.attribute!.name;
-      _attributeUnit = widget.attribute!.unit;
-    }
+    _listName = widget.list.name;
+    _nameA = widget.list.nameA;
+    _nameA = widget.list.nameB;
     return AlertDialog(
-      title: Text(widget.attribute == null
-          ? 'Add Attribute'
-          : 'Edit Attribute ${widget.attribute!.name}'),
+      title: Text(widget.list.isRaw()
+          ? 'Create List'
+          : 'Edit List ${widget.list.name}'),
       content: SingleChildScrollView(
         child: Form(
             autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -34,20 +37,29 @@ class _ListEditDialogState extends State<ListEditDialog> {
               children: [
                 TextFormField(
                   autofocus: true,
-                  initialValue: _attributeName,
+                  initialValue: _listName,
                   decoration: const InputDecoration(
-                      helperText: 'Name', hintText: 'Attribute Name'),
+                      helperText: 'List Name', hintText: 'List Name'),
                   onChanged: (value) {
-                    _attributeName = value;
+                    _listName = value;
                   },
                 ),
                 TextFormField(
                   autofocus: false,
-                  initialValue: _attributeUnit,
-                  decoration:
-                      const InputDecoration(hintText: 'kg', helperText: 'Unit'),
+                  initialValue: _nameA,
+                  decoration: const InputDecoration(
+                      hintText: 'A Words', helperText: 'Column Name'),
                   onChanged: (value) {
-                    _attributeUnit = value;
+                    _nameA = value;
+                  },
+                ),
+                TextFormField(
+                  autofocus: false,
+                  initialValue: _nameB,
+                  decoration: const InputDecoration(
+                      hintText: 'B Words', helperText: 'Column Name'),
+                  onChanged: (value) {
+                    _nameB = value;
                   },
                 ),
               ],
@@ -61,19 +73,16 @@ class _ListEditDialogState extends State<ListEditDialog> {
           },
         ),
         TextButton(
-          child: Text(widget.attribute == null ? 'Create' : 'Save'),
-          onPressed: () {
+          child: Text(widget.list.isRaw() ? 'Create' : 'Save'),
+          onPressed: () async {
             if (_formAddAttributeKey.currentState!.validate()) {
-              Attribute a;
-              if (widget.attribute == null) {
-                var cache = Provider.of<WorkoutCache>(context, listen: false);
-                a = cache.newAttribute(_attributeName, _attributeUnit, true);
-              } else {
-                a = widget.attribute!;
-                a.name = _attributeName;
-                a.unit = _attributeUnit;
-              }
-              Navigator.of(context).pop(a);
+              widget.list.name = _listName;
+              widget.list.nameA = _nameA;
+              widget.list.nameB = _nameB;
+              var cache = Provider.of<StateStorage>(context, listen: false);
+
+              // TODO: save back with spinner info
+              Navigator.of(context).pop(widget.list);
             }
           },
         ),

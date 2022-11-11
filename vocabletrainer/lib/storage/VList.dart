@@ -1,7 +1,7 @@
 import 'package:vocabletrainer/storage/CDatabase.dart';
 
 class VList extends RawVList {
-  int id;
+  final int id;
   int created;
   int changed;
   int shared;

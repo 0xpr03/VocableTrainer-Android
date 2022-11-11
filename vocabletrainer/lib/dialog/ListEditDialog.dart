@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:vocabletrainer/storage/StateStorage.dart';
-import 'package:vocabletrainer/storage/VEntry.dart';
 import 'package:vocabletrainer/storage/VList.dart';
 
 class ListEditDialog extends StatefulWidget {
@@ -24,7 +21,7 @@ class _ListEditDialogState extends State<ListEditDialog> {
   Widget build(BuildContext context) {
     _listName = widget.list.name;
     _nameA = widget.list.nameA;
-    _nameA = widget.list.nameB;
+    _nameB = widget.list.nameB;
     return AlertDialog(
       title: Text(widget.list.isRaw()
           ? 'Create List'
@@ -43,6 +40,12 @@ class _ListEditDialogState extends State<ListEditDialog> {
                   onChanged: (value) {
                     _listName = value;
                   },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a name.';
+                    }
+                    return null;
+                  },
                 ),
                 TextFormField(
                   autofocus: false,
@@ -52,6 +55,12 @@ class _ListEditDialogState extends State<ListEditDialog> {
                   onChanged: (value) {
                     _nameA = value;
                   },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a column name.';
+                    }
+                    return null;
+                  },
                 ),
                 TextFormField(
                   autofocus: false,
@@ -60,6 +69,12 @@ class _ListEditDialogState extends State<ListEditDialog> {
                       hintText: 'B Words', helperText: 'Column Name'),
                   onChanged: (value) {
                     _nameB = value;
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a column name.';
+                    }
+                    return null;
                   },
                 ),
               ],
@@ -79,16 +94,7 @@ class _ListEditDialogState extends State<ListEditDialog> {
               widget.list.name = _listName;
               widget.list.nameA = _nameA;
               widget.list.nameB = _nameB;
-              var cache = Provider.of<StateStorage>(context, listen: false);
-              if (widget.list.isRaw()) {
-                VList list = await cache.createList(widget.list);
-                if (!mounted) return;
-                Navigator.of(context).pop(list);
-              } else {
-                await cache.updateList(widget.list as VList);
-                if (!mounted) return;
-                Navigator.of(context).pop(widget.list);
-              }
+              Navigator.of(context).pop(widget.list);
             }
           },
         ),

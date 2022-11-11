@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:convert';
-
 //import 'package:calendar_timeline/calendar_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tuple/tuple.dart';
 import 'package:vocabletrainer/common/scaffold.dart';
 
+import '../dialog/ListEditDialog.dart';
 import '../storage/StateStorage.dart';
 import '../storage/VList.dart';
 import 'ListView.dart';
@@ -36,7 +34,7 @@ class ListOverviewWidgetState extends State<ListOverviewWidget> {
 
   @override
   Widget build(BuildContext context) {
-    var cache = Provider.of<StateStorage>(context); //Zugriff auf Uebungsliste
+    var cache = Provider.of<StateStorage>(context);
     cache.getLists().then((value) => setState(() {
           data = value;
         }));
@@ -44,9 +42,21 @@ class ListOverviewWidgetState extends State<ListOverviewWidget> {
     return BaseScaffold(
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
-        onPressed: () {
-          Navigator.of(context).pushNamed(ListViewWidget.routeName,
-              arguments: ListViewArguments(null));
+        onPressed: () async {
+          var ret = await showDialog<RawVList?>(
+            context: context,
+            barrierDismissible: true,
+            builder: (BuildContext context) {
+              return ListEditDialog(
+                  list: RawVList(name: '', nameA: '', nameB: ''));
+            },
+          );
+          if (mounted && ret != null) {
+            VList list = await cache.createList(ret);
+            if (!mounted) return;
+            Navigator.of(context).pushNamed(ListViewWidget.routeName,
+                arguments: ListViewArguments(list));
+          }
         },
       ),
       title: const Text("Lists"),
@@ -67,43 +77,3 @@ class ListOverviewWidgetState extends State<ListOverviewWidget> {
     );
   }
 }
-
-// class CourseWidget extends StatelessWidget {
-//   final Course course;
-//   const CourseWidget({required this.course, super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     Color color;
-//     Null Function()? onTap;
-//     switch (course.bookingState) {
-//       case 'BOOKABLE':
-//       case 'BOOKABLE_WAITINGLIST':
-//       case 'BOOKED':
-//         color = Colors.black; // TODO: don't hardcode colors
-//         onTap = () {
-//           Navigator.pushNamed(
-//             context,
-//             CourseDetailWidget.routeName,
-//             arguments: ScreenArguments(course),
-//           );
-//         };
-//         break;
-//       default:
-//         onTap = null;
-//         color = Colors.grey;
-//     }
-//     return Card(
-//         child: ListTile(
-//       title: Text(course.name),
-//       subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-//         Text(course.bookingState),
-//         Text('${course.bookedCount} / ${course.classCapacity}'),
-//       ]),
-//       // trailing: Text(course.bookingState),
-//       leading: Text(course.startTime),
-//       textColor: color,
-//       onTap: onTap,
-//     ));
-//   }
-// }

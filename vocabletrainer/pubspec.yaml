@@ -42,6 +42,11 @@ dependencies:
   sqflite_common_ffi: ^2.2.0+1
   sqflite: ^2.0.3
   path: ^1.8.2
+  # for v7
+  uuid:
+    git:
+      url: https://github.com/Daegalus/dart-uuid.git
+      ref: 5e31bdff321becc618a10675c5f7354e203698e8
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

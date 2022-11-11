@@ -1,41 +1,48 @@
+import 'package:uuid/uuid.dart';
 import 'package:vocabletrainer/storage/CDatabase.dart';
 import 'package:vocabletrainer/storage/VList.dart';
 
-class VEntry {
-  List<String> meaningsA;
-  List<String> meaningsB;
-  VList list;
-  int id;
-  String tip;
-  String addition;
+class VEntry extends RawVEntry {
+  final int id;
   int changed;
-  int created;
+  final int created;
+  final UuidValue uuid;
   VEntry(
-      {required this.meaningsA,
-      required this.meaningsB,
-      required this.list,
+      {required super.meaningsA,
+      required super.meaningsB,
+      required super.list,
       required this.id,
-      required this.tip,
+      required super.tip,
       required this.changed,
+      required this.uuid,
       required this.created,
-      required this.addition});
+      required super.addition});
 
-  VEntry.fromRaw(RawVEntry raw, this.id, int time)
-      : meaningsA = raw.meaningsA,
-        meaningsB = raw.meaningsB,
-        list = raw.list,
-        tip = raw.tip,
-        addition = raw.addition,
-        created = time,
-        changed = time;
-  VEntry.withoutMeanings(Map<String, dynamic> result, this.list)
-      : meaningsA = [],
-        meaningsB = [],
-        id = result[KEY_ENTRY],
-        tip = result[KEY_TIP],
-        addition = result[KEY_ADDITION],
+  VEntry.fromRaw(RawVEntry raw, this.id, this.uuid, int time)
+      : created = time,
+        changed = time,
+        super(
+          meaningsA: raw.meaningsA,
+          meaningsB: raw.meaningsB,
+          list: raw.list,
+          tip: raw.tip,
+          addition: raw.addition,
+        );
+  VEntry.withoutMeanings(
+      {required Map<String, dynamic> result, required super.list})
+      : id = result[KEY_ENTRY],
         created = result[KEY_CREATED],
-        changed = result[KEY_CHANGED];
+        changed = result[KEY_CHANGED],
+        uuid = UuidValue.fromByteList(result[KEY_ENTRY_UUID]),
+        super(
+            meaningsA: [],
+            meaningsB: [],
+            tip: result[KEY_TIP],
+            addition: result[KEY_ADDITION]);
+  @override
+  bool isRaw() {
+    return false;
+  }
 }
 
 /// Raw list entry for insertion
@@ -51,4 +58,8 @@ class RawVEntry {
       required this.list,
       required this.tip,
       required this.addition});
+
+  bool isRaw() {
+    return true;
+  }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:uuid/uuid.dart';
 import 'package:vocabletrainer/storage/VEntry.dart';
 
 import 'CDatabase.dart';
@@ -32,6 +32,7 @@ class StateStorage with ChangeNotifier {
 
   Future<VEntry> createEntry(RawVEntry raw) async {
     int time = DateTime.now().millisecondsSinceEpoch;
+    UuidValue uuid = Uuid().v7obj();
     int? id;
     await _db.transaction(
       (txn) async {
@@ -41,6 +42,7 @@ class StateStorage with ChangeNotifier {
           KEY_ADDITION: raw.addition,
           KEY_CREATED: time,
           KEY_CHANGED: time,
+          KEY_ENTRY_UUID: uuid.toBytes(),
         };
         id = await txn.insert(TBL_ENTRIES, values,
             conflictAlgorithm: ConflictAlgorithm.rollback);
@@ -56,7 +58,7 @@ class StateStorage with ChangeNotifier {
         await b.commit(noResult: true);
       },
     );
-    return VEntry.fromRaw(raw, id!, time);
+    return VEntry.fromRaw(raw, id!, uuid, time);
   }
 
   Future<List<VList>> getLists() async {
@@ -66,8 +68,9 @@ class StateStorage with ChangeNotifier {
 
   Future<List<VEntry>> getEntries(VList list) async {
     var res = await _db
-        .query(KEY_ENTRY, where: "$KEY_LIST = ?", whereArgs: [list.id]);
-    var entries = res.map((e) => VEntry.withoutMeanings(e, list)).toList();
+        .query(TBL_ENTRIES, where: "$KEY_LIST = ?", whereArgs: [list.id]);
+    var entries =
+        res.map((e) => VEntry.withoutMeanings(result: e, list: list)).toList();
 
     for (var entry in entries) {
       var mA = await _db.query(TBL_WORDS_A,
@@ -90,5 +93,35 @@ class StateStorage with ChangeNotifier {
     list.changed = time;
     await _db.update(TBL_LISTS, list.toMap(),
         where: '$KEY_LIST = ?', whereArgs: [list.id]);
+  }
+
+  /// Update entry, also updates timestamps
+  Future<void> updateEntry(VEntry entry) async {
+    int time = DateTime.now().millisecondsSinceEpoch;
+    entry.changed = time;
+
+    await _db.transaction(
+      (txn) async {
+        var values = {
+          KEY_TIP: entry.tip,
+          KEY_ADDITION: entry.addition,
+          KEY_CHANGED: time,
+        };
+        Batch b = txn.batch();
+        b.update(TBL_ENTRIES, values,
+            where: '$KEY_ENTRY = ?', whereArgs: [entry.id]);
+        b.delete(TBL_WORDS_A, where: '$KEY_ENTRY = ?', whereArgs: [entry.id]);
+        b.delete(TBL_WORDS_B, where: '$KEY_ENTRY = ?', whereArgs: [entry.id]);
+        for (var meaning in entry.meaningsA) {
+          b.insert(TBL_WORDS_A, {KEY_MEANING: meaning, KEY_ENTRY: entry.id},
+              conflictAlgorithm: ConflictAlgorithm.rollback);
+        }
+        for (var meaning in entry.meaningsB) {
+          b.insert(TBL_WORDS_B, {KEY_MEANING: meaning, KEY_ENTRY: entry.id},
+              conflictAlgorithm: ConflictAlgorithm.rollback);
+        }
+        await b.commit(noResult: true);
+      },
+    );
   }
 }

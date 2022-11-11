@@ -36,6 +36,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.16.0"
+  crypto:
+    dependency: transitive
+    description:
+      name: crypto
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.2"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -259,6 +266,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.9.0"
+  sprintf:
+    dependency: transitive
+    description:
+      name: sprintf
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "6.0.2"
   sqflite:
     dependency: "direct main"
     description:
@@ -336,6 +350,22 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.0"
+  typed_data:
+    dependency: transitive
+    description:
+      name: typed_data
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.3.1"
+  uuid:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: "5e31bdff321becc618a10675c5f7354e203698e8"
+      resolved-ref: "5e31bdff321becc618a10675c5f7354e203698e8"
+      url: "https://github.com/Daegalus/dart-uuid.git"
+    source: git
+    version: "4.0.0-beta1"
   vector_math:
     dependency: transitive
     description:

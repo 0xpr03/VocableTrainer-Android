@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:vocabletrainer/dialog/ListEditDialog.dart';
-import 'package:vocabletrainer/storage/StateStorage.dart';
+import 'package:vocabletrainer/dialog/EntryEditDialog.dart';
 import 'package:vocabletrainer/storage/VEntry.dart';
 import 'package:vocabletrainer/storage/VList.dart';
 
 import '../common/scaffold.dart';
+import '../storage/StateStorage.dart';
 
 class ListViewWidget extends StatefulWidget {
   static const routeName = '/list';
@@ -17,67 +17,99 @@ class ListViewWidget extends StatefulWidget {
 }
 
 class ListViewWidgetWidgetState extends State<ListViewWidget> {
-  VList? _list;
-  List<VEntry> entries = [];
-  RawVList? _rawList;
+  late VList _list;
+  Future<List<VEntry>>? _entryFuture;
 
   @override
   void didChangeDependencies() {
     final args =
         ModalRoute.of(context)!.settings.arguments as ListViewArguments;
     _list = args.list;
-    if (_list == null && _rawList == null) {
-      _rawList = RawVList(name: 'New List', nameA: 'A Words', nameB: 'B Words');
-    }
-
-    if (_rawList != null) {
-      WidgetsBinding.instance
-          .addPostFrameCallback((_) => _showListEditorDialog(_rawList!));
-    }
     super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
+    var cache = Provider.of<StateStorage>(context);
+    // _entryFuture ??= cache.getEntries(_list);
+    _entryFuture = cache.getEntries(_list);
     return BaseScaffold(
-        hideDrawer: true,
-        title: Text(_list?.name ?? _rawList!.name),
-        child: ListView.builder(
-          itemCount: entries.length,
-          itemBuilder: (context, index) {
-            var entry = entries[index];
-            return Card(
-                child: ListTile(
-              subtitle: Text(entry.meaningsA.toString()),
-            ));
-          },
-        ));
+      hideDrawer: true,
+      floatingActionButton: FloatingActionButton(
+          child: const Icon(Icons.add),
+          onPressed: () async {
+            var ret = await showDialog<RawVEntry?>(
+              context: context,
+              barrierDismissible: true,
+              builder: (BuildContext context) {
+                return EntryEditDialog(
+                    entry: RawVEntry(
+                        meaningsA: [],
+                        addition: '',
+                        tip: '',
+                        list: _list,
+                        meaningsB: []));
+              },
+            );
+            if (mounted && ret != null) {
+              VEntry entry = await cache.createEntry(ret);
+              if (!mounted) return;
+              setState(() {
+                // reload list
+              });
+            }
+          }),
+      title: Text(_list.name),
+      child: FutureBuilder(
+          future: _entryFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              var data = snapshot.data!;
+              return ListView.builder(
+                itemCount: data.length,
+                itemBuilder: (context, index) {
+                  var entry = data[index];
+                  return Card(
+                      child: ListTile(
+                    subtitle: Text(entry.meaningsA.toString()),
+                    onTap: () => _showEdit(entry),
+                  ));
+                },
+              );
+            } else {
+              return Center(
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: const [
+                    CircularProgressIndicator(),
+                    Text("Loading DB")
+                  ]));
+            }
+          }),
+    );
   }
 
-  Future<void> _showListEditorDialog(RawVList entry) async {
-    bool exitOnCancel = entry.isRaw();
-    var ret = await showDialog<VList?>(
+  Future<void> _showEdit(VEntry entry) async {
+    var ret = await showDialog<VEntry?>(
       context: context,
       barrierDismissible: true,
       builder: (BuildContext context) {
-        return ListEditDialog(list: entry);
+        return EntryEditDialog(entry: entry);
       },
     );
-    if (!mounted) {
-      return;
-    }
-    if (ret != null) {
+    if (mounted && ret != null) {
+      var cache = Provider.of<StateStorage>(context, listen: false);
+      await cache.updateEntry(ret);
+      if (!mounted) return;
       setState(() {
-        _rawList = null;
-        _list = ret;
+        // reload list
       });
-    } else if (exitOnCancel) {
-      Navigator.of(context).pop();
     }
   }
 }
 
 class ListViewArguments {
-  final VList? list;
+  final VList list;
   ListViewArguments(this.list);
 }

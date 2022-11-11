@@ -45,14 +45,14 @@ class ListViewWidgetWidgetState extends State<ListViewWidget> {
                 return EntryEditDialog(
                     entry: RawVEntry(
                         meaningsA: [],
+                        meaningsB: [],
                         addition: '',
                         tip: '',
-                        list: _list,
-                        meaningsB: []));
+                        list: _list));
               },
             );
             if (mounted && ret != null) {
-              VEntry entry = await cache.createEntry(ret);
+              await cache.createEntry(ret);
               if (!mounted) return;
               setState(() {
                 // reload list
@@ -65,13 +65,19 @@ class ListViewWidgetWidgetState extends State<ListViewWidget> {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
               var data = snapshot.data!;
+              if (data.isEmpty) {
+                return const Text('No entries, you can create one.');
+              }
               return ListView.builder(
                 itemCount: data.length,
                 itemBuilder: (context, index) {
                   var entry = data[index];
                   return Card(
                       child: ListTile(
-                    subtitle: Text(entry.meaningsA.toString()),
+                    subtitle: Column(children: [
+                      Text(entry.meaningsA.join("/")),
+                      Text(entry.meaningsB.join('/'))
+                    ]),
                     onTap: () => _showEdit(entry),
                   ));
                 },
@@ -83,7 +89,7 @@ class ListViewWidgetWidgetState extends State<ListViewWidget> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: const [
                     CircularProgressIndicator(),
-                    Text("Loading DB")
+                    Text("Loading Entries")
                   ]));
             }
           }),

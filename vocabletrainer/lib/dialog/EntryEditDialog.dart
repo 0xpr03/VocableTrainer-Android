@@ -29,6 +29,47 @@ class _EntryEditDialogState extends State<EntryEditDialog> {
 
   @override
   Widget build(BuildContext context) {
+    var formChilds = [
+      TextFormField(
+        autofocus: false,
+        initialValue: _addition,
+        decoration: const InputDecoration(
+            helperText: 'Additions (tenses)', hintText: 'Addition'),
+        onChanged: (value) {
+          _addition = value;
+        },
+      ),
+      TextFormField(
+        autofocus: false,
+        initialValue: _tip,
+        decoration: const InputDecoration(hintText: 'Tip', helperText: 'Tip'),
+        onChanged: (value) {
+          _tip = value;
+        },
+      )
+    ];
+    for (var i = 0; i < _valuesA.length; i++) {
+      formChilds.add(TextFormField(
+        autofocus: false,
+        initialValue: _valuesA[i],
+        decoration: InputDecoration(
+            hintText: widget.entry.list.nameA, helperText: 'Word'),
+        onChanged: (value) {
+          _valuesA[i] = value;
+        },
+      ));
+    }
+    for (var i = 0; i < _valuesB.length; i++) {
+      formChilds.add(TextFormField(
+        autofocus: false,
+        initialValue: _valuesB[i],
+        decoration: InputDecoration(
+            hintText: widget.entry.list.nameA, helperText: 'Word'),
+        onChanged: (value) {
+          _valuesB[i] = value;
+        },
+      ));
+    }
     return AlertDialog(
       title: Text(widget.entry.isRaw() ? 'Add' : 'Save'),
       content: SingleChildScrollView(
@@ -36,26 +77,7 @@ class _EntryEditDialogState extends State<EntryEditDialog> {
             autovalidateMode: AutovalidateMode.onUserInteraction,
             key: _formAddAttributeKey,
             child: ListBody(
-              children: [
-                TextFormField(
-                  autofocus: false,
-                  initialValue: _addition,
-                  decoration: const InputDecoration(
-                      helperText: 'Additions (tenses)', hintText: 'Addition'),
-                  onChanged: (value) {
-                    _addition = value;
-                  },
-                ),
-                TextFormField(
-                  autofocus: false,
-                  initialValue: _tip,
-                  decoration:
-                      const InputDecoration(hintText: 'Tip', helperText: 'Tip'),
-                  onChanged: (value) {
-                    _tip = value;
-                  },
-                ),
-              ],
+              children: formChilds,
             )),
       ),
       actions: [

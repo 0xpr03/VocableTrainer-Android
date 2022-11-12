@@ -81,8 +81,8 @@ class StateStorage with ChangeNotifier {
           columns: [KEY_MEANING],
           where: "$KEY_ENTRY = ?",
           whereArgs: [entry.id]);
-      entry.meaningsA = mA.map((e) => e[0] as String).toList();
-      entry.meaningsA = mB.map((e) => e[0] as String).toList();
+      entry.meaningsA = mA.map((e) => e[KEY_MEANING] as String).toList();
+      entry.meaningsB = mB.map((e) => e[KEY_MEANING] as String).toList();
     }
     return entries;
   }

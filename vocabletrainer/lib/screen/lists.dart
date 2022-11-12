@@ -24,7 +24,9 @@ class ListOverviewWidget extends StatefulWidget {
 }
 
 class ListOverviewWidgetState extends State<ListOverviewWidget> {
-  List<VList> data = [];
+  List<VList>? data;
+  final Map<int, bool> _selectedFlag = {};
+  bool _selectionMode = false;
 
   @override
   void dispose() {
@@ -35,9 +37,12 @@ class ListOverviewWidgetState extends State<ListOverviewWidget> {
   @override
   Widget build(BuildContext context) {
     var cache = Provider.of<StateStorage>(context);
-    cache.getLists().then((value) => setState(() {
-          data = value;
-        }));
+    if (data == null) {
+      data = [];
+      cache.getLists().then((value) => setState(() {
+            data = value;
+          }));
+    }
 
     return BaseScaffold(
       floatingActionButton: FloatingActionButton(
@@ -61,14 +66,41 @@ class ListOverviewWidgetState extends State<ListOverviewWidget> {
       ),
       title: const Text("Lists"),
       child: ListView.builder(
-        itemCount: data.length,
+        itemCount: data!.length,
         itemBuilder: (context, index) {
-          VList item = data[index];
+          VList item = data![index];
           return Card(
               child: ListTile(
-            onTap: () => Navigator.of(context).pushNamed(
-                ListViewWidget.routeName,
-                arguments: ListViewArguments(item)),
+            onTap: () {
+              if (_selectionMode) {
+                setState(() {
+                  bool oldVal = _selectedFlag[index] ?? false;
+                  _selectedFlag[index] = !oldVal;
+                  if (oldVal) {
+                    // recalc mode
+                    _selectionMode = _selectedFlag.containsValue(true);
+                  }
+                });
+              } else {
+                Navigator.of(context).pushNamed(ListViewWidget.routeName,
+                    arguments: ListViewArguments(item));
+              }
+            },
+            onLongPress: () {
+              if (!_selectionMode) {
+                setState(() {
+                  _selectionMode = true;
+                  _selectedFlag[index] = true;
+                });
+              }
+            },
+            leading: _selectionMode
+                ? Icon(
+                    _selectedFlag[index] ?? false
+                        ? Icons.check_box
+                        : Icons.check_box_outline_blank,
+                  )
+                : null,
             title: Text(item.name),
             subtitle: Text("${item.nameA}/${item.nameB}"),
           ));

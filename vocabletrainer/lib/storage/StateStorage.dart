@@ -21,7 +21,7 @@ class StateStorage with ChangeNotifier {
 
   Future<VList> createList(RawVList raw) async {
     int time = DateTime.now().millisecondsSinceEpoch;
-    var data = raw.toMap();
+    var data = raw.toUpdateMap();
     data[KEY_CREATED] = time;
     data[KEY_CHANGED] = time;
     data[KEY_SHARED] = 0;
@@ -91,7 +91,7 @@ class StateStorage with ChangeNotifier {
   Future<void> updateList(VList list) async {
     int time = DateTime.now().millisecondsSinceEpoch;
     list.changed = time;
-    await _db.update(TBL_LISTS, list.toMap(),
+    await _db.update(TBL_LISTS, list.toUpdateMap(),
         where: '$KEY_LIST = ?', whereArgs: [list.id]);
   }
 

@@ -1,10 +1,15 @@
+import 'package:uuid/uuid.dart';
 import 'package:vocabletrainer/storage/CDatabase.dart';
 
 class VList extends RawVList {
   final int id;
-  int created;
+  final int created;
   int changed;
   int shared;
+  UuidValue? uuid;
+
+  /// Marker for multi selection
+  bool marked = false;
   VList(
       {required super.name,
       required super.nameA,
@@ -12,7 +17,8 @@ class VList extends RawVList {
       required this.id,
       required this.created,
       required this.changed,
-      required this.shared});
+      required this.shared,
+      this.uuid});
 
   VList.fromRaw(RawVList raw, this.id, int time)
       : changed = time,
@@ -25,13 +31,14 @@ class VList extends RawVList {
         shared = result[KEY_SHARED],
         created = result[KEY_CREATED],
         changed = result[KEY_CHANGED],
+        uuid = result[KEY_LIST_UUID],
         super(
             name: result[KEY_NAME_LIST],
             nameA: result[KEY_NAME_A],
             nameB: result[KEY_NAME_B]);
 
   @override
-  Map<String, Object?> toMap() {
+  Map<String, Object?> toUpdateMap() {
     return {
       KEY_NAME_LIST: name,
       KEY_NAME_A: nameA,
@@ -56,7 +63,7 @@ class RawVList {
   String nameB;
   RawVList({required this.name, required this.nameA, required this.nameB});
 
-  Map<String, Object?> toMap() {
+  Map<String, Object?> toUpdateMap() {
     return {
       KEY_NAME_LIST: name,
       KEY_NAME_A: nameA,

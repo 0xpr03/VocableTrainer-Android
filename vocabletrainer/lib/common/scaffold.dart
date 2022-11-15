@@ -8,7 +8,12 @@ import 'package:vocabletrainer/screen/lists.dart';
 class BaseScaffold extends StatelessWidget {
   final Widget child;
   final Widget? floatingActionButton;
+
+  /// If no appbar is set, use this for a title
   final Widget title;
+
+  /// Appbar to use, title will be ignored if this is set
+  final AppBar? appbar;
   final bool hideDrawer;
 
   const BaseScaffold(
@@ -16,12 +21,13 @@ class BaseScaffold extends StatelessWidget {
       required this.child,
       this.floatingActionButton,
       required this.title,
-      this.hideDrawer = false});
+      this.hideDrawer = false,
+      this.appbar});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: title),
+      appBar: appbar ?? AppBar(title: title),
       drawer: hideDrawer
           ? null
           : Drawer(

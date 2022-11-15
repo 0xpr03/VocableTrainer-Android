@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 //import 'package:calendar_timeline/calendar_timeline.dart';
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:vocabletrainer/common/scaffold.dart';
@@ -25,8 +27,7 @@ class ListOverviewWidget extends StatefulWidget {
 
 class ListOverviewWidgetState extends State<ListOverviewWidget> {
   List<VList>? data;
-  final Map<int, bool> _selectedFlag = {};
-  bool _selectionMode = false;
+  final HashSet<int> _selectedFlag = HashSet();
 
   @override
   void dispose() {
@@ -45,6 +46,29 @@ class ListOverviewWidgetState extends State<ListOverviewWidget> {
     }
 
     return BaseScaffold(
+      appbar: _selectedFlag.isNotEmpty
+          ? AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.cancel),
+                tooltip: "Cancel selection",
+                onPressed: () {
+                  setState(() {
+                    _selectedFlag.clear();
+                  });
+                },
+              ),
+              title: Text(_selectedFlag.length.toString()),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  tooltip: "Delete selected lists",
+                  onPressed: () async {
+                    print("Todo: deletion");
+                  },
+                )
+              ],
+            )
+          : null,
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () async {
@@ -72,13 +96,13 @@ class ListOverviewWidgetState extends State<ListOverviewWidget> {
           return Card(
               child: ListTile(
             onTap: () {
-              if (_selectionMode) {
+              if (_selectedFlag.isNotEmpty) {
                 setState(() {
-                  bool oldVal = _selectedFlag[index] ?? false;
-                  _selectedFlag[index] = !oldVal;
+                  bool oldVal = _selectedFlag.contains(item.id);
                   if (oldVal) {
-                    // recalc mode
-                    _selectionMode = _selectedFlag.containsValue(true);
+                    _selectedFlag.remove(item.id);
+                  } else {
+                    _selectedFlag.add(item.id);
                   }
                 });
               } else {
@@ -87,16 +111,15 @@ class ListOverviewWidgetState extends State<ListOverviewWidget> {
               }
             },
             onLongPress: () {
-              if (!_selectionMode) {
+              if (_selectedFlag.isEmpty) {
                 setState(() {
-                  _selectionMode = true;
-                  _selectedFlag[index] = true;
+                  _selectedFlag.add(item.id);
                 });
               }
             },
-            leading: _selectionMode
+            leading: _selectedFlag.isNotEmpty
                 ? Icon(
-                    _selectedFlag[index] ?? false
+                    _selectedFlag.contains(item.id)
                         ? Icons.check_box
                         : Icons.check_box_outline_blank,
                   )

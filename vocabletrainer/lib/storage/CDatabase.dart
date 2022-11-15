@@ -46,7 +46,7 @@ Future<Database> initDatabase() async {
       for (var sql in steps) {
         b.execute(sql);
       }
-      b.commit();
+      await b.commit();
     },
     onUpgrade: (db, oldVersion, newVersion) {
       // upgrade path TODO

@@ -169,8 +169,10 @@ class ListOverviewWidgetState extends State<ListOverviewWidget> {
                         : Icons.check_box_outline_blank,
                   )
                 : null,
-            title: Text(item.name),
-            subtitle: Text("${item.nameA}/${item.nameB}"),
+            title:
+                Text(item.name, overflow: TextOverflow.fade, softWrap: false),
+            subtitle: Text("${item.nameA}/${item.nameB}",
+                overflow: TextOverflow.fade, softWrap: false),
           ));
         },
       ),

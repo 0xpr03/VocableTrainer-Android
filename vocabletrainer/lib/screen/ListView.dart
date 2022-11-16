@@ -66,7 +66,8 @@ class ListViewWidgetWidgetState extends State<ListViewWidget> {
             if (snapshot.connectionState == ConnectionState.done) {
               var data = snapshot.data!;
               if (data.isEmpty) {
-                return const Text('No entries, you can create one.');
+                return const Center(
+                    child: Text('No entries, you can create one.'));
               }
               return ListView.builder(
                 itemCount: data.length,
@@ -74,10 +75,10 @@ class ListViewWidgetWidgetState extends State<ListViewWidget> {
                   var entry = data[index];
                   return Card(
                       child: ListTile(
-                    subtitle: Column(children: [
-                      Text(entry.meaningsA.join("/")),
-                      Text(entry.meaningsB.join('/'))
-                    ]),
+                    title: Text(entry.meaningsA.join("/"),
+                        overflow: TextOverflow.fade, softWrap: false),
+                    subtitle: Text(entry.meaningsB.join('/'),
+                        overflow: TextOverflow.fade, softWrap: false),
                     onTap: () => _showEdit(entry),
                   ));
                 },

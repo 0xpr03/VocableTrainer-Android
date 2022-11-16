@@ -7,6 +7,7 @@ import 'package:vocabletrainer/storage/VEntry.dart';
 import 'package:vocabletrainer/storage/VList.dart';
 
 import '../common/scaffold.dart';
+import '../dialog/ListEditDialog.dart';
 import '../storage/StateStorage.dart';
 
 class ListViewWidget extends StatefulWidget {
@@ -119,7 +120,21 @@ class ListViewWidgetWidgetState extends State<ListViewWidget> {
               await cache.createEntry(ret);
             }
           }),
-      title: Text(_list.name),
+      title: ListTile(
+          title: Text(_list.name),
+          subtitle: Text('Tap to change'),
+          onTap: () async {
+            var ret = await showDialog<VList?>(
+              context: context,
+              barrierDismissible: true,
+              builder: (BuildContext context) {
+                return ListEditDialog(list: _list);
+              },
+            );
+            if (mounted && ret != null) {
+              await cache.updateList(ret);
+            }
+          }),
       child: FutureBuilder(
           future: _entryFuture,
           builder: (context, snapshot) {

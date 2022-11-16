@@ -148,4 +148,23 @@ class StateStorage with ChangeNotifier {
     });
     notifyListeners();
   }
+
+  /// Delete a set of entries
+  Future<void> deleteEntries(List<VEntry> entries) async {
+    int time = DateTime.now().millisecondsSinceEpoch;
+    await _db.transaction((txn) async {
+      Batch b = txn.batch();
+      for (var entry in entries) {
+        var values = {
+          KEY_ENTRY_UUID: entry.uuid.toBytes(),
+          KEY_LIST: entry.list.id,
+          KEY_CREATED: time
+        };
+        b.insert(TBL_ENTRIES_DELETED, values);
+        b.delete(TBL_ENTRIES, where: '$KEY_ENTRY = ?', whereArgs: [entry.id]);
+      }
+      await b.commit();
+    });
+    notifyListeners();
+  }
 }

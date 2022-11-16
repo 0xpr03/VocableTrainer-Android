@@ -143,10 +143,7 @@ class ListOverviewWidgetState extends State<ListOverviewWidget> {
             onTap: () {
               if (_selectedFlag.isNotEmpty) {
                 setState(() {
-                  bool oldVal = _selectedFlag.contains(item.id);
-                  if (oldVal) {
-                    _selectedFlag.remove(item.id);
-                  } else {
+                  if (!_selectedFlag.remove(item.id)) {
                     _selectedFlag.add(item.id);
                   }
                 });

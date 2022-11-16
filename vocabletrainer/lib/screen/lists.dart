@@ -35,14 +35,21 @@ class ListOverviewWidgetState extends State<ListOverviewWidget> {
     super.dispose();
   }
 
+  void _refreshLists(StateStorage cache, bool resetSelection) {
+    cache.getLists().then((value) => setState(() {
+          data = value;
+          if (resetSelection) {
+            _selectedFlag.clear();
+          }
+        }));
+  }
+
   @override
   Widget build(BuildContext context) {
     var cache = Provider.of<StateStorage>(context);
     if (data == null) {
       data = [];
-      cache.getLists().then((value) => setState(() {
-            data = value;
-          }));
+      _refreshLists(cache, false);
     }
 
     return BaseScaffold(
@@ -63,7 +70,43 @@ class ListOverviewWidgetState extends State<ListOverviewWidget> {
                   icon: const Icon(Icons.delete),
                   tooltip: "Delete selected lists",
                   onPressed: () async {
-                    print("Todo: deletion");
+                    var ret = await showDialog<bool>(
+                        context: context,
+                        barrierDismissible: true,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Confirm list deletion'),
+                            content: SingleChildScrollView(
+                                child: Text(
+                                    'Do you want to delete ${_selectedFlag.length} lists?')),
+                            actions: [
+                              TextButton(
+                                autofocus: true,
+                                child: const Text('Cancel'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                              TextButton(
+                                autofocus: false,
+                                onPressed: () {
+                                  Navigator.of(context).pop(true);
+                                },
+                                child: const Text('Delete'),
+                              ),
+                            ],
+                          );
+                        });
+                    if (ret != null && ret == true) {
+                      List<VList> delLists = [];
+                      for (var list in data!) {
+                        if (_selectedFlag.contains(list.id)) {
+                          delLists.add(list);
+                        }
+                      }
+                      await cache.deleteLists(delLists);
+                      _refreshLists(cache, true);
+                    }
                   },
                 )
               ],
@@ -83,8 +126,10 @@ class ListOverviewWidgetState extends State<ListOverviewWidget> {
           if (mounted && ret != null) {
             VList list = await cache.createList(ret);
             if (!mounted) return;
-            Navigator.of(context).pushNamed(ListViewWidget.routeName,
+            await Navigator.of(context).pushNamed(ListViewWidget.routeName,
                 arguments: ListViewArguments(list));
+            if (!mounted) return;
+            _refreshLists(cache, false);
           }
         },
       ),

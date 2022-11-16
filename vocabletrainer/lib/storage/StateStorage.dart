@@ -124,4 +124,23 @@ class StateStorage with ChangeNotifier {
       },
     );
   }
+
+  /// Delete a set of lists
+  Future<void> deleteLists(List<VList> lists) async {
+    int time = DateTime.now().millisecondsSinceEpoch;
+    await _db.transaction((txn) async {
+      Batch b = txn.batch();
+      for (var list in lists) {
+        if (list.uuid != null) {
+          var values = {
+            KEY_LIST_UUID: list.uuid!.toBytes(),
+            KEY_CREATED: time,
+          };
+          b.insert(TBL_LISTS_DELETED, values);
+        }
+        b.delete(TBL_LISTS, where: '$KEY_LIST = ?', whereArgs: [list.id]);
+      }
+      await b.commit();
+    });
+  }
 }

@@ -27,6 +27,7 @@ class StateStorage with ChangeNotifier {
     data[KEY_SHARED] = 0;
     int id = await _db.insert(TBL_LISTS, data,
         conflictAlgorithm: ConflictAlgorithm.rollback);
+    notifyListeners();
     return VList.fromRaw(raw, id, time);
   }
 
@@ -58,6 +59,7 @@ class StateStorage with ChangeNotifier {
         await b.commit(noResult: true);
       },
     );
+    notifyListeners();
     return VEntry.fromRaw(raw, id!, uuid, time);
   }
 
@@ -93,6 +95,7 @@ class StateStorage with ChangeNotifier {
     list.changed = time;
     await _db.update(TBL_LISTS, list.toUpdateMap(),
         where: '$KEY_LIST = ?', whereArgs: [list.id]);
+    notifyListeners();
   }
 
   /// Update entry, also updates timestamps
@@ -123,6 +126,7 @@ class StateStorage with ChangeNotifier {
         await b.commit(noResult: true);
       },
     );
+    notifyListeners();
   }
 
   /// Delete a set of lists
@@ -142,5 +146,6 @@ class StateStorage with ChangeNotifier {
       }
       await b.commit();
     });
+    notifyListeners();
   }
 }

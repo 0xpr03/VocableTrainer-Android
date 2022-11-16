@@ -13,6 +13,7 @@ Future<Database> initDatabase() async {
   Database db = await openDatabase(
     path,
     version: 4,
+    onConfigure: (db) async => db.execute('PRAGMA foreign_keys = ON'),
     onCreate: (db, version) async {
       // clean init
       List<String> steps = [

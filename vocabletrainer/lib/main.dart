@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:vocabletrainer/screen/Export.dart';
 
 import 'common/theme.dart';
 import 'screen/ListView.dart';
@@ -63,6 +64,7 @@ class MyApp extends StatelessWidget {
           routes: {
             ListViewWidget.routeName: (context) => ListViewWidget(),
             ListOverviewWidget.routeName: (context) => ListOverviewWidget(),
+            ExportWidget.routeName: (context) => ExportWidget(),
           },
           initialRoute: ListOverviewWidget.routeName,
         ));

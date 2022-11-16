@@ -1,0 +1,104 @@
+import 'dart:collection';
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:vocabletrainer/common/scaffold.dart';
+
+import '../storage/StateStorage.dart';
+import '../storage/VList.dart';
+
+class ExportWidget extends StatefulWidget {
+  static const routeName = '/export';
+
+  const ExportWidget({super.key});
+
+  @override
+  ListViewWidgetWidgetState createState() => ListViewWidgetWidgetState();
+}
+
+class ListViewWidgetWidgetState extends State<ExportWidget>
+    with TickerProviderStateMixin {
+  Future<void>? _exportFuture;
+  List<VList> _lists = [];
+  final HashSet<int> _selectedFlag = HashSet();
+  late StateStorage cache;
+  late TabController tabController;
+
+  bool _exportListMetadata = true;
+  bool _exportMultipleLists = true;
+
+  @override
+  void initState() {
+    tabController = TabController(
+      initialIndex: 0,
+      length: 3,
+      vsync: this,
+    );
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    cache = Provider.of<StateStorage>(context);
+    cache.getLists().then((value) {
+      setState(() {
+        _lists = value;
+      });
+    });
+    super.didChangeDependencies();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BaseScaffold(
+      appbar: AppBar(
+        title: Text("Export to CSV"),
+        bottom: TabBar(
+          controller: tabController,
+          tabs: const [
+            Tab(text: 'Settings'),
+            Tab(text: 'Lists'),
+            Tab(text: 'Format'),
+          ],
+        ),
+      ),
+      child: TabBarView(
+        controller: tabController,
+        children: [
+          _settingTab(),
+          _listTab(),
+          Icon(Icons.directions_bike),
+        ],
+      ),
+    );
+  }
+
+  Widget _settingTab() {
+    return SingleChildScrollView(
+        child: Column(children: [
+      Text(
+          'Export UTF8 encoded CSV file with (multiple) lists.\nSee wiki for more information.'),
+      Checkbox(
+          value: _exportListMetadata,
+          onChanged: (value) {
+            setState(() {
+              _exportListMetadata = !_exportListMetadata;
+            });
+          }),
+      ElevatedButton(
+          onPressed: () {
+            print("todo");
+          },
+          child: Text("Export"))
+    ]));
+  }
+
+  Widget _listTab() {
+    return ListView.builder(
+        itemCount: _lists.length,
+        itemBuilder: (context, index) {
+          var list = _lists[index];
+          return Card(child: ListTile(title: Text(list.name)));
+        });
+  }
+}

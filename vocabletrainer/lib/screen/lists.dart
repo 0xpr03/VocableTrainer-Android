@@ -29,12 +29,6 @@ class ListOverviewWidgetState extends State<ListOverviewWidget> {
   List<VList>? data;
   final HashSet<int> _selectedFlag = HashSet();
 
-  @override
-  void dispose() {
-    // _tabController?.dispose();
-    super.dispose();
-  }
-
   void _refreshLists(StateStorage cache, bool resetSelection) {
     cache.getLists().then((value) => setState(() {
           data = value;

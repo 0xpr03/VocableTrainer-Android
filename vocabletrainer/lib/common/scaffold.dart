@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
+import 'package:vocabletrainer/screen/Export.dart';
 import 'package:vocabletrainer/screen/lists.dart';
 
 class BaseScaffold extends StatelessWidget {
@@ -10,7 +11,7 @@ class BaseScaffold extends StatelessWidget {
   final Widget? floatingActionButton;
 
   /// If no appbar is set, use this for a title
-  final Widget title;
+  final Widget? title;
 
   /// Appbar to use, title will be ignored if this is set
   final AppBar? appbar;
@@ -20,7 +21,7 @@ class BaseScaffold extends StatelessWidget {
       {super.key,
       required this.child,
       this.floatingActionButton,
-      required this.title,
+      this.title,
       this.hideDrawer = false,
       this.appbar});
 
@@ -44,6 +45,14 @@ class BaseScaffold extends StatelessWidget {
                       context, ListOverviewWidget.routeName);
                 },
                 leading: const Icon(Icons.list),
+              ),
+              ListTile(
+                title: const Text('Export'),
+                onTap: () {
+                  Navigator.pushReplacementNamed(
+                      context, ExportWidget.routeName);
+                },
+                leading: const Icon(Icons.upload),
               ),
               ListTile(
                 title: const Text('Logout'),

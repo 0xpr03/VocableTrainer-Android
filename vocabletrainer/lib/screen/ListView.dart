@@ -88,7 +88,7 @@ class ListViewWidgetWidgetState extends State<ListViewWidget> {
                         });
                     if (ret != null && ret == true) {
                       List<VEntry> delEntries = [];
-                      for (var list in _entries!) {
+                      for (var list in _entries) {
                         if (_selectedFlag.contains(list.id)) {
                           delEntries.add(list);
                         }

@@ -52,6 +52,9 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
 
+  pick_or_save: ^2.1.8
+  csv: ^5.0.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

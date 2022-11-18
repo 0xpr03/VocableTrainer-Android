@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:vocabletrainer/common/scaffold.dart';
 
+import '../exporter/definitions.dart';
 import '../storage/StateStorage.dart';
 import '../storage/VList.dart';
 
@@ -14,17 +15,6 @@ class ExportWidget extends StatefulWidget {
 
   @override
   ListViewWidgetWidgetState createState() => ListViewWidgetWidgetState();
-}
-
-enum CSVKind {
-  DEFAULT,
-  EXCEL,
-  RFC4180,
-  TABS,
-  MYSQL,
-  INFORMIX_UNLOAD,
-  INFORMIX_UNLOAD_CSV,
-  CUSTOM
 }
 
 class ListViewWidgetWidgetState extends State<ExportWidget>
@@ -135,7 +125,21 @@ class ListViewWidgetWidgetState extends State<ExportWidget>
         itemCount: _lists.length,
         itemBuilder: (context, index) {
           var list = _lists[index];
-          return Card(child: ListTile(title: Text(list.name)));
+          return Card(
+              child: ListTile(
+                  leading: Icon(
+                    _selectedFlag.contains(list.id)
+                        ? Icons.check_box
+                        : Icons.check_box_outline_blank,
+                  ),
+                  title: Text(list.name),
+                  onTap: () {
+                    setState(() {
+                      if (!_selectedFlag.remove(list.id)) {
+                        _selectedFlag.add(list.id);
+                      }
+                    });
+                  }));
         });
   }
 }

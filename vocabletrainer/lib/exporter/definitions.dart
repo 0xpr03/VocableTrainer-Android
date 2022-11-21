@@ -11,32 +11,37 @@ enum CSVKind {
   CUSTOM
 }
 
-void createConverter(CSVKind kind) {
-  String textDelimiter = '"';
-  String fieldDelimiter = ',';
+CsvCodec createCodec(CSVKind kind) {
+  String textDelimiter = '"'; // quotes
+  String fieldDelimiter = ','; // delimiter
   String eol = "\r\n";
   switch (kind) {
+    case CSVKind.RFC4180: // can't decide on ignore-empty-lines
     case CSVKind.DEFAULT:
-      break;
     case CSVKind.EXCEL:
-      break;
-    case CSVKind.RFC4180:
-      // TODO: Handle this case.
+      // TODO: ignore blank lines
       break;
     case CSVKind.TABS:
-      // TODO: Handle this case.
+      textDelimiter = '"';
+      fieldDelimiter = '\t';
       break;
     case CSVKind.MYSQL:
-      // TODO: Handle this case.
-      break;
-    case CSVKind.INFORMIX_UNLOAD:
-      // TODO: Handle this case.
+      // TODO: can't set escape, null, empty-lines
+      eol = '\n';
+      fieldDelimiter = '\t';
+      textDelimiter = '';
       break;
     case CSVKind.INFORMIX_UNLOAD_CSV:
-      // TODO: Handle this case.
+    // TODO: unset escape
+    case CSVKind.INFORMIX_UNLOAD:
+      // TODO: can't set escape
+      textDelimiter = '"';
+      fieldDelimiter = ',';
+      eol = '\n';
       break;
     case CSVKind.CUSTOM:
-      // TODO: Handle this case.
       break;
   }
+  return CsvCodec(
+      eol: eol, fieldDelimiter: fieldDelimiter, textDelimiter: textDelimiter);
 }

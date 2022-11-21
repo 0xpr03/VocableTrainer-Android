@@ -22,19 +22,19 @@ class ListViewWidgetWidgetState extends State<ExportWidget>
   Future<void>? _exportFuture;
   List<VList> _lists = [];
   final HashSet<int> _selectedFlag = HashSet();
-  late StateStorage cache;
-  late TabController tabController;
-  static List<DropdownMenuItem> dropdownItems = [
-    DropdownMenuItem(child: Text("Default"), value: CSVKind.DEFAULT),
-    DropdownMenuItem(child: Text("Excel"), value: CSVKind.EXCEL),
-    DropdownMenuItem(child: Text("RFC 4180"), value: CSVKind.RFC4180),
-    DropdownMenuItem(child: Text("Tabs"), value: CSVKind.TABS),
-    DropdownMenuItem(child: Text("Mysql"), value: CSVKind.MYSQL),
+  late StateStorage _cache;
+  late TabController _tabController;
+  static List<DropdownMenuItem> dropdownItems = const [
+    DropdownMenuItem(value: CSVKind.DEFAULT, child: Text("Default")),
+    DropdownMenuItem(value: CSVKind.EXCEL, child: Text("Excel")),
+    DropdownMenuItem(value: CSVKind.RFC4180, child: Text("RFC 4180")),
+    DropdownMenuItem(value: CSVKind.TABS, child: Text("Tabs")),
+    DropdownMenuItem(value: CSVKind.MYSQL, child: Text("Mysql")),
     DropdownMenuItem(
-        child: Text("Informix UNLOAD"), value: CSVKind.INFORMIX_UNLOAD),
+        value: CSVKind.INFORMIX_UNLOAD, child: Text("Informix UNLOAD")),
     DropdownMenuItem(
-        child: Text("Informix UNLOAD CSV"), value: CSVKind.INFORMIX_UNLOAD_CSV),
-    DropdownMenuItem(child: Text("Custom"), value: CSVKind.CUSTOM),
+        value: CSVKind.INFORMIX_UNLOAD_CSV, child: Text("Informix UNLOAD CSV")),
+    DropdownMenuItem(value: CSVKind.CUSTOM, child: Text("Custom")),
   ];
   CSVKind _csvKindSelected = CSVKind.DEFAULT;
 
@@ -43,7 +43,7 @@ class ListViewWidgetWidgetState extends State<ExportWidget>
 
   @override
   void initState() {
-    tabController = TabController(
+    _tabController = TabController(
       initialIndex: 0,
       length: 3,
       vsync: this,
@@ -53,8 +53,8 @@ class ListViewWidgetWidgetState extends State<ExportWidget>
 
   @override
   void didChangeDependencies() {
-    cache = Provider.of<StateStorage>(context);
-    cache.getLists().then((value) {
+    _cache = Provider.of<StateStorage>(context);
+    _cache.getLists().then((value) {
       setState(() {
         _lists = value;
       });
@@ -68,7 +68,7 @@ class ListViewWidgetWidgetState extends State<ExportWidget>
       appbar: AppBar(
         title: Text("Export to CSV"),
         bottom: TabBar(
-          controller: tabController,
+          controller: _tabController,
           tabs: const [
             Tab(text: 'Settings'),
             Tab(text: 'Lists'),
@@ -77,11 +77,11 @@ class ListViewWidgetWidgetState extends State<ExportWidget>
         ),
       ),
       child: TabBarView(
-        controller: tabController,
+        controller: _tabController,
         children: [
           _settingTab(),
           _listTab(),
-          Icon(Icons.directions_bike),
+          Icon(Icons.construction),
         ],
       ),
     );
@@ -94,10 +94,9 @@ class ListViewWidgetWidgetState extends State<ExportWidget>
           'Export UTF8 encoded CSV file with (multiple) lists.\nSee wiki for more information.'),
       DropdownButton(
         items: dropdownItems,
-        hint: Text("Hint"),
         value: _csvKindSelected,
         borderRadius: BorderRadius.circular(2.0),
-        icon: const Icon(Icons.arrow_downward),
+        icon: const Icon(Icons.arrow_drop_down),
         onChanged: (value) {
           setState(() {
             _csvKindSelected = value;
@@ -113,11 +112,56 @@ class ListViewWidgetWidgetState extends State<ExportWidget>
             });
           }),
       ElevatedButton(
-          onPressed: () {
-            print("todo");
+          onPressed: () async {
+            if (_selectedFlag.isEmpty) {
+              showSnackbar('No lists selected for export!');
+              return;
+            }
+            List<VList> lists = [];
+            for (var list in _lists) {
+              if (_selectedFlag.contains(list.id)) {
+                lists.add(list);
+              }
+            }
+            var exporter = createCodec(_csvKindSelected);
+            StringBuffer sb = StringBuffer();
+            for (var list in lists) {
+              var entries = await _cache.getEntries(list);
+              if (_exportListMetadata) {
+                exporter.encoder.convertSingleRow(
+                    sb, ['TABLE\\', '//INFO', '//START//'],
+                    returnString: false);
+                sb.write(exporter.encoder.eol);
+                exporter.encoder.convertSingleRow(
+                    sb, [list.name, list.nameA, list.nameB],
+                    returnString: false);
+                sb.write(exporter.encoder.eol);
+              }
+              for (var entry in entries) {
+                exporter.encoder.convertSingleRow(sb, entry.asCSVRow(),
+                    returnString: false);
+                sb.write(exporter.encoder.eol);
+              }
+            }
+            print(sb);
           },
           child: Text("Export"))
     ]));
+  }
+
+  void showSnackbar(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        action: SnackBarAction(
+          label: 'Dismiss',
+          onPressed: () {
+            // do nothing
+          },
+        ),
+        content: Text(text),
+        behavior: SnackBarBehavior.fixed,
+      ),
+    );
   }
 
   Widget _listTab() {

@@ -39,6 +39,11 @@ class VEntry extends RawVEntry {
             meaningsB: [],
             tip: result[KEY_TIP],
             addition: result[KEY_ADDITION]);
+
+  List<String> asCSVRow() {
+    return [meaningsA.join('/'), meaningsB.join('/'), addition, tip];
+  }
+
   @override
   bool isRaw() {
     return false;

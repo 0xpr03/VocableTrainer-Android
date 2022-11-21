@@ -1,6 +1,9 @@
 import 'dart:collection';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pick_or_save/pick_or_save.dart';
 import 'package:provider/provider.dart';
 import 'package:vocabletrainer/common/scaffold.dart';
 
@@ -143,7 +146,19 @@ class ListViewWidgetWidgetState extends State<ExportWidget>
                 sb.write(exporter.encoder.eol);
               }
             }
-            print(sb);
+            Directory tempDir = await getTemporaryDirectory();
+            String tempPath = tempDir.path;
+            File tempFile = File('$tempPath/export.csv');
+            await tempFile.writeAsString(sb.toString());
+            final params = FileSaverParams(localOnly: false, saveFiles: [
+              SaveFileInfo(filePath: tempFile.path, fileName: "lists.csv")
+            ]);
+
+            List<String>? result = await PickOrSave().fileSaver(params: params);
+            if (result != null) {
+              print("success");
+            }
+            await tempFile.delete();
           },
           child: Text("Export"))
     ]));

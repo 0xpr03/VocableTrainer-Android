@@ -130,6 +130,14 @@ class _EntryEditDialogState extends State<EntryEditDialog> {
       )
     ]);
     return AlertDialog(
+      contentPadding: const EdgeInsets.only(
+        left: 24.0,
+        top: 8.0,
+        right: 24.0,
+        bottom: 0.0,
+      ), // make place for the content
+      actionsPadding: const EdgeInsets.symmetric(horizontal: 8.0),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
       title: Text(widget.entry.isRaw() ? 'Add' : 'Save'),
       content: SingleChildScrollView(
         child: Form(

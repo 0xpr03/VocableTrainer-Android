@@ -13,6 +13,8 @@ import 'screen/lists.dart';
 import 'storage/StateStorage.dart';
 
 Future<void> main() async {
+  // TODO: https://pub.dev/packages/catcher#http-handler
+  // crash reporting support
   runApp(const LoadingScreen());
   if (Platform.isWindows || Platform.isLinux) {
     // Initialize FFI and use it on Windows and linux

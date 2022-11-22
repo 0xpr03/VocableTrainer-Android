@@ -11,22 +11,23 @@ import '../exporter/definitions.dart';
 import '../storage/StateStorage.dart';
 import '../storage/VList.dart';
 
-class ExportWidget extends StatefulWidget {
-  static const routeName = '/export';
+class ImportWidget extends StatefulWidget {
+  static const routeName = '/import';
 
-  const ExportWidget({super.key});
+  const ImportWidget({super.key});
 
   @override
   ListViewWidgetWidgetState createState() => ListViewWidgetWidgetState();
 }
 
-class ListViewWidgetWidgetState extends State<ExportWidget>
+class ListViewWidgetWidgetState extends State<ImportWidget>
     with TickerProviderStateMixin {
   Future<void>? _exportFuture;
   List<VList> _lists = [];
   final HashSet<int> _selectedFlag = HashSet();
   late StateStorage _cache;
   late TabController _tabController;
+
   CSVKind _csvKindSelected = CSVKind.DEFAULT;
 
   bool _exportListMetadata = true;
@@ -57,7 +58,7 @@ class ListViewWidgetWidgetState extends State<ExportWidget>
   Widget build(BuildContext context) {
     return BaseScaffold(
       appbar: AppBar(
-        title: Text("Export to CSV"),
+        title: Text("Import from CSV"),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [

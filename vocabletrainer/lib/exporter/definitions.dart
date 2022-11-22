@@ -1,4 +1,5 @@
 import 'package:csv/csv.dart';
+import 'package:flutter/material.dart';
 
 enum CSVKind {
   DEFAULT,
@@ -45,3 +46,16 @@ CsvCodec createCodec(CSVKind kind) {
   return CsvCodec(
       eol: eol, fieldDelimiter: fieldDelimiter, textDelimiter: textDelimiter);
 }
+
+const List<DropdownMenuItem> dropdownItems = const [
+  DropdownMenuItem(value: CSVKind.DEFAULT, child: Text("Default")),
+  DropdownMenuItem(value: CSVKind.EXCEL, child: Text("Excel")),
+  DropdownMenuItem(value: CSVKind.RFC4180, child: Text("RFC 4180")),
+  DropdownMenuItem(value: CSVKind.TABS, child: Text("Tabs")),
+  DropdownMenuItem(value: CSVKind.MYSQL, child: Text("Mysql")),
+  DropdownMenuItem(
+      value: CSVKind.INFORMIX_UNLOAD, child: Text("Informix UNLOAD")),
+  DropdownMenuItem(
+      value: CSVKind.INFORMIX_UNLOAD_CSV, child: Text("Informix UNLOAD CSV")),
+  DropdownMenuItem(value: CSVKind.CUSTOM, child: Text("Custom")),
+];

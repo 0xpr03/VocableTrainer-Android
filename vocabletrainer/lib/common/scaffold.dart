@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
-import 'package:vocabletrainer/screen/Export.dart';
+import 'package:vocabletrainer/screen/export.dart';
+import 'package:vocabletrainer/screen/import.dart';
 import 'package:vocabletrainer/screen/lists.dart';
 
 class BaseScaffold extends StatelessWidget {
@@ -53,6 +54,14 @@ class BaseScaffold extends StatelessWidget {
                       context, ExportWidget.routeName);
                 },
                 leading: const Icon(Icons.upload),
+              ),
+              ListTile(
+                title: const Text('Import'),
+                onTap: () {
+                  Navigator.pushReplacementNamed(
+                      context, ImportWidget.routeName);
+                },
+                leading: const Icon(Icons.download),
               ),
               ListTile(
                 title: const Text('Logout'),

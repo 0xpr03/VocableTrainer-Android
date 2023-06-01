@@ -106,11 +106,13 @@ class ListViewWidgetWidgetState extends State<ImportWidget>
         TextButton(
             onPressed: () async {
               // TODO: handle exceptions
-              var ret = await PickOrSave().filePicker(
-                  params: FilePickerParams(
-                      enableMultipleSelection: false,
-                      pickerType: PickerType.file));
-              print(ret);
+              if (Platform.isAndroid) {
+                var ret = await PickOrSave().filePicker(
+                    params: FilePickerParams(
+                        enableMultipleSelection: false,
+                        pickerType: PickerType.file));
+                print(ret);
+              } else {}
             },
             child: Text('Select File'))
       ]),
